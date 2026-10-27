@@ -41,18 +41,20 @@ export async function updateRecurringInstallmentAmountOnly(
     });
   };
 
-  if (Object.keys(payload).length !== 1 || payload.amountMinor === undefined) blocked();
+  const amountMinor = payload.amountMinor;
+  const installmentId = selected.installmentId;
+  if (Object.keys(payload).length !== 1 || amountMinor === undefined) return blocked();
   if (
     selected.recurrenceStatus === "CANCELLED" ||
     selected.transactionCardId !== null ||
     selected.transactionInvoiceId !== null ||
-    selected.installmentId === null ||
+    installmentId === null ||
     !["PLANNED", "POSTED"].includes(selected.status)
-  ) blocked();
+  ) return blocked();
 
   // A linked installment can be reconciled, cancelled or invoiced after the
   // endpoint's optimistic eligibility check. Recheck while holding its lock.
-  const installment = await lockInstallmentForAmount(executeQuery, context, selected.installmentId);
+  const installment = await lockInstallmentForAmount(executeQuery, context, installmentId);
   if (
     !installment ||
     installment.status !== selected.status ||
@@ -61,12 +63,11 @@ export async function updateRecurringInstallmentAmountOnly(
     installment.cardInstrumentId !== null
   ) blocked();
 
-  if (!Number.isSafeInteger(payload.amountMinor) || payload.amountMinor <= 0) {
+  if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
     throw Object.assign(new Error("Valor da parcela invalido."), {
       code: "INSTALLMENT_PAYLOAD_INVALID", statusCode: 400,
     });
   }
-  const amountMinor = payload.amountMinor;
   const futureRows = await findFutureForUpdate(
     executeQuery,
     context,
@@ -120,7 +121,7 @@ export async function updateRecurringInstallmentAmountOnly(
     }
   };
 
-  await saveAmount(selected.id, selected.installmentId);
+  await saveAmount(selected.id, installmentId);
   await executeQuery(
     `update "Recurrence" set "amountMinor" = $4, "updatedAt" = $5, "updatedByUserId" = $6
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
@@ -163,7 +164,7 @@ export async function updateRecurringInstallmentAmountOnly(
     transaction: {
       id: selected.id,
       recurrenceId: selected.recurrenceId!,
-      installmentId: selected.installmentId,
+      installmentId,
       plannedOn: toDateOnly(selected.plannedOn),
       ...(selected.effectiveOn ? { effectiveOn: toDateOnly(selected.effectiveOn) } : {}),
       amountMinor,
