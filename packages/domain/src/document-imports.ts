@@ -386,8 +386,10 @@ function assertPdfStructure(bytes: Buffer): string {
     const rootHeader = new RegExp(
       `^${rootMatch[1]}[\\0\\t\\n\\f\\r ]+${rootMatch[2]}[\\0\\t\\n\\f\\r ]+obj\\b`,
     );
-    const rootHeaderLength = rootIndex < 0 ? 0 : rootHeader.exec(text.slice(rootIndex, xrefOffset))?.[0].length ?? 0;
-    const rootEnd = rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
+    const rootHeaderLength =
+      rootIndex < 0 ? 0 : (rootHeader.exec(text.slice(rootIndex, xrefOffset))?.[0].length ?? 0);
+    const rootEnd =
+      rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
     if (
       rootIndex < 0 ||
       rootEnd < 0 ||
