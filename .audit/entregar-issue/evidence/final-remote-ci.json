@@ -1,0 +1,39 @@
+{
+  "repository": "crgasparoto-br/SolverFin",
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "observed_at": "2026-10-26T20:48:33.980431+00:00",
+  "source": "GitHub authenticated connector reads: fetch_commit_workflow_runs, fetch_workflow_job_steps, get_pr_info, fetch exact run",
+  "current_pr_head": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "merge_preview_sha": "8cce58d19837297b4923e39ad3759f713640ed09",
+  "runs": [
+    {
+      "id": 40397886122,
+      "name": "Repository CI",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40397886122",
+      "head_sha": "c696281f6dcbc802098d05786266c26ace9e7765"
+    },
+    {
+      "id": 40397886198,
+      "name": "Delivery audit workspace",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40397886198",
+      "head_sha": "c696281f6dcbc802098d05786266c26ace9e7765"
+    }
+  ],
+  "critical_job": {
+    "id": 121836043350,
+    "verified_exact_head": true,
+    "format": "success",
+    "lint": "success",
+    "typecheck": "success",
+    "unit_tests": "success",
+    "api_postgres_integration": "success",
+    "import_statement_consistency": "success",
+    "build": "success"
+  },
+  "independent_audit_approval": false
+}

@@ -1,0 +1,108 @@
+subject_sha=c696281f6dcbc802098d05786266c26ace9e7765
+TAP version 13
+# Subtest: Mercado Pago bank statement PDF layout
+    # Subtest: recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+    ok 1 - recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+      ---
+      duration_ms: 7.547664
+      type: 'test'
+      ...
+    # Subtest: validates exactly 38 synthetic movements spread across three pages
+    ok 2 - validates exactly 38 synthetic movements spread across three pages
+      ---
+      duration_ms: 7.107195
+      type: 'test'
+      ...
+    # Subtest: fails closed when bank identity, a row, a balance, or totals are tampered
+    ok 3 - fails closed when bank identity, a row, a balance, or totals are tampered
+      ---
+      duration_ms: 9.741748
+      type: 'test'
+      ...
+    # Subtest: rejects every candidate financial row even when its date is absent or malformed
+    ok 4 - rejects every candidate financial row even when its date is absent or malformed
+      ---
+      duration_ms: 2.937777
+      type: 'test'
+      ...
+    # Subtest: rejects orphan financial fields and never hides a partially redacted row
+    ok 5 - rejects orphan financial fields and never hides a partially redacted row
+      ---
+      duration_ms: 2.29237
+      type: 'test'
+      ...
+    # Subtest: reconciles movements at and beyond the former vertical cutoff on every page
+    ok 6 - reconciles movements at and beyond the former vertical cutoff on every page
+      ---
+      duration_ms: 15.53144
+      type: 'test'
+      ...
+    # Subtest: blocks incomplete lower-page movements instead of discarding their financial anchors
+    ok 7 - blocks incomplete lower-page movements instead of discarding their financial anchors
+      ---
+      duration_ms: 2.311188
+      type: 'test'
+      ...
+    # Subtest: accepts rows close to the header but rejects overlapping financial fields
+    not ok 8 - accepts rows close to the header but rejects overlapping financial fields
+      ---
+      duration_ms: 4.219456
+      type: 'test'
+      location: '/mnt/data/fix-745/mutations/old-header-gap/mercado-pago-pdf.test.js:236:5'
+      failureType: 'testCodeFailure'
+      error: |-
+        y=45
+        
+        'blocked' !== 'ready'
+        
+      code: 'ERR_ASSERTION'
+      name: 'AssertionError'
+      expected: 'ready'
+      actual: 'blocked'
+      operator: 'strictEqual'
+      stack: |-
+        TestContext.<anonymous> (file:///mnt/data/fix-745/mutations/old-header-gap/mercado-pago-pdf.test.js:243:20)
+        Test.runInAsyncScope (node:async_hooks:214:14)
+        Test.run (node:internal/test_runner/test:1047:25)
+        Suite.processPendingSubtests (node:internal/test_runner/test:744:18)
+        Test.postRun (node:internal/test_runner/test:1173:19)
+        Test.run (node:internal/test_runner/test:1101:12)
+        async Suite.processPendingSubtests (node:internal/test_runner/test:744:7)
+      ...
+    # Subtest: ignores footer contact numbers but never hides financial fields behind a footer
+    ok 9 - ignores footer contact numbers but never hides financial fields behind a footer
+      ---
+      duration_ms: 3.487801
+      type: 'test'
+      ...
+    # Subtest: does not confuse description text with a structural footer
+    ok 10 - does not confuse description text with a structural footer
+      ---
+      duration_ms: 2.139867
+      type: 'test'
+      ...
+    # Subtest: rejects duplicated operation IDs before financial proposals are built
+    ok 11 - rejects duplicated operation IDs before financial proposals are built
+      ---
+      duration_ms: 1.204979
+      type: 'test'
+      ...
+    1..11
+not ok 1 - Mercado Pago bank statement PDF layout
+  ---
+  duration_ms: 60.460919
+  type: 'suite'
+  location: '/mnt/data/fix-745/mutations/old-header-gap/mercado-pago-pdf.test.js:67:1'
+  failureType: 'subtestsFailed'
+  error: '1 subtest failed'
+  code: 'ERR_TEST_FAILURE'
+  ...
+1..1
+# tests 11
+# suites 1
+# pass 10
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 284.780791

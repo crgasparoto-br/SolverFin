@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { deflateSync } from "node:zlib";
 import { describe, it } from "node:test";
 
 import {
@@ -8,10 +9,10 @@ import {
   type XlsxImportMapping,
 } from "./document-imports.js";
 
-function pdf(lines: readonly string[]): string {
+function pdf(lines: readonly string[], rootDictionary = "<< /Type /Catalog >>"): string {
   const headerAndComments = ["%PDF-1.4", ...lines].join("\n") + "\n";
   const objectOffset = Buffer.byteLength(headerAndComments, "latin1");
-  const body = headerAndComments + "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+  const body = headerAndComments + `1 0 obj\n${rootDictionary}\nendobj\n`;
   const xrefOffset = Buffer.byteLength(body, "latin1");
   const objectOffsetText = String(objectOffset).padStart(10, "0");
   const document =
@@ -28,6 +29,57 @@ function pdf(lines: readonly string[]): string {
       "%%EOF",
     ].join("\n");
   return Buffer.from(document, "latin1").toString("base64");
+}
+
+function pdfWithXrefStream(
+  options: {
+    rootDictionary?: string;
+    rootNumber?: number;
+    rootOffset?: number;
+    rootGeneration?: number;
+    rootEntryType?: number;
+    compression?: "flate" | "none";
+    xrefDictionary?: string;
+    truncateStream?: boolean;
+  } = {},
+): string {
+  const prefix = "%PDF-1.5\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+  const rootOffset = Buffer.byteLength(prefix, "latin1");
+  const body = prefix + `1 0 obj\n${options.rootDictionary ?? "<< /Type /Catalog >>"}\nendobj\n`;
+  const xrefOffset = Buffer.byteLength(body, "latin1");
+  const records = Buffer.alloc(3 * 7);
+  const entry = (index: number, type: number, offset: number, generation: number) => {
+    records.writeUInt8(type, index * 7);
+    records.writeUInt32BE(offset, index * 7 + 1);
+    records.writeUInt16BE(generation, index * 7 + 5);
+  };
+  entry(0, 0, 0, 65535);
+  entry(
+    1,
+    options.rootEntryType ?? 1,
+    options.rootOffset ?? rootOffset,
+    options.rootGeneration ?? 0,
+  );
+  entry(2, 1, xrefOffset, 0);
+  const payload = options.compression === "flate" ? deflateSync(records) : records;
+  const data = options.truncateStream ? payload.subarray(0, payload.length - 1) : payload;
+  const dictionary =
+    `<< /Type /XRef /Size 3 /Root ${options.rootNumber ?? 1} 0 R /W [1 4 2] /Index [0 3] ` +
+    `/Length ${payload.length} ${options.compression === "flate" ? "/Filter /FlateDecode " : ""}` +
+    `${options.xrefDictionary ?? ""}>>`;
+  const stream = `2 0 obj\n${dictionary}\nstream\n${data.toString("latin1")}\nendstream\nendobj\n`;
+  return Buffer.from(body + stream + `startxref\n${xrefOffset}\n%%EOF`, "latin1").toString(
+    "base64",
+  );
+}
+
+function expectInvalidPdf(contentBase64: string, label = ""): void {
+  assert.throws(
+    () => parsePdfImport({ contentBase64, documentClass: "bank_statement" }),
+    (error: unknown) =>
+      error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+    label,
+  );
 }
 
 describe("document imports", () => {
@@ -134,6 +186,123 @@ describe("document imports", () => {
       (error: unknown) =>
         error instanceof StructuredImportError && error.code === "IMPORT_PDF_PROTECTED",
     );
+  });
+
+  it("resolves the catalog by xref offset across every PDF whitespace separator", () => {
+    const comment = "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+    const leadingObject = "2 0 obj\n<< /Type /Font >>\nendobj";
+    const extraObjects = [
+      "31 0 obj\n<< /Type /Font >>\nendobj\n",
+      "31 0 obj\n<< /Type /Font >>\nendobj\n% 1 0 obj << /Type /Catalog >> endobj\n",
+      "31 0 obj\n<< /Type /Font /Title ( 1 0 obj << /Type /Catalog >> endobj) >>\nendobj\n",
+    ];
+    for (const separator of ["\n", "\r", "\r\n", "\t", "\f", "\0", " "]) {
+      for (const extraObject of extraObjects) {
+        const leadingOffset = Buffer.byteLength(comment, "latin1");
+        const prefix = comment + leadingObject + separator;
+        const catalogOffset = Buffer.byteLength(prefix, "latin1");
+        const catalog = "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
+        const extraOffset = catalogOffset + Buffer.byteLength(catalog, "latin1");
+        const body = prefix + catalog + extraObject;
+        const xrefOffset = Buffer.byteLength(body, "latin1");
+        const refs = Array.from({ length: 32 }, (_, i) =>
+          i === 1
+            ? `${String(catalogOffset).padStart(10, "0")} 00000 n `
+            : i === 2
+              ? `${String(leadingOffset).padStart(10, "0")} 00000 n `
+              : i === 31
+                ? `${String(extraOffset).padStart(10, "0")} 00000 n `
+                : "0000000000 65535 f ",
+        );
+        const data =
+          body +
+          [
+            "xref",
+            "0 32",
+            ...refs,
+            "trailer",
+            "<< /Size 32 /Root 1 0 R >>",
+            "startxref",
+            String(xrefOffset),
+            "%%EOF",
+          ].join("\n");
+        const result = parsePdfImport({
+          contentBase64: Buffer.from(data, "latin1").toString("base64"),
+          documentClass: "bank_statement",
+        });
+        assert.equal(result.state, "ready", JSON.stringify(separator));
+        assert.equal(result.rows.length, 1);
+
+        const wrongObjectOffset = data.replace(
+          `${String(catalogOffset).padStart(10, "0")} 00000 n `,
+          `${String(leadingOffset).padStart(10, "0")} 00000 n `,
+        );
+        const wrongGeneration = data.replace("/Root 1 0 R", "/Root 1 1 R");
+        const missingCatalogType = data.replace("/Type /Catalog", "/Type /Font   ");
+        for (const invalid of [wrongObjectOffset, wrongGeneration, missingCatalogType]) {
+          assert.throws(
+            () =>
+              parsePdfImport({
+                contentBase64: Buffer.from(invalid, "latin1").toString("base64"),
+                documentClass: "bank_statement",
+              }),
+            (error: unknown) =>
+              error instanceof StructuredImportError && error.code === "IMPORT_PDF_INVALID",
+          );
+        }
+      }
+    }
+  });
+
+  it("requires the actual top-level Catalog type, ignoring PDF strings and decoys", () => {
+    const statement = ["%SOLVERFIN:STATEMENT:V1", "%TX|2026-10-01|1,00|BRL|Teste|op-1"];
+    for (const dict of [
+      "<< /Type /Font /Title (/Type /Catalog) >>",
+      "<< /Type /Font /Title (nested (\\) /Type /Catalog) >>",
+      "<< /Type /Font /Title <2f54797065202f436174616c6f67> >>",
+      "<< /Type /Font /Metadata << /Type /Catalog >> >>",
+      "<< /Type /Font % /Type /Catalog\n >>",
+      "<< /Type /Catalog /Type /Font >>",
+      "<< /Type /Font /Type /Catalog >>",
+      "<< /Title (marker) /Type (Catalog) >>",
+      "<< /Title /Catalog /Type /Font >>",
+    ])
+      expectInvalidPdf(pdf(statement, dict));
+
+    for (const dict of [
+      "<< /Type /Catalog /Title (another /Type /Font) >>",
+      "<< /Type /Catalog /Metadata << /Type /Font >> >>",
+      "<< /Ty#70e /Cata#6Cog >>",
+      "<< /Type % detached comment\n /Catalog >>",
+    ]) {
+      const result = parsePdfImport({
+        contentBase64: pdf(statement, dict),
+        documentClass: "bank_statement",
+      });
+      assert.equal(result.state, "ready", dict);
+      assert.equal(result.rows.length, 1);
+    }
+  });
+
+  it("requires a resolved Catalog root in xref-stream PDFs", () => {
+    for (const compression of ["none", "flate"] as const) {
+      const result = parsePdfImport({
+        contentBase64: pdfWithXrefStream({ compression }),
+        documentClass: "bank_statement",
+      });
+      assert.equal(result.state, "ready", compression);
+      assert.equal(result.rows.length, 1);
+      for (const invalid of [
+        { compression, rootNumber: 99 },
+        { compression, rootOffset: 1 },
+        { compression, rootGeneration: 1 },
+        { compression, rootEntryType: 2 },
+        { compression, rootDictionary: "<< /Type /Font /Title (/Type /Catalog) >>" },
+        { compression, xrefDictionary: "/Type /XRef " },
+        { compression, truncateStream: true },
+      ])
+        expectInvalidPdf(pdfWithXrefStream(invalid), JSON.stringify(invalid));
+    }
   });
 
   it("requires explicit XLSX sheet and column mapping and never evaluates formulas", () => {

@@ -1,27 +1,23 @@
-## Objetivo
-Na rota `/cartoes`, equiparar o menu de ações dos lançamentos ao Extrato e aprimorar edição de compras, preservando o contrato financeiro e Golden Screen #702.
-
 ## Escopo
-- Incluir **Clonar** nas ações da compra, reutilizando o modal de cadastro com dados copiados; clonar apenas como compra nova única, sem copiar vínculos de recorrência/parcelamento ou o identificador da compra.
-- Preservar **Editar** e ações de recorrência existentes e tornar menus acessíveis com ícones e estados consistentes com Extrato.
-- Permitir ajustar o **valor de uma parcela** de uma compra parcelada de forma dirigida à ocorrência, sem editar o total da compra como se fosse compra simples; oferecer decisão entre parcela selecionada e futuras elegíveis.
-- Habilitar e preservar a **data da compra recorrente** no modal, usando o escopo atual versus atuais e futuras; validar o período da fatura no backend.
-- Refatorar o modal de compras com hierarquia, densidade, campos editáveis evidentes, estados disabled/readonly adequados, ações alinhadas e layout desktop/mobile.
-- Registrar regressões e documentação afetada.
+- Corrigir falso erro `IMPORT_PDF_INVALID` causado por busca de objetos PDF por sufixo de identificador.
+- Homologar layout de extrato de conta Mercado Pago com colunas Data, Descrição, ID da operação, Valor e Saldo, em múltiplas páginas.
+- Permitir extração de PDF com senha de leitura vazia e permissões de leitura/cópia, mantendo bloqueio dos PDFs que exigem senha.
+
+## Requisitos
+- Extrair texto e posicionamento de modo determinístico, sem OCR genérico.
+- Reconstruir descrições multilineares e preservar data, ID de operação, sinal, moeda BRL e valor inteiro em centavos.
+- Validar continuidade de saldos, saldo inicial/final e totais de entradas/saídas; falha bloqueia o lote integralmente.
+- Ignorar cabeçalhos, rodapés, sumários e saldos como movimentações.
+- Preservar consentimento, idempotência, revisão humana, isolamento tenant/perfil e ausência de armazenamento do PDF original.
+- Erros diferenciados para extrator ausente, PDF bloqueado e layout não homologado.
 
 ## Critérios de aceite
-- [ ] Menu de três pontos de `/cartoes` oferece Editar e Clonar com os mesmos padrões visuais e acessíveis do Extrato.
-- [ ] Clonar abre o diálogo centralizado pré-preenchido como nova compra simples, sem copiar IDs/vínculos de série.
-- [ ] Alteração do valor de parcela selecionada usa identidade e fatura corretas; escopo futuro atualiza somente parcelas futuras elegíveis, reporta ignoradas e preserva histórico.
-- [ ] Parcelas conciliadas e faturas fechadas/pagas/canceladas bloqueiam alterações e a API recusa tentativas diretas.
-- [ ] Data da ocorrência recorrente pode ser editada por escopo, sem recalcular fatura fora das regras vigentes.
-- [ ] Layout do formulário é responsivo, com foco/teclado, estados legíveis e sem cards excessivos.
-- [ ] Testes e evidência vinculados ao SHA; auditoria independente posterior, sem merge automático.
+- Pré-visualização real com múltiplas páginas e 38 movimentações, sem publicação de conteúdo financeiro pessoal em fixtures.
+- Testes sintéticos reproduzem entradas/saídas, operações repetidas, campos em múltiplas linhas, saldos e totais exatos.
+- Testes negativos abrangem PDF truncado, catálogo inválido, senha requerida, layout incompatível e conteúdos adulterados.
+- CI e testes no SHA exato, evidência de execução com documento real fora do repositório e auditoria independente antes de aprovar.
 
 ## Invariantes
-- Não alterar `Transaction.amountMinor` da compra-base para simular alteração de uma única parcela.
-- Não somar moedas diferentes ou inferir câmbio.
-- Não clonar identificadores, status financeiro nem associações de recorrência.
-- Não permitir alteração de parcelas de faturas bloqueadas ou reconciliadas.
-- Reutilizar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/RECURRENCES_INSTALLMENTS_WEB.md` e APIs existentes.
-- Base de branch e PR: `develop`.
+- Alterações partem da `develop` e PR tem `develop` como base.
+- Não versionar documento real nem dados pessoais, identificadores ou valores de contas do cliente.
+- CI verde não substitui aprovação de auditoria independente.

@@ -1,59 +1,93 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
-    "audited_head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
-    "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
+    "rejection_id": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
+    "audit_report_sha256": "e7353aa45b5566e853223073ae45f941c412840c735dcf8dcd04ead9026bc8dc",
+    "audited_head_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743"
   },
+  "candidate_head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "status": "closed",
+  "previous_sources": [
+    {
+      "rejection_id": "audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509",
+      "audit_report_sha256": "2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24",
+      "audited_head_sha": "d9a76d3756a25a444165a153113dcd8c9517e055"
+    },
+    {
+      "rejection_id": "audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715",
+      "audit_report_sha256": "9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874",
+      "audited_head_sha": "4773a7b63d671c9ee876c320319bd466f7c69798"
+    }
+  ],
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-717-03",
+      "source_id": "A-004",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/standard-evidence.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/negative-control-evidence-717.json",
-        ".audit/entregar-issue/handoff-ready.json"
+        "apps/api/src/pdf-text-extraction.ts",
+        "apps/api/src/pdf-text-extraction.test.ts",
+        "docs/IMPORTS.md"
       ],
       "evidence": [
-        "standard-evidence.json",
-        "requirement-closure.json",
-        "negative-control-evidence-717.json"
+        "evidence/product-replays.json",
+        "evidence/issue-745-focused-execution.txt",
+        "evidence/documentation-and-code.json"
       ],
       "validations": [
-        "104 fully qualified source references checked against exact material SHA 5e63423beefaf57598f3490365a5acee0e123526; no abbreviations, missing files or out-of-bounds ranges",
-        "Repository CI 39603347505 and Chrome 39603346820 completed/success for unchanged exact material SHA"
-      ]
+        "Nine real permission-related cases pass: copy:no and real password reject PROTECTED; metadata-forged Encrypted fields reject INVALID before pdftotext; permitted copy:yes remains ready. Exact-source unit assertions cover duplicate/ambiguous flags.",
+        "All execution claims are bound to material 9553b9fae4ac06462de443e4539111c14b6b6968; boundary limitations remain in raw evidence."
+      ],
+      "reason": "The extractor requires exactly one well-formed Encrypted field and one unambiguous copy flag, rejecting metadata ambiguity before invoking pdftotext."
     },
     {
       "source_kind": "finding",
-      "source_id": "A-717-04",
+      "source_id": "A-007",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/standard-evidence.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/negative-control-evidence-717.json",
-        ".audit/entregar-issue/handoff-ready.json"
+        "packages/domain/src/mercado-pago-pdf.ts",
+        "packages/domain/src/mercado-pago-pdf.test.ts",
+        "docs/IMPORTS.md"
       ],
       "evidence": [
-        "standard-evidence.json",
-        "requirement-closure.json",
-        "negative-control-evidence-717.json"
+        "evidence/product-replays.json",
+        "evidence/issue-745-focused-execution.txt",
+        "evidence/documentation-and-code.json"
       ],
       "validations": [
-        "13 individual original log traces verified, each carrying a SHA-256",
-        "13 synthetic invalid-input counterexamples rejected (not production mutations)"
-      ]
+        "Four real synthetic PDF cases preserve full descriptions through parser and preview, including final and non-final-page rows. Fourteen domain tests also pass first/middle/last multiline, ambiguous association and complete-length-limit cases.",
+        "All execution claims are bound to material 9553b9fae4ac06462de443e4539111c14b6b6968; boundary limitations remain in raw evidence."
+      ],
+      "reason": "pageDescriptions consumes unique complete ordered text blocks aligned with row centers. Unassigned or multiply matched words block instead of yielding truncated proposals."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-008",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "packages/domain/src/document-imports.ts",
+        "packages/domain/src/document-imports.test.ts",
+        "docs/IMPORTS.md"
+      ],
+      "evidence": [
+        "evidence/product-replays.json",
+        "evidence/issue-745-focused-execution.txt",
+        "evidence/documentation-and-code.json"
+      ],
+      "validations": [
+        "Real LF and one-byte CR Catalog variants both parse ready with one row. Exact-source tests cover CRLF/horizontal whitespace, complete root IDs, and invalid inline Catalog lookalikes.",
+        "All execution claims are bound to material 9553b9fae4ac06462de443e4539111c14b6b6968; boundary limitations remain in raw evidence."
+      ],
+      "reason": "The Catalog object-header match accepts CR/LF boundaries and PDF horizontal indentation while retaining the complete identifier and rejecting inline comment/literal lookalikes."
     }
-  ]
+  ],
+  "resolution_policy": "all-actionable-items"
 }

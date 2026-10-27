@@ -1,424 +1,172 @@
 {
   "schema_version": 2,
-  "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-  "base_sha": "c1f1fae1498ed24bf15771c16b20ee1c94b8ce77",
-  "creations": [
-    {
-      "path": "apps/api/src/card-installment-amount-handler.ts",
-      "kind": "file",
-      "name": "card-installment-amount-handler",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-installment-amount-handler.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/card-purchase-extra-handlers.ts",
-      "kind": "file",
-      "name": "card-purchase-extra-handlers",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/card-purchase-extra-handlers.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
-      "kind": "file",
-      "name": "card-invoice-installment-amount",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-installment-amount.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
-      "kind": "file",
-      "name": "card-invoice-purchase-delete",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-delete.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
-      "kind": "file",
-      "name": "card-invoice-purchase-reverse",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-purchase-reverse.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-reversal-edit.ts",
-      "kind": "file",
-      "name": "card-invoice-reversal-edit",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/api/src/repositories",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/api/src/repositories to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/api/src/credit-card-accounts-router.ts",
-            "reason_not_reused": "Existing apps/api/src/credit-card-accounts-router.ts remains the entrypoint; extracted focused module apps/api/src/repositories/card-invoice-reversal-edit.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-mutations",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-mutations.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-other.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-other",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-other.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-purchases",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-purchases.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-setup.ts",
-      "kind": "file",
-      "name": "cards-page-v2-script-setup",
-      "search": {
-        "queries": [
-          "rg -n \"card|purchase|installment|recurr|invoice|mutation\" apps/web/src/dev-server",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd"
-        ],
-        "scope": "Compare existing code in apps/web/src/dev-server to avoid duplicating card domain and DOM handlers.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.ts",
-            "reason_not_reused": "Existing apps/web/src/dev-server/cards-page-v2.ts remains the entrypoint; extracted focused module apps/web/src/dev-server/cards-page-v2-script-setup.ts isolates and reuses shared handler/DOM scope without duplicating financial policy."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Focused extracted module used by existing invoice/card entrypoint; direct reference in the canonical router or composited page, retaining shared domain state."
-    },
-    {
-      "path": "apps/api/src/repositories/card-invoice-purchase-edit-guard.ts",
-      "kind": "file",
-      "name": "card-invoice-purchase-edit-guard",
-      "search": {
-        "queries": [
-          "git grep -n CARD_INSTALLMENT_RECONCILED_LOCKED 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-          "git diff --name-status c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/repositories"
-        ],
-        "scope": "Check existing invoice repository update and reconciliation guards for a shared lookup before introducing a separate mutation guard.",
-        "candidates": [
-          {
-            "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
-            "reason_not_reused": "The core editor already owns financial update transactions; extracting a narrowly scoped reusable shared-series policy guard avoids duplicating it across preflight and locked transaction checks."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Shared read-only status-policy helper for consistent preflight and locked-transaction assertions; consumed by existing purchase edit contract."
-    }
-  ],
+  "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+  "creations": [],
   "references": [
     {
-      "symbol": "adjustInvoiceInstallmentAmountForContext",
+      "symbol": "pageDescriptions",
       "kind": "local",
-      "used_in": "apps/api/src/card-installment-amount-handler.ts",
+      "used_in": "packages/domain/src/mercado-pago-pdf.ts",
       "defined_at": {
-        "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
-        "line": 11
+        "path": "packages/domain/src/mercado-pago-pdf.ts",
+        "line": 96
       },
       "verified_by": {
-        "command": "git grep -n adjustInvoiceInstallmentAmountForContext 19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "command": "node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "assertPdfCopyPermitted",
+      "kind": "local",
+      "used_in": "apps/api/src/pdf-text-extraction.ts",
+      "defined_at": {
+        "path": "apps/api/src/pdf-text-extraction.ts",
+        "line": 107
+      },
+      "verified_by": {
+        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
         "exit_code": 0
       }
     }
   ],
-  "replacements": [],
+  "replacements": [
+    {
+      "old_path": "packages/domain/src/mercado-pago-pdf.ts",
+      "old_symbol": "rowDescription",
+      "disposition": "removed"
+    }
+  ],
   "test_decisions": [
     {
-      "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "path": "apps/api/src/pdf-text-extraction.test.ts",
       "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in card-purchase-edit-contract.integration.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "scenario": "Title/Subject/Author with forged Encrypted lines, duplicates with equal and contradictory values, unknown permission values, and benign inline labels; assert exact error code plus no pdftotext",
+      "requirement": "A-004: trustworthy copy permission before extraction",
       "search": {
         "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/card-purchase-edit-contract.integration.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/card-purchase-edit-contract.integration.test.ts"
+          "rg Encrypted:|assertPdfCopyPermitted|rootHeader|catalog object|copy:no|PDF.*whitespace|pdf-text-extraction apps/api/src packages/domain/src scripts/run-compiled-tests.mjs docs/IMPORTS.md",
+          "read API/domain package.json and tsconfig test runners"
         ],
-        "scope": "Compare canonical existing test suite in apps/api/src/card-purchase-edit-contract.integration.test.ts before extending",
-        "runner": "npm run test:integration --workspace @solverfin/api",
+        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
+        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
         "candidates": [
           {
-            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
+            "path": "apps/api/src/pdf-text-extraction.test.ts",
+            "case": "Existing directly relevant suite",
+            "oracle": "permission helper blocks copy:no/unknown; extractor stops before pdftotext; benign extraction succeeds",
+            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test:integration --workspace @solverfin/api",
+        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
         "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
         "reached_tests": [
-          "apps/api/src/card-purchase-edit-contract.integration.test.ts"
+          "apps/api/src/pdf-text-extraction.test.ts::extracts page boundaries, coordinates and HTML-escaped words",
+          "apps/api/src/pdf-text-extraction.test.ts::does not accept missing pages or invalid coordinates",
+          "apps/api/src/pdf-text-extraction.test.ts::rejects truncated Poppler pages and silently omitted words",
+          "apps/api/src/pdf-text-extraction.test.ts::rejects copy-restricted PDFs, including documents with an empty user password",
+          "apps/api/src/pdf-text-extraction.test.ts::checks PDF copy permission before ever running pdftotext",
+          "apps/api/src/pdf-text-extraction.test.ts::allows the Poppler text extraction only after permission is explicitly verified",
+          "apps/api/src/pdf-text-extraction.test.ts::distinguishes missing extractor, a password-protected PDF and invalid output"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-card-purchase-edit-contract-integration-test-execution.txt",
-        "evidence_sha256": "b794efd288ca0b161cb5b10c8a0a5d74367ae6f63e47b3fce69b8c298eb24ac5"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
+        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
       }
     },
     {
-      "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+      "path": "packages/domain/src/document-imports.test.ts",
       "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in current-only-recurring-edit.integration.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "scenario": "parameterize the suffix-collision fixture across six PDF whitespace characters plus CRLF; preserve xref offsets; remove root1 or change its type to prove rejection",
+      "requirement": "A-008: complete Catalog header across valid PDF whitespace",
       "search": {
         "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/api/src/current-only-recurring-edit.integration.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/api/src/current-only-recurring-edit.integration.test.ts"
+          "rg Encrypted:|assertPdfCopyPermitted|rootHeader|catalog object|copy:no|PDF.*whitespace|pdf-text-extraction apps/api/src packages/domain/src scripts/run-compiled-tests.mjs docs/IMPORTS.md",
+          "read API/domain package.json and tsconfig test runners"
         ],
-        "scope": "Compare canonical existing test suite in apps/api/src/current-only-recurring-edit.integration.test.ts before extending",
-        "runner": "npm run test:integration --workspace @solverfin/api",
+        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
+        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
         "candidates": [
           {
-            "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
+            "path": "packages/domain/src/document-imports.test.ts",
+            "case": "Existing directly relevant suite",
+            "oracle": "object31 does not supersede root1; invalid/truncated/layout version fail closed",
+            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test:integration --workspace @solverfin/api",
+        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
         "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
         "reached_tests": [
-          "apps/api/src/current-only-recurring-edit.integration.test.ts"
+          "packages/domain/src/document-imports.test.ts::parses the homologated fictitious bank PDF without guessing the account",
+          "packages/domain/src/document-imports.test.ts::keeps equal legitimate card purchases distinct and ignores totals/payments",
+          "packages/domain/src/document-imports.test.ts::fails closed for corrupt or unsupported PDFs",
+          "packages/domain/src/document-imports.test.ts::does not mistake object 31 for the catalog object 1",
+          "packages/domain/src/document-imports.test.ts::requires explicit XLSX sheet and column mapping and never evaluates formulas"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-current-only-recurring-edit-integration-test-execution.txt",
-        "evidence_sha256": "20a0cc59f99531f9a6ad3fc4e519b3e5e679c5c02b69a0839ef9d15bda7fe2a4"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
+        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
       }
     },
     {
-      "path": "apps/web/src/design-system/canonical-token-source.test.ts",
+      "path": "packages/domain/src/mercado-pago-pdf.test.ts",
       "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in canonical-token-source.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
+      "scenario": "full description with 4-6 lines in first/middle/last rows and non-final pages; no accepted partial description at header/footer boundary; all description words consumed or batch blocked; ambiguous block association rejected; description length limit evaluated after complete reconstruction",
+      "requirement": "A-007: preserve every multiline description word or block ambiguity",
       "search": {
         "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/design-system/canonical-token-source.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/design-system/canonical-token-source.test.ts"
+          "rg rowDescription|parsePageMovements|parseMercadoPagoStatement|multiline|description over domain Mercado Pago sources and API extractor tests; read package scripts, tsconfig.test.json and scripts/run-compiled-tests.mjs."
         ],
-        "scope": "Compare canonical existing test suite in apps/web/src/design-system/canonical-token-source.test.ts before extending",
-        "runner": "npm run test",
+        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
+        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
         "candidates": [
           {
-            "path": "apps/web/src/design-system/canonical-token-source.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
+            "path": "packages/domain/src/mercado-pago-pdf.test.ts",
+            "case": "Existing directly relevant suite",
+            "oracle": "multiline two-line happy path; 38 synthetic rows over three pages; missing/invalid date and orphan financial fields; A-005 lower-page/header/footer regressions; duplicate IDs; exact balances/totals",
+            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
+      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js",
         "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
         "reached_tests": [
-          "apps/web/src/design-system/canonical-token-source.test.ts"
+          "packages/domain/src/mercado-pago-pdf.test.ts::recognizes the homologated layout, joins multiline descriptions and validates balances/totals",
+          "packages/domain/src/mercado-pago-pdf.test.ts::validates exactly 38 synthetic movements spread across three pages",
+          "packages/domain/src/mercado-pago-pdf.test.ts::preserves every description line at the first, middle and last movement of each page",
+          "packages/domain/src/mercado-pago-pdf.test.ts::rejects ambiguous or unassigned description text instead of returning partial proposals",
+          "packages/domain/src/mercado-pago-pdf.test.ts::applies the description length limit to the complete multiline value",
+          "packages/domain/src/mercado-pago-pdf.test.ts::fails closed when bank identity, a row, a balance, or totals are tampered",
+          "packages/domain/src/mercado-pago-pdf.test.ts::rejects every candidate financial row even when its date is absent or malformed",
+          "packages/domain/src/mercado-pago-pdf.test.ts::rejects orphan financial fields and never hides a partially redacted row",
+          "packages/domain/src/mercado-pago-pdf.test.ts::reconciles movements at and beyond the former vertical cutoff on every page",
+          "packages/domain/src/mercado-pago-pdf.test.ts::blocks incomplete lower-page movements instead of discarding their financial anchors",
+          "packages/domain/src/mercado-pago-pdf.test.ts::accepts rows close to the header but rejects overlapping financial fields",
+          "packages/domain/src/mercado-pago-pdf.test.ts::ignores footer contact numbers but never hides financial fields behind a footer",
+          "packages/domain/src/mercado-pago-pdf.test.ts::does not confuse description text with a structural footer",
+          "packages/domain/src/mercado-pago-pdf.test.ts::rejects duplicated operation IDs before financial proposals are built"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-canonical-token-source-test-execution.txt",
-        "evidence_sha256": "9774da0aedb692e1966cedd0ca1c26a54004e1c01fb96ac56c0abc2892d78f84"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-      "operation": "added",
-      "scenario": "Contract regression for card purchase #742 in cards-page-v2-script-mutations.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
-      "search": {
-        "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
-        ],
-        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts before extending",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
-          }
-        ]
-      },
-      "decision": "new-test-required",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "reached_tests": [
-          "apps/web/src/dev-server/cards-page-v2-script-mutations.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-script-mutations-test-execution.txt",
-        "evidence_sha256": "35c10b9eb3850ee4beba14c3d42df3359b39a7949388d1aa1a921db6ce70bc13"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
-      "operation": "modified",
-      "scenario": "Contract regression for card purchase #742 in cards-page-v2.test",
-      "requirement": "Issue #742: clone, financial installment edits, recurring scope, UI and shared tokens.",
-      "search": {
-        "queries": [
-          "rg -n \"installment|clon|recurr|purchase\" apps/web/src/dev-server/cards-page-v2.test.ts",
-          "git diff c1f1fae1498ed24bf15771c16b20ee1c94b8ce77..19db954c9771ca3e45b821470eb9d4b54eaf27fd -- apps/web/src/dev-server/cards-page-v2.test.ts"
-        ],
-        "scope": "Compare canonical existing test suite in apps/web/src/dev-server/cards-page-v2.test.ts before extending",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/cards-page-v2.test.ts",
-            "case": "Source path and modified assertions in current file",
-            "oracle": "Explicit assertions in compiled test run",
-            "comparison": "Existing tests extended rather than replaced"
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Preserve existing regression contracts; the exact-head CI suite exercised the expanded cases.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-        "reached_tests": [
-          "apps/web/src/dev-server/cards-page-v2.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-742-cards-page-v2-test-execution.txt",
-        "evidence_sha256": "3c577ad4b85501f6ad2509dd90d274810273a289ad4322245ba398a23666fb6b"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
+        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
       }
     }
   ]

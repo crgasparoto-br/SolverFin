@@ -1,0 +1,24 @@
+A-006 targeted packet regression
+Material SHA: c696281f6dcbc802098d05786266c26ace9e7765
+Prior published packet: 4773a7b63d671c9ee876c320319bd466f7c69798
+Official skill SHA: 2366dd6da7ac9d8c5defe9b40f53dd3c4a0c650f
+Canonical command: python3 auditar-issue/scripts/check_delivery_saturation.py --attack-matrix .audit/entregar-issue/requirement-attack-matrix.json --risk-saturation .audit/entregar-issue/risk-saturation.json --inherited-controls .audit/entregar-issue/issue-745-inherited-controls.json --head-sha c696281f6dcbc802098d05786266c26ace9e7765 --evidence-provenance .audit/entregar-issue/evidence-provenance.json
+Baseline prior packet: exit=2
+BLOCK: active inherited control REGRESSION-A-001 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-004 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-005 requires risk family semantic-effect but risk saturation marks it not applicable
+
+CASE fixed-complete-family exit=0
+READY: delivery packet is saturated and quantitative evidence is fresh enough to spend an independent audit
+
+CASE missing-family exit=2
+BLOCK: active inherited control REGRESSION-A-001 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-004 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-005 requires risk family semantic-effect but risk saturation marks it not applicable
+
+CASE disabled-family exit=2
+BLOCK: active inherited control REGRESSION-A-001 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-004 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-005 requires risk family semantic-effect but risk saturation marks it not applicable
+
+Mutations only remove or disable the semantic-effect family in an ephemeral copy supplied via --risk-saturation. Product source and existing control evidence remain unchanged. This is internal packet verification, not independent approval.
