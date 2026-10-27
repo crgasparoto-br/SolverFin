@@ -14,6 +14,11 @@ import {
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedShellStyles } from "./shared-styles.js";
 import {
+  entryFillRuleScript,
+  entryFillRuleStyles,
+  renderEntryFillRuleControl,
+} from "./entry-fill-rules.js";
+import {
   renderStatementListArchetype,
   statementListArchetypeStyles,
 } from "./statement-list-archetype.js";
@@ -228,7 +233,7 @@ export async function renderTransactionsPageV2(token: string, url?: URL): Promis
     ${renderModal(selectedAccount, accounts, categories, currency)}
     ${renderGroupModal(selectedAccount, currency)}
     ${renderRecurrenceEditModal(categories, "account", "", currency ?? "moeda indisponível")}
-    ${clientScript(currency, accounts)}
+    ${clientScript(currency, accounts)}${entryFillRuleScript()}
     ${attachmentWorkspaceScript()}
     ${recurrencesSectionScript()}
   `);
@@ -1000,7 +1005,7 @@ function renderModal(
   categories: readonly CategoryRecord[],
   currency: string | undefined,
 ): string {
-  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label><label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label aria-live="polite">Efetivado não conciliado</span></div><div class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel data-statement-entry-cancel>Cancelar</button><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></div></form><details class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary><div class="statement-entry-attachments-body">${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full", pendingCreate: true })}</div></details></section></dialog>`;
+  return `<dialog data-modal><section class="modal-panel"><form method="dialog" class="close-form"><button type="submit" aria-label="Fechar">&times;</button></form><div class="statement-entry-heading"><p class="eyebrow">Lançamento da conta</p><h2 data-modal-title>Novo lançamento</h2><p class="muted">Adicione um lançamento manual na sua conta.</p></div><form data-form data-path="/api/transactions"><input name="accountId" type="hidden" value="${escapeHtml(selectedAccount?.id ?? "")}" /><label data-field="kind">Tipo<select name="kind" required>${renderKindOptions()}</select></label><label data-field="sourceAccount" hidden><span class="field-label">Conta origem</span><input data-source-account-display value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="destinationAccountId" hidden><span class="field-label">Conta destino</span><select name="destinationAccountId" data-destination-account-select disabled><option value="" data-currency="">Selecione a conta destino</option>${renderAccountOptions(accounts)}</select></label><label class="full statement-entry-account"><span class="field-label">Conta</span><input value="${escapeHtml(formatAccountLabel(selectedAccount))}" readonly aria-readonly="true" /></label><label data-field="occurredOn">Data do evento<input name="occurredOn" type="date" required /></label><label><span class="field-label">Valor origem <span class="nowrap">(<span data-source-currency>${escapeHtml(currency ?? "moeda indisponível")}</span>)</span></span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00" /></label><label data-field="destinationAmountMinor" hidden><span class="field-label">Valor destino <span class="nowrap">(<span data-destination-currency>moeda destino</span>)</span></span><input name="destinationAmountMinor" data-destination-money inputmode="decimal" placeholder="0,00" /></label><label data-field="effectiveRate" hidden><span class="field-label">Taxa efetiva</span><span class="rate-value"><output data-effective-rate>Informe os dois valores</output><span class="muted" data-effective-rate-direction></span></span></label><label class="full">Descrição<input name="description" maxlength="240" required placeholder="Ex.: Supermercado São Vicente" /></label>${renderEntryFillRuleControl()}<label class="full">Categoria<select name="categoryId" data-category-select><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label><label class="full">Observação<textarea name="note" rows="3" maxlength="200" placeholder="Informações adicionais (opcional)"></textarea></label><details class="statement-entry-advanced full"><summary>Mais opções</summary><div class="statement-entry-advanced-grid"><label>Data prevista<input name="plannedOn" type="date" /></label><label>Data efetiva<input name="effectiveOn" type="date" /></label><label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed" data-repeat-option="fixed">Fixo</option></select></label><p class="muted full" data-cross-currency-repeat-hint hidden>Transferências entre moedas diferentes são salvas como ocorrência única; recorrência e parcelamento não estão disponíveis.</p><label data-field="installments">Parcelas<input name="installments" type="number" min="2" max="60" value="2" /></label><label data-field="installmentStart">Parcela inicial<input name="installmentStart" type="number" min="1" max="60" value="1" /></label><label data-field="installmentValueMode">Valor informado<select name="installmentValueMode"><option value="per_installment">Valor da parcela</option><option value="total">Valor total (dividir pelas parcelas)</option></select></label><label data-field="interval">A cada<input name="interval" type="number" min="1" max="60" value="1" /></label><label data-field="frequency">Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label><label data-field="endOn">Fim opcional<input name="endOn" type="date" /></label></div></details><input type="hidden" name="status" value="posted" /><div class="full save-row"><div class="status-icons" role="radiogroup" aria-label="Situação do lançamento">${renderStatusIcon("posted", "Efetivado não conciliado", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/>')}${renderStatusIcon("reconciled", "Conciliado", '<path d="M4 10l4 4 8-8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}${renderStatusIcon("planned", "Previsto/pendente", '<circle cx="10" cy="10" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 6v4l3 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>')}<span class="status-label" data-status-label aria-live="polite">Efetivado não conciliado</span></div><div class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel data-statement-entry-cancel>Cancelar</button><button type="submit" data-statement-save-continue${selectedAccount && currency ? "" : " disabled"}>Salvar e continuar</button><button type="submit"${selectedAccount && currency ? "" : " disabled"}>Salvar lançamento</button></div></div></form><details class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary><div class="statement-entry-attachments-body">${renderAttachmentWorkspace({ entityKind: "transaction", title: "Anexos do lançamento", className: "full", pendingCreate: true })}</div></details></section></dialog>`;
 }
 
 function renderGroupModal(
@@ -1261,6 +1266,9 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       if (typeof modal.requestClose === "function") modal.requestClose();
       else modal.close();
     });
+    modal.addEventListener("close", () => {
+      if (form.dataset.savedDuringSession === "true") window.location.reload();
+    });
     const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
     const statusLabel = form.querySelector("[data-status-label]");
     const setStatus = (value) => { form.status.value = value; statusButtons.forEach((button) => { const active = button.dataset.statusOption === value; button.classList.toggle("active", active); button.setAttribute("aria-checked", String(active)); if (active && statusLabel) statusLabel.textContent = button.dataset.statusLabelText; }); };
@@ -1330,7 +1338,7 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
     const newIdempotencyKey = () => window.crypto?.randomUUID ? window.crypto.randomUUID() : String(Date.now()) + "-" + Math.random().toString(16).slice(2);
 
-    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; const submitButton = form.querySelector('.save-row [type="submit"]'); if (submitButton) submitButton.disabled = !accountCurrencies.get(sourceAccountId()); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
+    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); const continueButton = form.querySelector("[data-statement-save-continue]"); if (continueButton) continueButton.hidden = false; document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = !accountCurrencies.get(sourceAccountId()); }); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
     document.querySelectorAll("[data-transaction]").forEach((node) => {
       const transaction = JSON.parse(node.textContent);
       if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
@@ -1339,8 +1347,9 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
       form.accountId.value = rowSourceId;
       const accountDisplay = form.querySelector(".statement-entry-account input");
       if (accountDisplay) accountDisplay.value = accountLabels.get(rowSourceId) || "Conta indisponível";
-      const submitButton = form.querySelector('.save-row [type="submit"]');
-      if (submitButton) submitButton.disabled = false; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
+      form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = false; });
+      const continueButton = form.querySelector("[data-statement-save-continue]");
+      if (continueButton) continueButton.hidden = !clone; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.effectiveOn ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
       hydrate('[data-edit="', false); hydrate('[data-clone="', true);
     });
     const positionActions = (details) => {
@@ -1403,10 +1412,13 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
     form.addEventListener("submit", async (event) => {
       event.preventDefault(); if (form.dataset.submitting === "true") return;
       if (!form.checkValidity()) { form.reportValidity(); return; }
-      const mode = form.repeatMode.value; const method = form.dataset.method || "POST"; const submit = form.querySelector('[type="submit"]');
+      const mode = form.repeatMode.value; const method = form.dataset.method || "POST";
+      const saveAndContinue = method === "POST" && event.submitter?.hasAttribute("data-statement-save-continue") === true;
+      const submitButtons = Array.from(form.querySelectorAll('.statement-save-actions button[type="submit"]'));
+      const previouslyDisabled = submitButtons.map((button) => button.disabled);
       const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); const queuedFile = attachmentWorkspace?.querySelector('[data-attachment-form] [name="file"]')?.files?.[0];
       if (queuedFile && method === "POST" && mode !== "single") { statusNode.className = "form-status error full"; statusNode.textContent = "Para anexar arquivos, salve um lançamento único. Em parcelas ou recorrências, anexe na edição de uma ocorrência."; return; }
-      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); if (submit) submit.disabled = true; statusNode.textContent = "Salvando...";
+      form.dataset.submitting = "true"; form.setAttribute("aria-busy", "true"); submitButtons.forEach((button) => { button.disabled = true; }); statusNode.textContent = "Salvando...";
       let shouldReload = false;
       try {
         let response;
@@ -1431,9 +1443,42 @@ function clientScript(currency: string | undefined, accounts: readonly AccountRe
             return;
           }
         }
-        if (response.ok) { shouldReload = true; setTimeout(() => location.reload(), 350); }
+        if (response.ok) {
+          if (saveAndContinue) {
+            form.dataset.savedDuringSession = "true";
+            form.dataset.savedCount = String(Number(form.dataset.savedCount || 0) + 1);
+            const accountId = form.accountId.value;
+            const currentKind = form.kind.value;
+            const currentStatus = form.status.value;
+            const occurredOn = form.occurredOn.value;
+            const plannedOn = form.plannedOn.value;
+            if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace);
+            form.reset();
+            form.dataset.method = "POST";
+            form.dataset.path = "/api/transactions";
+            form.accountId.value = accountId;
+            form.kind.value = currentKind;
+            form.occurredOn.value = occurredOn;
+            form.plannedOn.value = plannedOn;
+            const accountDisplay = form.querySelector(".statement-entry-account input");
+            if (accountDisplay) accountDisplay.value = accountLabels.get(accountId) || "Conta indisponível";
+            document.querySelector("[data-modal-title]").textContent = "Novo lançamento";
+            setStatus(currentStatus);
+            syncFieldVisibility();
+            statusNode.className = "form-status success full";
+            statusNode.textContent = form.dataset.savedCount + " lançamento(s) salvo(s). Informe o próximo. A lista será atualizada ao fechar.";
+            form.description.focus();
+          } else {
+            shouldReload = true;
+            setTimeout(() => location.reload(), 350);
+          }
+        }
       } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
-      finally { delete form.dataset.submitting; form.removeAttribute("aria-busy"); if (submit && !shouldReload) submit.disabled = false; }
+      finally {
+        delete form.dataset.submitting;
+        form.removeAttribute("aria-busy");
+        if (!shouldReload) submitButtons.forEach((button, index) => { button.disabled = previouslyDisabled[index]; });
+      }
     });
 
     document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
@@ -1768,7 +1813,7 @@ function serializeScriptJson(value: unknown): string {
 }
 
 function css(): string {
-  return `${sharedShellStyles()}${statementListArchetypeStyles()}
+  return `${sharedShellStyles()}${statementListArchetypeStyles()}${entryFillRuleStyles()}
     main { display:grid; gap:14px; margin:0 auto; max-width:1800px; min-width:0; padding:18px 20px; width:100%; }
     [hidden]{display:none!important}.warning{color:var(--warning);font-weight:600}
     .account-field[data-all-accounts]{grid-template-columns:minmax(0,1fr) 7rem}.account-field[data-all-accounts]>label#account-picker-label{grid-column:1;grid-row:1}.account-field[data-all-accounts]>.account-select{grid-column:1;grid-row:2}.statement-currency-field{align-content:end;display:grid;font-size:.75rem;gap:6px;grid-column:2;grid-row:1/3;min-width:0}.statement-currency-field select{background:var(--surface);border:1px solid var(--line);border-radius:10px;height:44px;min-width:0;padding:0 6px;width:100%}.statement-row-account{color:var(--muted);font-size:.75rem;font-weight:500;overflow-wrap:anywhere}

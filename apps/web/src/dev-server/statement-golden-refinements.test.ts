@@ -35,6 +35,31 @@ assert.match(
 );
 assert.match(runtime, /Filtros ativos/);
 const styles = statementGoldenRefinementStyles();
+assert.match(
+  styles,
+  /statement-save-actions\{box-sizing:border-box;display:grid;[^}]*grid-template-columns:repeat\(2,minmax\(0,1fr\)\)/,
+  "o rodapé de um modal com largura máxima de 440px deve usar a largura do próprio formulário, não a janela",
+);
+assert.match(
+  styles,
+  /statement-save-actions>button\{[^}]*grid-column:auto;[^}]*max-width:100%;[^}]*min-width:0;[^}]*white-space:normal;width:100%\}/,
+  "todos os botões precisam poder encolher e quebrar o texto sem corte",
+);
+assert.match(
+  styles,
+  /statement-save-actions>button\[type=submit\]:not\(\[data-statement-save-continue\]\)\{grid-column:1\/-1\}/,
+  "a ação principal precisa ocupar a largura integral no cadastro",
+);
+assert.match(
+  styles,
+  /@media\(max-width:360px\)\{[^}]*statement-save-actions\{grid-template-columns:minmax\(0,1fr\)/,
+  "a viewport de 320px precisa de uma única coluna de botões",
+);
+assert.doesNotMatch(
+  styles,
+  /statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/,
+  "a organização antiga em linha única é incompatível com o modal estreito",
+);
 assert.ok(styles.includes(`@media(max-width:${solverFinDesignTokens.breakpoints.shellCompact})`));
 assert.ok(styles.includes(`min-height:${solverFinDesignTokens.density.interactiveTargetMin}`));
 assert.match(styles, /statement-row-metadata[^}]*display:flex/);

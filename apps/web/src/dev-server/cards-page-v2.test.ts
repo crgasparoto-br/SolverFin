@@ -268,6 +268,9 @@ async function cardsA3KeepsHierarchyCurrencyAndSettlementDistinct(): Promise<voi
   );
 
   assert.match(html, /data-cards-archetype="A3"/);
+  assert.match(html, /data-fill-rule-save/, "cartões compartilham o controle de regras");
+  assert.match(html, /data-fill-rule-list/, "cartões mostram sugestões de descrição");
+  assert.match(html, /Salvar e continuar/, "botão de múltiplas compras é preservado");
   assert.match(html, /sf-detail-layout/);
   assert.match(html, /Cartão Viagem/);
   assert.match(html, /Fatura selecionada/);
