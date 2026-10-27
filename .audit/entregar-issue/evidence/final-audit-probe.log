@@ -1,0 +1,2 @@
+subject_sha=c696281f6dcbc802098d05786266c26ace9e7765
+{"baseline":{"state":"ready","rows":3},"mutated":{"state":"blocked","rows":0,"problems":["IMPORT_PDF_TOTAL_MISMATCH"]},"syntheticInsertedRow":1}

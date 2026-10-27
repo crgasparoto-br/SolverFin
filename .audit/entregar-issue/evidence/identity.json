@@ -1,0 +1,12 @@
+{
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 745,
+  "pull_request": 746,
+  "base_ref": "develop",
+  "head_ref": "fix/745-mercado-pago-pdf-extrato",
+  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "material_head_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "merge_preview_sha": "8cce58d19837297b4923e39ad3759f713640ed09",
+  "source": "fresh GitHub PR metadata + authenticated exact-head CI bundle",
+  "raw_private_document_versioned": false
+}

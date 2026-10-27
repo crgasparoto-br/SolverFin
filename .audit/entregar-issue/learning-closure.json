@@ -1,18 +1,1 @@
-{
-  "schema_version": 1,
-  "classification": "implementation-only",
-  "source_event": {
-    "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
-    "finding_ids": [
-      "A-717-03",
-      "A-717-04"
-    ],
-    "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
-  },
-  "generalized_learning": {
-    "promotion_status": "not-required",
-    "reason": "The official Skill already requires exact SHA source-location validation and per-control raw evidence; this is remediation of per-target evidence."
-  },
-  "skill_changes": []
-}
+{"schema_version":1,"classification":"implementation-only","source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715","audit_report_sha256":"9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874","audited_head_sha":"4773a7b63d671c9ee876c320319bd466f7c69798","finding_ids":["A-006"]},"generalized_learning":{"promotion_status":"not-required","reason":"The existing official auditor gate already detects the omitted family. This targeted remediation repairs the local certified packet and reuses that gate, preserving all existing risk controls; it does not weaken validators or assert a generalized skill-system change."},"previous_source_event":{"kind":"independent-rejection","rejection_id":"audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509","audit_report_sha256":"2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24","finding_ids":["A-002","A-003","A-005"]}}

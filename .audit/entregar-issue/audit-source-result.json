@@ -1,38 +1,46 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
+  "verdict": "REPROVADA",
   "status": "rejected",
-  "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
-  "head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
+  "rejection_id": "audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715",
+  "head_sha": "4773a7b63d671c9ee876c320319bd466f7c69798",
   "identity": {
-    "head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
-    "material_head_sha": "92410e63b75103c0f298f88fdd520160d48be333",
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 717,
-    "pull_request_number": 731
+    "issue_number": 745,
+    "pull_request_number": 746,
+    "head_sha": "4773a7b63d671c9ee876c320319bd466f7c69798",
+    "material_head_sha": "c696281f6dcbc802098d05786266c26ace9e7765"
   },
+  "provenance": "Normalized from the exact preceding read-only audit report; original report bytes retained. This normalization does not create an auditor identity, new independent verdict or GitHub approval.",
   "external_report": {
-    "sha256": "abd15b164a67edc01e7c8dc651efad579268cb70819560f153bece241a03da40"
+    "path": "evidence/a006-source-audit.md",
+    "sha256": "2f478acae8a75ea419e10cbef48e480388123dd659f79f3fc11e78a703b401c8"
   },
   "findings": [
     {
-      "id": "A-717-03",
+      "id": "A-006",
       "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "stale-source-locations",
-      "summary": "Source anchor and run IDs were obsolete after refactoring"
-    },
-    {
-      "id": "A-717-04",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "per-control-raw-evidence",
-      "summary": "Negative control evidence lacked verifiable individual trace"
+      "root_cause": "risk-saturation omits semantic-effect although three active inherited controls require it.",
+      "requirement_id": "R13",
+      "failed_gate": {
+        "name": "check_delivery_saturation.py",
+        "command": "python3 auditar-issue/scripts/check_delivery_saturation.py --attack-matrix .audit/entregar-issue/requirement-attack-matrix.json --risk-saturation .audit/entregar-issue/risk-saturation.json --inherited-controls .audit/entregar-issue/issue-745-inherited-controls.json --head-sha c696281f6dcbc802098d05786266c26ace9e7765 --evidence-provenance .audit/entregar-issue/evidence-provenance.json",
+        "deterministic": true,
+        "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+        "observed_exit_code": 2,
+        "evidence_path": "evidence/a006-before.log",
+        "evidence_sha256": "93cf386ac480cfe7b988a5fb2e5a56701ab7984d84bd8f40ed27e7dded41989b"
+      }
     }
   ],
-  "recommendations": []
+  "recommendations": [],
+  "audit_runtime_limitations": [
+    {
+      "id": "LIM-001",
+      "disposition": "audit-runtime-limitation",
+      "description": "Original private PDF bytes unavailable to prior auditor; not a candidate defect. No original replay or independent approval is claimed in this remediation."
+    }
+  ]
 }
