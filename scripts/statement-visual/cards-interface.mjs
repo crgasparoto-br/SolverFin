@@ -318,7 +318,11 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.labelled, "Purchase modal is not labelled", measurements);
   check(measurements.insideViewport, "Purchase modal exceeds the viewport", measurements);
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
-  check(measurements.ruleActionHeight >= 44, "Manual fill-rule save target must be 44px", measurements);
+  check(
+    measurements.ruleActionHeight >= 44,
+    "Manual fill-rule save target must be 44px",
+    measurements,
+  );
   check(
     measurements.closeIconText === "×" &&
       measurements.closeIconOpacity > 0 &&

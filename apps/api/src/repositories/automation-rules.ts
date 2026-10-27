@@ -138,7 +138,7 @@ export async function upsertManualEntryFillRuleForContext(
       "Informe uma descrição entre 2 e 240 caracteres.",
     );
   }
-  if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(categoryId)) {
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(categoryId)) {
     throw new AutomationRuleRepositoryError("MANUAL_FILL_CATEGORY_INVALID", "Categoria inválida.");
   }
   const normalized = normalizeManualEntry(text);

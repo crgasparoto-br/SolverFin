@@ -239,9 +239,7 @@ test("amount edit requires an explicit current or future scope before the PATCH"
   );
   assert.ok(script.includes("const hasFuture = isRecurring"));
   assert.ok(
-    script.includes(
-      '[data-statement-save-primary]',
-    ),
+    script.includes("[data-statement-save-primary]"),
     "only the canonical save button is repurposed in installment mode",
   );
   assert.ok(script.includes('rememberAndSet(continueButton, "hidden", true)'));
