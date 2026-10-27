@@ -10,8 +10,11 @@ type PdfValue =
 
 type Cursor = { text: string; index: number };
 const PDF_SPACE = /[\0\t\n\f\r ]/;
-const PDF_DELIMITER = /[\0\t\n\f\r ()<>\[\]{}\/%]/;
 const MAX_XREF_BYTES = 24 * 1024 * 1024;
+
+function isPdfDelimiter(char: string): boolean {
+  return PDF_SPACE.test(char) || "()<>[]{}/%".includes(char);
+}
 
 function skipSpace(cursor: Cursor): void {
   while (cursor.index < cursor.text.length) {
@@ -29,7 +32,7 @@ function pdfName(cursor: Cursor): string | undefined {
   if (cursor.text[cursor.index] !== "/") return undefined;
   cursor.index++;
   const start = cursor.index;
-  while (cursor.index < cursor.text.length && !PDF_DELIMITER.test(cursor.text[cursor.index]!)) {
+  while (cursor.index < cursor.text.length && !isPdfDelimiter(cursor.text[cursor.index]!)) {
     cursor.index++;
   }
   const name = cursor.text.slice(start, cursor.index);
@@ -98,7 +101,7 @@ function pdfValue(cursor: Cursor, depth = 0): PdfValue | undefined {
     return { kind: "other" };
   }
   const start = cursor.index;
-  while (cursor.index < text.length && !PDF_DELIMITER.test(text[cursor.index]!)) cursor.index++;
+  while (cursor.index < text.length && !isPdfDelimiter(text[cursor.index]!)) cursor.index++;
   if (start === cursor.index) return undefined;
   const token = text.slice(start, cursor.index);
   if (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(token)) return { kind: "other" };
@@ -111,7 +114,7 @@ function pdfValue(cursor: Cursor, depth = 0): PdfValue | undefined {
     if (generation) {
       cursor.index += generation[1]!.length;
       skipSpace(cursor);
-      if (text[cursor.index] === "R" && PDF_DELIMITER.test(text[cursor.index + 1] ?? " ")) {
+      if (text[cursor.index] === "R" && isPdfDelimiter(text[cursor.index + 1] ?? " ")) {
         cursor.index++;
         const value = Number(generation[1]);
         if (Number.isSafeInteger(value) && value >= 0) {
