@@ -105,15 +105,29 @@ export function classifyPopplerFailure(
  * pdftotext alone may succeed on a copy:no PDF when the user password is empty.
  */
 export function assertPdfCopyPermitted(pdfInfo: string): void {
-  const encryption = /^Encrypted:\s*(yes|no)\b([^\r\n]*)$/im.exec(pdfInfo);
-  if (!encryption) {
+  // PDF-controlled metadata can contain newlines and forged Encrypted fields.
+  // Never choose the first or last field when the output is ambiguous.
+  const fields = pdfInfo.match(/^Encrypted:[^\r\n]*$/gim) ?? [];
+  const encryption =
+    fields.length === 1 ? /^Encrypted:[ \t]*(yes|no)\b([^\r\n]*)$/i.exec(fields[0]!) : null;
+  const encrypted = encryption?.[1]?.toLowerCase() === "yes";
+  const details = encryption?.[2]?.trim() ?? "";
+  const copy = /(?:^|[ \t(])copy:[ \t]*(yes|no)(?=[ \t)]|$)/i.exec(details);
+  if (
+    !encryption ||
+    (encrypted
+      ? !/^\([^()\r\n]*\)$/.test(details) ||
+        (details.match(/\bcopy:/gi) ?? []).length !== 1 ||
+        !copy
+      : details !== "")
+  ) {
     throw new StructuredImportError(
       "IMPORT_PDF_INVALID",
       "Nao foi possivel verificar as permissoes do PDF.",
       422,
     );
   }
-  if (encryption[1]!.toLowerCase() === "yes" && !/\bcopy:\s*yes\b/i.test(encryption[2] ?? "")) {
+  if (encrypted && copy![1]!.toLowerCase() !== "yes") {
     throw new StructuredImportError(
       "IMPORT_PDF_PROTECTED",
       "Este PDF nao permite extracao de texto.",

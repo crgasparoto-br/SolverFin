@@ -153,6 +153,101 @@ describe("Mercado Pago bank statement PDF layout", () => {
     assert.equal(new Set(parsed.rows.map((item) => item.externalId)).size, 38);
   });
 
+  it("preserves every description line at the first, middle and last movement of each page", () => {
+    for (const lineCount of [1, 2, 3, 4, 5, 6]) {
+      const description = Array.from({ length: lineCount }, (_, i) => `Linha${i + 1}`);
+      for (const selectedRow of [0, 1, 2]) {
+        for (const separateLastPage of [false, true]) {
+          const fixture = pages();
+          const firstWords = fixture[0]!.words.filter((word) => word.y < 200);
+          const continuationHeader = fixture[1]!.words.filter((word) => word.y < 60);
+          const footer = fixture[1]!.words.filter((word) => word.y >= 600);
+          const movements = [
+            row(
+              "01-10-2026",
+              selectedRow === 0 ? description : ["Primeiro"],
+              "123456789012",
+              "10,00",
+              "110,00",
+              230,
+            ),
+            row(
+              "02-10-2026",
+              selectedRow === 1 ? description : ["Segundo"],
+              "123456789013",
+              "-15,00",
+              "95,00",
+              330,
+            ),
+            row(
+              "03-10-2026",
+              selectedRow === 2 ? description : ["Terceiro"],
+              "123456789014",
+              "5,50",
+              "100,50",
+              separateLastPage ? 100 : 430,
+            ),
+          ];
+          const input = separateLastPage
+            ? [
+                { words: [...firstWords, ...movements[0]!, ...movements[1]!, ...footer] },
+                { words: [...continuationHeader, ...movements[2]!, ...footer] },
+              ]
+            : [{ words: [...firstWords, ...movements.flat(), ...footer] }];
+          const parsed = parseMercadoPagoStatement(input);
+          assert.equal(parsed.state, "ready", `${lineCount}/${selectedRow}/${separateLastPage}`);
+          assert.equal(parsed.rows.length, 3);
+          assert.equal(parsed.rows[selectedRow]?.description, description.join(" "));
+          assert.deepEqual(parsed.problems, []);
+        }
+      }
+    }
+  });
+
+  it("rejects ambiguous or unassigned description text instead of returning partial proposals", () => {
+    const variants: PdfExtractedPage[][] = [];
+    // Words at the former cutoff must be consumed or reject the layout.
+    for (const offset of [17.9, 18, 18.1, 24, 50]) {
+      const fixture = pages();
+      fixture[1] = { words: [...fixture[1]!.words, w("Sufixo", 89, 75 + offset)] };
+      variants.push(fixture);
+    }
+    for (const y of [41, 43, 44.5]) {
+      const fixture = pages();
+      fixture[1] = { words: [...fixture[1]!.words, w("Sobreposto", 105, y)] };
+      variants.push(fixture);
+    }
+    const nearFooter = pages();
+    nearFooter[1] = { words: [...nearFooter[1]!.words, w("Sobreposto", 89, 598)] };
+    variants.push(nearFooter);
+    const ambiguous = pages();
+    ambiguous[1] = { words: [...ambiguous[1]!.words, w("Ambiguo", 89, 79)] };
+    variants.push(ambiguous);
+    for (const fixture of variants) {
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, "blocked");
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+      assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("applies the description length limit to the complete multiline value", () => {
+    for (const lineLength of [59, 60]) {
+      const fixture = pages();
+      const description = Array.from({ length: 4 }, () => "x".repeat(lineLength));
+      fixture[1] = {
+        words: [
+          ...fixture[1]!.words.filter((word) => word.y < 60 || word.y >= 600),
+          ...row("03-10-2026", description, "123456789014", "5,50", "100,50", 100),
+        ],
+      };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, lineLength === 59 ? "ready" : "blocked");
+      if (lineLength === 59) assert.equal(parsed.rows[2]?.description, description.join(" "));
+      else assert.deepEqual(parsed.rows, []);
+    }
+  });
+
   it("fails closed when bank identity, a row, a balance, or totals are tampered", () => {
     const missingIdentity = pages();
     missingIdentity[1] = {

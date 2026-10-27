@@ -353,12 +353,17 @@ function assertPdfStructure(bytes: Buffer): string {
     }
     // An unanchored lastIndexOf("1 0 obj") also matches "31 0 obj".
     // The catalog object must be a complete object header, not an identifier suffix.
-    const rootHeader = new RegExp(`(?:^|\\r?\\n)${rootMatch[1]}\\s+${rootMatch[2]}\\s+obj\\b`, "g");
+    // Accept CR/LF and indentation without interpreting inline comments or strings.
+    const pdfWhitespace = "[\\0\\t\\n\\f\\r ]";
+    const rootHeader = new RegExp(
+      `(?:^|[\\r\\n])[\\0\\t\\f ]*(${rootMatch[1]}${pdfWhitespace}+${rootMatch[2]}${pdfWhitespace}+obj)\\b`,
+      "g",
+    );
     let rootIndex = -1;
     let rootHeaderLength = 0;
     for (const match of text.slice(0, xrefOffset).matchAll(rootHeader)) {
-      rootIndex = match.index + (match[0].startsWith("\\n") ? 1 : 0);
-      rootHeaderLength = match[0].length;
+      rootHeaderLength = match[1]!.length;
+      rootIndex = match.index + match[0].length - rootHeaderLength;
     }
     const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
     if (

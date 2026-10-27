@@ -93,26 +93,63 @@ function findSummaryAmount(
   return amount ? parseMoney(amount[0]) : undefined;
 }
 
-function rowDescription(page: PdfExtractedPage, lowerY: number, upperY: number): string {
+function pageDescriptions(
+  page: PdfExtractedPage,
+  header: PdfExtractedWord,
+  footerY: number,
+  rowYs: readonly number[],
+): string[] | undefined {
   const words = page.words
-    .filter((word) => word.x >= 76 && word.x < 195 && word.y >= lowerY && word.y < upperY)
+    .filter(
+      (word) =>
+        word !== header &&
+        word.x >= 76 &&
+        word.x < 195 &&
+        word.y >= header.y - 3.5 &&
+        word.y < footerY,
+    )
     .sort((a, b) => a.y - b.y || a.x - b.x);
+  if (words.some((word) => word.y <= header.y + 3.5 || word.y >= footerY - 3.5)) return undefined;
   const lines: PdfExtractedWord[][] = [];
   for (const word of words) {
     const last = lines[lines.length - 1];
     if (!last || Math.abs(word.y - last[0]!.y) > 2.5) lines.push([word]);
     else last.push(word);
   }
-  return lines
-    .map((line) =>
-      line
-        .sort((a, b) => a.x - b.x)
-        .map((word) => word.text)
-        .join(" "),
-    )
-    .join(" ")
-    .replace(/\s+/g, " ")
-    .trim();
+  const descriptions: string[] = [];
+  let cursor = 0;
+  for (const y of rowYs) {
+    const first = lines[cursor];
+    if (!first) return undefined;
+    let end: number | undefined;
+    // The homologated layout centers each multiline description on the date
+    // and monetary fields. Consume a unique whole block, never a fixed-height
+    // crop or a midpoint slice. The ordered scan stops past the alignment band.
+    for (let i = cursor; i < lines.length; i += 1) {
+      const center = (first[0]!.y + lines[i]![0]!.y) / 2;
+      if (center > y + 3.5) break;
+      if (Math.abs(center - y) <= 3.5) {
+        if (end !== undefined) return undefined;
+        end = i;
+      }
+    }
+    if (end === undefined) return undefined;
+    descriptions.push(
+      lines
+        .slice(cursor, end + 1)
+        .map((line) =>
+          line
+            .sort((a, b) => a.x - b.x)
+            .map((word) => word.text)
+            .join(" "),
+        )
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim(),
+    );
+    cursor = end + 1;
+  }
+  return cursor === lines.length ? descriptions : undefined;
 }
 
 function rowText(page: PdfExtractedPage, y: number, left: number, right: number): string {
@@ -141,15 +178,16 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   const header = page.words.find(
     (word) => normalize(word.text) === "data" && word.x >= 25 && word.x < 65 && word.y < 220,
   );
+  if (!header) return undefined;
+  const descriptionHeader = page.words.find(
+    (word) =>
+      normalize(word.text) === "descricao" &&
+      Math.abs(word.y - header.y) < 3 &&
+      word.x >= 70 &&
+      word.x < 185,
+  );
   if (
-    !header ||
-    !page.words.some(
-      (word) =>
-        normalize(word.text) === "descricao" &&
-        Math.abs(word.y - header.y) < 3 &&
-        word.x >= 70 &&
-        word.x < 185,
-    ) ||
+    !descriptionHeader ||
     !page.words.some(
       (word) => normalize(word.text) === "saldo" && Math.abs(word.y - header.y) < 3 && word.x > 350,
     )
@@ -187,15 +225,18 @@ function parsePageMovements(page: PdfExtractedPage): Movement[] | undefined {
   if (rowAnchors.length === 0 || rowAnchors.length !== dateWords.length) return undefined;
   const dates = rowAnchors.map((y) => dateWords.find((word) => Math.abs(word.y - y) <= 3.5));
   if (dates.some((date) => date === undefined)) return undefined;
+  const descriptions = pageDescriptions(
+    page,
+    descriptionHeader,
+    footerY,
+    dates.map((date) => date!.y),
+  );
+  if (!descriptions) return undefined;
 
   const movements: Movement[] = [];
   for (let i = 0; i < dates.length; i += 1) {
     const date = dates[i]!;
-    const prev = dates[i - 1];
-    const next = dates[i + 1];
-    const lowerY = prev ? (prev.y + date.y) / 2 : header.y + 3.5;
-    const upperY = next ? (date.y + next.y) / 2 : Math.min(date.y + 18, footerY - 3.5);
-    const description = rowDescription(page, lowerY, upperY);
+    const description = descriptions[i]!;
     const externalId = rowText(page, date.y, 195, 285);
     const signed = parseMoney(rowText(page, date.y, 285, 354));
     const balance = parseMoney(rowText(page, date.y, 354, 445));
