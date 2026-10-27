@@ -60,7 +60,12 @@ async function main(): Promise<void> {
   await assertRecurringInstallmentScopeUpdates(token, account.id, category.id, suffix);
   await assertRecurringInstallmentProtectedFuture(token, account.id, category.id, suffix);
   await assertRecurringInstallmentCancellationRace(token, account.id, category.id, suffix);
-  await assertRecurringInstallmentCurrentScopeCancellationRace(token, account.id, category.id, suffix);
+  await assertRecurringInstallmentCurrentScopeCancellationRace(
+    token,
+    account.id,
+    category.id,
+    suffix,
+  );
 }
 
 async function assertManualInstallmentScopeUpdates(
