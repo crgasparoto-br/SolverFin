@@ -376,9 +376,7 @@ function assertPdfStructure(bytes: Buffer): string {
       }
       lineIndex += 1;
       for (let entryIndex = 0; entryIndex < entryCount; entryIndex += 1, lineIndex += 1) {
-        const entry = /^(\d{10})\s+(\d{5})\s+([nf])\b/.exec(
-          xrefLines[lineIndex]?.trim() ?? "",
-        );
+        const entry = /^(\d{10})\s+(\d{5})\s+([nf])\b/.exec(xrefLines[lineIndex]?.trim() ?? "");
         if (entry === null) {
           throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
         }
