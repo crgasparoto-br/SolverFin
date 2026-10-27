@@ -190,7 +190,11 @@ export async function validateRecurringScopeDesktop({ cdp, outputDir, scenarios,
 }
 
 export async function validateRecurringScopeViewports(options) {
-  for (const [width, height] of [[390, 844], [768, 1024], [320, 568]]) {
+  for (const [width, height] of [
+    [390, 844],
+    [768, 1024],
+    [320, 568],
+  ]) {
     await validateRecurringScopeViewport({ ...options, width, height });
   }
 }
