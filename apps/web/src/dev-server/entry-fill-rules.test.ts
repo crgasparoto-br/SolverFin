@@ -19,8 +19,10 @@ test("regras de preenchimento são compartilhadas, acessíveis e nunca automáti
   assert.match(script, /normalize\(rule\.description\)\.startsWith\(typed\)/);
   assert.match(script, /category\.dispatchEvent\(new Event\("change"/);
   assert.match(script, /"POST"/);
-  assert.match(script, /"PATCH"/);
-  assert.match(script, /status: "inactive"/);
+  assert.doesNotMatch(script, /"PATCH"/);
+  assert.match(script, /automation-rules\/manual-entry/);
+  assert.match(script, /const body = \{ description: text, categoryId \}/);
+  assert.match(script, /description: rule\.conditions\.descriptionIncludes\.trim\(\)/);
   assert.match(script, /event\.key === "Escape"/);
   assert.match(script, /event\.key === "ArrowDown"/);
   assert.match(script, /event\.key === "Enter"/);

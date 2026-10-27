@@ -17,7 +17,7 @@ import {
   type CategorizationSuggestionPayloadV1,
 } from "@solverfin/domain/ai-suggestion-payloads";
 
-import { query, withTransaction, type QueryExecutor } from "../db.js";
+import { query, withSharedTransaction, withTransaction, type QueryExecutor } from "../db.js";
 
 export interface AutomationRuleDraft {
   name: string;
@@ -120,6 +120,62 @@ export async function listAutomationRulesForContext(
   return rows
     .map(mapAutomationRuleRow)
     .filter((rule) => status === "all" || rule.status === status);
+}
+
+const MANUAL_ENTRY_PREFIX = "Preenchimento: ";
+const normalizeManualEntry = (value: string): string =>
+  value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").trim().toLocaleLowerCase("pt-BR");
+
+export async function upsertManualEntryFillRuleForContext(
+  context: TenantContext,
+  description: string,
+  categoryId: string,
+): Promise<AutomationRule> {
+  const text = description.trim();
+  if (text.length < 2 || text.length > 240) {
+    throw new AutomationRuleRepositoryError(
+      "MANUAL_FILL_DESCRIPTION_INVALID",
+      "Informe uma descrição entre 2 e 240 caracteres.",
+    );
+  }
+  if (!/^[0-9a-f]{8}-[0-9a-f-]{27,}$/.test(categoryId)) {
+    throw new AutomationRuleRepositoryError("MANUAL_FILL_CATEGORY_INVALID", "Categoria inválida.");
+  }
+  const normalized = normalizeManualEntry(text);
+  const ruleDraft: AutomationRuleDraft = {
+    name: MANUAL_ENTRY_PREFIX + text.slice(0, 160 - MANUAL_ENTRY_PREFIX.length),
+    status: "inactive",
+    conditions: { descriptionIncludes: text },
+    actions: { categoryId },
+    explanation: "Sugestão manual de descrição e categoria. Nunca aplicar automaticamente.",
+  };
+
+  return withSharedTransaction(async (executeQuery) => {
+    await executeQuery("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
+      "manual-fill:" + context.organizationId + ":" + context.financialProfileId + ":" + normalized,
+    ]);
+    const categories = await executeQuery<{ id: string }>(
+      `select "id" from "Category" where "id" = $1 and "organizationId" = $2
+       and "financialProfileId" = $3 and "status" = 'ACTIVE' for update`,
+      [categoryId, context.organizationId, context.financialProfileId],
+    );
+    if (!categories.length) {
+      throw new AutomationRuleRepositoryError(
+        "MANUAL_FILL_CATEGORY_INVALID",
+        "Selecione uma categoria ativa do perfil financeiro.",
+      );
+    }
+    const rules = await listAutomationRulesForContext(context, "inactive");
+    const existing = rules.find(
+      (rule) =>
+        rule.name.startsWith(MANUAL_ENTRY_PREFIX) &&
+        normalizeManualEntry(rule.conditions.descriptionIncludes ?? "") === normalized,
+    );
+    if (existing) {
+      return updateAutomationRuleForContext(context, existing.id, ruleDraft);
+    }
+    return createAutomationRuleForContext(context, ruleDraft);
+  });
 }
 
 export async function createAutomationRuleForContext(
@@ -306,6 +362,12 @@ function normalizeAutomationRule(
   input: AutomationRuleInput,
 ): AutomationRule {
   const name = input.name.trim();
+  if (name.startsWith(MANUAL_ENTRY_PREFIX) && input.status !== "inactive") {
+    throw new AutomationRuleRepositoryError(
+      "MANUAL_FILL_RULE_MUST_BE_INACTIVE",
+      "Regras de preenchimento manual não podem ser ativadas como automações.",
+    );
+  }
   if (!name) {
     throw new AutomationRuleRepositoryError(
       "AUTOMATION_RULE_NAME_REQUIRED",
