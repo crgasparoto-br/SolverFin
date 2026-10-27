@@ -85,7 +85,9 @@ export async function validateStatementContextualSurfaces(
       const editAccountSelect = surface?.querySelector('[data-edit-account-select]');
       const panel = surface?.querySelector('.modal-panel');
       const footerCancel = surface?.querySelector('[data-transaction-cancel]');
-      const footerSave = surface?.querySelector('.statement-save-actions > button[type="submit"]');
+      const footerSave = surface?.querySelector('[data-statement-save-primary]');
+      const footerContinue = surface?.querySelector('[data-statement-save-continue]');
+      const footerGroup = surface?.querySelector('.statement-save-actions');
       const panelBox = panel?.getBoundingClientRect();
       const panelStyle = panel ? getComputedStyle(panel) : null;
       const panelContentLeft = panelBox && panelStyle
@@ -127,13 +129,37 @@ export async function validateStatementContextualSurfaces(
         documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
+        footerActionColumns: footerGroup
+          ? getComputedStyle(footerGroup).gridTemplateColumns.split(" ").length
+          : null,
         footerActionRowDelta: footerCancel && footerSave
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
-        footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave),
+        footerContinueRowDelta: footerCancel && footerContinue
+          ? Math.abs(footerCancel.getBoundingClientRect().top - footerContinue.getBoundingClientRect().top)
+          : null,
+        footerContinueHidden:
+          !footerContinue || footerContinue.hidden || footerContinue.getClientRects().length === 0,
+        footerContinueAfterCancel:
+          !!footerCancel &&
+          !!footerContinue &&
+          footerContinue.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerSaveAfterCancel:
+          !!footerSave &&
+          !!footerCancel &&
+          footerSave.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerPrimaryBelowContinue:
+          !!footerSave &&
+          !!footerContinue &&
+          footerSave.getBoundingClientRect().top >= footerContinue.getBoundingClientRect().bottom - 1,
+        footerActionsContained:
+          footerButtonFits(footerCancel) &&
+          footerButtonFits(footerSave) &&
+          (!footerContinue || footerContinue.hidden || footerButtonFits(footerContinue)),
         footerActionHeights: {
           cancel: footerCancel?.getBoundingClientRect().height ?? null,
           save: footerSave?.getBoundingClientRect().height ?? null,
+          continue: footerContinue?.getBoundingClientRect().height ?? null,
         },
         tooltipStatusCount: statusOptions.filter(node => node.title && node.title === node.getAttribute('aria-label')).length,
         statusLabelVisuallyHidden: !!statusText && statusText.getBoundingClientRect().width <= 1,
@@ -271,11 +297,13 @@ export async function validateStatementContextualSurfaces(
         rejectedBecause: footerError,
         restored: "passed",
       });
-      for (const action of ["cancel", "save"]) {
+      for (const action of state === "edit" ? ["cancel", "save"] : ["cancel", "continue", "save"]) {
         const buttonSelector =
           action === "cancel"
             ? "[data-transaction-cancel]"
-            : '.statement-save-actions > button[type="submit"]';
+            : action === "continue"
+              ? "[data-statement-save-continue]"
+              : "[data-statement-save-primary]";
         const originalTouchStyle = await read(`(() => {
           const button = document.querySelector(${JSON.stringify(selector)}).querySelector(${JSON.stringify(buttonSelector)});
           const original = button.getAttribute("style");
@@ -395,7 +423,7 @@ export async function validateStatementContextualSurfaces(
             accountDisplay: form?.querySelector("[data-edit-account-full-name]")?.textContent?.trim()
               || form?.querySelector(".statement-entry-account input")?.value,
             sourceCurrency: form?.querySelector("[data-source-currency]")?.textContent?.trim(),
-            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+            saveDisabled: form?.querySelector('[data-statement-save-primary]')?.disabled,
           };
         })()`);
         assert.equal(modalState.open, true, "Consolidated Edit must open the modal");
@@ -437,7 +465,7 @@ export async function validateStatementContextualSurfaces(
             title: document.querySelector("[data-modal-title]")?.textContent,
             method: form?.dataset.method,
             accountId: effectiveAccount?.value,
-            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+            saveDisabled: form?.querySelector('[data-statement-save-primary]')?.disabled,
           };
         })()`);
         assert.equal(cloneState.open, true, "Consolidated Clone must open the modal");

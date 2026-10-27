@@ -26,10 +26,41 @@ export function assertContextualSurface(measured, state, dialog) {
           `${state}: ${action} footer touch target must be at least 44px high (got ${height ?? "missing"}px)`,
         );
       }
-      assert.ok(
-        measured.footerActionRowDelta !== null && measured.footerActionRowDelta <= 2,
-        `${state}: Cancel and Save must share a row`,
-      );
+      const oneColumn = measured.footerActionColumns === 1;
+      if (state === "edit") {
+        assert.equal(
+          measured.footerContinueHidden,
+          true,
+          "edit: create-only submit must stay hidden",
+        );
+        assert.ok(
+          oneColumn
+            ? measured.footerSaveAfterCancel
+            : measured.footerActionRowDelta !== null && measured.footerActionRowDelta <= 2,
+          "edit: Cancel and Save must fit side by side or stack in order on compact mobile",
+        );
+      } else {
+        assert.equal(
+          measured.footerContinueHidden,
+          false,
+          `${state}: Save and continue must be visible`,
+        );
+        assert.ok(
+          measured.footerActionHeights?.continue >= 44,
+          `${state}: Continue touch target must be at least 44px`,
+        );
+        assert.ok(
+          oneColumn
+            ? measured.footerContinueAfterCancel
+            : measured.footerContinueRowDelta !== null && measured.footerContinueRowDelta <= 2,
+          `${state}: Cancel and Continue must share a row or stack in order on compact mobile`,
+        );
+        assert.equal(
+          measured.footerPrimaryBelowContinue,
+          true,
+          `${state}: primary Save must follow Continue`,
+        );
+      }
       assert.equal(
         measured.footerActionsContained,
         true,

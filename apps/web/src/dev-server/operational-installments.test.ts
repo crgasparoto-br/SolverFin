@@ -11,6 +11,16 @@ import {
   translateInstallmentBlockReason,
 } from "./operational-installments.js";
 
+test("installment editing has one managed primary submit and suppresses create-only continuation", () => {
+  const script = operationalInstallmentsController();
+  assert.match(script, /continueButton\.dataset\.installmentManaged = ""/);
+  assert.match(script, /rememberAndSet\(continueButton, "hidden", true\)/);
+  assert.match(script, /rememberAndSet\(continueButton, "disabled", true\)/);
+  assert.match(script, /form\.querySelector\("\[data-statement-save-primary\]"\)/);
+  assert.doesNotMatch(script, /\.save-row button\[type="submit"\]/);
+  assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
+});
+
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),

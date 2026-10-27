@@ -24,6 +24,10 @@ test("regras de preenchimento são compartilhadas, acessíveis e nunca automáti
   assert.match(script, /event\.key === "Escape"/);
   assert.match(script, /event\.key === "ArrowDown"/);
   assert.match(script, /event\.key === "Enter"/);
-  assert.match(entryFillRuleStyles(), /focus-visible/);
+  const styles = entryFillRuleStyles();
+  assert.match(styles, /\.entry-fill-rule-save\{[^}]*min-height:44px/);
+  assert.match(styles, /\.entry-fill-rule-list button\{[^}]*min-height:44px/);
+  assert.doesNotMatch(styles, /min-height:36px/, "new buttons cannot use compact touch targets");
+  assert.match(styles, /focus-visible/);
   assert.doesNotThrow(() => new Function(runtime), "runtime deve conter JavaScript válido");
 });
