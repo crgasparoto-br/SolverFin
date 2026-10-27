@@ -138,19 +138,19 @@ describe("document imports", () => {
 
   it("resolves the catalog by xref offset across every PDF whitespace separator", () => {
     const comment =
-      "%PDF-1.4\\n%SOLVERFIN:STATEMENT:V1\\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\\n";
-    const leadingObject = "2 0 obj\\n<< /Type /Font >>\\nendobj";
+      "%PDF-1.4\n%SOLVERFIN:STATEMENT:V1\n%TX|2026-10-01|1,00|BRL|Rendimento|op-1\n";
+    const leadingObject = "2 0 obj\n<< /Type /Font >>\nendobj";
     const extraObjects = [
-      "31 0 obj\\n<< /Type /Font >>\\nendobj\\n",
-      "31 0 obj\\n<< /Type /Font >>\\nendobj\\n% 1 0 obj << /Type /Catalog >> endobj\\n",
-      "31 0 obj\\n<< /Type /Font /Title ( 1 0 obj << /Type /Catalog >> endobj) >>\\nendobj\\n",
+      "31 0 obj\n<< /Type /Font >>\nendobj\n",
+      "31 0 obj\n<< /Type /Font >>\nendobj\n% 1 0 obj << /Type /Catalog >> endobj\n",
+      "31 0 obj\n<< /Type /Font /Title ( 1 0 obj << /Type /Catalog >> endobj) >>\nendobj\n",
     ];
-    for (const separator of ["\\n", "\\r", "\\r\\n", "\\t", "\\f", "\\0", " "]) {
+    for (const separator of ["\n", "\r", "\r\n", "\t", "\f", "\0", " "]) {
       for (const extraObject of extraObjects) {
         const leadingOffset = Buffer.byteLength(comment, "latin1");
         const prefix = comment + leadingObject + separator;
         const catalogOffset = Buffer.byteLength(prefix, "latin1");
-        const catalog = "1 0 obj\\n<< /Type /Catalog >>\\nendobj\\n";
+        const catalog = "1 0 obj\n<< /Type /Catalog >>\nendobj\n";
         const extraOffset = catalogOffset + Buffer.byteLength(catalog, "latin1");
         const body = prefix + catalog + extraObject;
         const xrefOffset = Buffer.byteLength(body, "latin1");
@@ -174,7 +174,7 @@ describe("document imports", () => {
             "startxref",
             String(xrefOffset),
             "%%EOF",
-          ].join("\\n");
+          ].join("\n");
         const result = parsePdfImport({
           contentBase64: Buffer.from(data, "latin1").toString("base64"),
           documentClass: "bank_statement",
