@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
-  "base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
-  "comparison_base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+  "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
+  "comparison_base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,19 +19,39 @@
   },
   "files": [
     {
-      "path": "apps/api/src/pdf-text-extraction.ts",
-      "lines_before": 163,
-      "lines_after": 177
+      "path": "apps/api/src/repositories/installments.ts",
+      "lines_before": 727,
+      "lines_after": 741
     },
     {
-      "path": "packages/domain/src/document-imports.ts",
-      "lines_before": 941,
-      "lines_after": 946
+      "path": "apps/api/src/repositories/recurring-account-installment-amount.ts",
+      "lines_before": null,
+      "lines_after": 215
     },
     {
-      "path": "packages/domain/src/mercado-pago-pdf.ts",
-      "lines_before": 292,
-      "lines_after": 333
+      "path": "apps/api/src/repositories/recurring-account-transaction-edit.ts",
+      "lines_before": 629,
+      "lines_after": 648
+    },
+    {
+      "path": "apps/api/src/repositories/recurring-installment-update.ts",
+      "lines_before": null,
+      "lines_after": 73
+    },
+    {
+      "path": "apps/web/src/dev-server/operational-installments.ts",
+      "lines_before": 829,
+      "lines_after": 840
+    },
+    {
+      "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "lines_before": 674,
+      "lines_after": 694
+    },
+    {
+      "path": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs",
+      "lines_before": null,
+      "lines_after": 200
     }
   ],
   "blocking_files": []

@@ -1,172 +1,215 @@
 {
   "schema_version": 2,
-  "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
-  "base_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
-  "creations": [],
+  "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
+  "creations": [
+    {
+      "path": "apps/api/src/repositories/recurring-account-installment-amount.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg updateRecurringAccountTransactionForContext apps/api/src/repositories",
+          "rg amountMinor apps/api/src/repositories/recurring-account-transaction-edit.ts"
+        ],
+        "scope": "Existing recurrence service already updates metadata and dates; a value-only operation must avoid changing them.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/recurring-account-transaction-edit.ts",
+            "reason_not_reused": "Full recurrence path mutates unrelated metadata; value-only helper is integrated there."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separate value-only operation reuses canonical recurrence transaction/service lock and future selection without duplicating full recurrence policy."
+    },
+    {
+      "path": "apps/api/src/repositories/recurring-installment-update.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg updateInstallmentForContext apps/api/src/repositories/installments.ts",
+          "rg updateRecurringAccountTransactionForContext apps/api/src/repositories"
+        ],
+        "scope": "Existing installments service and canonical recurrence transaction service expose separate contracts.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/installments.ts",
+            "reason_not_reused": "Legacy flow handles finite manual installments and cannot safely update the unbounded recurrence rule."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Adapter maps recurring future scope to canonical recurrence service and coordinates cancelled rule protection with existing installment flow."
+    },
+    {
+      "path": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg validateRecurringScopeViewports scripts/statement-visual",
+          "rg operational installments scripts/statement-visual"
+        ],
+        "scope": "Existing visual test contains other UI scenarios; isolate issue #748 viewport, focus and clipping assertions for reuse.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
+            "reason_not_reused": "Maintaining a focused helper avoids overloading the existing regression runner; imported into canonical runner."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Targeted Chrome helper is imported by existing operational installments visual test without creating a second runner."
+    }
+  ],
   "references": [
     {
-      "symbol": "pageDescriptions",
+      "symbol": "updateRecurringInstallmentAmountOnly",
       "kind": "local",
-      "used_in": "packages/domain/src/mercado-pago-pdf.ts",
+      "used_in": "apps/api/src/repositories/recurring-account-transaction-edit.ts",
       "defined_at": {
-        "path": "packages/domain/src/mercado-pago-pdf.ts",
-        "line": 96
+        "path": "apps/api/src/repositories/recurring-account-installment-amount.ts",
+        "line": 25
       },
       "verified_by": {
-        "command": "node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js",
+        "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0
       }
     },
     {
-      "symbol": "assertPdfCopyPermitted",
+      "symbol": "assertUncancelledRecurringInstallment",
       "kind": "local",
-      "used_in": "apps/api/src/pdf-text-extraction.ts",
+      "used_in": "apps/api/src/repositories/installments.ts",
       "defined_at": {
-        "path": "apps/api/src/pdf-text-extraction.ts",
-        "line": 107
+        "path": "apps/api/src/repositories/recurring-installment-update.ts",
+        "line": 21
       },
       "verified_by": {
-        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "validateRecurringScopeViewports",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs",
+        "line": 192
+      },
+      "verified_by": {
+        "command": "npm run qa:statement-visual",
         "exit_code": 0
       }
     }
   ],
-  "replacements": [
-    {
-      "old_path": "packages/domain/src/mercado-pago-pdf.ts",
-      "old_symbol": "rowDescription",
-      "disposition": "removed"
-    }
-  ],
+  "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/api/src/pdf-text-extraction.test.ts",
+      "path": "apps/api/src/installments-router.integration.test.ts",
       "operation": "modified",
-      "scenario": "Title/Subject/Author with forged Encrypted lines, duplicates with equal and contradictory values, unknown permission values, and benign inline labels; assert exact error code plus no pdftotext",
-      "requirement": "A-004: trustworthy copy permission before extraction",
+      "scenario": "Endpoint persistence including current and future scope, cancel, race, profile and later generation",
+      "requirement": "Issue #748: recurring installment scope, safety and API/UI compatibility",
       "search": {
         "queries": [
-          "rg Encrypted:|assertPdfCopyPermitted|rootHeader|catalog object|copy:no|PDF.*whitespace|pdf-text-extraction apps/api/src packages/domain/src scripts/run-compiled-tests.mjs docs/IMPORTS.md",
-          "read API/domain package.json and tsconfig test runners"
+          "rg --files apps/api/src apps/web/src scripts/statement-visual",
+          "rg -n recurrence_cancelled installments|operational installments"
         ],
-        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
-        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
+        "scope": "Existing node:test runner, API integration runner and visual runner identified in repository package scripts and CI action before adding scenario.",
+        "runner": "npm run test / npm run test:integration --workspace @solverfin/api",
         "candidates": [
           {
-            "path": "apps/api/src/pdf-text-extraction.test.ts",
-            "case": "Existing directly relevant suite",
-            "oracle": "permission helper blocks copy:no/unknown; extractor stops before pdftotext; benign extraction succeeds",
-            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
+            "path": "apps/api/src/installments-router.integration.test.ts",
+            "case": "Extend existing affected suite",
+            "oracle": "End-to-end GET/PATCH and DB snapshots or rendered UI reflect correct selected/future scope and blocked values",
+            "comparison": "Preserve existing tests and append discriminant cases in directly affected suite."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
+      "justification": "Use existing test harness and preserve prior scenarios; API and unit CI run completed success on exact head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
+        "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+        "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
         "reached_tests": [
-          "apps/api/src/pdf-text-extraction.test.ts::extracts page boundaries, coordinates and HTML-escaped words",
-          "apps/api/src/pdf-text-extraction.test.ts::does not accept missing pages or invalid coordinates",
-          "apps/api/src/pdf-text-extraction.test.ts::rejects truncated Poppler pages and silently omitted words",
-          "apps/api/src/pdf-text-extraction.test.ts::rejects copy-restricted PDFs, including documents with an empty user password",
-          "apps/api/src/pdf-text-extraction.test.ts::checks PDF copy permission before ever running pdftotext",
-          "apps/api/src/pdf-text-extraction.test.ts::allows the Poppler text extraction only after permission is explicitly verified",
-          "apps/api/src/pdf-text-extraction.test.ts::distinguishes missing extractor, a password-protected PDF and invalid output"
+          "apps/api/src/installments-router.integration.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
-        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-748-ci-test-reach.txt",
+        "evidence_sha256": "83dc1989fbf4f78dd3c88f3d909a9104c525d8ea11e8b74979b78e108b8efefe"
       }
     },
     {
-      "path": "packages/domain/src/document-imports.test.ts",
+      "path": "apps/api/src/repositories/installments-edit-block-reason.test.ts",
       "operation": "modified",
-      "scenario": "parameterize the suffix-collision fixture across six PDF whitespace characters plus CRLF; preserve xref offsets; remove root1 or change its type to prove rejection",
-      "requirement": "A-008: complete Catalog header across valid PDF whitespace",
+      "scenario": "Cancelled rule maps to read-only flags; invoice precedence preserved",
+      "requirement": "Issue #748: recurring installment scope, safety and API/UI compatibility",
       "search": {
         "queries": [
-          "rg Encrypted:|assertPdfCopyPermitted|rootHeader|catalog object|copy:no|PDF.*whitespace|pdf-text-extraction apps/api/src packages/domain/src scripts/run-compiled-tests.mjs docs/IMPORTS.md",
-          "read API/domain package.json and tsconfig test runners"
+          "rg --files apps/api/src apps/web/src scripts/statement-visual",
+          "rg -n recurrence_cancelled installments|operational installments"
         ],
-        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
-        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
+        "scope": "Existing node:test runner, API integration runner and visual runner identified in repository package scripts and CI action before adding scenario.",
+        "runner": "npm run test / npm run test:integration --workspace @solverfin/api",
         "candidates": [
           {
-            "path": "packages/domain/src/document-imports.test.ts",
-            "case": "Existing directly relevant suite",
-            "oracle": "object31 does not supersede root1; invalid/truncated/layout version fail closed",
-            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
+            "path": "apps/api/src/repositories/installments-edit-block-reason.test.ts",
+            "case": "Extend existing affected suite",
+            "oracle": "End-to-end GET/PATCH and DB snapshots or rendered UI reflect correct selected/future scope and blocked values",
+            "comparison": "Preserve existing tests and append discriminant cases in directly affected suite."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
+      "justification": "Use existing test harness and preserve prior scenarios; API and unit CI run completed success on exact head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js",
+        "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+        "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
         "reached_tests": [
-          "packages/domain/src/document-imports.test.ts::parses the homologated fictitious bank PDF without guessing the account",
-          "packages/domain/src/document-imports.test.ts::keeps equal legitimate card purchases distinct and ignores totals/payments",
-          "packages/domain/src/document-imports.test.ts::fails closed for corrupt or unsupported PDFs",
-          "packages/domain/src/document-imports.test.ts::does not mistake object 31 for the catalog object 1",
-          "packages/domain/src/document-imports.test.ts::requires explicit XLSX sheet and column mapping and never evaluates formulas"
+          "apps/api/src/repositories/installments-edit-block-reason.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
-        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-748-ci-test-reach.txt",
+        "evidence_sha256": "83dc1989fbf4f78dd3c88f3d909a9104c525d8ea11e8b74979b78e108b8efefe"
       }
     },
     {
-      "path": "packages/domain/src/mercado-pago-pdf.test.ts",
+      "path": "apps/web/src/dev-server/operational-installments.test.ts",
       "operation": "modified",
-      "scenario": "full description with 4-6 lines in first/middle/last rows and non-final pages; no accepted partial description at header/footer boundary; all description words consumed or batch blocked; ambiguous block association rejected; description length limit evaluated after complete reconstruction",
-      "requirement": "A-007: preserve every multiline description word or block ambiguity",
+      "scenario": "Scope chooser and single save-button UI code contracts",
+      "requirement": "Issue #748: recurring installment scope, safety and API/UI compatibility",
       "search": {
         "queries": [
-          "rg rowDescription|parsePageMovements|parseMercadoPagoStatement|multiline|description over domain Mercado Pago sources and API extractor tests; read package scripts, tsconfig.test.json and scripts/run-compiled-tests.mjs."
+          "rg --files apps/api/src apps/web/src scripts/statement-visual",
+          "rg -n recurrence_cancelled installments|operational installments"
         ],
-        "scope": "Recorded agent discovery in the existing API/domain tests and runner before the implementation writes; source plans preserved outside active execution evidence.",
-        "runner": "Existing node:test TypeScript compiled test runner; frozen-material execution pending",
+        "scope": "Existing node:test runner, API integration runner and visual runner identified in repository package scripts and CI action before adding scenario.",
+        "runner": "npm run test / npm run test:integration --workspace @solverfin/api",
         "candidates": [
           {
-            "path": "packages/domain/src/mercado-pago-pdf.test.ts",
-            "case": "Existing directly relevant suite",
-            "oracle": "multiline two-line happy path; 38 synthetic rows over three pages; missing/invalid date and orphan financial fields; A-005 lower-page/header/footer regressions; duplicate IDs; exact balances/totals",
-            "comparison": "Extend the existing helpers and assertions with the newly observed failure variants; preserve all historical cases."
+            "path": "apps/web/src/dev-server/operational-installments.test.ts",
+            "case": "Extend existing affected suite",
+            "oracle": "End-to-end GET/PATCH and DB snapshots or rendered UI reflect correct selected/future scope and blocked values",
+            "comparison": "Preserve existing tests and append discriminant cases in directly affected suite."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Existing suite provides the required boundary and helpers; extend it with the distinct audit oracles rather than create another test file.",
+      "justification": "Use existing test harness and preserve prior scenarios; API and unit CI run completed success on exact head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js",
+        "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+        "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
         "reached_tests": [
-          "packages/domain/src/mercado-pago-pdf.test.ts::recognizes the homologated layout, joins multiline descriptions and validates balances/totals",
-          "packages/domain/src/mercado-pago-pdf.test.ts::validates exactly 38 synthetic movements spread across three pages",
-          "packages/domain/src/mercado-pago-pdf.test.ts::preserves every description line at the first, middle and last movement of each page",
-          "packages/domain/src/mercado-pago-pdf.test.ts::rejects ambiguous or unassigned description text instead of returning partial proposals",
-          "packages/domain/src/mercado-pago-pdf.test.ts::applies the description length limit to the complete multiline value",
-          "packages/domain/src/mercado-pago-pdf.test.ts::fails closed when bank identity, a row, a balance, or totals are tampered",
-          "packages/domain/src/mercado-pago-pdf.test.ts::rejects every candidate financial row even when its date is absent or malformed",
-          "packages/domain/src/mercado-pago-pdf.test.ts::rejects orphan financial fields and never hides a partially redacted row",
-          "packages/domain/src/mercado-pago-pdf.test.ts::reconciles movements at and beyond the former vertical cutoff on every page",
-          "packages/domain/src/mercado-pago-pdf.test.ts::blocks incomplete lower-page movements instead of discarding their financial anchors",
-          "packages/domain/src/mercado-pago-pdf.test.ts::accepts rows close to the header but rejects overlapping financial fields",
-          "packages/domain/src/mercado-pago-pdf.test.ts::ignores footer contact numbers but never hides financial fields behind a footer",
-          "packages/domain/src/mercado-pago-pdf.test.ts::does not confuse description text with a structural footer",
-          "packages/domain/src/mercado-pago-pdf.test.ts::rejects duplicated operation IDs before financial proposals are built"
+          "apps/web/src/dev-server/operational-installments.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
-        "evidence_sha256": "9052043cf9410837fd2cbd01941efa2d99c9ccf4e407ddf9bdabca50b8ace2e6"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-748-ci-test-reach.txt",
+        "evidence_sha256": "83dc1989fbf4f78dd3c88f3d909a9104c525d8ea11e8b74979b78e108b8efefe"
       }
     }
   ]
