@@ -1,0 +1,15 @@
+{
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "checks": {
+    "pdfinfo_before_extraction_documented": true,
+    "copy_denied_blocked": true,
+    "no_ocr_fallback": true,
+    "no_original_storage": true,
+    "whole_preview_blocked": true
+  },
+  "negative_copy_policy_drift_detected": true,
+  "source": "docs/IMPORTS.md:347-355",
+  "search_outside_diff": true,
+  "matching_lines": 11,
+  "scope": "new Mercado Pago permission and parser contract; existing synthetic layouts preserved"
+}

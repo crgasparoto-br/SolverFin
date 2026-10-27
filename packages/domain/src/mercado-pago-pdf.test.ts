@@ -1,0 +1,463 @@
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+
+import {
+  parseMercadoPagoStatement,
+  recognizeMercadoPagoStatement,
+  type PdfExtractedPage,
+  type PdfExtractedWord,
+} from "./mercado-pago-pdf.js";
+
+const w = (text: string, x: number, y: number): PdfExtractedWord => ({ text, x, y });
+const row = (
+  date: string,
+  description: readonly string[],
+  id: string,
+  value: string,
+  balance: string,
+  y: number,
+) => [
+  w(date, 40, y),
+  ...description.flatMap((line, i) =>
+    line
+      .split(" ")
+      .map((word, j) => w(word, 89 + j * 10, y + (i - (description.length - 1) / 2) * 12)),
+  ),
+  w(id, 197, y),
+  w("R$", 300, y),
+  w(value, 315, y),
+  w("R$", 365, y),
+  w(balance, 378, y),
+];
+
+function pages(): PdfExtractedPage[] {
+  const header = (y: number) => [
+    w("Data", 40, y),
+    w("Descrição", 89, y),
+    w("ID", 197, y),
+    w("da", 210, y),
+    w("operação", 223, y),
+    w("Valor", 312, y),
+    w("Saldo", 384, y),
+  ];
+  return [
+    {
+      words: [
+        w("EXTRATO", 330, 30),
+        w("DE", 370, 30),
+        w("CONTA", 390, 30),
+        w("DETALHE", 175, 155),
+        w("DOS", 210, 155),
+        w("MOVIMENTOS", 230, 155),
+        w("Saldo", 44, 106),
+        w("inicial:", 68, 106),
+        w("R$", 96, 107),
+        w("100,00", 107, 107),
+        w("Entradas:", 179, 100),
+        w("R$", 218, 101),
+        w("15,50", 230, 101),
+        w("Saidas:", 179, 113),
+        w("R$", 215, 114),
+        w("-15,00", 227, 114),
+        w("Saldo", 318, 107),
+        w("final:", 341, 107),
+        w("R$", 368, 108),
+        w("100,50", 382, 108),
+        ...header(183),
+        ...row("01-10-2026", ["Recebimento de", "cliente"], "123456789012", "10,00", "110,00", 215),
+        ...row("02-10-2026", ["Pagamento Pix"], "123456789013", "-15,00", "95,00", 252),
+      ],
+    },
+    {
+      words: [
+        ...header(41),
+        ...row("03-10-2026", ["Rendimentos"], "123456789014", "5,50", "100,50", 75),
+        w("Mercado", 32, 600),
+        w("Pago", 65, 600),
+        w("Instituição", 92, 600),
+        w("de", 136, 600),
+        w("Pagamento", 150, 600),
+      ],
+    },
+  ];
+}
+
+describe("Mercado Pago bank statement PDF layout", () => {
+  it("recognizes the homologated layout, joins multiline descriptions and validates balances/totals", () => {
+    const parsed = parseMercadoPagoStatement(pages());
+    assert.equal(recognizeMercadoPagoStatement(pages()), true);
+    assert.equal(parsed.state, "ready");
+    assert.equal(parsed.rows.length, 3);
+    assert.deepEqual(
+      parsed.rows.map((r) => [r.occurredOn, r.amountMinor, r.direction]),
+      [
+        ["2026-10-01", 1000, "inflow"],
+        ["2026-10-02", 1500, "outflow"],
+        ["2026-10-03", 550, "inflow"],
+      ],
+    );
+    assert.match(parsed.rows[0]!.description, /Recebimento de cliente/);
+    assert.equal(parsed.rows[0]!.externalId, "123456789012");
+    assert.equal(parsed.rows[0]!.currency, "BRL");
+    assert.notEqual(parsed.rows[0]!.sourceHash, parsed.rows[1]!.sourceHash);
+  });
+
+  it("validates exactly 38 synthetic movements spread across three pages", () => {
+    const fixture = pages();
+    const firstPage = fixture[0]!.words
+      .filter((word) => word.y < 200)
+      .map((word) => {
+        if (word.text === "15,50") return { ...word, text: "38,00" };
+        if (word.text === "-15,00") return { ...word, text: "0,00" };
+        if (word.text === "100,50") return { ...word, text: "138,00" };
+        return word;
+      });
+    const continuationHeader = fixture[1]!.words.filter((word) => word.y < 60);
+    const institution = fixture[1]!.words.filter((word) => word.y > 575);
+    const threePages: PdfExtractedPage[] = [
+      { words: firstPage },
+      { words: continuationHeader },
+      { words: [...continuationHeader, ...institution] },
+    ];
+    for (let i = 0; i < 38; i += 1) {
+      const day = new Date(Date.UTC(2026, 9, 1 + i));
+      const date = [
+        String(day.getUTCDate()).padStart(2, "0"),
+        String(day.getUTCMonth() + 1).padStart(2, "0"),
+        String(day.getUTCFullYear()),
+      ].join("-");
+      const pageIndex = i < 13 ? 0 : i < 26 ? 1 : 2;
+      const position = pageIndex === 0 ? i : pageIndex === 1 ? i - 13 : i - 26;
+      const y = (pageIndex === 0 ? 212 : 72) + position * 27;
+      threePages[pageIndex] = {
+        words: [
+          ...threePages[pageIndex]!.words,
+          ...row(
+            date,
+            ["Operação sintética"],
+            String(123456789000 + i),
+            "1,00",
+            `${101 + i},00`,
+            y,
+          ),
+        ],
+      };
+    }
+    const parsed = parseMercadoPagoStatement(threePages);
+    assert.equal(parsed.state, "ready");
+    assert.equal(parsed.rows.length, 38);
+    assert.equal(
+      parsed.rows.reduce((sum, item) => sum + item.amountMinor, 0),
+      3800,
+    );
+    assert.equal(new Set(parsed.rows.map((item) => item.externalId)).size, 38);
+  });
+
+  it("preserves every description line at the first, middle and last movement of each page", () => {
+    for (const lineCount of [1, 2, 3, 4, 5, 6]) {
+      const description = Array.from({ length: lineCount }, (_, i) => `Linha${i + 1}`);
+      for (const selectedRow of [0, 1, 2]) {
+        for (const separateLastPage of [false, true]) {
+          const fixture = pages();
+          const firstWords = fixture[0]!.words.filter((word) => word.y < 200);
+          const continuationHeader = fixture[1]!.words.filter((word) => word.y < 60);
+          const footer = fixture[1]!.words.filter((word) => word.y >= 600);
+          const movements = [
+            row(
+              "01-10-2026",
+              selectedRow === 0 ? description : ["Primeiro"],
+              "123456789012",
+              "10,00",
+              "110,00",
+              230,
+            ),
+            row(
+              "02-10-2026",
+              selectedRow === 1 ? description : ["Segundo"],
+              "123456789013",
+              "-15,00",
+              "95,00",
+              330,
+            ),
+            row(
+              "03-10-2026",
+              selectedRow === 2 ? description : ["Terceiro"],
+              "123456789014",
+              "5,50",
+              "100,50",
+              separateLastPage ? 100 : 430,
+            ),
+          ];
+          const input = separateLastPage
+            ? [
+                { words: [...firstWords, ...movements[0]!, ...movements[1]!, ...footer] },
+                { words: [...continuationHeader, ...movements[2]!, ...footer] },
+              ]
+            : [{ words: [...firstWords, ...movements.flat(), ...footer] }];
+          const parsed = parseMercadoPagoStatement(input);
+          assert.equal(parsed.state, "ready", `${lineCount}/${selectedRow}/${separateLastPage}`);
+          assert.equal(parsed.rows.length, 3);
+          assert.equal(parsed.rows[selectedRow]?.description, description.join(" "));
+          assert.deepEqual(parsed.problems, []);
+        }
+      }
+    }
+  });
+
+  it("rejects ambiguous or unassigned description text instead of returning partial proposals", () => {
+    const variants: PdfExtractedPage[][] = [];
+    // Words at the former cutoff must be consumed or reject the layout.
+    for (const offset of [17.9, 18, 18.1, 24, 50]) {
+      const fixture = pages();
+      fixture[1] = { words: [...fixture[1]!.words, w("Sufixo", 89, 75 + offset)] };
+      variants.push(fixture);
+    }
+    for (const y of [41, 43, 44.5]) {
+      const fixture = pages();
+      fixture[1] = { words: [...fixture[1]!.words, w("Sobreposto", 105, y)] };
+      variants.push(fixture);
+    }
+    const nearFooter = pages();
+    nearFooter[1] = { words: [...nearFooter[1]!.words, w("Sobreposto", 89, 598)] };
+    variants.push(nearFooter);
+    const ambiguous = pages();
+    ambiguous[1] = { words: [...ambiguous[1]!.words, w("Ambiguo", 89, 79)] };
+    variants.push(ambiguous);
+    for (const fixture of variants) {
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, "blocked");
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+      assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("applies the description length limit to the complete multiline value", () => {
+    for (const lineLength of [59, 60]) {
+      const fixture = pages();
+      const description = Array.from({ length: 4 }, () => "x".repeat(lineLength));
+      fixture[1] = {
+        words: [
+          ...fixture[1]!.words.filter((word) => word.y < 60 || word.y >= 600),
+          ...row("03-10-2026", description, "123456789014", "5,50", "100,50", 100),
+        ],
+      };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, lineLength === 59 ? "ready" : "blocked");
+      if (lineLength === 59) assert.equal(parsed.rows[2]?.description, description.join(" "));
+      else assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("fails closed when bank identity, a row, a balance, or totals are tampered", () => {
+    const missingIdentity = pages();
+    missingIdentity[1] = {
+      words: missingIdentity[1]!.words.filter((word) => word.text !== "Mercado"),
+    };
+    assert.equal(parseMercadoPagoStatement(missingIdentity).state, "blocked");
+
+    const missingOperation = pages();
+    missingOperation[0] = {
+      words: missingOperation[0]!.words.filter((word) => word.text !== "123456789013"),
+    };
+    assert.equal(
+      parseMercadoPagoStatement(missingOperation).problems[0]?.code,
+      "IMPORT_PDF_ROW_INVALID",
+    );
+
+    const wrongBalance = pages();
+    wrongBalance[1] = {
+      words: wrongBalance[1]!.words.map((word) =>
+        word.text === "100,50" ? { ...word, text: "101,50" } : word,
+      ),
+    };
+    assert.equal(
+      parseMercadoPagoStatement(wrongBalance).problems[0]?.code,
+      "IMPORT_PDF_BALANCE_MISMATCH",
+    );
+
+    const wrongTotals = pages();
+    wrongTotals[0] = {
+      words: wrongTotals[0]!.words.map((word) =>
+        word.text === "15,50" ? { ...word, text: "19,50" } : word,
+      ),
+    };
+    assert.equal(
+      parseMercadoPagoStatement(wrongTotals).problems[0]?.code,
+      "IMPORT_PDF_TOTAL_MISMATCH",
+    );
+  });
+
+  it("rejects every candidate financial row even when its date is absent or malformed", () => {
+    // Deliberately keep the previous totals unchanged: the old parser silently
+    // ignored the fourth movement and returned ready with three proposals.
+    for (const invalidDate of ["04/10/2026", "SEM-DATA", ""]) {
+      const modified = pages();
+      modified[1] = {
+        words: [
+          ...modified[1]!.words,
+          ...row(
+            invalidDate,
+            ["Movimento adicional"],
+            "123456789015",
+            "1,00",
+            "101,50",
+            130,
+          ).filter((word) => word.text.length > 0),
+        ],
+      };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked", `invalid date: ${invalidDate}`);
+      assert.deepEqual(parsed.rows, []);
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+    }
+  });
+
+  it("rejects orphan financial fields and never hides a partially redacted row", () => {
+    for (const missing of ["date-and-id", "date-and-amount", "date-and-balance"]) {
+      const modified = pages();
+      const candidate = row(
+        "04-10-2026",
+        ["Entrada de teste"],
+        "123456789015",
+        "1,00",
+        "101,50",
+        130,
+      ).filter((word) => {
+        if (missing === "date-and-id") return word.x >= 285 || (word.x >= 76 && word.x < 195);
+        if (missing === "date-and-amount") return (word.x >= 195 && word.x < 285) || word.x >= 354;
+        return word.x >= 195 && word.x < 354;
+      });
+      modified[1] = { words: [...modified[1]!.words, ...candidate] };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked", missing);
+      assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("reconciles movements at and beyond the former vertical cutoff on every page", () => {
+    for (const pageIndex of [0, 1]) {
+      for (const y of [574, 575, 576, 590, 650]) {
+        const fixture = pages();
+        const added = row(
+          pageIndex === 0 ? "02-10-2026" : "04-10-2026",
+          ["Movimento de borda"],
+          "123456789099",
+          "1,00",
+          pageIndex === 0 ? "96,00" : "101,50",
+          y,
+        );
+        fixture[pageIndex] = {
+          words: [
+            ...fixture[pageIndex]!.words.map((word) =>
+              word.y === 600 ? { ...word, y: Math.max(600, y + 30) } : word,
+            ),
+            ...added,
+          ],
+        };
+        if (pageIndex === 0) {
+          fixture[1] = {
+            words: fixture[1]!.words.map((word) =>
+              word.text === "100,50" ? { ...word, text: "101,50" } : word,
+            ),
+          };
+        }
+        // Leaving the old summary must block, not produce an incomplete batch.
+        const invalid = parseMercadoPagoStatement(fixture);
+        assert.equal(invalid.state, "blocked", `page=${pageIndex + 1}, y=${y}`);
+        assert.deepEqual(invalid.rows, []);
+        fixture[0] = {
+          words: fixture[0]!.words.map((word) => {
+            if (word.text === "15,50") return { ...word, text: "16,50" };
+            if (word.text === "100,50") return { ...word, text: "101,50" };
+            return word;
+          }),
+        };
+        const valid = parseMercadoPagoStatement(fixture);
+        assert.equal(valid.state, "ready", `page=${pageIndex + 1}, y=${y}`);
+        assert.equal(valid.rows.length, 4);
+        assert.equal(valid.rows.filter((item) => item.externalId === "123456789099").length, 1);
+      }
+    }
+  });
+
+  it("blocks incomplete lower-page movements instead of discarding their financial anchors", () => {
+    for (const missing of ["date", "operation", "amount", "balance"]) {
+      const fixture = pages();
+      const added = row(
+        "04-10-2026",
+        ["Movimento incompleto"],
+        "123456789099",
+        "1,00",
+        "101,50",
+        576,
+      ).filter((word) => {
+        if (missing === "date") return word.x >= 76;
+        if (missing === "operation") return word.x < 195 || word.x >= 285;
+        if (missing === "amount") return word.x < 285 || word.x >= 354;
+        return word.x < 354;
+      });
+      fixture[1] = { words: [...fixture[1]!.words, ...added] };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, "blocked", missing);
+      assert.deepEqual(parsed.rows, []);
+      assert.equal(parsed.problems[0]?.code, "IMPORT_PDF_ROW_INVALID");
+    }
+  });
+
+  it("accepts rows close to the header but rejects overlapping financial fields", () => {
+    for (const y of [41, 44.5, 45, 52, 53]) {
+      const fixture = pages();
+      fixture[1] = {
+        words: fixture[1]!.words.map((word) => (word.y === 75 ? { ...word, y } : word)),
+      };
+      const parsed = parseMercadoPagoStatement(fixture);
+      assert.equal(parsed.state, y > 44.5 ? "ready" : "blocked", `y=${y}`);
+      assert.equal(parsed.rows.length, y > 44.5 ? 3 : 0);
+    }
+  });
+
+  it("ignores footer contact numbers but never hides financial fields behind a footer", () => {
+    const fixture = pages();
+    fixture[1] = {
+      words: [...fixture[1]!.words, w("3.003,", 302, 612), w("2/2", 398, 635)],
+    };
+    assert.equal(parseMercadoPagoStatement(fixture).state, "ready");
+    for (const extra of [
+      [w("R$", 300, 612), w("1,00", 315, 612)],
+      [w("1,00", 315, 612)],
+      [w("123456789099", 197, 612)],
+      [w("04-10-2026", 40, 612)],
+      row("04-10-2026", ["Movimento no rodape"], "123456789099", "1,00", "101,50", 612),
+    ]) {
+      const modified = [...fixture];
+      modified[1] = { words: [...fixture[1]!.words, ...extra] };
+      const parsed = parseMercadoPagoStatement(modified);
+      assert.equal(parsed.state, "blocked");
+      assert.deepEqual(parsed.rows, []);
+    }
+  });
+
+  it("does not confuse description text with a structural footer", () => {
+    const fixture = pages();
+    fixture[1] = {
+      words: fixture[1]!.words.map((word) =>
+        word.text === "Rendimentos" ? { ...word, text: "Data de geracao:" } : word,
+      ),
+    };
+    const parsed = parseMercadoPagoStatement(fixture);
+    assert.equal(parsed.state, "ready");
+    assert.equal(parsed.rows[2]?.description, "Data de geracao:");
+  });
+
+  it("rejects duplicated operation IDs before financial proposals are built", () => {
+    const duplicateId = pages();
+    duplicateId[1] = {
+      words: duplicateId[1]!.words.map((word) =>
+        word.text === "123456789014" ? { ...word, text: "123456789012" } : word,
+      ),
+    };
+    const parsed = parseMercadoPagoStatement(duplicateId);
+    assert.equal(parsed.state, "blocked");
+    assert.equal(parsed.rows.length, 0);
+  });
+});

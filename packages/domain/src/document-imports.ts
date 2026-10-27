@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
+import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+import { hasValidPdfCatalog } from "./pdf-xref.js";
+
+export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
 import type { ImportLineDirection, ISODate, TransactionKind } from "./index.js";
 
@@ -66,8 +70,11 @@ export interface PdfParserDescriptor {
   version: string;
   institution: string;
   documentClass: ImportDocumentClass;
-  recognize: (text: string) => boolean;
-  parse: (text: string) => Omit<StructuredImportPreview, "pdf">;
+  recognize: (text: string, pages?: readonly PdfExtractedPage[]) => boolean;
+  parse: (
+    text: string,
+    pages?: readonly PdfExtractedPage[],
+  ) => Omit<StructuredImportPreview, "pdf">;
 }
 
 export class StructuredImportError extends Error {
@@ -244,6 +251,7 @@ export function parseXlsxImport(input: {
 }
 
 export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
+  MERCADO_PAGO_STATEMENT_PARSER,
   {
     id: "solverfin-fixture-bank-statement",
     version: "1",
@@ -273,10 +281,11 @@ export const PDF_PARSER_CATALOG: readonly PdfParserDescriptor[] = [
 export function parsePdfImport(input: {
   contentBase64: string;
   documentClass: ImportDocumentClass;
+  extractedPages?: readonly PdfExtractedPage[];
 }): StructuredImportPreview {
   const bytes = decodeStructuredImportBase64(input.contentBase64);
   const text = assertPdfStructure(bytes);
-  if (/\/Encrypt\b/.test(text)) {
+  if (/\/Encrypt\b/.test(text) && input.extractedPages === undefined) {
     throw new StructuredImportError(
       "IMPORT_PDF_PROTECTED",
       "PDF protegido por senha nao pode ser importado.",
@@ -285,7 +294,8 @@ export function parsePdfImport(input: {
   }
 
   const candidates = PDF_PARSER_CATALOG.filter(
-    (parser) => parser.documentClass === input.documentClass && parser.recognize(text),
+    (parser) =>
+      parser.documentClass === input.documentClass && parser.recognize(text, input.extractedPages),
   );
   if (candidates.length === 0) {
     throw new StructuredImportError(
@@ -303,7 +313,7 @@ export function parsePdfImport(input: {
   }
 
   const parser = candidates[0]!;
-  const parsed = parser.parse(text);
+  const parsed = parser.parse(text, input.extractedPages);
   return {
     ...parsed,
     pdf: {
@@ -331,38 +341,8 @@ function assertPdfStructure(bytes: Buffer): string {
     throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
   }
 
-  const xrefSection = trimmed.slice(xrefOffset, startxrefMatch.index);
-  if (xrefSection.startsWith("xref")) {
-    const trailerIndex = xrefSection.lastIndexOf("trailer");
-    if (trailerIndex < 0) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-    const trailer = xrefSection.slice(trailerIndex);
-    const rootMatch = /\/Root\s+(\d+)\s+(\d+)\s+R\b/.exec(trailer);
-    if (rootMatch === null) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-    const rootMarker = `${rootMatch[1]} ${rootMatch[2]} obj`;
-    const rootIndex = text.lastIndexOf(rootMarker, xrefOffset);
-    const rootEnd = rootIndex < 0 ? -1 : text.indexOf("endobj", rootIndex + rootMarker.length);
-    if (
-      rootIndex < 0 ||
-      rootEnd < 0 ||
-      rootEnd > xrefOffset ||
-      !/\/Type\s*\/Catalog\b/.test(text.slice(rootIndex, rootEnd))
-    ) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-  } else {
-    const xrefStreamObject = /^\d+\s+\d+\s+obj\b/.test(xrefSection);
-    if (
-      !xrefStreamObject ||
-      !/\/Type\s*\/XRef\b/.test(xrefSection) ||
-      !/\/Root\s+\d+\s+\d+\s+R\b/.test(xrefSection) ||
-      !/endobj\s*$/.test(xrefSection)
-    ) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
+  if (!hasValidPdfCatalog(text, xrefOffset, startxrefMatch.index)) {
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
   }
 
   return text;

@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "source_head_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+  "artifacts": [
+    {
+      "repository_path": ".audit/entregar-issue/EVIDENCE-README.md",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/EVIDENCE-README.md",
+      "sha256": "a35ec390181d5bcce944cd742f0f3495522deebfc8f8a19f39e96fd472f05a48",
+      "size": 3059
+    },
+    {
+      "repository_path": ".audit/entregar-issue/audit-remediation.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/audit-remediation.json",
+      "sha256": "23459f2df4e2db13329affb6a6b9e588a6a2f864d6ad469f52bcdcf1c659672f",
+      "size": 5103
+    },
+    {
+      "repository_path": ".audit/entregar-issue/audit-source-result.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/audit-source-result.json",
+      "sha256": "9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874",
+      "size": 2237
+    },
+    {
+      "repository_path": ".audit/entregar-issue/code-growth.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/code-growth.json",
+      "sha256": "86111c5bd07692c99badad41cd53b8f43912b36b591fbdbca74eeb830ee70d43",
+      "size": 1068
+    },
+    {
+      "repository_path": ".audit/entregar-issue/codebase-grounding.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/codebase-grounding.json",
+      "sha256": "075818c2d90fc5d99556d0fbdfbc241b833adf69d08ea51b514649cd186c6917",
+      "size": 9651
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence-provenance.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence-provenance.json",
+      "sha256": "5adad44a3dc152e398533c120f47a992852c300aac8a4b2996a7e3728a06e360",
+      "size": 5829
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/a006-after.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/a006-after.log",
+      "sha256": "7bbedd054666f28aec8d015e765de3009815b6d9f053f0dc0812a4f44b4649aa",
+      "size": 108
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/a006-before.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/a006-before.log",
+      "sha256": "93cf386ac480cfe7b988a5fb2e5a56701ab7984d84bd8f40ed27e7dded41989b",
+      "size": 390
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/a006-saturation-regression.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/a006-saturation-regression.log",
+      "sha256": "50084253dce1f543723845a9df1e6c018333d88456f10d137f2095701ef0e27b",
+      "size": 2261
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/a006-source-audit.md",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/a006-source-audit.md",
+      "sha256": "2f478acae8a75ea419e10cbef48e480388123dd659f79f3fc11e78a703b401c8",
+      "size": 6781
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/documentation-check.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/documentation-check.json",
+      "sha256": "084b8f51bbe82decebee38853c193d5572824beb8147e4fcc5474b962b874b82",
+      "size": 503
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/documentation-search.txt",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/documentation-search.txt",
+      "sha256": "788ee6053805053a6fb4d91563b4d436185544e86e1c7a1775032eba640c02a0",
+      "size": 3351
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-audit-probe.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-audit-probe.log",
+      "sha256": "7166b13ae4c20da6c60f86d7f7e69c6ea2f3845acd27f600c88727cf0b808efb",
+      "size": 198
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-mutation-old-header-gap.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-mutation-old-header-gap.log",
+      "sha256": "6381f263686193bec54e3b6e092c5a167855e19e7fa3c2dbc535630b2970af47",
+      "size": 4068
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-mutation-old-lower-page-cutoff.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-mutation-old-lower-page-cutoff.log",
+      "sha256": "28419a51b6eec63c2386940eaafd9909bca70c73950a7aa850138f5e7fa206cd",
+      "size": 5898
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-mutation-silent-footer-clipping.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-mutation-silent-footer-clipping.log",
+      "sha256": "c8bb9cc51a8fcec4a2bbd24bfc0a9edef01c495cbe44f2b9fd07b4f4d0439017",
+      "size": 4124
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-mutations.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-mutations.json",
+      "sha256": "3bda9103c5ec12abcc5a1f38b027c258d51c68deed22b7cc1838b6d2805c7f90",
+      "size": 574
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/final-remote-ci.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/final-remote-ci.json",
+      "sha256": "9d70bfca5335f76dad1fd4db6baf4614ac1f0ae9f202bd50821af4c341e886e4",
+      "size": 1413
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/focused-tests.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/focused-tests.log",
+      "sha256": "d622c2127646b959da452d29533d5db025713deb885f0e07d19e42a32f375e96",
+      "size": 5913
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/governance-selected.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/governance-selected.log",
+      "sha256": "004aa8054e556b07f515e664bea95795546a2d505fe27ec01699d0cd4393ac16",
+      "size": 113
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/identity.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/identity.json",
+      "sha256": "77530e89cf7ac37bc2aa0764c324b7009124bcc031673ed0743035d6c9e49209",
+      "size": 473
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/issue-745-focused-execution.txt",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/issue-745-focused-execution.txt",
+      "sha256": "9ed0f70000227b7047e964c6a0cf8148a3fa94b44821813a294144d7ceb8f0c3",
+      "size": 6285
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/original-homologation.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/original-homologation.json",
+      "sha256": "0877c570542729de533b41f01d2c65c96856d1d11f99063753cff15fb027b8e5",
+      "size": 821
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/original-negative.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/original-negative.json",
+      "sha256": "3f4faef0ec720e16fcd31859d25657a19ce47b95e9324178904140866f5115cd",
+      "size": 343
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/original-parser.log",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/original-parser.log",
+      "sha256": "3e0a4d81339bcd6b37b572da646804acf4c71d3a38edc47df1b21fe909cdbd1e",
+      "size": 319
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/original-preview.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/original-preview.json",
+      "sha256": "27986fcf19bcbf0a9fbbe23a995db7060111326a2cbd0131c7cabc79768c76b7",
+      "size": 644
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/package-privacy.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/package-privacy.json",
+      "sha256": "e9678cff0815314f3c493771429511bce7e99be6e26afd519cf851b9a7a65bd6",
+      "size": 173
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/privacy-check.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/privacy-check.json",
+      "sha256": "153e12ff9042b974c1c6e82a71070b6f6b4a6d3309ecef27eeaa5335abeb33cd",
+      "size": 455
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/release-boundary.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/release-boundary.json",
+      "sha256": "b0ed97e5f22d211a88cb022a5c094dfc461e9f0aa2a70145fbee449c1dddd4da",
+      "size": 407
+    },
+    {
+      "repository_path": ".audit/entregar-issue/evidence/source-search.txt",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/evidence/source-search.txt",
+      "sha256": "d48e1d175d79ccf6efa8cd7e967e0d443e0739b0f43fc45837aca06ae97c1dee",
+      "size": 1127
+    },
+    {
+      "repository_path": ".audit/entregar-issue/handoff-ready.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/handoff-ready.json",
+      "sha256": "06672d98380a6780e33c1d2f13e056865153f82555f2e611ec8976e978b40dc3",
+      "size": 10731
+    },
+    {
+      "repository_path": ".audit/entregar-issue/issue-745-audit-escape-closure.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/issue-745-audit-escape-closure.json",
+      "sha256": "462bb19b98c357dccf3111cd2c9eb874ef4a2c8321cc6895f7c49de04483da0c",
+      "size": 7921
+    },
+    {
+      "repository_path": ".audit/entregar-issue/issue-745-inherited-controls.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/issue-745-inherited-controls.json",
+      "sha256": "24cfcc4f06ebff5764e437e75a7e65b320bb3d33b611c49003a659fbaf36c775",
+      "size": 3960
+    },
+    {
+      "repository_path": ".audit/entregar-issue/learning-closure.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/learning-closure.json",
+      "sha256": "2c887ef4d2493f10ba1ab120589cf3f7671d7b3419172ea262d90ca0a46e8b96",
+      "size": 947
+    },
+    {
+      "repository_path": ".audit/entregar-issue/previous-audit-source-result.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/previous-audit-source-result.json",
+      "sha256": "2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24",
+      "size": 13091
+    },
+    {
+      "repository_path": ".audit/entregar-issue/previous-issue-745-audit-escape-closure.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/previous-issue-745-audit-escape-closure.json",
+      "sha256": "d513965a85d57d35c060773f63d964a0c438f2f0cc71cb4766a9270b12f4bc9e",
+      "size": 5805
+    },
+    {
+      "repository_path": ".audit/entregar-issue/previous-issue-745-inherited-controls.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/previous-issue-745-inherited-controls.json",
+      "sha256": "375f7d465603ca50c8d3a64bc933987cdaf2df50073e2d7707235483f730c2a2",
+      "size": 2782
+    },
+    {
+      "repository_path": ".audit/entregar-issue/requirement-attack-matrix.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/requirement-attack-matrix.json",
+      "sha256": "b4a21935d082d432037c9225b5f006f48edb648b3288e27de8f72b129dcc36a2",
+      "size": 61001
+    },
+    {
+      "repository_path": ".audit/entregar-issue/requirement-closure.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/requirement-closure.json",
+      "sha256": "5509520041511e777a04bf3ca57186b8c62ad9c027f4c3f0ff736ab564559e73",
+      "size": 19589
+    },
+    {
+      "repository_path": ".audit/entregar-issue/risk-saturation.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/risk-saturation.json",
+      "sha256": "395cf603e0108572c80a1103825049b3704887403a0ae9f8c2b11fffc6a6acc8",
+      "size": 9050
+    },
+    {
+      "repository_path": ".audit/entregar-issue/specification-snapshot.json",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/specification-snapshot.json",
+      "sha256": "13359bd6854628afb371a1b4375386d0b2ff96134f2465a6faa1ccca0930acbd",
+      "size": 574
+    },
+    {
+      "repository_path": ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      "snapshot_path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/history/f5a3a2923d4f7ffdf24e849eee01e2ee7be33743/specification-sources/SRC-ISSUE.txt",
+      "sha256": "9c6e7eb6cb0a702a650841885a739b2368633fe71bd9e2ea066dd28962ed8bb8",
+      "size": 1809
+    }
+  ],
+  "current_source": {
+    "path": "/workspace/scratch/9947e091bf73/pr746-remediation/governance/source/audit-source-result.json",
+    "sha256": "e7353aa45b5566e853223073ae45f941c412840c735dcf8dcd04ead9026bc8dc",
+    "rejection_id": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
+    "audited_head_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743"
+  }
+}

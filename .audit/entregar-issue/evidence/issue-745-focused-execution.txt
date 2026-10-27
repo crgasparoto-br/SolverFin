@@ -1,0 +1,251 @@
+HEAD: 9553b9fae4ac06462de443e4539111c14b6b6968
+COMMAND: /opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin/node --test --test-reporter=tap /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/pdf-text-extraction.test.js /workspace/scratch/9947e091bf73/pr746-remediation/evidence/extractor-9553b9fae4ac06462de443e4539111c14b6b6968-ijBId6/compiled/document-imports.test.js
+SOURCE_LOG_SHA256: 9f354b7e8d6a5af70d6e3f2a40e7471cdf46e0ffc7f185711d4c8e485694dff7
+TAP version 13
+# Subtest: document imports
+    # Subtest: parses the homologated fictitious bank PDF without guessing the account
+    ok 1 - parses the homologated fictitious bank PDF without guessing the account
+      ---
+      duration_ms: 3.7447
+      type: 'test'
+      ...
+    # Subtest: keeps equal legitimate card purchases distinct and ignores totals/payments
+    ok 2 - keeps equal legitimate card purchases distinct and ignores totals/payments
+      ---
+      duration_ms: 0.660542
+      type: 'test'
+      ...
+    # Subtest: fails closed for corrupt or unsupported PDFs
+    ok 3 - fails closed for corrupt or unsupported PDFs
+      ---
+      duration_ms: 0.759909
+      type: 'test'
+      ...
+    # Subtest: does not mistake object 31 for the catalog object 1
+    ok 4 - does not mistake object 31 for the catalog object 1
+      ---
+      duration_ms: 2.297551
+      type: 'test'
+      ...
+    # Subtest: requires explicit XLSX sheet and column mapping and never evaluates formulas
+    ok 5 - requires explicit XLSX sheet and column mapping and never evaluates formulas
+      ---
+      duration_ms: 2.746241
+      type: 'test'
+      ...
+    1..5
+ok 1 - document imports
+  ---
+  duration_ms: 11.377501
+  type: 'suite'
+  ...
+# Subtest: Poppler text-position adapter
+    # Subtest: extracts page boundaries, coordinates and HTML-escaped words
+    ok 1 - extracts page boundaries, coordinates and HTML-escaped words
+      ---
+      duration_ms: 1.873797
+      type: 'test'
+      ...
+    # Subtest: does not accept missing pages or invalid coordinates
+    ok 2 - does not accept missing pages or invalid coordinates
+      ---
+      duration_ms: 0.374251
+      type: 'test'
+      ...
+    # Subtest: rejects truncated Poppler pages and silently omitted words
+    ok 3 - rejects truncated Poppler pages and silently omitted words
+      ---
+      duration_ms: 0.208177
+      type: 'test'
+      ...
+    # Subtest: rejects copy-restricted PDFs, including documents with an empty user password
+    ok 4 - rejects copy-restricted PDFs, including documents with an empty user password
+      ---
+      duration_ms: 0.526184
+      type: 'test'
+      ...
+    # Subtest: checks PDF copy permission before ever running pdftotext
+    ok 5 - checks PDF copy permission before ever running pdftotext
+      ---
+      duration_ms: 0.797253
+      type: 'test'
+      ...
+    # Subtest: allows the Poppler text extraction only after permission is explicitly verified
+    ok 6 - allows the Poppler text extraction only after permission is explicitly verified
+      ---
+      duration_ms: 0.255766
+      type: 'test'
+      ...
+    # Subtest: distinguishes missing extractor, a password-protected PDF and invalid output
+    ok 7 - distinguishes missing extractor, a password-protected PDF and invalid output
+      ---
+      duration_ms: 0.294994
+      type: 'test'
+      ...
+    1..7
+ok 2 - Poppler text-position adapter
+  ---
+  duration_ms: 5.587642
+  type: 'suite'
+  ...
+1..2
+# tests 12
+# suites 2
+# pass 12
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 86.602291
+
+EXIT_CODE: 0
+REACHED: apps/api/src/pdf-text-extraction.test.ts::extracts page boundaries, coordinates and HTML-escaped words
+REACHED: apps/api/src/pdf-text-extraction.test.ts::does not accept missing pages or invalid coordinates
+REACHED: apps/api/src/pdf-text-extraction.test.ts::rejects truncated Poppler pages and silently omitted words
+REACHED: apps/api/src/pdf-text-extraction.test.ts::rejects copy-restricted PDFs, including documents with an empty user password
+REACHED: apps/api/src/pdf-text-extraction.test.ts::checks PDF copy permission before ever running pdftotext
+REACHED: apps/api/src/pdf-text-extraction.test.ts::allows the Poppler text extraction only after permission is explicitly verified
+REACHED: apps/api/src/pdf-text-extraction.test.ts::distinguishes missing extractor, a password-protected PDF and invalid output
+REACHED: packages/domain/src/document-imports.test.ts::parses the homologated fictitious bank PDF without guessing the account
+REACHED: packages/domain/src/document-imports.test.ts::keeps equal legitimate card purchases distinct and ignores totals/payments
+REACHED: packages/domain/src/document-imports.test.ts::fails closed for corrupt or unsupported PDFs
+REACHED: packages/domain/src/document-imports.test.ts::does not mistake object 31 for the catalog object 1
+REACHED: packages/domain/src/document-imports.test.ts::requires explicit XLSX sheet and column mapping and never evaluates formulas
+
+HEAD: 9553b9fae4ac06462de443e4539111c14b6b6968
+COMMAND: node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js
+SOURCE_LOG_SHA256: 91cc6993f704b2deb3d50ae860d5e9b67fe617ad4c9258b58ee884918095cb49
+HEAD: 9553b9fae4ac06462de443e4539111c14b6b6968
+COMMAND: node --test-reporter=tap .tmp-tests/domain/mercado-pago-pdf.test.js
+TAP version 13
+# Subtest: Mercado Pago bank statement PDF layout
+    # Subtest: recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+    ok 1 - recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+      ---
+      duration_ms: 4.641339
+      type: 'test'
+      ...
+    # Subtest: validates exactly 38 synthetic movements spread across three pages
+    ok 2 - validates exactly 38 synthetic movements spread across three pages
+      ---
+      duration_ms: 2.484145
+      type: 'test'
+      ...
+    # Subtest: preserves every description line at the first, middle and last movement of each page
+    ok 3 - preserves every description line at the first, middle and last movement of each page
+      ---
+      duration_ms: 10.412582
+      type: 'test'
+      ...
+    # Subtest: rejects ambiguous or unassigned description text instead of returning partial proposals
+    ok 4 - rejects ambiguous or unassigned description text instead of returning partial proposals
+      ---
+      duration_ms: 1.444085
+      type: 'test'
+      ...
+    # Subtest: applies the description length limit to the complete multiline value
+    ok 5 - applies the description length limit to the complete multiline value
+      ---
+      duration_ms: 0.576829
+      type: 'test'
+      ...
+    # Subtest: fails closed when bank identity, a row, a balance, or totals are tampered
+    ok 6 - fails closed when bank identity, a row, a balance, or totals are tampered
+      ---
+      duration_ms: 0.633682
+      type: 'test'
+      ...
+    # Subtest: rejects every candidate financial row even when its date is absent or malformed
+    ok 7 - rejects every candidate financial row even when its date is absent or malformed
+      ---
+      duration_ms: 0.78774
+      type: 'test'
+      ...
+    # Subtest: rejects orphan financial fields and never hides a partially redacted row
+    ok 8 - rejects orphan financial fields and never hides a partially redacted row
+      ---
+      duration_ms: 0.655634
+      type: 'test'
+      ...
+    # Subtest: reconciles movements at and beyond the former vertical cutoff on every page
+    ok 9 - reconciles movements at and beyond the former vertical cutoff on every page
+      ---
+      duration_ms: 5.103129
+      type: 'test'
+      ...
+    # Subtest: blocks incomplete lower-page movements instead of discarding their financial anchors
+    ok 10 - blocks incomplete lower-page movements instead of discarding their financial anchors
+      ---
+      duration_ms: 0.969186
+      type: 'test'
+      ...
+    # Subtest: accepts rows close to the header but rejects overlapping financial fields
+    ok 11 - accepts rows close to the header but rejects overlapping financial fields
+      ---
+      duration_ms: 1.293884
+      type: 'test'
+      ...
+    # Subtest: ignores footer contact numbers but never hides financial fields behind a footer
+    ok 12 - ignores footer contact numbers but never hides financial fields behind a footer
+      ---
+      duration_ms: 1.13511
+      type: 'test'
+      ...
+    # Subtest: does not confuse description text with a structural footer
+    ok 13 - does not confuse description text with a structural footer
+      ---
+      duration_ms: 0.337617
+      type: 'test'
+      ...
+    # Subtest: rejects duplicated operation IDs before financial proposals are built
+    ok 14 - rejects duplicated operation IDs before financial proposals are built
+      ---
+      duration_ms: 0.293041
+      type: 'test'
+      ...
+    1..14
+ok 1 - Mercado Pago bank statement PDF layout
+  ---
+  duration_ms: 32.43044
+  type: 'suite'
+  ...
+1..1
+# tests 14
+# suites 1
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 43.469483
+REACHED: recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+REACHED: validates exactly 38 synthetic movements spread across three pages
+REACHED: preserves every description line at the first, middle and last movement of each page
+REACHED: rejects ambiguous or unassigned description text instead of returning partial proposals
+REACHED: applies the description length limit to the complete multiline value
+REACHED: fails closed when bank identity, a row, a balance, or totals are tampered
+REACHED: rejects every candidate financial row even when its date is absent or malformed
+REACHED: rejects orphan financial fields and never hides a partially redacted row
+REACHED: reconciles movements at and beyond the former vertical cutoff on every page
+REACHED: blocks incomplete lower-page movements instead of discarding their financial anchors
+REACHED: accepts rows close to the header but rejects overlapping financial fields
+REACHED: ignores footer contact numbers but never hides financial fields behind a footer
+REACHED: does not confuse description text with a structural footer
+REACHED: rejects duplicated operation IDs before financial proposals are built
+EXIT_CODE: 0
+
+EXIT_CODE: 0
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::recognizes the homologated layout, joins multiline descriptions and validates balances/totals
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::validates exactly 38 synthetic movements spread across three pages
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::preserves every description line at the first, middle and last movement of each page
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::rejects ambiguous or unassigned description text instead of returning partial proposals
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::applies the description length limit to the complete multiline value
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::fails closed when bank identity, a row, a balance, or totals are tampered
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::rejects every candidate financial row even when its date is absent or malformed
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::rejects orphan financial fields and never hides a partially redacted row
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::reconciles movements at and beyond the former vertical cutoff on every page
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::blocks incomplete lower-page movements instead of discarding their financial anchors
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::accepts rows close to the header but rejects overlapping financial fields
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::ignores footer contact numbers but never hides financial fields behind a footer
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::does not confuse description text with a structural footer
+REACHED: packages/domain/src/mercado-pago-pdf.test.ts::rejects duplicated operation IDs before financial proposals are built

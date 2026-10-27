@@ -1,0 +1,260 @@
+{
+  "schema_version": 1,
+  "checkpoint_kind": "controller-ledger-snapshot-before-result-publication",
+  "captured_at_utc": "2026-10-27T02:55:32.640540+00:00",
+  "material_head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+  "phase": "finalize-after-ci",
+  "source_ledger": "pr746-remediation/ledger.json",
+  "source_ledger_sha256": "1a52e53024591f459c6aeca340de7a58c25f8a4897ff583445eb1b5b24e1d3af",
+  "ci_state": "green",
+  "work_item_fingerprint": "3103118e2185ac8a2a4d5d2def237b9c09200e7054916ab1df75a77655f1964e",
+  "ledger": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue": 745,
+    "pr_number": 746,
+    "audit_round": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
+    "rejection_id": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
+    "source_report_sha256": "e7353aa45b5566e853223073ae45f941c412840c735dcf8dcd04ead9026bc8dc",
+    "work_item_start_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+    "source_requirements": [
+      {
+        "id": "R01",
+        "status": "covered",
+        "implementation_status": "incorrect",
+        "surface_ids": [
+          "S01-root"
+        ],
+        "evidence_path": "extractor/catalog-eol-probes.json",
+        "evidence_sha256": "be08bae3eda3ea54247ae197c3ac72956ab9b1b9f3d0a293bcecc5e9b3a447ab"
+      },
+      {
+        "id": "R02",
+        "status": "covered",
+        "implementation_status": "partial",
+        "surface_ids": [
+          "S02-pages"
+        ],
+        "evidence_path": "ci/original-replay-summary.json",
+        "evidence_sha256": "6abcdcfc683f7122bf686e78ee712c9371184d29481ea6226c8a1bf1b157cedd"
+      },
+      {
+        "id": "R03",
+        "status": "covered",
+        "implementation_status": "incorrect",
+        "surface_ids": [
+          "S03-permissions",
+          "S03-password"
+        ],
+        "evidence_path": "extractor/statement-probes.json",
+        "evidence_sha256": "68a463f24fc5fbb07a94872301931524c713e606117d454ebf49166e758ea191"
+      },
+      {
+        "id": "R04",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S04-text",
+          "S04-bounds"
+        ],
+        "evidence_path": "extractor/remaining-probes.json",
+        "evidence_sha256": "ec806fee9850e8d09af068ecef0eb952685aaeccd8c0a09a268e6d9814559f10"
+      },
+      {
+        "id": "R05",
+        "status": "covered",
+        "implementation_status": "incorrect",
+        "surface_ids": [
+          "S05-description",
+          "S05-fields"
+        ],
+        "evidence_path": "parser/binary-results.json",
+        "evidence_sha256": "7d07c2197b534062e3461ff441040b2c22344fb374f4d4f2319abca29398df4b"
+      },
+      {
+        "id": "R06",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S06-balances",
+          "S06-gross"
+        ],
+        "evidence_path": "parser/results.json",
+        "evidence_sha256": "e690e395c2def8f645a72d22fa77335f2f61762549c3482781081e79682ce330"
+      },
+      {
+        "id": "R07",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S07-regions"
+        ],
+        "evidence_path": "parser/results.json",
+        "evidence_sha256": "e690e395c2def8f645a72d22fa77335f2f61762549c3482781081e79682ce330"
+      },
+      {
+        "id": "R08",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S08-consent",
+          "S08-tenant",
+          "S08-idempotency",
+          "S08-review",
+          "S08-storage"
+        ],
+        "evidence_path": "ci/original-preview-summary.json",
+        "evidence_sha256": "41bdfe59b0897d03277bc2aa401e95a75852d75865998e427568b4b53c2d1e52"
+      },
+      {
+        "id": "R09",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S09-errors",
+          "S-DOC"
+        ],
+        "evidence_path": "extractor/remaining-probes.json",
+        "evidence_sha256": "ec806fee9850e8d09af068ecef0eb952685aaeccd8c0a09a268e6d9814559f10"
+      },
+      {
+        "id": "R10",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S10-original-evidence",
+          "S10-original-replay"
+        ],
+        "evidence_path": "ci/original-replay-summary.json",
+        "evidence_sha256": "6abcdcfc683f7122bf686e78ee712c9371184d29481ea6226c8a1bf1b157cedd"
+      },
+      {
+        "id": "R11",
+        "status": "covered",
+        "implementation_status": "partial",
+        "surface_ids": [
+          "S11-tests"
+        ],
+        "evidence_path": "ci/ci-evidence-summary.json",
+        "evidence_sha256": "c812d78bea4a3b0a26c0a8f452c9655826ddad19d38429e03db34f59aa75eea5"
+      },
+      {
+        "id": "R12",
+        "status": "covered",
+        "implementation_status": "partial",
+        "surface_ids": [
+          "S12-negatives"
+        ],
+        "evidence_path": "extractor/remaining-probes.json",
+        "evidence_sha256": "ec806fee9850e8d09af068ecef0eb952685aaeccd8c0a09a268e6d9814559f10"
+      },
+      {
+        "id": "R13",
+        "status": "covered",
+        "implementation_status": "partial",
+        "surface_ids": [
+          "S13-ci",
+          "S13-certificate",
+          "S13-a006",
+          "S13-independent",
+          "S-GROUND"
+        ],
+        "evidence_path": "preflight.log",
+        "evidence_sha256": "05ba813b71e170d6eb8c5174e8d14e17005a9079d80528b699b39e30787c0c56"
+      },
+      {
+        "id": "R14",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S14-base"
+        ],
+        "evidence_path": "remote-pr-final.json",
+        "evidence_sha256": "05b1f61ebe0c6224cf6d9f2556faaaf545259d95dd0882acb54fb9d94f43107b"
+      },
+      {
+        "id": "R15",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S15-private"
+        ],
+        "evidence_path": "ci/original-replay-summary.json",
+        "evidence_sha256": "6abcdcfc683f7122bf686e78ee712c9371184d29481ea6226c8a1bf1b157cedd"
+      },
+      {
+        "id": "R16",
+        "status": "covered",
+        "implementation_status": "implemented",
+        "surface_ids": [
+          "S16-release"
+        ],
+        "evidence_path": "remote-pr-comments.json",
+        "evidence_sha256": "4e5a67d1f78786f6929147b96467a104710b0776e66d093b0be101953a7796a4"
+      }
+    ],
+    "items": [
+      {
+        "finding_id": "A-004",
+        "status": "passed",
+        "requirement_id": "R03",
+        "root_cause": "assertPdfCopyPermitted accepts the first Encrypted line in human-readable pdfinfo stdout, which includes PDF-controlled multiline Title/Author/Subject before the authoritative generated Encrypted line.",
+        "acceptance": "IMPORT_PDF_PROTECTED before pdftotext, no rows.",
+        "evidence": "extractor/statement-probes.json",
+        "remediation_mode": "targeted-remediation",
+        "acceptance_resolution": "Ambiguous forged metadata is INVALID; unequivocal copy:no is PROTECTED. Both terminate before pdftotext; no rows."
+      },
+      {
+        "finding_id": "A-007",
+        "status": "passed",
+        "requirement_id": "R05",
+        "root_cause": "A região descritiva é recortada por header.y+3.5, pontos médios e, para a última linha da página, date.y+18. Palavras fora do recorte não são atribuídas nem geram erro; o restante da descrição não vazia é aceito.",
+        "acceptance": "Preservar a descrição integral; se o layout não puder ser interpretado com segurança, bloquear integralmente em vez de aceitar uma descrição parcial.",
+        "evidence": "parser/binary-results.json",
+        "remediation_mode": "targeted-remediation"
+      },
+      {
+        "finding_id": "A-008",
+        "status": "passed",
+        "requirement_id": "R01",
+        "root_cause": "New rootHeader matches only beginning-of-input or LF/CRLF; a valid CR-only object separator does not match, leaving rootIndex=-1.",
+        "acceptance": "Changing one allowed whitespace separator before an ordinary Catalog object, while preserving all streams and offsets, must preserve structural acceptance and the same ready preview.",
+        "evidence": "extractor/catalog-eol-probes.json",
+        "remediation_mode": "targeted-remediation"
+      },
+      {
+        "finding_id": "ORIGINAL",
+        "status": "passed",
+        "acceptance": "Reexecute original parser and preview on new material; compare 38 rows, 266 fields and all balance invariants"
+      },
+      {
+        "finding_id": "REGRESSIONS",
+        "status": "verifying",
+        "acceptance": "Retain historical A001/A005/A006 controls and run focused / final required checks"
+      },
+      {
+        "finding_id": "DOCS",
+        "status": "passed",
+        "acceptance": "Reconcile IMPORTS claims with corrected permission / description / structure behavior"
+      },
+      {
+        "finding_id": "CI",
+        "status": "passed",
+        "acceptance": "Publish one material commit and observe exact-SHA CI to terminal success",
+        "material_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+        "workflow_runs": [
+          40440471765,
+          40440471794
+        ],
+        "evidence": "ci/delivery-recovery-envelope.json"
+      },
+      {
+        "finding_id": "CERTIFICATE",
+        "status": "in-progress",
+        "acceptance": "Regenerate critical current-target certificate; simulate and validate terminal published identity"
+      }
+    ],
+    "material_head_sha": "9553b9fae4ac06462de443e4539111c14b6b6968",
+    "phase": "finalize-after-ci"
+  },
+  "note": "Point-in-time resume checkpoint. Publication/terminal certificate checks were still in progress when captured; the final delivery result is established by the post-publication terminal proof."
+}

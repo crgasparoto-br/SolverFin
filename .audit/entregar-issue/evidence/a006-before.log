@@ -1,0 +1,3 @@
+BLOCK: active inherited control REGRESSION-A-001 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-004 requires risk family semantic-effect but risk saturation marks it not applicable
+BLOCK: active inherited control REGRESSION-A-005 requires risk family semantic-effect but risk saturation marks it not applicable
