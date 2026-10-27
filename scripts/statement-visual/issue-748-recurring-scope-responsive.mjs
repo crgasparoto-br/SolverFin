@@ -111,25 +111,17 @@ export async function validateRecurringScopeViewport(options) {
     ...state,
   });
 
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-  await sleep(120);
   const cancelled = await evaluate(
     cdp,
-    `!document.querySelector(".installment-scope-dialog[open]") && document.querySelector("[data-modal]").open`,
+    `(() => {
+      const dialog = document.querySelector(".installment-scope-dialog[open]");
+      dialog?.querySelector("[data-scope-cancel]")?.click();
+      return !document.querySelector(".installment-scope-dialog[open]") &&
+        document.querySelector("[data-modal]").open;
+    })()`,
   );
-  check(cancelled, `Escape did not preserve parent modal at ${width}x${height}`, { cancelled });
+  check(cancelled, `Voltar sem salvar did not preserve parent modal at ${width}x${height}`, {
+    cancelled,
+  });
   await evaluate(cdp, `document.querySelector("[data-modal]").close()`);
 }
