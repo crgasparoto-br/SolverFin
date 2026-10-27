@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { inflateRawSync } from "node:zlib";
 import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
-import { resolveClassicXrefObjectOffset } from "./pdf-xref.js";
+import { hasValidPdfCatalog } from "./pdf-xref.js";
 
 export type { PdfExtractedPage, PdfExtractedWord } from "./mercado-pago-pdf.js";
 
@@ -341,50 +341,8 @@ function assertPdfStructure(bytes: Buffer): string {
     throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
   }
 
-  const xrefSection = trimmed.slice(xrefOffset, startxrefMatch.index);
-  if (xrefSection.startsWith("xref")) {
-    const trailerIndex = xrefSection.lastIndexOf("trailer");
-    if (trailerIndex < 0) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-    const trailer = xrefSection.slice(trailerIndex);
-    const rootMatch = /\/Root\s+(\d+)\s+(\d+)\s+R\b/.exec(trailer);
-    if (rootMatch === null) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-    const rootIndex =
-      resolveClassicXrefObjectOffset(
-        xrefSection,
-        trailerIndex,
-        Number(rootMatch[1]),
-        Number(rootMatch[2]),
-      ) ?? -1;
-
-    const rootHeader = new RegExp(
-      `^${rootMatch[1]}[\\0\\t\\n\\f\\r ]+${rootMatch[2]}[\\0\\t\\n\\f\\r ]+obj\\b`,
-    );
-    const rootHeaderLength =
-      rootIndex < 0 ? 0 : (rootHeader.exec(text.slice(rootIndex, xrefOffset))?.[0].length ?? 0);
-    const rootEnd =
-      rootHeaderLength === 0 ? -1 : text.indexOf("endobj", rootIndex + rootHeaderLength);
-    if (
-      rootIndex < 0 ||
-      rootEnd < 0 ||
-      rootEnd > xrefOffset ||
-      !/\/Type\s*\/Catalog\b/.test(text.slice(rootIndex, rootEnd))
-    ) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
-  } else {
-    const xrefStreamObject = /^\d+\s+\d+\s+obj\b/.test(xrefSection);
-    if (
-      !xrefStreamObject ||
-      !/\/Type\s*\/XRef\b/.test(xrefSection) ||
-      !/\/Root\s+\d+\s+\d+\s+R\b/.test(xrefSection) ||
-      !/endobj\s*$/.test(xrefSection)
-    ) {
-      throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
-    }
+  if (!hasValidPdfCatalog(text, xrefOffset, startxrefMatch.index)) {
+    throw new StructuredImportError("IMPORT_PDF_INVALID", "PDF estruturalmente invalido.");
   }
 
   return text;
