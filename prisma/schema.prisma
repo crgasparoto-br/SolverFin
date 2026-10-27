@@ -343,6 +343,7 @@ model FinancialProfile {
   auditLogs                   AuditLogEntry[]
   transactionGroups           TransactionGroup[]
   installmentCreationRequests InstallmentCreationRequest[]
+  transactionCreationRequests TransactionCreationRequest[]
 
   @@unique([id, organizationId])
   @@index([organizationId, ownerUserId])
@@ -636,6 +637,22 @@ model Installment {
 }
 
 model InstallmentCreationRequest {
+  id                 String   @id @default(uuid()) @db.Uuid
+  organizationId     String   @db.Uuid
+  financialProfileId String   @db.Uuid
+  idempotencyKey     String   @db.Uuid
+  requestFingerprint String   @db.Char(64)
+  response           Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+
+  @@unique([organizationId, financialProfileId, idempotencyKey])
+  @@index([organizationId, financialProfileId, createdAt])
+}
+
+model TransactionCreationRequest {
   id                 String   @id @default(uuid()) @db.Uuid
   organizationId     String   @db.Uuid
   financialProfileId String   @db.Uuid
