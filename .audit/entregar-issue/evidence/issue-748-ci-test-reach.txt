@@ -1,0 +1,21 @@
+# Signed GitHub Actions run observations (transcribed as a reviewed ledger; not raw log bytes)
+HEAD: 9d23ab9b81737fe8f0628425b959233b466ec2ac
+REPOSITORY: crgasparoto-br/SolverFin
+API_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272702
+API_JOB: 122401662754
+CHROME_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272691
+CHROME_JOB: 122401385222
+OBSERVED: critical validation: npm run test and npm run test:integration --workspace @solverfin/api completed successfully
+OBSERVED: Chrome visual validation: npm run qa:statement-visual completed successfully
+OBSERVED: cancelled recurring installments are read-only even if occurrence remains planned: ok 7
+OBSERVED: installments-router.integration.test.js was reached in API integration run
+OBSERVED: operational-installments.test.js was reached in unit tests
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/installments-router.integration.test.ts
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/api/src/repositories/installments-edit-block-reason.test.ts
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/operational-installments.test.ts

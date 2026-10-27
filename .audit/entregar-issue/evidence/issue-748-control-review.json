@@ -1,0 +1,250 @@
+{
+  "schema_version": 1,
+  "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
+  "pr_number": 750,
+  "issue_number": 748,
+  "remote_github_evidence": {
+    "repository_ci": {
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272702",
+      "run_id": 40564272702,
+      "conclusion": "success",
+      "head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+      "critical_validation_job": 122401662754,
+      "steps_passed": [
+        "Run npm run test",
+        "Run npm run test:integration --workspace @solverfin/api",
+        "Run npm run typecheck",
+        "Run npm run build",
+        "Run npm run lint"
+      ],
+      "reached_test_modules": [
+        "apps/api/src/installments-router.integration.test.ts",
+        "apps/api/src/repositories/installments-edit-block-reason.test.ts",
+        "apps/web/src/dev-server/operational-installments.test.ts"
+      ]
+    },
+    "chrome": {
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272691",
+      "run_id": 40564272691,
+      "job_id": 122401385222,
+      "conclusion": "success",
+      "head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+      "step_passed": "Validate registered visual scenarios in Chrome",
+      "artifact_id": 12762872103,
+      "artifact_name": "statement-visual-evidence-9d23ab9b81737fe8f0628425b959233b466ec2ac"
+    },
+    "workspace": {
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272729",
+      "run_id": 40564272729,
+      "conclusion": "success",
+      "head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac"
+    }
+  },
+  "visual": {
+    "chrome_report_sha256": "6234de979e9f2b5a85e09108022b311d97bff8a1281b2c12246f01afd4fcffeb",
+    "screenshots_sha256": {
+      "issue-539-account-recurring-scope-desktop.png": "b993c555d086742e6989991e312588d6713346e6a4bc3755a28eadc2a0f5dd0b",
+      "issue-748-account-recurring-scope-320x568.png": "e4ae6a82175b9b8c473bf31b08b295bc5bf18e79b2fef16c2ac8bd12ec5ec11a",
+      "issue-748-account-recurring-scope-390x844.png": "444e5e22b1fd4546da2b833e40bd8af5d12ea0b9b45ced0f0beffb1fcc7fbdd9",
+      "issue-748-account-recurring-scope-768x1024.png": "482a66cbe78cd3283470d2fccf446e4066bf284a37b476fc4b19d2c316061626"
+    },
+    "verified_scenarios": [
+      {
+        "viewport": "1366x768",
+        "scenario": "recurring installment amount scope",
+        "screenshot": "issue-539-account-recurring-scope-desktop.png",
+        "choices": [
+          "Somente esta parcela",
+          "Esta e as próximas"
+        ],
+        "save_buttons": [
+          "Salvar parcela"
+        ],
+        "modal_within": null,
+        "controls": null
+      },
+      {
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scenario": "recurring installment scope focus and bounds",
+        "screenshot": "issue-748-account-recurring-scope-390x844.png",
+        "choices": null,
+        "save_buttons": null,
+        "modal_within": null,
+        "controls": [
+          {
+            "left": 39,
+            "right": 351,
+            "top": 359.8125,
+            "bottom": 407.8125
+          },
+          {
+            "left": 39,
+            "right": 351,
+            "top": 419.8125,
+            "bottom": 467.8125
+          },
+          {
+            "left": 174.078125,
+            "right": 351,
+            "top": 527.8125,
+            "bottom": 571.8125
+          }
+        ]
+      },
+      {
+        "viewport": {
+          "width": 768,
+          "height": 1024
+        },
+        "scenario": "recurring installment scope focus and bounds",
+        "screenshot": "issue-748-account-recurring-scope-768x1024.png",
+        "choices": null,
+        "save_buttons": null,
+        "modal_within": null,
+        "controls": [
+          {
+            "left": 177,
+            "right": 591,
+            "top": 448.625,
+            "bottom": 496.625
+          },
+          {
+            "left": 177,
+            "right": 591,
+            "top": 508.625,
+            "bottom": 556.625
+          },
+          {
+            "left": 414.078125,
+            "right": 591,
+            "top": 598.625,
+            "bottom": 642.625
+          }
+        ]
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "scenario": "recurring installment scope focus and bounds",
+        "screenshot": "issue-748-account-recurring-scope-320x568.png",
+        "choices": null,
+        "save_buttons": null,
+        "modal_within": null,
+        "controls": [
+          {
+            "left": 39,
+            "right": 281,
+            "top": 233.25,
+            "bottom": 281.25
+          },
+          {
+            "left": 39,
+            "right": 281,
+            "top": 293.25,
+            "bottom": 341.25
+          },
+          {
+            "left": 104.078125,
+            "right": 281,
+            "top": 401.25,
+            "bottom": 445.25
+          }
+        ]
+      }
+    ],
+    "manual_review": "Desktop and 320 px viewports independently inspected after ZIP retrieval; scope is not cut off. 390 and 768 screenshots exist and Chrome scenario asserts bounds, no overflow, tab order and a single save action."
+  },
+  "static_review": {
+    "diff_paths": [
+      "apps/api/src/installments-router.integration.test.ts",
+      "apps/api/src/repositories/installments-edit-block-reason.test.ts",
+      "apps/api/src/repositories/installments.ts",
+      "apps/api/src/repositories/recurring-account-installment-amount.ts",
+      "apps/api/src/repositories/recurring-account-transaction-edit.ts",
+      "apps/api/src/repositories/recurring-installment-update.ts",
+      "apps/web/src/dev-server/operational-installments.test.ts",
+      "apps/web/src/dev-server/operational-installments.ts",
+      "docs/API_INSTALLMENTS.md",
+      "docs/RECURRENCES_INSTALLMENTS_WEB.md",
+      "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs"
+    ],
+    "count": 12,
+    "source": "git diff --name-only 7d151ce4ad1b0a412a281bf527f244bcd3bee042 9d23ab9b81737fe8f0628425b959233b466ec2ac",
+    "excluded": "No dashboard #724 files or manual completion rule #747 files changed",
+    "canonical_path": "apps/api/src/repositories/recurring-account-transaction-edit.ts -> recurring-account-installment-amount.ts",
+    "risk_points": {
+      "future_rule": "apps/api/src/repositories/recurring-account-installment-amount.ts:140-153",
+      "future_filter": "apps/api/src/repositories/recurring-account-transaction-edit.ts:415-446",
+      "guard": "apps/api/src/repositories/recurring-installment-update.ts:21-34",
+      "scope_adapter": "apps/api/src/repositories/recurring-installment-update.ts:38-73",
+      "manual_scope": "apps/api/src/repositories/installments.ts:305-407",
+      "cancel_test": "apps/api/src/installments-router.integration.test.ts:262-292",
+      "negative_profile": "apps/api/src/installments-router.integration.test.ts:251-261",
+      "integration_update": "apps/api/src/installments-router.integration.test.ts:150-291",
+      "race_test": "apps/api/src/installments-router.integration.test.ts:336-430",
+      "visual_script": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs:1-200"
+    },
+    "docs": [
+      "docs/API_INSTALLMENTS.md:238",
+      "docs/API_INSTALLMENTS.md:258-262",
+      "docs/RECURRENCES_INSTALLMENTS_WEB.md:67"
+    ]
+  },
+  "acceptance_gates": {
+    "CI": "passed in authenticated exact-SHA PR run",
+    "Chrome": "passed in authenticated exact-SHA Chrome run",
+    "independent_audit": "pending; this result-only handoff cannot self-certify independent review",
+    "merge": "PR currently Draft and not merged; release must remain blocked until external audit"
+  },
+  "negative_scenarios": [
+    {
+      "name": "wrong profile",
+      "test": "assertRecurringInstallmentScopeUpdates",
+      "expected": "404 TENANT_RESOURCE_NOT_FOUND and snapshot unchanged",
+      "source": "apps/api/src/installments-router.integration.test.ts:251-261"
+    },
+    {
+      "name": "invalid payload",
+      "test": "assertRecurringInstallmentScopeUpdates",
+      "expected": "400 INSTALLMENT_PAYLOAD_INVALID and snapshot unchanged",
+      "source": "apps/api/src/installments-router.integration.test.ts:236-250"
+    },
+    {
+      "name": "cancelled recurrence",
+      "test": "assertRecurringInstallmentScopeUpdates",
+      "expected": "409 blocked for all scope variants and no partial effects",
+      "source": "apps/api/src/installments-router.integration.test.ts:262-291"
+    },
+    {
+      "name": "cancel concurrently",
+      "test": "assertRecurringInstallmentCurrentScopeCancellationRace",
+      "expected": "409 and immutable financial snapshots",
+      "source": "apps/api/src/installments-router.integration.test.ts:385-430"
+    },
+    {
+      "name": "posted or reconciled later",
+      "test": "assertRecurringInstallmentProtectedFuture",
+      "expected": "historical amount/status unchanged",
+      "source": "apps/api/src/installments-router.integration.test.ts:292-335"
+    },
+    {
+      "name": "metadata diverges",
+      "test": "assertRecurringInstallmentScopeUpdates",
+      "expected": "only amounts change; nonmonetary fields unchanged",
+      "source": "apps/api/src/installments-router.integration.test.ts:175-235"
+    },
+    {
+      "name": "dialog cancelled",
+      "test": "validateRecurringScopeViewport",
+      "expected": "no PATCH; parent modal remains open",
+      "source": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs:112-127"
+    }
+  ]
+}
