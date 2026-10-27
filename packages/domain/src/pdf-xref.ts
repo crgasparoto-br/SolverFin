@@ -11,7 +11,7 @@ export function resolveClassicXrefObjectOffset(
     .filter(Boolean);
   let resolved: number | undefined;
   for (let index = 0; index < lines.length; ) {
-    const header = /^(\d+)\s+(\d+)$/.exec(lines[index]);
+    const header = /^(\d+)\s+(\d+)$/.exec(lines[index] ?? "");
     if (header === null) return undefined;
     const first = Number(header[1]);
     const count = Number(header[2]);
