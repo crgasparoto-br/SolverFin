@@ -60,6 +60,7 @@ async function main(): Promise<void> {
   await assertRecurringInstallmentScopeUpdates(token, account.id, category.id, suffix);
   await assertRecurringInstallmentProtectedFuture(token, account.id, category.id, suffix);
   await assertRecurringInstallmentCancellationRace(token, account.id, category.id, suffix);
+  await assertRecurringInstallmentCurrentScopeCancellationRace(token, account.id, category.id, suffix);
 }
 
 async function assertManualInstallmentScopeUpdates(
@@ -262,6 +263,25 @@ async function assertRecurringInstallmentScopeUpdates(
   assert.equal(blocked.statusCode, 409, "cancelled recurrence cannot be edited");
   assert.equal(readErrorCode(blocked), "INSTALLMENT_EDIT_BLOCKED");
   assert.deepEqual(await readRecurringFinancialSnapshot(recurrence.id), cancelledSnapshot);
+
+  const detail = await readInstallment(token, first.id);
+  assert.equal(detail.editable, false, "cancelled recurring installments are read-only");
+  assert.equal(detail.amountEditable, false);
+  assert.equal(detail.editBlockedReason, "recurrence_cancelled");
+  for (const payload of [
+    { scope: "current", amountMinor: 22200 },
+    { amountMinor: 22200 },
+    { scope: "current", description: "Nao alterar a recorrencia cancelada" },
+  ]) {
+    const rejected = await apiRequest(token, "PATCH", `/api/installments/${first.id}`, payload);
+    assert.equal(rejected.statusCode, 409, "cancelled recurrence blocks any individual edit");
+    assert.equal(readErrorCode(rejected), "INSTALLMENT_EDIT_BLOCKED");
+    assert.deepEqual(
+      await readRecurringFinancialSnapshot(recurrence.id),
+      cancelledSnapshot,
+      "blocked individual edit has no persistence or audit side effects",
+    );
+  }
 }
 
 async function assertRecurringInstallmentProtectedFuture(
@@ -350,6 +370,55 @@ async function assertRecurringInstallmentCancellationRace(
       await readRecurringFinancialSnapshot(recurrence.id),
       cancelled,
       "a rejected concurrent edit must have no partial effects",
+    );
+  } finally {
+    if (transactionOpen) await client.query("ROLLBACK");
+    client.release();
+  }
+}
+
+async function assertRecurringInstallmentCurrentScopeCancellationRace(
+  token: string,
+  accountId: string,
+  categoryId: string,
+  suffix: string,
+): Promise<void> {
+  const recurrence = await createRecurrence(token, "race-current-" + suffix, accountId, categoryId);
+  await generateInstallments(token, recurrence.id);
+  const listed = await apiRequest(
+    token,
+    "GET",
+    `/api/installments?recurrenceId=${recurrence.id}&status=all`,
+  );
+  assert.equal(listed.statusCode, 200);
+  const first = readBody<{ installments: ApiInstallmentHistory[] }>(listed).installments[0];
+  assert.ok(first);
+
+  const client = await getPool().connect();
+  let transactionOpen = false;
+  try {
+    await client.query("BEGIN");
+    transactionOpen = true;
+    await client.query(`update "Recurrence" set "status" = 'CANCELLED' where "id" = $1`, [
+      recurrence.id,
+    ]);
+    // The current-scope route must wait for the same recurrence lock used by
+    // cancellation, then reject the newly committed state without mutations.
+    const patchPromise = apiRequest(token, "PATCH", `/api/installments/${first.id}`, {
+      scope: "current",
+      amountMinor: 55123,
+    });
+    await delay(150);
+    await client.query("COMMIT");
+    transactionOpen = false;
+    const cancelled = await readRecurringFinancialSnapshot(recurrence.id);
+    const patched = await patchPromise;
+    assert.equal(patched.statusCode, 409, "current scope rejects in-flight recurrence cancel");
+    assert.equal(readErrorCode(patched), "INSTALLMENT_EDIT_BLOCKED");
+    assert.deepEqual(
+      await readRecurringFinancialSnapshot(recurrence.id),
+      cancelled,
+      "concurrent cancellation must not alter value, metadata or audit timestamps",
     );
   } finally {
     if (transactionOpen) await client.query("ROLLBACK");

@@ -31,6 +31,7 @@ export interface InstallmentEditableValues {
 const BLOCK_REASON_LABELS: Readonly<Record<string, string>> = {
   linked_transaction_missing: "O lançamento vinculado não está disponível.",
   installment_status_locked: "Esta parcela não pode mais ser alterada.",
+  recurrence_cancelled: "Esta recorrência foi cancelada. Suas parcelas estão disponíveis somente para consulta.",
   transaction_status_locked: "O lançamento já foi efetivado, conciliado ou cancelado.",
   invoice_linked: "Esta parcela é alterada pela compra da fatura.",
 };

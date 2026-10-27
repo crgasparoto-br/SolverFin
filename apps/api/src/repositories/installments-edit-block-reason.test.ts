@@ -53,6 +53,24 @@ test("non-invoice installments retain status-specific reasons", () => {
   assert.equal(resolveEditBlockedReason({ status: "PLANNED" }), "linked_transaction_missing");
 });
 
+test("cancelled recurring installments are read-only even if the occurrence remains planned", () => {
+  const base = {
+    transactionId: "transaction-demo",
+    transactionStatus: "PLANNED",
+    status: "PLANNED",
+    recurrenceStatus: "CANCELLED",
+  };
+  assert.equal(resolveEditBlockedReason(base), "recurrence_cancelled");
+  assert.equal(canEditInstallmentAmount(base), false);
+  assert.equal(
+    resolveEditBlockedReason({ ...base, invoiceId: "invoice-demo" }),
+    "invoice_linked",
+    "invoice is the canonical boundary for card installments",
+  );
+  assert.equal(resolveEditBlockedReason({ ...base, recurrenceStatus: "ACTIVE" }), undefined);
+  assert.equal(canEditInstallmentAmount({ ...base, recurrenceStatus: "ACTIVE" }), true);
+});
+
 test("only planned and posted unconciliated account installments allow amount adjustment", () => {
   const base = {
     transactionId: "transaction-demo",

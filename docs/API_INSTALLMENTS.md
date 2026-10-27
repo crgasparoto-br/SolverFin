@@ -230,11 +230,12 @@ Razoes iniciais:
 ```text
 linked_transaction_missing
 installment_status_locked
+recurrence_cancelled
 transaction_status_locked
 invoice_linked
 ```
 
-A edicao de descricao, observacao e categoria permanece restrita a parcelas planejadas. O ajuste especifico de valor e permitido tambem para parcelas efetivadas nao conciliadas, desde que a transacao vinculada esteja efetivada. Parcelas conciliadas, canceladas, ligadas a fatura/cartao ou sem transacao vinculada nao admitem ajuste direto. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
+A edicao de descricao, observacao e categoria permanece restrita a parcelas planejadas. O ajuste especifico de valor e permitido tambem para parcelas efetivadas nao conciliadas, desde que a transacao vinculada esteja efetivada. Parcelas conciliadas, canceladas, ligadas a fatura/cartao ou sem transacao vinculada nao admitem ajuste direto. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. Para uma recorrência cancelada, `editable=false` e `amountEditable=false` em todas as parcelas, e o motivo é `recurrence_cancelled` (salvo precedência de fatura). O `PATCH` individual com `scope="current"` ou escopo omitido também retorna `409 INSTALLMENT_EDIT_BLOCKED`. O backend bloqueia a regra canônica de recorrência dentro da transação, impedindo que um cancelamento concorrente autorize alteração parcial após a consulta inicial. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
 
 ## PATCH /api/installments/:installmentId
 

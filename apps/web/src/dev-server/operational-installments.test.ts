@@ -121,6 +121,10 @@ test("translates stable backend block reasons", () => {
     translateInstallmentBlockReason("transaction_status_locked"),
     "O lançamento já foi efetivado, conciliado ou cancelado.",
   );
+  assert.equal(
+    translateInstallmentBlockReason("recurrence_cancelled"),
+    "Esta recorrência foi cancelada. Suas parcelas estão disponíveis somente para consulta.",
+  );
 });
 
 test("controller preserves purchase editing and handles stale edit conflicts", () => {

@@ -37,6 +37,7 @@ export interface UpdateInstallmentPayload {
 export type InstallmentEditBlockedReason =
   | "linked_transaction_missing"
   | "installment_status_locked"
+  | "recurrence_cancelled"
   | "transaction_status_locked"
   | "invoice_linked";
 
@@ -343,6 +344,19 @@ export async function updateInstallmentForContext(
     }
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
+    if (current.recurrenceId) {
+      // Cancellation can commit after the listing/optimistic eligibility read.
+      // Hold the recurrence lock until the installment mutation commits.
+      const rows = await query<{ status: string }>(
+        `select "status" from "Recurrence"
+          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+          for update`,
+        [current.recurrenceId, context.organizationId, context.financialProfileId],
+      );
+      if (rows.length !== 1 || rows[0]?.status === "CANCELLED") {
+        throwInstallmentEditBlocked("recurrence_cancelled");
+      }
+    }
     const metadataChanged =
       payload.description !== undefined ||
       payload.note !== undefined ||
@@ -700,7 +714,8 @@ export function canEditInstallmentAmount(row: Readonly<Record<string, unknown>>)
     !row.transactionStatus ||
     row.invoiceId ||
     row.cardId ||
-    row.transactionCardId
+    row.transactionCardId ||
+    lower(row.recurrenceStatus) === "cancelled"
   )
     return false;
   const installmentStatus = lower(row.status);
@@ -720,6 +735,10 @@ export function resolveEditBlockedReason(
 
   if (row.invoiceId) {
     return "invoice_linked";
+  }
+
+  if (lower(row.recurrenceStatus) === "cancelled") {
+    return "recurrence_cancelled";
   }
 
   if (lower(row.status) !== "planned") {
