@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "d239e1829923264d7dd57bd62e146d57729b44e3",
-  "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
-  "comparison_base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+  "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
+  "comparison_base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,69 +19,139 @@
   },
   "files": [
     {
-      "path": "apps/web/src/dev-server/dashboard-page.ts",
-      "lines_before": 499,
-      "lines_after": 482
+      "path": "apps/api/src/automation-rules-router.ts",
+      "lines_before": 361,
+      "lines_after": 378
     },
     {
-      "path": "apps/web/src/dev-server/dashboard-styles.ts",
+      "path": "apps/api/src/repositories/automation-rule-contracts.ts",
       "lines_before": null,
-      "lines_after": 101
+      "lines_after": 32
     },
     {
-      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
+      "path": "apps/api/src/repositories/automation-rules.ts",
+      "lines_before": 564,
+      "lines_after": 571
+    },
+    {
+      "path": "apps/api/src/repositories/manual-entry-fill-rules.ts",
       "lines_before": null,
-      "lines_after": 76
+      "lines_after": 72
     },
     {
-      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
-      "lines_before": 689,
-      "lines_after": 697
+      "path": "apps/api/src/repositories/transaction-idempotency.ts",
+      "lines_before": null,
+      "lines_after": 63
+    },
+    {
+      "path": "apps/api/src/router.ts",
+      "lines_before": 1200,
+      "lines_after": 1214
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-styles.ts",
+      "lines_before": 316,
+      "lines_after": 318
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2.ts",
+      "lines_before": 1577,
+      "lines_after": 1579
+    },
+    {
+      "path": "apps/web/src/dev-server/entry-fill-rules.ts",
+      "lines_before": null,
+      "lines_after": 16
+    },
+    {
+      "path": "apps/web/src/dev-server/financial-operation-recovery.ts",
+      "lines_before": 296,
+      "lines_after": 306
+    },
+    {
+      "path": "apps/web/src/dev-server/operational-installments.ts",
+      "lines_before": 840,
+      "lines_after": 842
+    },
+    {
+      "path": "apps/web/src/dev-server/statement-golden-refinements.ts",
+      "lines_before": 818,
+      "lines_after": 818
+    },
+    {
+      "path": "apps/web/src/dev-server/statement-save-flow-scripts.ts",
+      "lines_before": null,
+      "lines_after": 88
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-group-member-form-guard.ts",
+      "lines_before": 329,
+      "lines_after": 339
+    },
+    {
+      "path": "apps/web/src/dev-server/transactions-page-v2.ts",
+      "lines_before": 1825,
+      "lines_after": 1844
+    },
+    {
+      "path": "packages/domain/src/automation-rules.ts",
+      "lines_before": 271,
+      "lines_after": 279
+    },
+    {
+      "path": "scripts/statement-visual/cards-interface.mjs",
+      "lines_before": 400,
+      "lines_after": 425
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-ambiguous-recovery.mjs",
+      "lines_before": 372,
+      "lines_after": 372
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-manual-installments-v2.mjs",
+      "lines_before": 725,
+      "lines_after": 725
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs",
+      "lines_before": 369,
+      "lines_after": 414
     },
     {
       "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
       "lines_before": 134,
-      "lines_after": 217
+      "lines_after": 297
     },
     {
-      "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
-      "lines_before": 10,
-      "lines_after": 15
+      "path": "scripts/statement-visual/issue-677-transfer-source-destination.mjs",
+      "lines_before": 521,
+      "lines_after": 521
     },
     {
-      "path": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-      "lines_before": 129,
-      "lines_after": 134
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-remediation-contract.mjs",
-      "lines_before": 343,
-      "lines_after": 366
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-error.mjs",
+      "path": "scripts/statement-visual/statement-contextual-action-labels.mjs",
       "lines_before": null,
-      "lines_after": 1
+      "lines_after": 40
     },
     {
-      "path": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
-      "lines_before": null,
-      "lines_after": 1
+      "path": "scripts/statement-visual/statement-contextual-assertions.mjs",
+      "lines_before": 82,
+      "lines_after": 122
     },
     {
-      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
-      "lines_before": null,
-      "lines_after": 1
+      "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
+      "lines_before": 694,
+      "lines_after": 714
     },
     {
-      "path": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
-      "lines_before": null,
-      "lines_after": 1
+      "path": "scripts/statement-visual/transaction-group-modal.mjs",
+      "lines_before": 554,
+      "lines_after": 554
     },
     {
-      "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
-      "lines_before": null,
-      "lines_after": 257
+      "path": "scripts/statement-visual/transaction-group-pending-fixes.mjs",
+      "lines_before": 320,
+      "lines_after": 320
     }
   ],
   "blocking_files": []

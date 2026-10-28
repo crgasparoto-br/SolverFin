@@ -1,0 +1,148 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 747,
+  "pr": 749,
+  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "no_prior_result_reused": true,
+  "exact_head_gate_evidence": {
+    "repository_ci": {
+      "run": 40696535294,
+      "state": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294"
+    },
+    "chrome": {
+      "run": 40696534811,
+      "state": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811",
+      "artifact_id": 12820740707,
+      "digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4",
+      "scenarios": 70,
+      "failures": 0
+    }
+  },
+  "positive_controls": [
+    {
+      "escape_id": "A-001",
+      "procedure": "Compare root handoff bytes and subject on base versus current material head.",
+      "evidence": "evidence/current-stale-handoff-negative.log",
+      "observed": "Stale and foreign-target handoff must fail: existing material 659 and current candidate 227 differ; official preflight rejected old certificate exit 2.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-002",
+      "procedure": "Request a 30-day projection for EUR without an active EUR account and inspect freeToSpend.",
+      "evidence": "apps/api/src/cash-flow-projection.integration.test.ts:167-176",
+      "observed": "30-day EUR without an active EUR account returns unavailable, never synthesized free-to-spend zero; relevant API and unit tests are in completed/success Repository CI 40696535294.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale",
+      "procedure": "Compare the certified material SHA with the current PR head and exact-head workflow runs after a post-handoff material commit.",
+      "evidence": "evidence/current-stale-handoff-negative.log",
+      "observed": "Official certificate preflight rejected old handoff against exact current material M with post-write-refreeze required (exit 2), preventing stale release.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale-2",
+      "procedure": "Compare certified material SHA with current PR head and refreeze before certification.",
+      "evidence": "evidence/current-stale-handoff-negative.log",
+      "observed": "Same deterministic fail-closed preflight of stale handoff and exact new CI/Chrome before refreeze.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-002-702-exact-head-ci",
+      "procedure": "Query workflow runs by exact head and inspect jobs.",
+      "evidence": "evidence/issue-747-control-review.json",
+      "observed": "GitHub Repository CI 40696535294 and visual run 40696534811 completed/success for exact material HEAD 2274927; raw Chrome artifact id 12820740707.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale-3",
+      "procedure": "Compare the certified material SHA with the current PR head after all remediation writes and rebuild the package only after exact-head gates are green.",
+      "evidence": "evidence/current-stale-handoff-negative.log",
+      "observed": "Original old certificate rejected by authoritative local official preflight, and new material CI/Chrome exact-head both terminal green before publication.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "A-002-702-mobile-density",
+      "procedure": "Run the registered Chrome visual scenarios at the exact material head, including the grouped responsive transaction layout.",
+      "evidence": "evidence/issue-747-historical-lineage.json",
+      "observed": "Raw golden-statement.json from Chrome exact-head 2274927 includes GS-NC-DENSITY injection rejected then restored and GS-MOBILE-DENSITY-BUDGET pass at 390 and 320.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "F-714-01-702-713",
+      "procedure": "Run official terminal handoff validator with inherited certificate and subject issue #702/PR713 on material 38a498b; require fail-closed.",
+      "evidence": "evidence/current-stale-handoff-negative.log",
+      "observed": "Official preflight correctly rejected stale certified handoff for current PR 749, rather than misbinding certificate to other issue or earlier SHA.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "F-714-02-702-713",
+      "procedure": "Evaluate current canonical document for approval, account-specific transfer inclusion, FX in selected-currency aggregate; mutate claim and require failure.",
+      "evidence": "evidence/issue-747-historical-lineage.json",
+      "observed": "Current canonical doc line 306 explicitly asserts individual inbound/outbound inclusion and same-currency consolidated exclusion with FX inclusion. Two adversarial in-memory mutation probes of those propositions were rejected on current material.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    },
+    {
+      "escape_id": "F-714-03-FOOTER-CLIPPED",
+      "procedure": "Repeat fresh 320x740/390x844/desktop new/edit/clone assertions and mutate Cancel translateX(-120px) after measuring bounds and text overflow.",
+      "evidence": "evidence/issue-747-viewport-evidence.json",
+      "observed": "Exact-head Chrome 2274927 at 320x740, 390x844 and 1366x768 rejects and restores clipped-Cancel mutation, preserves all 3 visible distinct action labels, no horizontal overflow.",
+      "result": "passed",
+      "head": "2274927adaf4ee7679a4b3e322d727a3145f03c7"
+    }
+  ],
+  "negative_controls": [
+    {
+      "name": "stale-handoff-refusal",
+      "input": "certificate issued on older material SHA",
+      "expected": "BLOCK and post-write-refreeze",
+      "observed": "BLOCK: result-only child parent differs from certified material_head_sha\nBLOCK: result-only child validation requires candidate changed paths\nRECOVERY: post-write-refreeze\n",
+      "status": "passed"
+    },
+    {
+      "name": "canonical-doc-individual-transfer-exclusion",
+      "mutation": "recebidas compõem Entradas -> recebidas não compõem Entradas",
+      "expected": "canonical assertions reject",
+      "observed": "rejected",
+      "status": "passed"
+    },
+    {
+      "name": "canonical-doc-consolidated-transfer-inclusion",
+      "mutation": "internas da mesma moeda não compõem -> compõem",
+      "expected": "canonical assertions reject",
+      "observed": "rejected",
+      "status": "passed"
+    },
+    {
+      "name": "GS-NC-DENSITY",
+      "mutation": "[data-golden-screen] .statement-overview{padding-bottom:400px!important}",
+      "expected": "fails excessive vertical padding",
+      "observed": "Excess vertical chrome pushes the first transaction out of the desktop viewport.",
+      "restored": "passed",
+      "status": "passed"
+    }
+  ],
+  "source_locations": [
+    "apps/api/src/cash-flow-projection.integration.test.ts",
+    "packages/domain/src/free-to-spend.test.ts",
+    "docs/GOLDEN_STATEMENT.md:306",
+    "scripts/statement-visual/golden-statement.mjs:146",
+    "evidence/issue-747-viewport-evidence.json",
+    "evidence/current-stale-handoff-negative.log"
+  ],
+  "prior_unrelated_control_footnote": "The 10 historic escapes are preserved as lineage; their originating fix statements are historic and cannot be substituted for current proof. This report documents fresh current-head tests and exact-source proof without claiming the old PR was reaudited."
+}

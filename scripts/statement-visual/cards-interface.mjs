@@ -310,6 +310,7 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
         closeIconOpacity: close ? Number(getComputedStyle(close).opacity) : 0,
         singleColumn: style?.gridTemplateColumns ? style.gridTemplateColumns.split(' ').length === 1 : false,
         minimumActionHeight: buttons.length ? Math.min(...buttons.map((button) => button.getBoundingClientRect().height)) : 0,
+        ruleActionHeight: form?.querySelector('[data-fill-rule-save]')?.getBoundingClientRect().height ?? 0,
       };
     })()`,
   );
@@ -317,6 +318,11 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
   check(measurements.labelled, "Purchase modal is not labelled", measurements);
   check(measurements.insideViewport, "Purchase modal exceeds the viewport", measurements);
   check(measurements.closeTarget >= 40, "Purchase modal close action is too small", measurements);
+  check(
+    measurements.ruleActionHeight >= 44,
+    "Manual fill-rule save target must be 44px",
+    measurements,
+  );
   check(
     measurements.closeIconText === "×" &&
       measurements.closeIconOpacity > 0 &&
@@ -340,6 +346,25 @@ async function validateModal(cdp, viewportKind, captureName = viewportKind) {
     negative.rejected && negative.restored,
     "Close icon negative control did not reject and restore",
     negative,
+  );
+  const ruleTargetNegative = await evaluate(
+    cdp,
+    `(() => {
+      const button = document.querySelector('dialog[data-modal="purchase"] [data-fill-rule-save]');
+      if (!button) return { rejected: false, restored: false };
+      const original = button.getAttribute('style');
+      button.style.setProperty('min-height', '0px', 'important');
+      button.style.setProperty('height', '32px', 'important');
+      const rejected = button.getBoundingClientRect().height < 44;
+      if (original === null) button.removeAttribute('style');
+      else button.setAttribute('style', original);
+      return { rejected, restored: button.getBoundingClientRect().height >= 44 };
+    })()`,
+  );
+  check(
+    ruleTargetNegative.rejected && ruleTargetNegative.restored,
+    "Manual rule touch-target negative control did not reject and restore",
+    ruleTargetNegative,
   );
   if (viewportKind === "mobile") {
     check(measurements.singleColumn, "Purchase modal is not single-column on mobile", measurements);

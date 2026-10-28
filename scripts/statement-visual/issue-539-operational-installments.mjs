@@ -4,6 +4,10 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import {
+  validateRecurringScopeDesktop,
+  validateRecurringScopeViewports,
+} from "./issue-748-recurring-scope-responsive.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -24,6 +28,15 @@ try {
 
   await validateAccountDesktop(fixture);
   await validateAccountMobile(fixture);
+  await validateRecurringScopeViewports({
+    fixture,
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+    scenarios,
+    check,
+    waitForAccountLine,
+  });
   await validateBlockedAccountDesktop(fixture);
   await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
@@ -83,6 +96,13 @@ async function validateAccountDesktop(fixture) {
   );
   check(modal.focusName === "description", "Initial focus did not move to description", modal);
 
+  await validateRecurringScopeDesktop({
+    cdp: browser.cdp,
+    outputDir,
+    scenarios,
+    check,
+    route,
+  });
   const filename = "issue-539-account-installment-desktop-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, filename));
   scenarios.push({

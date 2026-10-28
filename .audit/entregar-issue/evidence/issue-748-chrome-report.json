@@ -1,0 +1,279 @@
+{
+  "generatedAt": "2026-10-27T18:58:54.519Z",
+  "commit": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "browser": "Google Chrome 155.0.8059.39",
+  "failures": [],
+  "scenarios": [
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": "1366x768",
+      "state": "recurring installment amount scope",
+      "screenshot": "issue-539-account-recurring-scope-desktop.png",
+      "scope": {
+        "labels": [
+          "Somente esta parcela",
+          "Esta e as próximas"
+        ],
+        "visibleSaveButtons": [
+          "Salvar parcela"
+        ],
+        "hasCancel": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": "1366x768",
+      "state": "editable archived category",
+      "screenshot": "issue-539-account-installment-desktop-1366x768.png",
+      "modal": {
+        "open": true,
+        "title": "Editar parcela",
+        "categoryValue": "f3d1a0db-63f4-4866-91af-6f3142bd85fb",
+        "categoryLabel": "Categoria historica QA mvr1u0rv (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [
+          "adjustedInstallmentAmount",
+          "categoryId",
+          "description",
+          "note"
+        ],
+        "focusName": "description",
+        "reasonText": "",
+        "saveHidden": false,
+        "descriptionValue": "QA issue 539 parcela conta",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": "390x844",
+      "state": "restricted modal",
+      "screenshot": "issue-539-account-installment-mobile-390x844.png",
+      "modal": {
+        "open": true,
+        "title": "Editar parcela",
+        "categoryValue": "f3d1a0db-63f4-4866-91af-6f3142bd85fb",
+        "categoryLabel": "Categoria historica QA mvr1u0rv (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [
+          "adjustedInstallmentAmount",
+          "categoryId",
+          "description",
+          "note"
+        ],
+        "focusName": "description",
+        "reasonText": "",
+        "saveHidden": false,
+        "descriptionValue": "QA issue 539 ajustada mvr1u1fb",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "state": "recurring installment scope focus and bounds",
+      "screenshot": "issue-748-account-recurring-scope-390x844.png",
+      "dialog": {
+        "left": 16,
+        "right": 374,
+        "top": 249.171875,
+        "bottom": 594.8125
+      },
+      "controls": [
+        {
+          "left": 39,
+          "right": 351,
+          "top": 359.8125,
+          "bottom": 407.8125
+        },
+        {
+          "left": 39,
+          "right": 351,
+          "top": 419.8125,
+          "bottom": 467.8125
+        },
+        {
+          "left": 174.078125,
+          "right": 351,
+          "top": 527.8125,
+          "bottom": 571.8125
+        }
+      ],
+      "choices": [
+        "Somente esta parcela",
+        "Esta e as próximas"
+      ],
+      "focused": "current",
+      "saveButtons": [
+        "Salvar parcela"
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "state": "recurring installment scope focus and bounds",
+      "screenshot": "issue-748-account-recurring-scope-768x1024.png",
+      "dialog": {
+        "left": 154,
+        "right": 614,
+        "top": 358.375,
+        "bottom": 665.625
+      },
+      "controls": [
+        {
+          "left": 177,
+          "right": 591,
+          "top": 448.625,
+          "bottom": 496.625
+        },
+        {
+          "left": 177,
+          "right": 591,
+          "top": 508.625,
+          "bottom": 556.625
+        },
+        {
+          "left": 414.078125,
+          "right": 591,
+          "top": 598.625,
+          "bottom": 642.625
+        }
+      ],
+      "choices": [
+        "Somente esta parcela",
+        "Esta e as próximas"
+      ],
+      "focused": "current",
+      "saveButtons": [
+        "Salvar parcela"
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-07",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "state": "recurring installment scope focus and bounds",
+      "screenshot": "issue-748-account-recurring-scope-320x568.png",
+      "dialog": {
+        "left": 16,
+        "right": 304,
+        "top": 99.75,
+        "bottom": 468.25
+      },
+      "controls": [
+        {
+          "left": 39,
+          "right": 281,
+          "top": 233.25,
+          "bottom": 281.25
+        },
+        {
+          "left": 39,
+          "right": 281,
+          "top": 293.25,
+          "bottom": 341.25
+        },
+        {
+          "left": 104.078125,
+          "right": 281,
+          "top": 401.25,
+          "bottom": 445.25
+        }
+      ],
+      "choices": [
+        "Somente esta parcela",
+        "Esta e as próximas"
+      ],
+      "focused": "current",
+      "saveButtons": [
+        "Salvar parcela"
+      ],
+      "horizontalOverflow": false
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-10",
+      "viewport": "1366x768",
+      "state": "read-only reconciled installment",
+      "screenshot": "issue-539-account-installment-blocked-desktop-1366x768.png",
+      "modal": {
+        "open": true,
+        "title": "Detalhes da parcela",
+        "categoryValue": "f3d1a0db-63f4-4866-91af-6f3142bd85fb",
+        "categoryLabel": "Categoria historica QA mvr1u0rv (arquivada)",
+        "categoryOptionDisabled": true,
+        "visibleEditableNames": [],
+        "focusName": "",
+        "reasonText": "O lançamento já foi efetivado, conciliado ou cancelado.",
+        "saveHidden": true,
+        "descriptionValue": "QA issue 539 parcela conta",
+        "reloadVisible": false,
+        "globalOverflow": false,
+        "dialogWithinViewport": true
+      }
+    },
+    {
+      "route": "/lancamentos?accountId=a48dbae2-a178-4b23-b2e5-b9d1b5d034a4&month=2026-09",
+      "viewport": "1366x768",
+      "state": "stale edit conflict",
+      "screenshot": "issue-539-account-installment-conflict-desktop-1366x768.png",
+      "conflict": {
+        "statusUpdate": 200,
+        "patchResult": {
+          "status": 409,
+          "body": {
+            "error": {
+              "code": "INSTALLMENT_EDIT_BLOCKED",
+              "message": "Parcela bloqueada para edicao: transaction_status_locked.",
+              "correlationId": "corr-mvr1u3tb-1bxmhm75"
+            }
+          }
+        },
+        "modalOpen": true,
+        "statusText": "O estado da parcela mudou e ela não pode mais ser alterada. Seus valores foram preservados.",
+        "descriptionValue": "Conflito preservado mvr1u3st",
+        "reloadVisible": true
+      }
+    },
+    {
+      "route": "/cartoes?cardId=5a364b41-9895-4e3b-ae07-dacc03fa9776&invoiceId=cbb25625-17d8-45c8-a5f0-09f3641e3915",
+      "viewport": "1366x768",
+      "state": "purchase edit",
+      "screenshot": "issue-539-card-installment-desktop-1366x768.png",
+      "purchaseModal": {
+        "open": true,
+        "title": "Editar compra",
+        "method": "PATCH",
+        "globalOverflow": false
+      }
+    },
+    {
+      "route": "/cartoes?cardId=5a364b41-9895-4e3b-ae07-dacc03fa9776&invoiceId=cbb25625-17d8-45c8-a5f0-09f3641e3915",
+      "viewport": "390x844",
+      "state": "recurrence icon only",
+      "screenshot": "issue-539-card-installment-mobile-390x844.png",
+      "line": {
+        "hasRecurringIcon": true,
+        "hasFiniteBadge": false,
+        "iconLabel": "Lançamento recorrente",
+        "iconTooltip": "Lançamento recorrente",
+        "purchaseEditEnabled": true,
+        "hasInstallmentEdit": false,
+        "globalOverflow": false
+      }
+    }
+  ]
+}

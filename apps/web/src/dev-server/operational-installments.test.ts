@@ -11,6 +11,16 @@ import {
   translateInstallmentBlockReason,
 } from "./operational-installments.js";
 
+test("installment editing has one managed primary submit and suppresses create-only continuation", () => {
+  const script = operationalInstallmentsController();
+  assert.match(script, /continueButton\.dataset\.installmentManaged = ""/);
+  assert.match(script, /rememberAndSet\(continueButton, "hidden", true\)/);
+  assert.match(script, /rememberAndSet\(continueButton, "disabled", true\)/);
+  assert.match(script, /form\.querySelector\('\[data-statement-save-primary\]'\)/);
+  assert.doesNotMatch(script, /\.save-row button\[type="submit"\]/);
+  assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
+});
+
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),
@@ -121,6 +131,10 @@ test("translates stable backend block reasons", () => {
     translateInstallmentBlockReason("transaction_status_locked"),
     "O lançamento já foi efetivado, conciliado ou cancelado.",
   );
+  assert.equal(
+    translateInstallmentBlockReason("recurrence_cancelled"),
+    "Esta recorrência foi cancelada. Suas parcelas estão disponíveis somente para consulta.",
+  );
 });
 
 test("controller preserves purchase editing and handles stale edit conflicts", () => {
@@ -218,7 +232,17 @@ test("amount edit requires an explicit current or future scope before the PATCH"
   assert.ok(script.includes("data-scope-cancel>Voltar sem salvar"));
   assert.ok(script.includes("const scope = await chooseInstallmentScope(installment)"));
   assert.ok(script.includes("patch.scope = scope"));
-  assert.ok(script.includes("const hasFuture = !installment.recurrenceId"));
+  assert.ok(script.includes("const isRecurring = Boolean(installment.recurrenceId)"));
+  assert.ok(script.includes('installment.recurrence?.status !== "cancelled"'));
+  assert.ok(
+    script.includes("Number(installment.totalInstallments) > Number(installment.sequenceNumber)"),
+  );
+  assert.ok(script.includes("const hasFuture = isRecurring"));
+  assert.ok(
+    script.includes("[data-statement-save-primary]"),
+    "only the canonical save button is repurposed in installment mode",
+  );
+  assert.ok(script.includes('rememberAndSet(continueButton, "hidden", true)'));
   assert.ok(script.includes("if (!scope) {"));
   assert.ok(script.includes('Object.keys(patch).some((field) => field !== "amountMinor")'));
   assert.ok(script.includes("body: JSON.stringify(patch)"));

@@ -1,0 +1,149 @@
+{
+  "schema_version": 1,
+  "issue": 747,
+  "pr": 749,
+  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "basis": {
+    "repository_ci_run": 40696535294,
+    "repository_ci_conclusion": "success",
+    "chrome_run": 40696534811,
+    "chrome_conclusion": "success",
+    "original_independent_rejection": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+    "source_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
+    "execution_scope": "Statement new-entry dialog (not a card-purchase modal); inherited footer control remains applicable",
+    "chrome_artifact_digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4",
+    "chrome_artifact_id": 12820740707
+  },
+  "expected": {
+    "button_labels": [
+      "Cancelar",
+      "Salvar e continuar",
+      "Salvar lançamento"
+    ],
+    "viewports": [
+      "320x740",
+      "390x844",
+      "1366x768"
+    ],
+    "invariants": [
+      "no horizontal clipping",
+      "visible and focusable actions",
+      "distinct accessible labels",
+      "touch height at least 44px"
+    ]
+  },
+  "observed": {
+    "source": "scripts/statement-visual/statement-contextual-action-labels.mjs plus statement-contextual-surfaces.mjs",
+    "chrome_artifact": "statement-visual-evidence-2274927; statement-contextual-surfaces.json",
+    "negative_cases": [
+      "save-and-continue rewritten to Save => rejected",
+      "cancel pushed outside content => rejected",
+      "each submit touch target reduced to 32px => rejected"
+    ],
+    "local_unit_command": "node --test scripts/statement-visual/statement-contextual-assertions.test.mjs",
+    "local_unit_result": "3 tests passed; duplicate-name assertion throws as expected",
+    "viewport_reports": [
+      {
+        "viewport": "1366x768",
+        "labels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "contained": true,
+        "horizontalOverflow": false,
+        "actionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        }
+      },
+      {
+        "viewport": "390x844",
+        "labels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "contained": true,
+        "horizontalOverflow": false,
+        "actionHeights": {
+          "cancel": 57,
+          "save": 44,
+          "continue": 57
+        }
+      },
+      {
+        "viewport": "320x740",
+        "labels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "contained": true,
+        "horizontalOverflow": false,
+        "actionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        }
+      }
+    ],
+    "negative_reports": [
+      {
+        "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
+        "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+        "restored": "passed"
+      },
+      {
+        "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+        "viewport": {
+          "width": 1366,
+          "height": 768
+        },
+        "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+        "restored": "passed"
+      },
+      {
+        "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+        "restored": "passed"
+      },
+      {
+        "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+        "restored": "passed"
+      },
+      {
+        "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+        "viewport": {
+          "width": 320,
+          "height": 740
+        },
+        "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+        "restored": "passed"
+      },
+      {
+        "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+        "viewport": {
+          "width": 320,
+          "height": 740
+        },
+        "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+        "restored": "passed"
+      }
+    ]
+  }
+}

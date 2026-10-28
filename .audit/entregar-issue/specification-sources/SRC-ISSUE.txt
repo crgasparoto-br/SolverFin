@@ -1,25 +1,27 @@
-**Parent epic:** #702
-**Origin:** #719 — inventário de fase 2
-**Baseline do inventário:** `develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8` (congelado em 17/10/2026)
-**Fonte visual:** Golden Screen de `/lancamentos` aprovada em 14/10/2026; `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md` e `AGENTS.md`.
-**Precedência:** consolidar evidência do marco técnico #714; aproveitar os componentes e verificações de #715–#718 quando aplicáveis. Não depender de merge automático.
+## Contexto
+Separação de escopo da PR #741 solicitada durante a issue #724. Origem dos commits posteriores a `4eff4922e2dc79f39358c130ce8eae464e1dd1ab`. A issue #724 permanece exclusivamente Dashboard na PR #744.
 
-**Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.
+## Escopo
+- Aplicar regras de preenchimento da descrição e categoria por perfil financeiro em formulários de Extrato e Cartões.
+- Oferecer sugestões de descrição por prefixo e, ao selecionar, preencher categoria associada.
+- Garantir que regras de preenchimento manual permaneçam inativas para automação de movimentações (sem efeitos automáticos).
+- Incluir a ação Salvar e continuar na criação do extrato, gravando na API antes de limpar formulário e permitindo lançamentos consecutivos.
+- Corrigir layout dos botões de Novo lançamento nas larguras 320, 390 e 1366, com foco e sem recorte horizontal.
 
-**Rota / arquétipo:** `/dashboard`, A1 Cockpit. **Prioridade:** P1 (primeiro acesso / posição financeira).
-**Antecedentes:** #591, #608. A migração anterior não constitui aceite da Golden Screen.
+## Requisitos
+- A regra persistida é isolada por organização/perfil financeiro e só se aplica ao preenchimento manual dos formulários.
+- O salvamento consecutivo é idempotente contra duplo envio e conserva os campos de contexto apropriados após confirmação efetiva da API.
+- A seleção de sugestão por teclado e mouse preenche descrição e categoria sem alterar totais ou contratos financeiros.
+- Após fechar o modal, a lista reflete os lançamentos salvos sem duplicação.
 
-### Delta observável na fonte
-Em `apps/web/src/dev-server/dashboard-page.ts`, `renderDashboardContent` (linhas ~150–189) apresenta sucessivamente `dashboard-hero.panel`, navegação de moedas `currency-nav.panel`, resumos individuais, projeção, insights, `next-actions.panel`, `decision-grid` de `renderCard` (~334–347) e `list-panel`. A composição privilegia múltiplas superfícies/coletâneas antes de uma leitura única de posição/variação/próxima decisão; confrontar a densidade real com A1 e a referência aprovada.
+## Critérios de aceite
+- [ ] Testes de frontend/backend e contratos de regra passam na branch própria baseada em develop.
+- [ ] Chrome valida as três ações visíveis e utilizáveis em 320×740, 390×844 e 1366×768.
+- [ ] CI e validações exact-SHA passam e há parecer de auditoria independente antes do merge.
 
-### Escopo fechado
-- Comparar a dobra inicial e reordenar/hierarquizar indicadores, horizonte e próxima ação, preservando separação BRL/USD, drilldowns, projeção e insights existentes.
-- Reduzir envoltórios redundantes e competição entre cartões/ações **somente onde o Chrome comprovar excesso**, sem remover indicadores nem mudar cálculos.
-- Preservar estados de dados parciais, vazios e erros, inclusive metas de desempenho e fallback SSR.
+## Invariantes
+- Não importar mudanças de Dashboard da #724 nem ajustes de recorrência de parcelas para esta entrega.
+- Não aplicar regras inativas a transações automaticamente.
+- Não realizar merge automático.
 
-### Aceite / regressão
-- [ ] Capturas comparativas 1366×768, 390×844, 320×740 no SHA material, normal, multi-moeda, vazio, falha parcial e conteúdo longo.
-- [ ] Saldo/resultado por moeda e próxima ação distinguíveis na primeira leitura; listas/evidências secundárias; sem cards universais, sem recorte horizontal.
-- [ ] Ações e drilldowns existentes operáveis por teclado/foco; nenhum total somado entre moedas; contratos #608 preservados.
-- [ ] Controle negativo: introduzir card/painel intrusivo ou elevar módulo secundário acima da decisão principal deve reprovar avaliação de densidade/hierarquia; restauração passa.
-- [ ] Testes SSR, CI e gate Chrome relevantemente verdes exact-SHA; revisão visual e auditoria técnica **independentes**, com links de capturas/relatórios.
+Referências: #724, PR #741, PR #744, docs/ENTRY_FILL_RULES.md.

@@ -14,6 +14,24 @@ Os contratos sao autenticados e isolados por organizacao e perfil financeiro. Re
 contexto retornam `404 TENANT_RESOURCE_NOT_FOUND`. Erros especificos distinguem selecao
 insuficiente, incompatibilidade, inelegibilidade, associacao existente e conflito concorrente.
 
+## Idempotência de lançamentos manuais (#747)
+
+`POST /api/transactions` aceita o campo opcional `idempotencyKey` (UUID)
+para tentativas iniciadas na interface de Novo lançamento. Clientes existentes
+sem essa chave mantêm o contrato anterior. A chave é isolada por organização
+e perfil financeiro e registrada em `TransactionCreationRequest` na mesma
+transação PostgreSQL que grava o lançamento e sua auditoria.
+
+- Primeira gravação válida: `201`, com `{ "transaction": ... }`.
+- Reenvio da mesma chave e do mesmo payload: `200`, com o mesmo lançamento.
+- Reutilização da chave com outro payload: `409 TRANSACTION_IDEMPOTENCY_CONFLICT`.
+- Chave inválida: `400 TRANSACTION_IDEMPOTENCY_KEY_INVALID`.
+
+A interface preserva a chave entre falhas ambíguas de transporte e só cria
+nova tentativa após confirmação. Ao fechar o modal após uma tentativa de gravação,
+o Extrato recarrega os lançamentos confirmados, inclusive quando a resposta
+original se perdeu. Uma falha na transação reverte também a reserva da chave.
+
 ## Objetivo
 
 Este contrato descreve a API inicial de lancamentos financeiros do SolverFin.

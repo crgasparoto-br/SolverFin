@@ -163,7 +163,7 @@ try {
       const form = document.querySelector("[data-form]");
       form.amountMinor.value = "150,00";
       form.description.value = "QA membro alterado com projeção imediata";
-      form.querySelector('[type="submit"]').focus();
+      form.querySelector("[data-statement-save-primary]").focus();
       return true;
     })()`,
   );

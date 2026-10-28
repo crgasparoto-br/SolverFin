@@ -37,12 +37,22 @@ export function financialOperationRecoveryScript(): string {
         return descriptor.method === "POST" && descriptor.pathname === "/api/installments";
       }
 
+      function isDurablyKeyedTransaction(descriptor) {
+        if (descriptor.pathname !== "/api/transactions" || !descriptor.body) return false;
+        try {
+          const key = JSON.parse(descriptor.body).idempotencyKey;
+          return typeof key === "string" &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(key);
+        } catch (_error) {
+          return false;
+        }
+      }
+
       function isNonIdempotentFinancialPost(descriptor) {
-        return (
-          descriptor.method === "POST" &&
-          (descriptor.pathname === "/api/transactions" ||
-            descriptor.pathname === "/api/recurrences")
-        );
+        return descriptor.method === "POST" &&
+          (descriptor.pathname === "/api/recurrences" ||
+            (descriptor.pathname === "/api/transactions" &&
+              !isDurablyKeyedTransaction(descriptor)));
       }
 
       function isAmbiguousFinancialResponse(response) {
@@ -140,7 +150,7 @@ export function financialOperationRecoveryScript(): string {
         const form = document.querySelector("[data-form]");
         if (!form) return;
         form.dataset.nonIdempotentRecovery = "ambiguous";
-        const submitButton = form.querySelector('button[type="submit"]');
+        const submitButton = form.querySelector("[data-statement-save-primary]");
         if (submitButton) {
           submitButton.disabled = true;
           submitButton.dataset.nonIdempotentRecoveryDisabled = "true";
@@ -167,7 +177,7 @@ export function financialOperationRecoveryScript(): string {
         const statusNode = form && form.querySelector(".form-status");
         if (!form || !statusNode || !nonIdempotentAmbiguousRequest) return;
         form.dataset.nonIdempotentRecovery = "ambiguous";
-        const submitButton = form.querySelector('button[type="submit"]');
+        const submitButton = form.querySelector("[data-statement-save-primary]");
         if (submitButton) {
           submitButton.disabled = true;
           submitButton.dataset.nonIdempotentRecoveryDisabled = "true";
