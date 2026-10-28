@@ -136,13 +136,21 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
     mobile.measurements.actionVisibleInFirstViewport = true;
     mobile.measurements.firstActionLinkVisibleInFirstViewport = false;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /First action link is below first fold/,
     );
     mobile.measurements.firstActionLinkVisibleInFirstViewport = true;
     mobile.measurements.firstActionLabelVisibleInFirstViewport = false;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /First action label is below first fold/,
     );
     mobile.measurements.firstActionLabelVisibleInFirstViewport = true;
@@ -183,7 +191,11 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
     const input = fixture(state);
     input.viewports.find((viewport) => viewport.width === 320).firstActionKeyboardFocused = false;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /First action link cannot receive focus/,
     );
   });

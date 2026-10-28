@@ -289,8 +289,12 @@ function inspectDashboard() {
     const rect = element.getBoundingClientRect();
     const style = getComputedStyle(element);
     return (
-      rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= innerHeight &&
-      style.visibility === "visible" && style.display !== "none"
+      rect.width > 0 &&
+      rect.height > 0 &&
+      rect.top >= 0 &&
+      rect.bottom <= innerHeight &&
+      style.visibility === "visible" &&
+      style.display !== "none"
     );
   };
   const supporting = document.querySelector(".dashboard-supporting-section");
@@ -366,7 +370,8 @@ function focusFirstAction() {
   if (
     !link ||
     !(href.startsWith("/") || (href.startsWith("#") && document.getElementById(href.slice(1))))
-  ) return false;
+  )
+    return false;
   link.focus();
   return document.activeElement === link;
 }

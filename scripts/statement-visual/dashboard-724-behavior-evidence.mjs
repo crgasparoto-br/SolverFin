@@ -91,7 +91,11 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
           "Restored first-fold layout did not recover",
         );
       }
-      assert.equal(viewport.firstActionKeyboardFocused, true, "First action link cannot receive focus");
+      assert.equal(
+        viewport.firstActionKeyboardFocused,
+        true,
+        "First action link cannot receive focus",
+      );
       assert.equal(viewport.keyboard?.open, true, "Enter failed to open currency evidence");
       assert.equal(viewport.keyboard?.hash, "#dashboard-evidence-brl-available");
       if (state === "multi-currency") {
