@@ -151,7 +151,13 @@ continua exibindo mensagem explicativa. O controle negativo Chrome insere tempor
 um painel intrusivo antes das ações, exige que a medição de primeira dobra falhe
 e comprova a restauração ao remover o painel.
 
-O runner canônico comprova o Dashboard autenticado real nos viewports de aceite
-(estado normal e vazio) e passa a medir a presença de "Próximas ações" na dobra
-inicial. Os demais cenários Chrome (multi-moeda, parcial/erro e conteúdo longo)
-continuam pendentes; seus testes SSR não substituem as capturas visuais.
+O runner canônico valida o Dashboard autenticado real nos viewports de aceite
+(estado normal e vazio) e verifica "Próximas ações" na dobra inicial. Os cenários
+Chrome de renderização SSR controlada abrangem multimoeda completa e parcial,
+falha do resumo e conteúdo longo, nas três larguras de aceite. Na visão mobile
+com múltiplas moedas, as métricas são agrupadas em linhas compactas por moeda,
+sem perda de valores, rótulos, links de evidência ou ordem de leitura. O gate
+exige que ambas as moedas precedam a próxima decisão e que o título da ação
+fique visível sem rolagem; um painel intrusivo de 600 px deve fazê-lo falhar.
+O teste SSR controlado não substitui testes integrados reais nem a revisão
+visual independente das capturas publicadas no SHA final.

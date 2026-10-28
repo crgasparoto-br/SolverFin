@@ -150,6 +150,7 @@ describe("dev-server dashboard page", () => {
 
       assert.match(html, /class="sf-page-container dashboard-page"/);
       assert.match(html, /class="sf-page-header"/);
+      assert.match(html, /class="dashboard-primary-currencies" data-multicurrency="false"/);
       assert.match(html, /class="sf-summary-grid"/);
       assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /class="evidence-detail"/);

@@ -207,7 +207,7 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
     });
   }
 
-  return blocks
+  const sections = blocks
     .map(
       (block) => `
         <section id="currency-${escapeHtml(block.currency)}" class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
@@ -219,6 +219,8 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
       `,
     )
     .join("");
+
+  return `<div class="dashboard-primary-currencies" data-multicurrency="${blocks.length > 1}">${sections}</div>`;
 }
 
 function renderSupportingCurrencySummaries(

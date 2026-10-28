@@ -4,7 +4,7 @@ import test from "node:test";
 import { collectDashboard724Evidence } from "./dashboard-724-behavior-evidence.mjs";
 
 function fixture(state) {
-  const multiple = state === "multi-currency";
+  const multiple = state.startsWith("multi-currency");
   return {
     route: "/dashboard",
     state,
@@ -23,23 +23,29 @@ function fixture(state) {
         noHorizontalOverflow: true,
         mainPresent: true,
         hasError: state === "error",
-        hasPartial: state === "partial",
+        hasPartial: state === "partial" || state === "multi-currency-partial",
         currencyCount: state === "error" ? 0 : multiple ? 2 : 1,
         currencies: state === "error" ? [] : multiple ? ["BRL", "USD"] : ["BRL"],
         primaryCount: state === "error" ? 0 : multiple ? 4 : 2,
         hasNextActions: state !== "error",
+        actionVisibleInFirstViewport: true,
+        primaryValuesOnOneLine: true,
+        allPrimaryBeforeActions: true,
         supportingAfterActions: state !== "error",
         amountsSeparatedByCurrency: true,
         longItemVisible: state === "long-content",
       },
       ...(state === "error"
         ? {}
-        : { keyboard: { open: true, hash: "#dashboard-evidence-brl-available" } }),
+        : {
+            keyboard: { open: true, hash: "#dashboard-evidence-brl-available" },
+            intrusivePanel: { actionVisibleAfterIntrusion: false, actionVisibleAfterRemoval: true },
+          }),
     })),
   };
 }
 
-for (const state of ["multi-currency", "partial", "error", "long-content"]) {
+for (const state of ["multi-currency", "multi-currency-partial", "partial", "error", "long-content"]) {
   test(`Dashboard #724 ${state} produces evidence only after all three widths pass`, async () => {
     const input = fixture(state);
     const observed = [];
@@ -103,3 +109,27 @@ test("Dashboard #724 rejects a missing keyboard action", async () => {
     /Enter failed to open currency evidence/,
   );
 });
+
+for (const state of ["multi-currency", "multi-currency-partial"]) {
+  test(`Dashboard #724 ${state} rejects a mobile first-fold regression`, async () => {
+    const input = fixture(state);
+    const mobile = input.viewports.find((viewport) => viewport.width === 320);
+    mobile.measurements.actionVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /Next action is below first fold/,
+    );
+    mobile.measurements.actionVisibleInFirstViewport = true;
+    mobile.intrusivePanel.actionVisibleAfterIntrusion = true;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /Intrusive panel escaped first-fold negative control/,
+    );
+    mobile.intrusivePanel.actionVisibleAfterIntrusion = false;
+    mobile.measurements.primaryValuesOnOneLine = false;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /Primary amount wraps on mobile/,
+    );
+  });
+}

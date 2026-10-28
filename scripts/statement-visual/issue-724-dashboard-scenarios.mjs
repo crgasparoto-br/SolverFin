@@ -10,7 +10,7 @@ import { loginExpression } from "./fixtures.mjs";
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const state = process.env.STATEMENT_VISUAL_STATE;
-const states = new Set(["multi-currency", "partial", "error", "long-content"]);
+const states = new Set(["multi-currency", "multi-currency-partial", "partial", "error", "long-content"]);
 if (!states.has(state)) throw new Error("Unknown dashboard visual state: " + state);
 if (!process.env.CHROME_BIN) throw new Error("CHROME_BIN is required.");
 await mkdir(outputDir, { recursive: true });
@@ -57,26 +57,40 @@ try {
       assert.equal(measurements.currencyCount, 0, "Error state leaked totals");
     } else {
       assert.equal(measurements.hasNextActions, true, "Next actions missing");
-      assert.equal(measurements.primaryCount, state === "multi-currency" ? 4 : 2);
+      assert.equal(measurements.primaryCount, state.startsWith("multi-currency") ? 4 : 2);
       assert.equal(
         measurements.supportingAfterActions,
         true,
         "Secondary indicators precede next action",
       );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Mixed currencies in a summary");
-      if (state === "multi-currency") {
+      if (state.startsWith("multi-currency")) {
         assert.deepEqual(measurements.currencies, ["BRL", "USD"]);
+        if (state === "multi-currency") {
+          assert.equal(measurements.hasPartial, false, "Complete multi-currency state is partial");
+        }
       }
-      if (state === "partial") {
+      if (state === "partial" || state === "multi-currency-partial") {
         assert.equal(measurements.hasPartial, true, "Partial data warning missing");
       }
       if (state === "long-content") {
         assert.equal(measurements.longItemVisible, true, "Long content fixture missing");
       }
     }
+    if (state !== "error" && width <= 390) {
+      assert.equal(measurements.actionVisibleInFirstViewport, true, state + " action is below first fold at " + width);
+      assert.equal(measurements.primaryValuesOnOneLine, true, state + " wraps a primary amount at " + width);
+      assert.equal(measurements.allPrimaryBeforeActions, true, state + " has a primary indicator after next action");
+    }
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     const item = { width, height, screenshot: stem + ".png", measurements };
+    if (state !== "error" && width <= 390) {
+      const intrusivePanel = await evaluate(browser.cdp, "(" + intrusivePanelProbe.toString() + ")()");
+      assert.equal(intrusivePanel.actionVisibleAfterIntrusion, false, "Intrusive panel must fail first-fold gate");
+      assert.equal(intrusivePanel.actionVisibleAfterRemoval, true, "Removing panel must restore first-fold gate");
+      item.intrusivePanel = intrusivePanel;
+    }
     if (state !== "error") {
       const focused = await evaluate(browser.cdp, "(" + focusEvidence.toString() + ")()");
       assert.equal(focused, true, "Evidence link cannot receive focus");
@@ -131,7 +145,7 @@ async function renderScenario(variant) {
       if (variant === "error")
         return response({ error: { message: "Falha controlada no resumo financeiro" } }, 503);
       const blocks = [currencyBlock("BRL", variant)];
-      if (variant === "multi-currency") blocks.push(currencyBlock("USD", variant));
+      if (variant.startsWith("multi-currency")) blocks.push(currencyBlock("USD", variant));
       return response({
         currencyBlocks: blocks,
         recentItems:
@@ -155,20 +169,35 @@ async function renderScenario(variant) {
         horizonDays: 30,
         from: "2026-07-02",
         to: "2026-07-31",
-        currencyBlocks: (variant === "multi-currency" ? ["BRL", "USD"] : ["BRL"]).map(
-          (currency) => ({
-            currency,
-            closingBalanceMinor: 10200,
-          }),
+        currencyBlocks: (variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"]).map(
+          (currency) => ({ currency, closingBalanceMinor: 10200 }),
         ),
+        ...(variant === "multi-currency"
+          ? {
+              freeToSpend: {
+                referenceDate: "2026-07-01",
+                horizonDays: 30,
+                currencyBlocks: ["BRL", "USD"].map((currency) => ({
+                  currency,
+                  status: "available",
+                  minimumProjectedBalanceMinor: 10000,
+                  minimumBalanceOn: "2026-07-10",
+                  freeToSpendMinor: 9000,
+                  projectedDeficitMinor: 0,
+                })),
+              },
+            }
+          : {}),
       });
     }
     if (path === "/api/bank-message-inbox") {
-      return variant === "partial"
+      return variant === "partial" || variant === "multi-currency-partial"
         ? response({ error: { message: "Serviço temporariamente indisponível" } }, 503)
         : response({ messages: [] });
     }
     if (path === "/api/invoices") return response({ invoices: [] });
+    if (path === "/api/financial-insights")
+      return response({ state: "active", total: 0, offset: 0, limit: 2, items: [] });
     return response({ error: { message: "Fonte opcional indisponível" } }, 503);
   };
   try {
@@ -223,6 +252,15 @@ function inspectDashboard() {
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
     hasNextActions: Boolean(action),
+    actionVisibleInFirstViewport: Boolean(action?.querySelector("h2")?.getBoundingClientRect().bottom <= innerHeight),
+    allPrimaryBeforeActions: Boolean(action && summaries.length && summaries.every((section) =>
+      section.getBoundingClientRect().bottom <= action.getBoundingClientRect().top,
+    )),
+    primaryValuesOnOneLine: [...document.querySelectorAll(".currency-summary .sf-metric-card-value")].every((value) => {
+      const range = document.createRange();
+      range.selectNodeContents(value);
+      return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
+    }),
     supportingAfterActions: Boolean(
       action &&
       supporting &&
@@ -238,6 +276,20 @@ function inspectDashboard() {
     ),
   };
 }
+function intrusivePanelProbe() {
+  const action = document.querySelector(".next-actions");
+  const title = action?.querySelector("h2");
+  if (!action || !title) return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
+  const panel = document.createElement("aside");
+  panel.style.height = "600px";
+  panel.setAttribute("aria-label", "Controle negativo de painel secundário intrusivo");
+  action.parentElement.insertBefore(panel, action);
+  const actionVisibleAfterIntrusion = title.getBoundingClientRect().bottom <= innerHeight;
+  panel.remove();
+  const actionVisibleAfterRemoval = title.getBoundingClientRect().bottom <= innerHeight;
+  return { actionVisibleAfterIntrusion, actionVisibleAfterRemoval };
+}
+
 function focusEvidence() {
   const link = document.querySelector('a[href="#dashboard-evidence-brl-available"]');
   if (!link) return false;

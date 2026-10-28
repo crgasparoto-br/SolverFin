@@ -120,8 +120,10 @@ para a parte final da página. A falha parcial mantém os KPIs válidos visívei
 de "Próximas ações" reprova a verificação de ordem; restaurar a composição passa.
 No Chrome normal, um painel intrusivo de 600 px é inserido antes da seção; a próxima
 ação deve sair da primeira dobra em 320/390 px. A remoção deve restaurar a medição.
-O runner cadastra cenários de Chrome para multi-moeda, parcial, erro e conteúdo longo,
-com capturas individuais em 1366×768, 390×844 e 320×740, métricas e prova de Enter
+O runner cadastra cenários de Chrome para multi-moeda completa e parcial,
+parcial de moeda única, erro e conteúdo longo,
+com capturas individuais em 1366×768, 390×844 e 320×740, medição da
+primeira dobra, controle negativo de painel intrusivo e prova de Enter
 em links de evidência. Esses quatro cenários usam o renderizador SSR real com respostas
 de API controladas injetadas em uma sessão Chrome autenticada: a procedência é
 explicitamente **SSR simulado**, não integração real com a API em produção. O fluxo

@@ -19,6 +19,7 @@ export function dashboardStyles(): string {
     .currency-nav > span { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
     .currency-chip { border: 1px solid var(--line); border-radius: 999px; color: var(--primary); font-size: 0.8125rem; font-weight: 700; padding: 5px 10px; text-decoration: none; }
     .currency-chip:hover, .currency-chip:focus-visible { background: var(--primary-soft); }
+    .dashboard-primary-currencies { display: grid; gap: 16px; }
     .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
     .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
     .currency-summary .sf-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -80,6 +81,7 @@ export function dashboardStyles(): string {
       .dashboard-hero .sf-page-header-description { font-size: 0.75rem; line-height: 1.35; }
       .data-quality { padding: 4px 0 4px 9px; }
       .data-quality[data-quality="complete"] span { display: none; }
+      .dashboard-primary-currencies { gap: 9px; }
       .currency-summary { gap: 5px; }
       .currency-summary .sf-summary-grid, .dashboard-supporting-metrics, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; }
       .currency-summary .sf-summary-grid { gap: 6px; }
@@ -88,6 +90,19 @@ export function dashboardStyles(): string {
       .dashboard-metric .sf-metric-card-value { font-size: clamp(0.875rem, 4vw, 1rem); text-align: left; white-space: nowrap; }
       .dashboard-metric .sf-metric-card-detail { font-size: 0.75rem; grid-column: 1 / -1; line-height: 1.2; }
       .dashboard-metric .metric-drilldown { bottom: 8px; left: 11px; font-size: 0.75rem; }
+      /* In multi-currency mode, keep both currencies and the next decision in the first fold. */
+      .dashboard-primary-currencies[data-multicurrency="true"] { gap: 6px; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .currency-summary { gap: 3px; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .currency-heading .eyebrow { display: none; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .currency-heading h2 { font-size: 0.875rem; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .currency-summary .sf-summary-grid { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-lg); gap: 0; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric { display: grid; gap: 1px; min-width: 0; padding: 5px 10px; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric + .dashboard-metric { border-top: 1px solid var(--sf-color-border); }
+      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric .sf-metric-card { background: transparent; border: 0; border-radius: 0; box-shadow: none; column-gap: 10px; display: grid; grid-template-columns: minmax(0, 1fr) max-content; height: auto; padding: 0; row-gap: 1px; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-label { align-self: baseline; font-size: 0.75rem; line-height: 1.25; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-value { align-self: baseline; font-size: 0.8rem; line-height: 1.25; overflow-wrap: normal; text-align: right; white-space: nowrap; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-detail { font-size: 0.69rem; grid-column: 1 / -1; line-height: 1.2; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .metric-drilldown { font-size: 0.7rem; line-height: 1.2; position: static; width: fit-content; }
       .next-actions { gap: 5px; padding-top: 6px; }
       .next-action-rows .row { padding: 6px 0; }
       .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; }
