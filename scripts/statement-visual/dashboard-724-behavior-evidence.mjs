@@ -1,6 +1,12 @@
 import assert from "node:assert/strict";
 
-const STATES = new Set(["multi-currency", "multi-currency-partial", "partial", "error", "long-content"]);
+const STATES = new Set([
+  "multi-currency",
+  "multi-currency-partial",
+  "partial",
+  "error",
+  "long-content",
+]);
 const REQUIRED_VIEWPORTS = [320, 390, 1366];
 
 // Convert the Chrome-produced report into observed behavior, not a metadata-only claim.
@@ -48,11 +54,27 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
       assert.equal(measurements.primaryCount, isMultiCurrency ? 4 : 2);
       assert.deepEqual(measurements.currencies, isMultiCurrency ? ["BRL", "USD"] : ["BRL"]);
       if (viewport.width <= 390) {
-        assert.equal(measurements.actionVisibleInFirstViewport, true, "Next action is below first fold");
+        assert.equal(
+          measurements.actionVisibleInFirstViewport,
+          true,
+          "Next action is below first fold",
+        );
         assert.equal(measurements.primaryValuesOnOneLine, true, "Primary amount wraps on mobile");
-        assert.equal(measurements.allPrimaryBeforeActions, true, "Currency balance follows next action");
-        assert.equal(viewport.intrusivePanel?.actionVisibleAfterIntrusion, false, "Intrusive panel escaped first-fold negative control");
-        assert.equal(viewport.intrusivePanel?.actionVisibleAfterRemoval, true, "Restored first-fold layout did not recover");
+        assert.equal(
+          measurements.allPrimaryBeforeActions,
+          true,
+          "Currency balance follows next action",
+        );
+        assert.equal(
+          viewport.intrusivePanel?.actionVisibleAfterIntrusion,
+          false,
+          "Intrusive panel escaped first-fold negative control",
+        );
+        assert.equal(
+          viewport.intrusivePanel?.actionVisibleAfterRemoval,
+          true,
+          "Restored first-fold layout did not recover",
+        );
       }
       assert.equal(viewport.keyboard?.open, true, "Enter failed to open currency evidence");
       assert.equal(viewport.keyboard?.hash, "#dashboard-evidence-brl-available");

@@ -45,7 +45,13 @@ function fixture(state) {
   };
 }
 
-for (const state of ["multi-currency", "multi-currency-partial", "partial", "error", "long-content"]) {
+for (const state of [
+  "multi-currency",
+  "multi-currency-partial",
+  "partial",
+  "error",
+  "long-content",
+]) {
   test(`Dashboard #724 ${state} produces evidence only after all three widths pass`, async () => {
     const input = fixture(state);
     const observed = [];
@@ -116,19 +122,31 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
     const mobile = input.viewports.find((viewport) => viewport.width === 320);
     mobile.measurements.actionVisibleInFirstViewport = false;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /Next action is below first fold/,
     );
     mobile.measurements.actionVisibleInFirstViewport = true;
     mobile.intrusivePanel.actionVisibleAfterIntrusion = true;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /Intrusive panel escaped first-fold negative control/,
     );
     mobile.intrusivePanel.actionVisibleAfterIntrusion = false;
     mobile.measurements.primaryValuesOnOneLine = false;
     await assert.rejects(
-      collectDashboard724Evidence(state, async () => input, async () => {}),
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
       /Primary amount wraps on mobile/,
     );
   });

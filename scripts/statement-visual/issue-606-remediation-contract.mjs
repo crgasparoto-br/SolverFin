@@ -102,11 +102,13 @@ const SCENARIO_ENRICHMENTS = new Map([
 ]);
 
 export const supplementalVisualScenarioModules = [
-  ...["multi-currency", "multi-currency-partial", "partial", "error", "long-content"].map((state) => ({
-    id: "dashboard-724-" + state,
-    module: "scripts/statement-visual/issue-724-dashboard-" + state + ".mjs",
-    coverage: [dashboard724Coverage(state)],
-  })),
+  ...["multi-currency", "multi-currency-partial", "partial", "error", "long-content"].map(
+    (state) => ({
+      id: "dashboard-724-" + state,
+      module: "scripts/statement-visual/issue-724-dashboard-" + state + ".mjs",
+      coverage: [dashboard724Coverage(state)],
+    }),
+  ),
   {
     id: "dashboard-empty-state",
     module: "scripts/statement-visual/issue-606-dashboard-empty.mjs",

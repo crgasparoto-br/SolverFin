@@ -10,7 +10,13 @@ import { loginExpression } from "./fixtures.mjs";
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const state = process.env.STATEMENT_VISUAL_STATE;
-const states = new Set(["multi-currency", "multi-currency-partial", "partial", "error", "long-content"]);
+const states = new Set([
+  "multi-currency",
+  "multi-currency-partial",
+  "partial",
+  "error",
+  "long-content",
+]);
 if (!states.has(state)) throw new Error("Unknown dashboard visual state: " + state);
 if (!process.env.CHROME_BIN) throw new Error("CHROME_BIN is required.");
 await mkdir(outputDir, { recursive: true });
@@ -78,17 +84,40 @@ try {
       }
     }
     if (state !== "error" && width <= 390) {
-      assert.equal(measurements.actionVisibleInFirstViewport, true, state + " action is below first fold at " + width);
-      assert.equal(measurements.primaryValuesOnOneLine, true, state + " wraps a primary amount at " + width);
-      assert.equal(measurements.allPrimaryBeforeActions, true, state + " has a primary indicator after next action");
+      assert.equal(
+        measurements.actionVisibleInFirstViewport,
+        true,
+        state + " action is below first fold at " + width,
+      );
+      assert.equal(
+        measurements.primaryValuesOnOneLine,
+        true,
+        state + " wraps a primary amount at " + width,
+      );
+      assert.equal(
+        measurements.allPrimaryBeforeActions,
+        true,
+        state + " has a primary indicator after next action",
+      );
     }
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     const item = { width, height, screenshot: stem + ".png", measurements };
     if (state !== "error" && width <= 390) {
-      const intrusivePanel = await evaluate(browser.cdp, "(" + intrusivePanelProbe.toString() + ")()");
-      assert.equal(intrusivePanel.actionVisibleAfterIntrusion, false, "Intrusive panel must fail first-fold gate");
-      assert.equal(intrusivePanel.actionVisibleAfterRemoval, true, "Removing panel must restore first-fold gate");
+      const intrusivePanel = await evaluate(
+        browser.cdp,
+        "(" + intrusivePanelProbe.toString() + ")()",
+      );
+      assert.equal(
+        intrusivePanel.actionVisibleAfterIntrusion,
+        false,
+        "Intrusive panel must fail first-fold gate",
+      );
+      assert.equal(
+        intrusivePanel.actionVisibleAfterRemoval,
+        true,
+        "Removing panel must restore first-fold gate",
+      );
       item.intrusivePanel = intrusivePanel;
     }
     if (state !== "error") {
@@ -252,11 +281,19 @@ function inspectDashboard() {
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
     hasNextActions: Boolean(action),
-    actionVisibleInFirstViewport: Boolean(action?.querySelector("h2")?.getBoundingClientRect().bottom <= innerHeight),
-    allPrimaryBeforeActions: Boolean(action && summaries.length && summaries.every((section) =>
-      section.getBoundingClientRect().bottom <= action.getBoundingClientRect().top,
-    )),
-    primaryValuesOnOneLine: [...document.querySelectorAll(".currency-summary .sf-metric-card-value")].every((value) => {
+    actionVisibleInFirstViewport: Boolean(
+      action?.querySelector("h2")?.getBoundingClientRect().bottom <= innerHeight,
+    ),
+    allPrimaryBeforeActions: Boolean(
+      action &&
+      summaries.length &&
+      summaries.every(
+        (section) => section.getBoundingClientRect().bottom <= action.getBoundingClientRect().top,
+      ),
+    ),
+    primaryValuesOnOneLine: [
+      ...document.querySelectorAll(".currency-summary .sf-metric-card-value"),
+    ].every((value) => {
       const range = document.createRange();
       range.selectNodeContents(value);
       return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
@@ -279,7 +316,8 @@ function inspectDashboard() {
 function intrusivePanelProbe() {
   const action = document.querySelector(".next-actions");
   const title = action?.querySelector("h2");
-  if (!action || !title) return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
+  if (!action || !title)
+    return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
   const panel = document.createElement("aside");
   panel.style.height = "600px";
   panel.setAttribute("aria-label", "Controle negativo de painel secundário intrusivo");
