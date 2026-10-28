@@ -2,47 +2,29 @@
   "schema_version": 2,
   "status": "ready",
   "phase": "final",
-  "created_at": "2026-10-27T20:00:40.631338+00:00",
+  "created_at": "2026-10-28T11:02:18.498775+00:00",
   "identity": {
-    "head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
-    "material_head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
-    "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
-    "merge_preview_sha": "c1f2c1bf69fc61a36fa80cb02e330f93a2d60558",
-    "material_merge_preview_sha": "c1f2c1bf69fc61a36fa80cb02e330f93a2d60558"
+    "head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+    "material_head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+    "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
+    "merge_preview_sha": "86398b2d3aa13a8f508fbf89e74426196218ecf7",
+    "material_merge_preview_sha": "86398b2d3aa13a8f508fbf89e74426196218ecf7"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 748,
-    "pull_request_number": 750,
+    "issue_number": 747,
+    "pull_request_number": 749,
     "work_item_kind": "issue",
-    "work_item_number": 748,
-    "pull_request": 750,
+    "work_item_number": 747,
+    "pull_request": 749,
     "base_ref": "develop",
-    "head_ref": "fix/748-recurring-installment-future-scope"
+    "head_ref": "feat/747-entry-fill-and-save-continue"
   },
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
-    "material_head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+    "material_head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
     "issue_changed_paths": [
-      "apps/api/src/installments-router.integration.test.ts",
-      "apps/api/src/repositories/installments-edit-block-reason.test.ts",
-      "apps/api/src/repositories/installments.ts",
-      "apps/api/src/repositories/recurring-account-installment-amount.ts",
-      "apps/api/src/repositories/recurring-account-transaction-edit.ts",
-      "apps/api/src/repositories/recurring-installment-update.ts",
-      "apps/web/src/dev-server/operational-installments.test.ts",
-      "apps/web/src/dev-server/operational-installments.ts",
-      "docs/API_INSTALLMENTS.md",
-      "docs/RECURRENCES_INSTALLMENTS_WEB.md",
-      "scripts/statement-visual/issue-539-operational-installments.mjs",
-      "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs"
-    ],
-    "issue_delta_sha256": "6685c9408977a9e6292bf1e5ec3b48d2e9dfb3769b6cc0d035ec3173b2948cb3"
-  },
-  "certificate_commit_policy": {
-    "mode": "result-only-child",
-    "allowed_paths": [
       ".audit/entregar-issue/EVIDENCE-README.md",
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
@@ -56,6 +38,79 @@
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      "apps/api/src/automation-rules-router.ts",
+      "apps/api/src/installments-router.integration.test.ts",
+      "apps/api/src/manual-entry-fill-rules.integration.test.ts",
+      "apps/api/src/repositories/automation-rules.ts",
+      "apps/api/src/repositories/installments-edit-block-reason.test.ts",
+      "apps/api/src/repositories/installments.ts",
+      "apps/api/src/repositories/manual-entry-fill-rules.ts",
+      "apps/api/src/repositories/recurring-account-installment-amount.ts",
+      "apps/api/src/repositories/recurring-account-transaction-edit.ts",
+      "apps/api/src/repositories/recurring-installment-update.ts",
+      "apps/api/src/repositories/transaction-idempotency.ts",
+      "apps/api/src/router.ts",
+      "apps/api/src/transaction-creation-idempotency.integration.test.ts",
+      "apps/web/src/dev-server/cards-page-v2-styles.ts",
+      "apps/web/src/dev-server/cards-page-v2.test.ts",
+      "apps/web/src/dev-server/cards-page-v2.ts",
+      "apps/web/src/dev-server/entry-fill-rules.test.ts",
+      "apps/web/src/dev-server/entry-fill-rules.ts",
+      "apps/web/src/dev-server/financial-operation-recovery.test.ts",
+      "apps/web/src/dev-server/financial-operation-recovery.ts",
+      "apps/web/src/dev-server/operational-installments.test.ts",
+      "apps/web/src/dev-server/operational-installments.ts",
+      "apps/web/src/dev-server/statement-golden-refinements.test.ts",
+      "apps/web/src/dev-server/statement-golden-refinements.ts",
+      "apps/web/src/dev-server/statement-save-flow-scripts.ts",
+      "apps/web/src/dev-server/transactions-page-v2-form-defaults.test.ts",
+      "apps/web/src/dev-server/transactions-page-v2.test.ts",
+      "apps/web/src/dev-server/transactions-page-v2.ts",
+      "docs/API_INSTALLMENTS.md",
+      "docs/API_TRANSACTIONS.md",
+      "docs/ENTRY_FILL_RULES.md",
+      "docs/RECURRENCES_INSTALLMENTS_WEB.md",
+      "prisma/migrations/20261027221500_manual_transaction_idempotency/migration.sql",
+      "prisma/schema.prisma",
+      "scripts/statement-visual/cards-interface.mjs",
+      "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "scripts/statement-visual/issue-553-ambiguous-recovery.mjs",
+      "scripts/statement-visual/issue-553-manual-installments-v2.mjs",
+      "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs",
+      "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "scripts/statement-visual/issue-677-transfer-source-destination.mjs",
+      "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs",
+      "scripts/statement-visual/statement-contextual-assertions.mjs",
+      "scripts/statement-visual/statement-contextual-assertions.test.mjs",
+      "scripts/statement-visual/statement-contextual-surfaces.mjs",
+      "scripts/statement-visual/transaction-group-pending-fixes.mjs"
+    ],
+    "issue_delta_sha256": "26912f8d0af5126d479e7e80296eb7f9f89c3455d5c78be38289e7c4a62023fa"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/EVIDENCE-README.md",
+      ".audit/entregar-issue/code-growth.json",
+      ".audit/entregar-issue/codebase-grounding.json",
+      ".audit/entregar-issue/codebase-grounding.parts/part-000.b64",
+      ".audit/entregar-issue/evidence-provenance.json",
+      ".audit/entregar-issue/evidence/issue-747-ci-test-reach.txt",
+      ".audit/entregar-issue/evidence/issue-747-control-review.json",
+      ".audit/entregar-issue/evidence/issue-747-ground-test-ci.txt",
+      ".audit/entregar-issue/evidence/issue-747-ground-test-visual.txt",
+      ".audit/entregar-issue/evidence/issue-747-scope-diff.txt",
+      ".audit/entregar-issue/evidence/issue-747-transaction-ambiguity.json",
+      ".audit/entregar-issue/evidence/issue-747-viewport-evidence.json",
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/inherited-controls.json",
+      ".audit/entregar-issue/requirement-attack-matrix.json",
+      ".audit/entregar-issue/requirement-attack-matrix.parts/part-000.b64",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/requirement-closure.parts/part-000.b64",
+      ".audit/entregar-issue/risk-saturation.json",
+      ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt"
     ]
   },
@@ -64,7 +119,7 @@
   "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "85aeafe49419f4068eaff79c2aaf9c8508fbc89be08bb3b22aefdc6a0705f777"
+    "skill_sha256": "7ab6673a41df32ee47ee701921e7bd29177ce95bf3c6085701ff35a46cf34921"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
@@ -89,9 +144,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "0093a5f570943db10e150ac64ec8c39be15c646ae10d4b601b9c7ecf4fb93f6c",
-      "logical_sha256": "0093a5f570943db10e150ac64ec8c39be15c646ae10d4b601b9c7ecf4fb93f6c",
-      "logical_size": 553,
+      "sha256": "1ef1f3f5c91a4ecd88bae0c7925da81cc6899cbdb2630871111b6e5a2ddc62cf",
+      "logical_sha256": "1ef1f3f5c91a4ecd88bae0c7925da81cc6899cbdb2630871111b6e5a2ddc62cf",
+      "logical_size": 554,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -99,39 +154,63 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "1242c3f74764736e5bb3d7425764a72ecd8aa5ba6ab34aae83a1d90c37dd726a",
-      "logical_sha256": "1242c3f74764736e5bb3d7425764a72ecd8aa5ba6ab34aae83a1d90c37dd726a",
-      "logical_size": 35296,
+      "sha256": "2e114844b19b664eb994f93e3c60eb96394e8188fb8085c80f1c15ae15700cdc",
+      "logical_sha256": "611d8fa142907bd54dd8fa8ea35d1b2a91f604df277c3d60aded6e11dc89dae5",
+      "logical_size": 31003,
       "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 9420,
+        "decoded_size": 31003,
+        "decoded_sha256": "611d8fa142907bd54dd8fa8ea35d1b2a91f604df277c3d60aded6e11dc89dae5",
+        "encoded_sha256": "4dc06023d4b7b99c6cafcfd4ea95e8d5e4382284f1b86a00463bf026df6ef608",
+        "parts": [
+          {
+            "path": "requirement-closure.parts/part-000.b64",
+            "size": 9420,
+            "sha256": "4dc06023d4b7b99c6cafcfd4ea95e8d5e4382284f1b86a00463bf026df6ef608"
+          }
+        ]
       }
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "ec85b089b89007e06d1c45c0766b46ec32e4304dca4c1a61a0781139026feb29",
-      "logical_sha256": "ec85b089b89007e06d1c45c0766b46ec32e4304dca4c1a61a0781139026feb29",
-      "logical_size": 74331,
+      "sha256": "992c92b45e2c144501cd3578e2983e304c645a5e18273f8622c5a2518b98b921",
+      "logical_sha256": "35df4010677d449c9d64eeb00d5d9a74779e4a4b583122d6e7298e54dcaef368",
+      "logical_size": 56904,
       "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 10140,
+        "decoded_size": 56904,
+        "decoded_sha256": "35df4010677d449c9d64eeb00d5d9a74779e4a4b583122d6e7298e54dcaef368",
+        "encoded_sha256": "42076c6fe228a4289440719ad21a6d08ae1c4b1517efd2fc45afbfcf689d2012",
+        "parts": [
+          {
+            "path": "requirement-attack-matrix.parts/part-000.b64",
+            "size": 10140,
+            "sha256": "42076c6fe228a4289440719ad21a6d08ae1c4b1517efd2fc45afbfcf689d2012"
+          }
+        ]
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "f52ac1b8fe5e098affb9e3c9a292c47f789af0b1ac5c884dbfee692d4afad0b1",
-      "logical_sha256": "f52ac1b8fe5e098affb9e3c9a292c47f789af0b1ac5c884dbfee692d4afad0b1",
-      "logical_size": 13756,
+      "sha256": "35b036bca0c9594fbf232382bf0629b89e16a70d801b2ccdb51e77f4b32aeb4c",
+      "logical_sha256": "35b036bca0c9594fbf232382bf0629b89e16a70d801b2ccdb51e77f4b32aeb4c",
+      "logical_size": 5432,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
       }
     },
     "inherited_controls": {
-      "name": "issue-748-inherited-controls.json",
-      "sha256": "dad4f640a5ac7ef735adc7cebe5c00b61bf22a31e8f083db808d6352a26ea1d8",
-      "logical_sha256": "dad4f640a5ac7ef735adc7cebe5c00b61bf22a31e8f083db808d6352a26ea1d8",
-      "logical_size": 180,
+      "name": "inherited-controls.json",
+      "sha256": "089446a3e021d153b415073a09b2089959ddd8a31dd5dcb5d3ee18ce46833f07",
+      "logical_sha256": "089446a3e021d153b415073a09b2089959ddd8a31dd5dcb5d3ee18ce46833f07",
+      "logical_size": 2656,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -139,8 +218,8 @@
     },
     "evidence_provenance": {
       "name": "evidence-provenance.json",
-      "sha256": "0671cbfd1f005327c9697a09a4b1a50b3a8febdfbd5fe4ec92efbb840e06de85",
-      "logical_sha256": "0671cbfd1f005327c9697a09a4b1a50b3a8febdfbd5fe4ec92efbb840e06de85",
+      "sha256": "8ba3b6dca1f3e7169ef4e5ce9ee4e203573223845caa968502f0194e2228fcf0",
+      "logical_sha256": "8ba3b6dca1f3e7169ef4e5ce9ee4e203573223845caa968502f0194e2228fcf0",
       "logical_size": 169,
       "artifact_transport": {
         "format": "plain-json",
@@ -149,19 +228,31 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "4cea51e5f2f5f293fa7547e55d161b34304834e765c5fcfa540275d7a5cc0be3",
-      "logical_sha256": "4cea51e5f2f5f293fa7547e55d161b34304834e765c5fcfa540275d7a5cc0be3",
-      "logical_size": 10005,
+      "sha256": "b44f0f0b993d2917bfd065f65ee0028d732078b17df70ed0f8c809772ee63ae9",
+      "logical_sha256": "abf73eed95917fcdf90ae41c260e9673b77367cd600aad1eb24215e9685f92c3",
+      "logical_size": 26125,
       "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 3464,
+        "decoded_size": 26125,
+        "decoded_sha256": "abf73eed95917fcdf90ae41c260e9673b77367cd600aad1eb24215e9685f92c3",
+        "encoded_sha256": "dd1be932196e28b6e7bde271917aaf2d7c8e5704b199e1fc3901a5fed30833bd",
+        "parts": [
+          {
+            "path": "codebase-grounding.parts/part-000.b64",
+            "size": 3464,
+            "sha256": "dd1be932196e28b6e7bde271917aaf2d7c8e5704b199e1fc3901a5fed30833bd"
+          }
+        ]
       }
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "e9f6c67d68762b120e5724e31aa278cb0467da9183b77fc379e822285ea2f2cf",
-      "logical_sha256": "e9f6c67d68762b120e5724e31aa278cb0467da9183b77fc379e822285ea2f2cf",
-      "logical_size": 1564,
+      "sha256": "52dd9916a2f6dc19ecf5c104f091fccf2f95a146c4f0d8758fff2254ef46a59d",
+      "logical_sha256": "52dd9916a2f6dc19ecf5c104f091fccf2f95a146c4f0d8758fff2254ef46a59d",
+      "logical_size": 3537,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -178,8 +269,8 @@
     "source_locations": {
       "applicable": true,
       "status": "passed",
-      "checked": 41,
-      "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+      "checked": 15,
+      "subject_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
       "evidence_artifacts": [
         "requirement_closure",
         "requirement_attack_matrix",

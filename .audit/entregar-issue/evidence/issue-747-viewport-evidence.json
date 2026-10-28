@@ -1,0 +1,306 @@
+{
+  "schema_version": 1,
+  "source_artifact": {
+    "run_id": 40623696564,
+    "artifact_id": 12788522891,
+    "artifact_digest": "sha256:9067921c1039ceacc8baa3bfe5fcaf1673686b2a75fd42f977caa965cf9c8cc4",
+    "source_file": "statement-contextual-surfaces.json"
+  },
+  "subjectSha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+  "route": "/lancamentos?accountId=cce6b387-45c3-4203-817f-aa60541077ac&month=2026-07",
+  "scope": "real-application",
+  "status": "passed",
+  "selection": "Exact execution records for issue #747 new-entry layout at required viewports and their executed negative controls.",
+  "observations": [
+    {
+      "state": "new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 2,
+        "footerActionRowDelta": 52,
+        "footerContinueRowDelta": 0,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-1366x768.png",
+      "accessibilityFile": "statement-contextual-new-1366x768-ax.json"
+    },
+    {
+      "state": "new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 2,
+        "footerActionRowDelta": 65,
+        "footerContinueRowDelta": 0,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 57,
+          "save": 44,
+          "continue": 57
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-390x844.png",
+      "accessibilityFile": "statement-contextual-new-390x844-ax.json"
+    },
+    {
+      "state": "new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 1,
+        "footerActionRowDelta": 104,
+        "footerContinueRowDelta": 52,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": true,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-320x740.png",
+      "accessibilityFile": "statement-contextual-new-320x740-ax.json"
+    }
+  ],
+  "controls": [
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (894px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (104.5px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (80px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    }
+  ]
+}

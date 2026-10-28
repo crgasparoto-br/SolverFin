@@ -1,16 +1,18 @@
-# Pacote certificado — issue #748 / PR #750
+# Pacote certificado — issue #747 / PR #749
 
-Este arquivo é um índice neutro de **evidências da implementação**, não um parecer de auditoria independente.
+Este diretório contém evidências da implementação e readiness para uma auditoria independente separada. Não é um parecer de auditoria independente.
 
-- Material HEAD: `9d23ab9b81737fe8f0628425b959233b466ec2ac`.
-- Base: `develop@7d151ce4ad1b0a412a281bf527f244bcd3bee042`.
-- Testes executados via Repository CI CRITICAL: https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272702
-- Interação e responsividade em Chrome: https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272691
-- Bundle exato do CI/auditoria: https://github.com/crgasparoto-br/SolverFin/actions/runs/40564272729
-- Controle de crescimento: `code-growth.json` (`CODE-GROWTH-001`, resultado `passed`).
-- Referências/decisões de testes: `codebase-grounding.json` (`GROUND-TEST-001`, resultado `passed`).
-- Especificação, 14 obrigações e controles discriminantes: `specification-snapshot.json`, `requirement-closure.json`, `requirement-attack-matrix.json`.
-- Evidence index: `evidence/issue-748-control-review.json`, log de CI `evidence/issue-748-ci-test-reach.txt` e relatório bruto Chrome `evidence/issue-748-chrome-report.json`.
-- Os arquivos PNG originais estão no artifact immutable do Chrome run com SHA-256 registrado em `evidence/issue-748-control-review.json`.
+- Material HEAD: `659a4c10841bcea19700dcf51b5bd7a15aeec231`.
+- Base remota da PR: `develop@0fc7c118689bef56a70d19c0d58e64d87643a276`.
+- Work-item start preservado: `7d151ce4ad1b0a412a281bf527f244bcd3bee042`.
+- Repository CI exact-SHA: run `40623696529`, success.
+- Chrome/Statement visual exact-SHA: run `40623696564`, success.
+- Delivery audit workspace exact-SHA: run `40623696510`, success.
+- `requirement-closure.json`: 15 obrigações da issue #747.
+- `requirement-attack-matrix.json` e `risk-saturation.json`: controles positivos, negativos e regressivos vinculados ao material HEAD.
+- `codebase-grounding.json`: decisões de reuso/criação e 12 suítes alteradas com prova de alcance no CI exato.
+- `code-growth.json`: `CODE-GROWTH-001` aprovado.
+- `evidence/issue-747-viewport-evidence.json`: extrato determinístico do artifact visual, com proveniência do run e registros exatos para 320×740, 390×844 e 1366×768.
+- `evidence/issue-747-transaction-ambiguity.json`: replay idempotente observado no Chrome após resposta ambígua.
 
-**Condição de liberação:** o CI técnico está verde, mas **não há aprovação independente da issue #748**. A PR permanece Draft e não pode ser mergeada sem auditoria em contexto separado e certificação externa aceita no material HEAD. Nenhum merge automático foi configurado.
+O certificado `handoff-ready.json` representa a issue #747 / PR #749 e certifica o material HEAD acima. O commit que publicar este pacote deve ser filho direto somente de resultados; nenhum arquivo de produto pode mudar nele. A aprovação independente continua obrigatória antes de merge.

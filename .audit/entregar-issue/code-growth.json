@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "subject_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
   "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
-  "comparison_base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
+  "comparison_base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,39 +19,114 @@
   },
   "files": [
     {
-      "path": "apps/api/src/repositories/installments.ts",
-      "lines_before": 727,
-      "lines_after": 741
+      "path": "apps/api/src/automation-rules-router.ts",
+      "lines_before": 361,
+      "lines_after": 378
     },
     {
-      "path": "apps/api/src/repositories/recurring-account-installment-amount.ts",
+      "path": "apps/api/src/repositories/automation-rules.ts",
+      "lines_before": 564,
+      "lines_after": 574
+    },
+    {
+      "path": "apps/api/src/repositories/manual-entry-fill-rules.ts",
       "lines_before": null,
-      "lines_after": 215
+      "lines_after": 71
     },
     {
-      "path": "apps/api/src/repositories/recurring-account-transaction-edit.ts",
-      "lines_before": 629,
-      "lines_after": 648
-    },
-    {
-      "path": "apps/api/src/repositories/recurring-installment-update.ts",
+      "path": "apps/api/src/repositories/transaction-idempotency.ts",
       "lines_before": null,
-      "lines_after": 73
+      "lines_after": 63
+    },
+    {
+      "path": "apps/api/src/router.ts",
+      "lines_before": 1200,
+      "lines_after": 1214
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-styles.ts",
+      "lines_before": 316,
+      "lines_after": 318
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2.ts",
+      "lines_before": 1577,
+      "lines_after": 1579
+    },
+    {
+      "path": "apps/web/src/dev-server/entry-fill-rules.ts",
+      "lines_before": null,
+      "lines_after": 16
+    },
+    {
+      "path": "apps/web/src/dev-server/financial-operation-recovery.ts",
+      "lines_before": 296,
+      "lines_after": 306
     },
     {
       "path": "apps/web/src/dev-server/operational-installments.ts",
-      "lines_before": 829,
-      "lines_after": 840
+      "lines_before": 840,
+      "lines_after": 842
     },
     {
-      "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
-      "lines_before": 674,
-      "lines_after": 694
+      "path": "apps/web/src/dev-server/statement-golden-refinements.ts",
+      "lines_before": 818,
+      "lines_after": 818
     },
     {
-      "path": "scripts/statement-visual/issue-748-recurring-scope-responsive.mjs",
+      "path": "apps/web/src/dev-server/statement-save-flow-scripts.ts",
       "lines_before": null,
-      "lines_after": 200
+      "lines_after": 88
+    },
+    {
+      "path": "apps/web/src/dev-server/transactions-page-v2.ts",
+      "lines_before": 1825,
+      "lines_after": 1844
+    },
+    {
+      "path": "scripts/statement-visual/cards-interface.mjs",
+      "lines_before": 400,
+      "lines_after": 425
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-ambiguous-recovery.mjs",
+      "lines_before": 372,
+      "lines_after": 372
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-manual-installments-v2.mjs",
+      "lines_before": 725,
+      "lines_after": 725
+    },
+    {
+      "path": "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs",
+      "lines_before": 369,
+      "lines_after": 414
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "lines_before": 134,
+      "lines_after": 297
+    },
+    {
+      "path": "scripts/statement-visual/issue-677-transfer-source-destination.mjs",
+      "lines_before": 521,
+      "lines_after": 521
+    },
+    {
+      "path": "scripts/statement-visual/statement-contextual-assertions.mjs",
+      "lines_before": 82,
+      "lines_after": 113
+    },
+    {
+      "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
+      "lines_before": 694,
+      "lines_after": 711
+    },
+    {
+      "path": "scripts/statement-visual/transaction-group-pending-fixes.mjs",
+      "lines_before": 320,
+      "lines_after": 320
     }
   ],
   "blocking_files": []

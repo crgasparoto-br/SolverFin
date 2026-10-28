@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+  "head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -27,7 +27,7 @@
       "id": "FREE-TO-SPEND-AVAIL-001",
       "disposition": "not-applicable",
       "reason": "Prior check concerns free-to-spend availability for EUR/JPY; issue 742 is exclusively card-purchase editing, and no free-to-spend source changed.",
-      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+      "subject_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
       "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
       "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
       "procedure": "Compare git diff between immutable base and material SHA for free-to-spend/financial-summary sources; verify no matching changed files and that issue 742 scope is card purchase editing only.",
@@ -38,7 +38,7 @@
       "id": "AUD-714-03-FOOTER-CLIP",
       "disposition": "not-applicable",
       "reason": "Prior check concerns Statement mobile footer clipping, not the cards purchase dialog; no statement page or /lancamentos implementation files changed.",
-      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+      "subject_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
       "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
       "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
       "procedure": "Compare git diff between base and material HEAD for Statement rendering and footer components, and compare issue 742 route /cartoes against original statement route.",

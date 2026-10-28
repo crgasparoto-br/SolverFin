@@ -1,0 +1,22 @@
+HEAD: 659a4c10841bcea19700dcf51b5bd7a15aeec231
+RUN: GitHub Actions Repository CI 40623696529 / CRITICAL validation 122603905292
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/api/src/repositories/installments-edit-block-reason.test.ts
+REACHED: apps/web/src/dev-server/cards-page-v2.test.ts
+REACHED: apps/web/src/dev-server/entry-fill-rules.test.ts
+REACHED: apps/web/src/dev-server/financial-operation-recovery.test.ts
+REACHED: apps/web/src/dev-server/operational-installments.test.ts
+REACHED: apps/web/src/dev-server/statement-golden-refinements.test.ts
+REACHED: apps/web/src/dev-server/transactions-page-v2-form-defaults.test.ts
+REACHED: apps/web/src/dev-server/transactions-page-v2.test.ts
+RESULT: passed on exact head; decoded job log contains corresponding [test] markers.
+
+HEAD: 659a4c10841bcea19700dcf51b5bd7a15aeec231
+RUN: GitHub Actions Repository CI 40623696529 / CRITICAL validation 122603905292
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/installments-router.integration.test.ts
+REACHED: apps/api/src/manual-entry-fill-rules.integration.test.ts
+REACHED: apps/api/src/transaction-creation-idempotency.integration.test.ts
+RESULT: 125 compiled integration test files passed; decoded job log contains corresponding [test] markers.
