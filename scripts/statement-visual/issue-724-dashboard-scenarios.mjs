@@ -87,7 +87,12 @@ try {
       assert.equal(
         measurements.actionVisibleInFirstViewport,
         true,
-        state + " action is below first fold at " + width,
+        state + " first action title and link must both fit the first fold at " + width,
+      );
+      assert.equal(
+        measurements.firstActionLinkHasDestination,
+        true,
+        state + " first action must link to an actionable route at " + width,
       );
       assert.equal(
         measurements.primaryValuesOnOneLine,
@@ -121,6 +126,9 @@ try {
       item.intrusivePanel = intrusivePanel;
     }
     if (state !== "error") {
+      const actionFocused = await evaluate(browser.cdp, "(" + focusFirstAction.toString() + ")()");
+      assert.equal(actionFocused, true, "First action link must accept keyboard focus");
+      item.firstActionKeyboardFocused = actionFocused;
       const focused = await evaluate(browser.cdp, "(" + focusEvidence.toString() + ")()");
       assert.equal(focused, true, "Evidence link cannot receive focus");
       await browser.cdp.send("Input.dispatchKeyEvent", {
@@ -269,6 +277,22 @@ function inspectDashboard() {
   const root = document.documentElement;
   const summaries = [...document.querySelectorAll(".currency-summary")];
   const action = document.querySelector(".next-actions");
+  const firstAction = action?.querySelector(".next-action-row");
+  const firstActionLabel = firstAction?.querySelector("strong");
+  const firstActionLink = firstAction?.querySelector("a[href]");
+  const firstActionHref = firstActionLink?.getAttribute("href") ?? "";
+  const firstActionDestinationValid =
+    firstActionHref.startsWith("/") ||
+    (firstActionHref.startsWith("#") && Boolean(document.getElementById(firstActionHref.slice(1))));
+  const withinFirstFold = (element) => {
+    if (!element) return false;
+    const rect = element.getBoundingClientRect();
+    const style = getComputedStyle(element);
+    return (
+      rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= innerHeight &&
+      style.visibility === "visible" && style.display !== "none"
+    );
+  };
   const supporting = document.querySelector(".dashboard-supporting-section");
   return {
     viewportWidth: innerWidth,
@@ -281,8 +305,12 @@ function inspectDashboard() {
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
     hasNextActions: Boolean(action),
-    actionVisibleInFirstViewport: Boolean(
-      action?.querySelector("h2")?.getBoundingClientRect().bottom <= innerHeight,
+    actionVisibleInFirstViewport:
+      withinFirstFold(firstActionLabel) && withinFirstFold(firstActionLink),
+    firstActionLabelVisibleInFirstViewport: withinFirstFold(firstActionLabel),
+    firstActionLinkVisibleInFirstViewport: withinFirstFold(firstActionLink),
+    firstActionLinkHasDestination: Boolean(
+      firstActionLink && firstActionLink.tabIndex >= 0 && firstActionDestinationValid,
     ),
     allPrimaryBeforeActions: Boolean(
       action &&
@@ -315,17 +343,32 @@ function inspectDashboard() {
 }
 function intrusivePanelProbe() {
   const action = document.querySelector(".next-actions");
-  const title = action?.querySelector("h2");
-  if (!action || !title)
+  const firstLink = action?.querySelector(".next-action-row a[href]");
+  if (!action || !firstLink)
     return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
+  const linkWithinFirstFold = () => {
+    const rect = firstLink.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= innerHeight;
+  };
   const panel = document.createElement("aside");
   panel.style.height = "600px";
   panel.setAttribute("aria-label", "Controle negativo de painel secundário intrusivo");
   action.parentElement.insertBefore(panel, action);
-  const actionVisibleAfterIntrusion = title.getBoundingClientRect().bottom <= innerHeight;
+  const actionVisibleAfterIntrusion = linkWithinFirstFold();
   panel.remove();
-  const actionVisibleAfterRemoval = title.getBoundingClientRect().bottom <= innerHeight;
+  const actionVisibleAfterRemoval = linkWithinFirstFold();
   return { actionVisibleAfterIntrusion, actionVisibleAfterRemoval };
+}
+
+function focusFirstAction() {
+  const link = document.querySelector(".next-actions .next-action-row a[href]");
+  const href = link?.getAttribute("href") ?? "";
+  if (
+    !link ||
+    !(href.startsWith("/") || (href.startsWith("#") && document.getElementById(href.slice(1))))
+  ) return false;
+  link.focus();
+  return document.activeElement === link;
 }
 
 function focusEvidence() {

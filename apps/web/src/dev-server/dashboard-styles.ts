@@ -103,6 +103,15 @@ export function dashboardStyles(): string {
       .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-value { align-self: baseline; font-size: 0.8rem; line-height: 1.25; overflow-wrap: normal; text-align: right; white-space: nowrap; }
       .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-detail { font-size: 0.69rem; grid-column: 1 / -1; line-height: 1.2; }
       .dashboard-primary-currencies[data-multicurrency="true"] .metric-drilldown { font-size: 0.7rem; line-height: 1.2; position: static; width: fit-content; }
+      /* At narrow widths the labels and links already identify each KPI; retain
+         supplementary copy for assistive technology without hiding actions. */
+      .dashboard-hero[data-multicurrency="true"] .sf-page-header-description,
+      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-detail {
+        border: 0; clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden;
+        padding: 0; position: absolute; white-space: nowrap; width: 1px;
+      }
+      .dashboard-hero[data-multicurrency="true"] .data-quality[data-quality="partial"] span { font-size: 0.75rem; line-height: 1.2; }
+      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric { padding-block: 4px; }
       .next-actions { gap: 5px; padding-top: 6px; }
       .next-action-rows .row { padding: 6px 0; }
       .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; }

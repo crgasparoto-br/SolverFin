@@ -142,22 +142,26 @@ cobrindo normal, multi-moeda, vazio, dados parciais, falha do resumo e conteúdo
 revisão visual humana e auditoria técnica independentes não são substituídas pelo teste SSR.
 O teste de hierarquia deve rejeitar um painel de decisão intrusivo colocado antes das ações.
 
-### Remediação da auditoria #724
+### Remediação da auditoria #724 — primeira ação realmente utilizável
 
-A leitura inicial de 320×740 e 390×844 passa a exigir que o título de **Próximas
-ações** esteja inteiramente visível sem rolagem. No mobile, os dois indicadores
-principais usam cartões compactos com valores e links preservados; qualidade parcial
-continua exibindo mensagem explicativa. O controle negativo Chrome insere temporariamente
-um painel intrusivo antes das ações, exige que a medição de primeira dobra falhe
-e comprova a restauração ao remover o painel.
+Em 320×740 e 390×844 a dobra inicial deve conter **o título e o link operacional
+completo da primeira ação**, não apenas o cabeçalho de "Próximas ações". A correção
+da A-74402 identifica o modo multimoeda no SSR e reduz a densidade redundante
+apenas nos dispositivos estreitos. A descrição introdutória e os subtítulos dos
+KPIs permanecem no DOM e disponíveis a tecnologias assistivas, embora sejam
+visualmente compactados; os títulos, valores BRL/USD e links de evidências
+continuam visíveis. O aviso de dados parciais continua visível e legível.
 
-O runner canônico valida o Dashboard autenticado real nos viewports de aceite
-(estado normal e vazio) e verifica "Próximas ações" na dobra inicial. Os cenários
-Chrome de renderização SSR controlada abrangem multimoeda completa e parcial,
-falha do resumo e conteúdo longo, nas três larguras de aceite. Na visão mobile
-com múltiplas moedas, as métricas são agrupadas em linhas compactas por moeda,
-sem perda de valores, rótulos, links de evidência ou ordem de leitura. O gate
-exige que ambas as moedas precedam a próxima decisão e que o título da ação
-fique visível sem rolagem; um painel intrusivo de 600 px deve fazê-lo falhar.
-O teste SSR controlado não substitui testes integrados reais nem a revisão
-visual independente das capturas publicadas no SHA final.
+O gate Chrome mede separadamente os limites visuais do título e do link da
+primeira ação, exige destino navegável e foco por teclado, além da ordem dos
+indicadores e ausência de overflow. O controle negativo insere um painel de
+600 px antes das ações, exige a reprovação do **link** na primeira dobra e
+valida sua restauração. Mutar apenas o link para ficar abaixo da dobra, mesmo
+mantendo o cabeçalho visível, também deve reprovar o adaptador de evidências.
+
+O runner canônico valida o Dashboard autenticado nos estados normal e vazio;
+os cenários SSR controlados cobrem multimoeda completa/parcial, moeda única
+parcial, erro e conteúdo longo, nas três larguras de aceite. Os dados de API
+desses cenários são controlados, e não constituem homologação integrada com a
+API de produção. O resultado Chrome e as capturas do SHA material corrigido
+precisam de auditoria técnica e visual independente antes do aceite da issue.

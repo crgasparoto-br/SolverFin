@@ -116,23 +116,26 @@ horizontal; testar Tab, foco visível, Enter e `details/summary`. Links com
 `#dashboard-evidence-*` devem abrir o detalhe correto mesmo após o índice mudar
 para a parte final da página. A falha parcial mantém os KPIs válidos visíveis.
 
-**Controle negativo:** antecipar artificialmente um painel/cartão secundário antes
-de "Próximas ações" reprova a verificação de ordem; restaurar a composição passa.
-No Chrome normal, um painel intrusivo de 600 px é inserido antes da seção; a próxima
-ação deve sair da primeira dobra em 320/390 px. A remoção deve restaurar a medição.
-O runner cadastra cenários de Chrome para multi-moeda completa e parcial,
-parcial de moeda única, erro e conteúdo longo,
-com capturas individuais em 1366×768, 390×844 e 320×740, medição da
-primeira dobra, controle negativo de painel intrusivo e prova de Enter
-em links de evidência. Esses quatro cenários usam o renderizador SSR real com respostas
-de API controladas injetadas em uma sessão Chrome autenticada: a procedência é
-explicitamente **SSR simulado**, não integração real com a API em produção. O fluxo
-normal e o vazio continuam verificações com dados reais do ambiente de teste.
-Cada execução deve vincular as capturas ao SHA material e passar por revisão visual
-independente; os testes SSR não substituem essa revisão.
-O teste SSR rejeita a alteração e a revisão visual deve rejeitar excesso de cartões
-mesmo que as verificações estruturais passem. Evidência Chrome de SHA anterior só
-serve como baseline, nunca como certificação da entrega.
+**Controle negativo:** introduzir um painel secundário de 600 px antes de
+"Próximas ações" deve deslocar o **link da primeira ação** para fora da primeira
+dobra em 320×740 e 390×844, enquanto sua remoção restaura a visibilidade. O
+título de seção, isoladamente, **não** comprova que a ação está utilizável.
+Exigir que o título da primeira ação e o link completo tenham geometria visível
+na dobra inicial, com URL de destino e foco por teclado; a adaptação de evidência
+deve rejeitar mutações que escondam somente o link, mesmo com o título ainda
+visível.
+
+O runner cobre multimoeda completa e parcial, parcial de moeda única, erro e
+conteúdo longo em 1366×768, 390×844 e 320×740, com capturas individuais,
+medição de primeira dobra e Enter nos links de evidência. Os cenários usam o
+renderizador SSR real com respostas de API controladas inseridas numa sessão
+Chrome autenticada: isso é **SSR simulado**, não integração real com a API em
+produção. O fluxo normal e o vazio permanecem verificados com dados reais do
+ambiente de teste. Os valores e drilldowns por moeda, o aviso parcial visível,
+a ausência de overflow e a ordem semântica devem ser preservados; a cópia
+suplementar dos KPIs permanece disponível a leitores de tela. As capturas
+precisam corresponder ao SHA material final e passar por revisão visual
+independente; CI e SSR verdes, isoladamente, não substituem a revisão.
 
 ## Unidade de cobertura
 

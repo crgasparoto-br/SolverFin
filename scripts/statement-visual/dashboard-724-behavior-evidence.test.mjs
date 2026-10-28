@@ -29,6 +29,9 @@ function fixture(state) {
         primaryCount: state === "error" ? 0 : multiple ? 4 : 2,
         hasNextActions: state !== "error",
         actionVisibleInFirstViewport: true,
+        firstActionLabelVisibleInFirstViewport: true,
+        firstActionLinkVisibleInFirstViewport: true,
+        firstActionLinkHasDestination: true,
         primaryValuesOnOneLine: true,
         allPrimaryBeforeActions: true,
         supportingAfterActions: state !== "error",
@@ -38,6 +41,7 @@ function fixture(state) {
       ...(state === "error"
         ? {}
         : {
+            firstActionKeyboardFocused: true,
             keyboard: { open: true, hash: "#dashboard-evidence-brl-available" },
             intrusivePanel: { actionVisibleAfterIntrusion: false, actionVisibleAfterRemoval: true },
           }),
@@ -127,9 +131,31 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
         async () => input,
         async () => {},
       ),
-      /Next action is below first fold/,
+      /First action title or link is below first fold/,
     );
     mobile.measurements.actionVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLinkVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /First action link is below first fold/,
+    );
+    mobile.measurements.firstActionLinkVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLabelVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /First action label is below first fold/,
+    );
+    mobile.measurements.firstActionLabelVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLinkHasDestination = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action has no actionable destination/,
+    );
+    mobile.measurements.firstActionLinkHasDestination = true;
     mobile.intrusivePanel.actionVisibleAfterIntrusion = true;
     await assert.rejects(
       collectDashboard724Evidence(
@@ -148,6 +174,17 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
         async () => {},
       ),
       /Primary amount wraps on mobile/,
+    );
+  });
+}
+
+for (const state of ["multi-currency", "multi-currency-partial"]) {
+  test(`Dashboard #724 ${state} rejects an unfocusable first action`, async () => {
+    const input = fixture(state);
+    input.viewports.find((viewport) => viewport.width === 320).firstActionKeyboardFocused = false;
+    await assert.rejects(
+      collectDashboard724Evidence(state, async () => input, async () => {}),
+      /First action link cannot receive focus/,
     );
   });
 }

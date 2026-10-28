@@ -57,7 +57,22 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
         assert.equal(
           measurements.actionVisibleInFirstViewport,
           true,
-          "Next action is below first fold",
+          "First action title or link is below first fold",
+        );
+        assert.equal(
+          measurements.firstActionLabelVisibleInFirstViewport,
+          true,
+          "First action label is below first fold",
+        );
+        assert.equal(
+          measurements.firstActionLinkVisibleInFirstViewport,
+          true,
+          "First action link is below first fold",
+        );
+        assert.equal(
+          measurements.firstActionLinkHasDestination,
+          true,
+          "First action has no actionable destination",
         );
         assert.equal(measurements.primaryValuesOnOneLine, true, "Primary amount wraps on mobile");
         assert.equal(
@@ -76,6 +91,7 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
           "Restored first-fold layout did not recover",
         );
       }
+      assert.equal(viewport.firstActionKeyboardFocused, true, "First action link cannot receive focus");
       assert.equal(viewport.keyboard?.open, true, "Enter failed to open currency evidence");
       assert.equal(viewport.keyboard?.hash, "#dashboard-evidence-brl-available");
       if (state === "multi-currency") {

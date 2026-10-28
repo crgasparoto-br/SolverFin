@@ -145,7 +145,7 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <section class="dashboard-hero" aria-label="Situação financeira atual">
+    <section class="dashboard-hero" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Situação financeira atual">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
