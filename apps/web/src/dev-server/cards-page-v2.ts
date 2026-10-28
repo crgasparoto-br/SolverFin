@@ -27,6 +27,7 @@ import {
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { cardsPageStyles } from "./cards-page-v2-styles.js";
+import { entryFillRuleScript, renderEntryFillRuleControl } from "./entry-fill-rules.js";
 
 type CardSort =
   | "date_asc"
@@ -1127,7 +1128,7 @@ function renderPurchaseModal(
         <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
         <p class="cards-purchase-date-help full" data-purchase-field="recurrenceDateHint" hidden>A alteração da data da compra recorrente respeitará o período da fatura. Ao salvar, escolha entre somente esta ocorrência e as próximas elegíveis.</p>
-        <label class="full">Descrição<input name="description" required placeholder="Descreva a compra"></label>
+        <label class="full">Descrição<input name="description" required placeholder="Descreva a compra"></label>${renderEntryFillRuleControl()}
             </div>
           </fieldset>
           <fieldset class="cards-purchase-fieldset">
@@ -1557,7 +1558,8 @@ function clientScript(): string {
     cardsPageSetupScript() +
     cardsPagePurchaseActionsScript() +
     cardsPageMutationScript() +
-    cardsPageRemainingActionsScript()
+    cardsPageRemainingActionsScript() +
+    entryFillRuleScript()
   );
 }
 

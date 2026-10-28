@@ -1,10 +1,12 @@
 import { cardsGoldenCompositionStyles } from "./cards-golden-composition.js";
 import { recurrencesSectionStyles } from "./recurrences-section.js";
 import { sharedShellStyles } from "./shared-styles.js";
+import { entryFillRuleStyles } from "./entry-fill-rules.js";
 
 export function cardsPageStyles(): string {
   return `
     ${sharedShellStyles()}
+    ${entryFillRuleStyles()}
     ${recurrencesSectionStyles()}
     [hidden]{display:none!important}
     [data-cards-archetype="A3"]{min-width:0}

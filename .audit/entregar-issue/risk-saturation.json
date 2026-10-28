@@ -1,38 +1,29 @@
 {
   "schema_version": 1,
-  "head_sha": "9d23ab9b81737fe8f0628425b959233b466ec2ac",
+  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 3 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
       "control_ids": [
-        "NEG-03-1",
-        "NEG-05-1",
-        "NEG-09-1"
+        "NEG-01-1",
+        "NEG-06-1"
       ],
       "dimensions": [
         {
-          "surface": "amount-only-authorized-mutation",
-          "reason": "Counterexample to authorization: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
+          "surface": "category-scope-authorization",
+          "reason": "Category association must be authorized only when the category is active in the same organization/profile.",
           "control_ids": [
-            "NEG-03-1"
+            "NEG-06-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "cancelled-state-edit-block",
-          "reason": "Counterexample to authorization: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
+          "surface": "profile-rule-access",
+          "reason": "Rules must be available only through the authenticated profile context while both forms consume the same scoped API.",
           "control_ids": [
-            "NEG-05-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "cancelled-recurrence-rejection",
-          "reason": "Counterexample to authorization: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
-          "control_ids": [
-            "NEG-09-1"
+            "NEG-01-1"
           ],
           "status": "passed"
         }
@@ -40,93 +31,27 @@
       "status": "passed"
     },
     {
-      "family": "concurrency-atomicity",
+      "family": "tenant-isolation",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 3 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
       "control_ids": [
-        "NEG-03-3",
-        "NEG-07-3",
-        "NEG-13-3"
+        "NEG-06-2",
+        "HIST-749-12"
       ],
       "dimensions": [
         {
-          "surface": "three-entity-atomic-write",
-          "reason": "Counterexample to concurrency-atomicity: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
-          "control_ids": [
-            "NEG-03-3"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "cancel-race-rollback",
-          "reason": "Counterexample to concurrency-atomicity: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
-          "control_ids": [
-            "NEG-07-3"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "canonical-transaction-boundary",
-          "reason": "Counterexample to concurrency-atomicity: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
-          "control_ids": [
-            "NEG-13-3"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "documentation",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-11-2"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-claims",
-          "reason": "Counterexample to documentation: Developer equates green CI or same-context review with an independent audit approval and auto-merges",
-          "control_ids": [
-            "NEG-11-2"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-06-2"
-      ],
-      "dimensions": [
-        {
-          "surface": "reconciled-future-history",
-          "reason": "Counterexample to historical-immutability: General recurring full edit copies first occurrence metadata to the second or alters dates/status",
+          "surface": "tenant-scope-isolation",
+          "reason": "Identical descriptions in different financial profiles must remain separate and foreign categories must be rejected.",
           "control_ids": [
             "NEG-06-2"
           ],
           "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "idempotency",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-13-1"
-      ],
-      "dimensions": [
+        },
         {
-          "surface": "duplicate-processing",
-          "reason": "Counterexample to idempotency: Create duplicate recurrence materialization or bypass canonical service with second standalone write",
+          "surface": "issue714-tenantisolation",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
           "control_ids": [
-            "NEG-13-1"
+            "HIST-749-12"
           ],
           "status": "passed"
         }
@@ -136,16 +61,16 @@
     {
       "family": "public-boundary",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
       "control_ids": [
-        "NEG-05-3"
+        "HIST-749-05"
       ],
       "dimensions": [
         {
-          "surface": "invalid-future-payload-rejection",
-          "reason": "Counterexample to public-boundary: An optimistic-only cancel check, unchecked profile or invoice bypass allows undesired mutation after read",
+          "surface": "free-to-spend-contract",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
           "control_ids": [
-            "NEG-05-3"
+            "HIST-749-05"
           ],
           "status": "passed"
         }
@@ -155,154 +80,16 @@
     {
       "family": "reference-liveness",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 2 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
       "control_ids": [
-        "NEG-03-2",
-        "NEG-08-1"
+        "HIST-749-06"
       ],
       "dimensions": [
         {
-          "surface": "recurrence-rule-later-materialization",
-          "reason": "Counterexample to reference-liveness: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
+          "surface": "issue714-referenceliveness",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
           "control_ids": [
-            "NEG-03-2"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "future-generation-after-rule-change",
-          "reason": "Counterexample to reference-liveness: Updating only Transaction rows but not Recurrence rule reverts later materializations; writing metadata by generic service overwrites divergent per-occurrence fields",
-          "control_ids": [
-            "NEG-08-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "rollback",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-07-2"
-      ],
-      "dimensions": [
-        {
-          "surface": "failed-transaction-rollback",
-          "reason": "Counterexample to rollback: Persist current transaction before checking other eligible future rows; Escape submits cancelled scope",
-          "control_ids": [
-            "NEG-07-2"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "semantic-effect",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 8 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-01-1",
-        "NEG-02-1",
-        "NEG-04-1",
-        "NEG-06-1",
-        "NEG-07-1",
-        "NEG-10-1",
-        "NEG-12-1",
-        "NEG-14-1"
-      ],
-      "dimensions": [
-        {
-          "surface": "recurring-scope-availability",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-01-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "one-save-button-in-dialog",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-02-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "manual-creation-receipt",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-04-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "per-occurrence-metadata-immutability",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-06-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "cancel-without-partial-effects",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-07-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "chrome-focus-and-no-clipping",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-10-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "bounded-changed-paths",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-12-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "merge-policy-preserved",
-          "reason": "Counterexample to semantic-effect: A finite-only branch would hide future scope for a recurring occurrence even if its rule remains active",
-          "control_ids": [
-            "NEG-14-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "structural-contract",
-      "applicable": true,
-      "reason": "Issue #748 materializes changes on 2 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
-      "control_ids": [
-        "NEG-08-2",
-        "NEG-13-2"
-      ],
-      "dimensions": [
-        {
-          "surface": "specified-test-matrix",
-          "reason": "Counterexample to structural-contract: Tests only exercise existing installments but fail to assert future materialization uses new Recurrence.amountMinor",
-          "control_ids": [
-            "NEG-08-2"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "canonical-recurring-service",
-          "reason": "Counterexample to structural-contract: Tests only exercise existing installments but fail to assert future materialization uses new Recurrence.amountMinor",
-          "control_ids": [
-            "NEG-13-2"
+            "HIST-749-06"
           ],
           "status": "passed"
         }
@@ -312,16 +99,25 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
       "control_ids": [
-        "NEG-11-1"
+        "NEG-04-1",
+        "NEG-12-1"
       ],
       "dimensions": [
         {
-          "surface": "exact-sha-release-gate",
-          "reason": "Counterexample to temporal-consistency: Developer equates green CI or same-context review with an independent audit approval and auto-merges",
+          "surface": "exact-sha-premerge-order",
+          "reason": "Technical gates must bind to the material SHA and independent review must remain later than certification and earlier than merge.",
           "control_ids": [
-            "NEG-11-1"
+            "NEG-12-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "persist-before-reset",
+          "reason": "The API confirmation must precede form reset and next-entry preparation.",
+          "control_ids": [
+            "NEG-04-1"
           ],
           "status": "passed"
         }
@@ -331,26 +127,133 @@
     {
       "family": "temporal-destination",
       "applicable": false,
-      "reason": "No direct temporal-destination material surface is touched by issue #748; other relevant families cover the API and financial state.",
+      "reason": "No current contract or diff signal requires this family.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
-      "family": "tenant-isolation",
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
       "applicable": true,
-      "reason": "Issue #748 materializes changes on 1 distinct scoped surfaces with evidence from exact head 9d23ab9b81; no applicable controls are inherited from issue #745.",
+      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
       "control_ids": [
-        "NEG-05-2",
-        "NEG-09-2"
+        "NEG-07-1",
+        "NEG-09-1"
       ],
       "dimensions": [
         {
-          "surface": "tenant-scope-isolation",
-          "reason": "Counterexample to tenant-isolation: An optimistic-only cancel check, unchecked profile or invoice bypass allows undesired mutation after read",
+          "surface": "duplicate-processing",
+          "reason": "Reload after close must expose the committed transaction while retries cannot create a duplicate.",
           "control_ids": [
-            "NEG-05-2",
-            "NEG-09-2"
+            "NEG-07-1",
+            "NEG-09-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "control_ids": [
+        "HIST-749-08",
+        "HIST-749-09",
+        "HIST-749-10",
+        "HIST-749-11"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-08"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-identity",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-09"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-presence",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-10"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-subject",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-11"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "control_ids": [
+        "NEG-10-2",
+        "HIST-749-01",
+        "HIST-749-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "current-contract-docs",
+          "reason": "Current documentation must describe the same inactive-rule, idempotency and save-and-continue contracts exercised by code/tests.",
+          "control_ids": [
+            "NEG-10-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-claims",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-claims",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-02"
           ],
           "status": "passed"
         }

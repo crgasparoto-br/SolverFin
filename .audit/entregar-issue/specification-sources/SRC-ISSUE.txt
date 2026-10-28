@@ -1,26 +1,27 @@
 ## Contexto
-Separação dos ajustes de parcelas recorrentes que foram adicionados à PR #741 depois de `6b546c7a37c7545aa8bbbb516350a4717420f8fa`. A issue #724 não abrange contratos financeiros de recorrência.
+Separação de escopo da PR #741 solicitada durante a issue #724. Origem dos commits posteriores a `4eff4922e2dc79f39358c130ce8eae464e1dd1ab`. A issue #724 permanece exclusivamente Dashboard na PR #744.
 
 ## Escopo
-- Exibir o escopo Esta e as próximas no ajuste de valor de parcela de recorrência de conta não cancelada.
-- Preservar apenas um botão Salvar parcela na edição e ocultar Salvar e continuar quando presente.
-- Propagar o valor autorizado para ocorrência atual, futuras planejadas e regra canônica usada em novas materializações.
-- Preservar a implementação de parcelamento manual finito com elegibilidade por posição.
+- Aplicar regras de preenchimento da descrição e categoria por perfil financeiro em formulários de Extrato e Cartões.
+- Oferecer sugestões de descrição por prefixo e, ao selecionar, preencher categoria associada.
+- Garantir que regras de preenchimento manual permaneçam inativas para automação de movimentações (sem efeitos automáticos).
+- Incluir a ação Salvar e continuar na criação do extrato, gravando na API antes de limpar formulário e permitindo lançamentos consecutivos.
+- Corrigir layout dos botões de Novo lançamento nas larguras 320, 390 e 1366, com foco e sem recorte horizontal.
 
 ## Requisitos
-- Recorrência cancelada, cartão/fatura, dados fora do perfil financeiro e payloads inválidos não podem sofrer alteração.
-- Descrição, categoria, observação, conta, datas, status, conciliação e histórico são preservados na alteração de valor futuramente aplicável.
-- Erros e escolhas canceladas não produzem mudanças parciais.
+- A regra persistida é isolada por organização/perfil financeiro e só se aplica ao preenchimento manual dos formulários.
+- O salvamento consecutivo é idempotente contra duplo envio e conserva os campos de contexto apropriados após confirmação efetiva da API.
+- A seleção de sugestão por teclado e mouse preenche descrição e categoria sem alterar totais ou contratos financeiros.
+- Após fechar o modal, a lista reflete os lançamentos salvos sem duplicação.
 
 ## Critérios de aceite
-- [ ] Testes do endpoint, persistência e UI comprovam ocorrência atual, futuras e materializadas posteriormente.
-- [ ] Teste negativo protege recorrências canceladas e outro perfil/tenant.
-- [ ] Chrome comprova escopo, foco, botões e ausência de cortes nos viewports aplicáveis.
-- [ ] CI exact-SHA e auditoria independente passam antes de merge.
+- [ ] Testes de frontend/backend e contratos de regra passam na branch própria baseada em develop.
+- [ ] Chrome valida as três ações visíveis e utilizáveis em 320×740, 390×844 e 1366×768.
+- [ ] CI e validações exact-SHA passam e há parecer de auditoria independente antes do merge.
 
 ## Invariantes
-- Não importar mudanças de Dashboard da #724 nem regras de preenchimento de #741 para esta PR.
-- Reusar serviço canônico de recorrências, sem duplicar cálculo ou persistência.
+- Não importar mudanças de Dashboard da #724 nem ajustes de recorrência de parcelas para esta entrega.
+- Não aplicar regras inativas a transações automaticamente.
 - Não realizar merge automático.
 
-Referências: #724, PR #741, docs/API_INSTALLMENTS.md, docs/RECURRENCES_INSTALLMENTS_WEB.md.
+Referências: #724, PR #741, PR #744, docs/ENTRY_FILL_RULES.md.

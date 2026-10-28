@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
+  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -19,31 +19,68 @@
       "finding_ids": [
         "F-714-03"
       ]
+    },
+    {
+      "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+      "finding_ids": [
+        "A-005",
+        "A-006",
+        "A-007"
+      ]
     }
   ],
-  "controls": [],
+  "controls": [
+    {
+      "id": "AUD-714-03-FOOTER-CLIP",
+      "status": "passed",
+      "control_type": "scenario",
+      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "evidence": "evidence/issue-747-footer-controls.json",
+      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
+      "attack_control_id": "NEG-05-1",
+      "procedure": "Recheck responsive Statement footer on three exact-head Chrome viewports with mutation of a clipped cancel action.",
+      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
+      "observed": "Chrome exact-head 2274927 / run 40696534811: 320, 390, 1366 all contained with no horizontal overflow; mutation GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new was rejected and restored in all three viewports."
+    },
+    {
+      "id": "AUD-749-A-005-ACTION-LABEL",
+      "status": "passed",
+      "control_type": "scenario",
+      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "evidence": "evidence/issue-747-footer-controls.json",
+      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
+      "attack_control_id": "NEG-11-1",
+      "procedure": "Recheck Cancel, Save and continue and Save names and negative duplicate-label mutation in Statement Chrome.",
+      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
+      "observed": "Chrome exact-head 2274927 / run 40696534811: all three distinct button labels; duplicate-label mutation rejected in 320, 390, and 1366 with restored passing state."
+    },
+    {
+      "id": "AUD-749-A-006-MANUAL-ORIGIN",
+      "status": "passed",
+      "control_type": "test",
+      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "evidence": "evidence/issue-747-footer-controls.json",
+      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
+      "attack_control_id": "NEG-03-1",
+      "procedure": "Attempt PATCH name plus active, rename-then-active, purpose spoof, SQL update and active-list selection under same tenant.",
+      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
+      "observed": "Repository CI 40696535294 on exact head 2274927 passed backend integration with renamed+active and SQL purpose mutation controls; manual purpose remains immutable."
+    }
+  ],
   "retired_controls": [
     {
       "id": "FREE-TO-SPEND-AVAIL-001",
       "disposition": "not-applicable",
-      "reason": "Prior check concerns free-to-spend availability for EUR/JPY; issue 742 is exclusively card-purchase editing, and no free-to-spend source changed.",
-      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-      "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
-      "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
-      "procedure": "Compare git diff between immutable base and material SHA for free-to-spend/financial-summary sources; verify no matching changed files and that issue 742 scope is card purchase editing only.",
-      "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
-      "observed": "Scope delta contains no free-to-spend/financial-summary module; the prior control is outside this delivery."
-    },
-    {
-      "id": "AUD-714-03-FOOTER-CLIP",
-      "disposition": "not-applicable",
-      "reason": "Prior check concerns Statement mobile footer clipping, not the cards purchase dialog; no statement page or /lancamentos implementation files changed.",
-      "subject_sha": "19db954c9771ca3e45b821470eb9d4b54eaf27fd",
-      "evidence": ".audit/entregar-issue/evidence/issue-742-prior-control-scope-review.txt",
-      "evidence_sha256": "4594fb881a0ca22d44c49103858b8ced380604aeaa0bd2523fefd4964fc89438",
-      "procedure": "Compare git diff between base and material HEAD for Statement rendering and footer components, and compare issue 742 route /cartoes against original statement route.",
-      "expected": "A changed implementation file in the prior free-to-spend contract or Statement footer surface would reject not-applicable; the immutable diff must be checked for both surfaces.",
-      "observed": "Changed-file scope is cards invoice UI/API only; Statement footer clipping check is not applicable to issue 742."
+      "reason": "Issue #747 changes manual transaction creation, manual categorization rules, and responsive Statement entry form, but does not change the independent free-to-spend EUR/JPY aggregation contract.",
+      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+      "evidence": "evidence/issue-747-scope-diff.txt",
+      "evidence_sha256": "f411afefe8ced43ef5a83afa81f28e11e1e25907eb0e71473994eef43e826406",
+      "procedure": "Compare the exact immutable issue start with current material commit for free-to-spend financial-summaries source and relevant reporting/deduction selectors.",
+      "expected": "A changed free-to-spend aggregation producer or FX financial-summary path would invalidate this retirement.",
+      "observed": "The immutable 78-path issue delta contains automation rules, transaction submission and Statement entry/dialog changes, but no free-to-spend aggregation producer."
     }
   ],
   "unresolved_controls": []

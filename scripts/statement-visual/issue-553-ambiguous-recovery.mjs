@@ -306,7 +306,7 @@ async function waitForRecoveryState() {
           recoveryState: form?.dataset.installmentRecovery || "",
           amountDisabled: form?.elements.namedItem("amountMinor")?.disabled === true,
           descriptionDisabled: form?.elements.namedItem("description")?.disabled === true,
-          submitDisabled: form?.querySelector('button[type="submit"]')?.disabled === true,
+          submitDisabled: form?.querySelector("[data-statement-save-primary]")?.disabled === true,
           statusText: form?.querySelector(".form-status")?.textContent || "",
         };
         if (

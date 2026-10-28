@@ -478,7 +478,7 @@ export function operationalInstallmentsController(): string {
         form.querySelector("[data-installment-details]")?.remove();
         form.querySelector("[data-installment-status-message]")?.remove();
         form.querySelector("[data-installment-reload]")?.remove();
-        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
+        const saveButton = form.querySelector('[data-statement-save-primary]');
         if (saveButton && form.dataset.installmentOriginalSaveLabel) saveButton.textContent = form.dataset.installmentOriginalSaveLabel;
         delete form.dataset.installmentOriginalSaveLabel;
         delete form.dataset.installmentMode;
@@ -566,12 +566,14 @@ export function operationalInstallmentsController(): string {
           if (!modalTitle.dataset.installmentOriginalTitle) modalTitle.dataset.installmentOriginalTitle = modalTitle.textContent || "Lançamento";
           modalTitle.textContent = editable ? "Editar parcela" : amountEditable ? "Ajustar valor da parcela" : "Detalhes da parcela";
         }
+        // Editing an installment never exposes the create-only submit.
         const continueButton = form.querySelector("[data-statement-save-continue]");
         if (continueButton) {
           continueButton.dataset.installmentManaged = "";
           rememberAndSet(continueButton, "hidden", true);
+          rememberAndSet(continueButton, "disabled", true);
         }
-        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
+        const saveButton = form.querySelector('[data-statement-save-primary]');
         if (saveButton) {
           if (!form.dataset.installmentOriginalSaveLabel) form.dataset.installmentOriginalSaveLabel = saveButton.textContent || "Salvar lançamento";
           saveButton.dataset.installmentManaged = "";
@@ -795,7 +797,7 @@ export function operationalInstallmentsController(): string {
           form.description.focus();
           return;
         }
-        const saveButton = form.querySelector('.statement-save-actions button[type="submit"]:not([data-statement-save-continue])');
+        const saveButton = form.querySelector('[data-statement-save-primary]');
         if (saveButton) saveButton.disabled = true;
         status.textContent = "Salvando...";
         status.className = "installment-form-status";

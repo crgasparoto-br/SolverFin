@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import { evaluate, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { assertContextualSurface } from "./statement-contextual-assertions.mjs";
+import { checkActionLabels } from "./statement-contextual-action-labels.mjs";
 
 /** Observe supported contextual flows, without inventing a transaction-details route. */
 export async function validateStatementContextualSurfaces(
@@ -85,7 +86,9 @@ export async function validateStatementContextualSurfaces(
       const editAccountSelect = surface?.querySelector('[data-edit-account-select]');
       const panel = surface?.querySelector('.modal-panel');
       const footerCancel = surface?.querySelector('[data-transaction-cancel]');
-      const footerSave = surface?.querySelector('.statement-save-actions > button[type="submit"]');
+      const footerSave = surface?.querySelector('[data-statement-save-primary]');
+      const footerContinue = surface?.querySelector('[data-statement-save-continue]');
+      const footerGroup = surface?.querySelector('.statement-save-actions');
       const panelBox = panel?.getBoundingClientRect();
       const panelStyle = panel ? getComputedStyle(panel) : null;
       const panelContentLeft = panelBox && panelStyle
@@ -127,13 +130,23 @@ export async function validateStatementContextualSurfaces(
         documentScrollLocked: getComputedStyle(document.documentElement).overflowY === 'hidden',
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
+        footerActionColumns: footerGroup ? getComputedStyle(footerGroup).gridTemplateColumns.split(" ").length : null,
+        footerActionLabels: [footerCancel, footerContinue, footerSave]
+          .filter(node => node && !node.hidden && node.getClientRects().length > 0)
+          .map(node => (node.getAttribute('aria-label') || node.textContent || '').trim()),
         footerActionRowDelta: footerCancel && footerSave
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
-        footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave),
+        footerContinueRowDelta: footerCancel && footerContinue ? Math.abs(footerCancel.getBoundingClientRect().top - footerContinue.getBoundingClientRect().top) : null,
+        footerContinueHidden: !footerContinue || footerContinue.hidden || footerContinue.getClientRects().length === 0,
+        footerContinueAfterCancel: !!footerCancel && !!footerContinue && footerContinue.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerSaveAfterCancel: !!footerSave && !!footerCancel && footerSave.getBoundingClientRect().top >= footerCancel.getBoundingClientRect().bottom - 1,
+        footerPrimaryBelowContinue: !!footerSave && !!footerContinue && footerSave.getBoundingClientRect().top >= footerContinue.getBoundingClientRect().bottom - 1,
+        footerActionsContained: footerButtonFits(footerCancel) && footerButtonFits(footerSave) && (!footerContinue || footerContinue.hidden || footerButtonFits(footerContinue)),
         footerActionHeights: {
           cancel: footerCancel?.getBoundingClientRect().height ?? null,
           save: footerSave?.getBoundingClientRect().height ?? null,
+          continue: footerContinue?.getBoundingClientRect().height ?? null,
         },
         tooltipStatusCount: statusOptions.filter(node => node.title && node.title === node.getAttribute('aria-label')).length,
         statusLabelVisuallyHidden: !!statusText && statusText.getBoundingClientRect().width <= 1,
@@ -146,8 +159,7 @@ export async function validateStatementContextualSurfaces(
 
     })()`);
   const capture = async (state, width, height, selector, extra = {}) => {
-    const measured = await measure(selector);
-    assertContextualSurface(measured, state, selector.startsWith("dialog"));
+    const measured = await checkActionLabels(measure, read, report, state, width, height, selector);
     const file = `statement-contextual-${state}-${width}x${height}.png`;
     await screenshot(cdp, join(outputDir, file));
     const accessibilityFile = `statement-contextual-${state}-${width}x${height}-ax.json`;
@@ -271,11 +283,13 @@ export async function validateStatementContextualSurfaces(
         rejectedBecause: footerError,
         restored: "passed",
       });
-      for (const action of ["cancel", "save"]) {
+      for (const action of state === "edit" ? ["cancel", "save"] : ["cancel", "continue", "save"]) {
         const buttonSelector =
           action === "cancel"
             ? "[data-transaction-cancel]"
-            : '.statement-save-actions > button[type="submit"]';
+            : action === "continue"
+              ? "[data-statement-save-continue]"
+              : "[data-statement-save-primary]";
         const originalTouchStyle = await read(`(() => {
           const button = document.querySelector(${JSON.stringify(selector)}).querySelector(${JSON.stringify(buttonSelector)});
           const original = button.getAttribute("style");
@@ -300,7 +314,12 @@ export async function validateStatementContextualSurfaces(
             () => assertContextualSurface(tooSmall, state, true),
             (error) => {
               touchError = error.message;
-              return error.code === "ERR_ASSERTION" && /footer touch target/.test(error.message);
+              return (
+                error.code === "ERR_ASSERTION" &&
+                error.message.includes(
+                  action === "continue" ? "Continue touch target" : action + " footer touch target",
+                )
+              );
             },
           );
         } finally {
@@ -395,7 +414,7 @@ export async function validateStatementContextualSurfaces(
             accountDisplay: form?.querySelector("[data-edit-account-full-name]")?.textContent?.trim()
               || form?.querySelector(".statement-entry-account input")?.value,
             sourceCurrency: form?.querySelector("[data-source-currency]")?.textContent?.trim(),
-            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+            saveDisabled: form?.querySelector('[data-statement-save-primary]')?.disabled,
           };
         })()`);
         assert.equal(modalState.open, true, "Consolidated Edit must open the modal");
@@ -437,7 +456,7 @@ export async function validateStatementContextualSurfaces(
             title: document.querySelector("[data-modal-title]")?.textContent,
             method: form?.dataset.method,
             accountId: effectiveAccount?.value,
-            saveDisabled: form?.querySelector('.save-row [type="submit"]')?.disabled,
+            saveDisabled: form?.querySelector('[data-statement-save-primary]')?.disabled,
           };
         })()`);
         assert.equal(cloneState.open, true, "Consolidated Clone must open the modal");
@@ -656,7 +675,8 @@ export async function validateStatementContextualSurfaces(
     const expectedFooterTouchControls = [];
     for (const state of ["new", "edit", "clone"]) {
       for (const viewport of ["1366x768", "390x844", "320x740"]) {
-        for (const action of ["CANCEL", "SAVE"]) {
+        const actions = state === "edit" ? ["CANCEL", "SAVE"] : ["CANCEL", "CONTINUE", "SAVE"];
+        for (const action of actions) {
           expectedFooterTouchControls.push(
             `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action}-${state}@${viewport}`,
           );

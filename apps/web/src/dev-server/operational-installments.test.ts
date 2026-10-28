@@ -11,6 +11,16 @@ import {
   translateInstallmentBlockReason,
 } from "./operational-installments.js";
 
+test("installment editing has one managed primary submit and suppresses create-only continuation", () => {
+  const script = operationalInstallmentsController();
+  assert.match(script, /continueButton\.dataset\.installmentManaged = ""/);
+  assert.match(script, /rememberAndSet\(continueButton, "hidden", true\)/);
+  assert.match(script, /rememberAndSet\(continueButton, "disabled", true\)/);
+  assert.match(script, /form\.querySelector\('\[data-statement-save-primary\]'\)/);
+  assert.doesNotMatch(script, /\.save-row button\[type="submit"\]/);
+  assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
+});
+
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),
@@ -229,9 +239,7 @@ test("amount edit requires an explicit current or future scope before the PATCH"
   );
   assert.ok(script.includes("const hasFuture = isRecurring"));
   assert.ok(
-    script.includes(
-      '.statement-save-actions button[type="submit"]:not([data-statement-save-continue])',
-    ),
+    script.includes("[data-statement-save-primary]"),
     "only the canonical save button is repurposed in installment mode",
   );
   assert.ok(script.includes('rememberAndSet(continueButton, "hidden", true)'));

@@ -91,6 +91,7 @@ import {
   listTransactionGroupsForContext,
   ungroupTransactionsForContext,
 } from "./repositories/transaction-groups.js";
+import { createTransactionIdempotentlyForContext } from "./repositories/transaction-idempotency.js";
 import { loadFinancialProfilesForUser, resolveRequestTenantContext } from "./tenant-context.js";
 
 export interface ApiRequest {
@@ -484,7 +485,7 @@ async function createTransactionHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const transaction = await createTransactionForContext(context, {
+  const payload = {
     kind: body.kind as TransactionKind,
     amountMinor: Number(body.amountMinor),
     occurredOn: readCreateTransactionOccurredOn(body),
@@ -502,9 +503,22 @@ async function createTransactionHandler(
       : {}),
     ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-  });
-
-  return json(201, { transaction });
+  };
+  if (body.idempotencyKey === undefined) {
+    return json(201, { transaction: await createTransactionForContext(context, payload) });
+  }
+  if (typeof body.idempotencyKey !== "string") {
+    throw Object.assign(new Error("A chave de idempotência deve ser um UUID."), {
+      code: "TRANSACTION_IDEMPOTENCY_KEY_INVALID",
+      statusCode: 400,
+    });
+  }
+  const result = await createTransactionIdempotentlyForContext(
+    context,
+    payload,
+    body.idempotencyKey,
+  );
+  return json(result.idempotentReplay ? 200 : 201, { transaction: result.transaction });
 }
 
 async function listTransactionGroupsHandler(
