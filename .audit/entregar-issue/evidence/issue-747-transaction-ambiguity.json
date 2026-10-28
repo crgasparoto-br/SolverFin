@@ -1,18 +1,18 @@
 {
-  "generatedAt": "2026-10-28T03:00:53.557Z",
-  "commit": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
-  "browser": "Google Chrome 155.0.8059.39",
+  "generatedAt": "2026-10-28T13:32:13.952Z",
+  "commit": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "browser": "Google Chrome 156.0.8078.47",
   "evidence": {
     "scenarios": [
       {
         "kind": "transaction",
-        "route": "/lancamentos?accountId=65e0b724-83eb-46f9-8188-aa68bc132751&month=2026-09",
+        "route": "/lancamentos?accountId=63fcad81-12be-4bae-b6ba-230f4af0e59a&month=2026-09",
         "committedStatus": 201,
         "request": {
           "method": "POST",
           "pathname": "/api/transactions",
           "search": "",
-          "body": "{\"kind\":\"expense\",\"amountMinor\":4200,\"occurredOn\":\"2026-09-10\",\"plannedOn\":\"2026-09-10\",\"accountId\":\"65e0b724-83eb-46f9-8188-aa68bc132751\",\"description\":\"QA lançamento simples resposta ambígua\",\"status\":\"planned\",\"effectiveOn\":null,\"note\":\"Controle de resposta ambígua sem idempotência\",\"idempotencyKey\":\"0b44b9f2-814a-42f5-adc8-472a25567dd4\"}"
+          "body": "{\"kind\":\"expense\",\"amountMinor\":4200,\"occurredOn\":\"2026-09-10\",\"plannedOn\":\"2026-09-10\",\"accountId\":\"63fcad81-12be-4bae-b6ba-230f4af0e59a\",\"description\":\"QA lançamento simples resposta ambígua\",\"status\":\"planned\",\"effectiveOn\":null,\"note\":\"Controle de resposta ambígua sem idempotência\",\"idempotencyKey\":\"76d5235e-4563-414a-893c-d01adda36aac\"}"
         },
         "recoveryState": {
           "modalOpen": true,
@@ -22,24 +22,24 @@
           "statusText": "Não foi possível concluir a ação. Revise os dados e tente novamente."
         },
         "transactionReplay": {
-          "idempotencyKey": "0b44b9f2-814a-42f5-adc8-472a25567dd4",
+          "idempotencyKey": "76d5235e-4563-414a-893c-d01adda36aac",
           "status": 200,
           "feedback": "Ação concluída. Atualizando..."
         },
         "persistedIds": [
-          "28293c9d-e671-4a25-ba96-6bd4a67d3b10"
+          "f8c92a08-f373-4e32-a87a-bc0b495e705d"
         ],
         "screenshot": "issue-553-non-idempotent-transaction-1366x768.png"
       },
       {
         "kind": "recurrence",
-        "route": "/lancamentos?accountId=65e0b724-83eb-46f9-8188-aa68bc132751&month=2026-10",
+        "route": "/lancamentos?accountId=63fcad81-12be-4bae-b6ba-230f4af0e59a&month=2026-10",
         "committedStatus": 201,
         "request": {
           "method": "POST",
           "pathname": "/api/recurrences",
           "search": "",
-          "body": "{\"frequency\":\"monthly\",\"interval\":1,\"startOn\":\"2026-10-27\",\"amountMinor\":5500,\"description\":\"QA recorrência resposta ambígua\",\"kind\":\"expense\",\"accountId\":\"65e0b724-83eb-46f9-8188-aa68bc132751\"}"
+          "body": "{\"frequency\":\"monthly\",\"interval\":1,\"startOn\":\"2026-10-27\",\"amountMinor\":5500,\"description\":\"QA recorrência resposta ambígua\",\"kind\":\"expense\",\"accountId\":\"63fcad81-12be-4bae-b6ba-230f4af0e59a\"}"
         },
         "recoveryState": {
           "modalOpen": true,
@@ -49,7 +49,7 @@
           "statusText": "Não foi possível confirmar se a operação foi concluída. Confira o Extrato antes de tentar novamente para evitar duplicidade. Feche este formulário após a conferência."
         },
         "persistedIds": [
-          "114c0ec2-7835-4a23-a17d-73918afd231e"
+          "1a59637d-3091-4dcb-b5f1-c748429f00d5"
         ],
         "screenshot": "issue-553-non-idempotent-recurrence-1366x768.png"
       }

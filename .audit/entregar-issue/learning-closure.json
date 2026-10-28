@@ -3,38 +3,17 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:cef27706-4a2a-4a21-92c1-b2d8c524fb89",
-    "audit_report_sha256": "e7353aa45b5566e853223073ae45f941c412840c735dcf8dcd04ead9026bc8dc",
-    "audited_head_sha": "f5a3a2923d4f7ffdf24e849eee01e2ee7be33743",
+    "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+    "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
     "finding_ids": [
-      "A-004",
-      "A-007",
-      "A-008"
+      "A-005",
+      "A-006",
+      "A-007"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "These findings require local parser, permission, grammar and regression changes. The existing canonical obligations and official fail-closed evidence/lineage gates already express the required controls; no global skill rule change is claimed."
+    "reason": "Targeted remediation of three issue-specific failures using existing quality and independent-audit standards; no unproven systemic classification."
   },
-  "previous_source_events": [
-    {
-      "kind": "independent-rejection",
-      "rejection_id": "audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509",
-      "audit_report_sha256": "2a0572ef42deb432dafd3754a0b5682cdfd3355062a96a1b3aad8d9164315e24",
-      "finding_ids": [
-        "A-002",
-        "A-003",
-        "A-005"
-      ]
-    },
-    {
-      "kind": "independent-rejection",
-      "rejection_id": "audit-rejection:09f34f1a-79b0-4130-a5de-bc9c1e8fa715",
-      "audit_report_sha256": "9f55bf422885d0850bc91182034ab204d1370522bc3449ba78a5540df0f09874",
-      "audited_head_sha": "4773a7b63d671c9ee876c320319bd466f7c69798",
-      "finding_ids": [
-        "A-006"
-      ]
-    }
-  ]
+  "skill_changes": []
 }

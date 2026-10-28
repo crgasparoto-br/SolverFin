@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
   "families": [
     {
       "family": "authorization",
@@ -33,9 +33,10 @@
     {
       "family": "tenant-isolation",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
       "control_ids": [
-        "NEG-06-2"
+        "NEG-06-2",
+        "HIST-749-12"
       ],
       "dimensions": [
         {
@@ -45,25 +46,55 @@
             "NEG-06-2"
           ],
           "status": "passed"
+        },
+        {
+          "surface": "issue714-tenantisolation",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-12"
+          ],
+          "status": "passed"
         }
       ],
       "status": "passed"
     },
     {
       "family": "public-boundary",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "control_ids": [
+        "HIST-749-05"
+      ],
+      "dimensions": [
+        {
+          "surface": "free-to-spend-contract",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-05"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "reference-liveness",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "control_ids": [
+        "HIST-749-06"
+      ],
+      "dimensions": [
+        {
+          "surface": "issue714-referenceliveness",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-06"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "temporal-consistency",
@@ -148,18 +179,58 @@
     },
     {
       "family": "structural-contract",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "control_ids": [
+        "HIST-749-08",
+        "HIST-749-09",
+        "HIST-749-10",
+        "HIST-749-11"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-08"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-identity",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-09"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-presence",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-10"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-subject",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-11"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
       "control_ids": [
-        "NEG-10-2"
+        "NEG-10-2",
+        "HIST-749-01",
+        "HIST-749-02"
       ],
       "dimensions": [
         {
@@ -167,6 +238,22 @@
           "reason": "Current documentation must describe the same inactive-rule, idempotency and save-and-continue contracts exercised by code/tests.",
           "control_ids": [
             "NEG-10-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-claims",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-claims",
+          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "control_ids": [
+            "HIST-749-02"
           ],
           "status": "passed"
         }

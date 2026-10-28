@@ -1,12 +1,12 @@
-GitHub Actions Repository CI exact-head evidence
+GitHub Actions Repository CI exact-material-head evidence
 repository: crgasparoto-br/SolverFin
-material_head_sha: 659a4c10841bcea19700dcf51b5bd7a15aeec231
-run_id: 40623696529
-job_id: 122603905292
+material_head_sha: 2274927adaf4ee7679a4b3e322d727a3145f03c7
+run_id: 40696535294
+job_id: 122845120994
 job: CRITICAL validation
+status: completed
 conclusion: success
-
-Observed job steps (GitHub Actions):
+steps observed (GitHub Actions authentication via connected GitHub):
 - Verify exact head: success
 - Enforce complete repository formatting: success
 - Run npm run lint: success
@@ -14,18 +14,15 @@ Observed job steps (GitHub Actions):
 - Run npm run test: success
 - Run npm run test:integration --workspace @solverfin/api: success
 - Run npm run build: success
-
-Exact decoded log excerpts from job 122603905292:
-2026-10-28T02:59:12.5341498Z [test] dev-server/cards-page-v2-audit-remediation.test.js
-2026-10-28T02:59:12.6203350Z [test] dev-server/cards-page-v2-script-mutations.test.js
-2026-10-28T02:59:12.6604093Z [test] dev-server/cards-page-v2.test.js
-2026-10-28T02:59:13.5639764Z [test] dev-server/entry-fill-rules.test.js
-2026-10-28T02:59:13.8237414Z [test] dev-server/financial-operation-recovery.test.js
-2026-10-28T02:59:14.9816420Z [test] dev-server/operational-installments.test.js
-2026-10-28T02:59:16.5156675Z [test] dev-server/statement-golden-refinements.test.js
-2026-10-28T02:59:17.4427179Z [test] dev-server/transactions-page-v2-form-defaults.test.js
-2026-10-28T02:59:17.5388466Z [test] dev-server/transactions-page-v2.test.js
-2026-10-28T02:59:55.4730650Z [test] manual-entry-fill-rules.integration.test.js
-2026-10-28T03:00:06.3940438Z [test] transaction-creation-idempotency.integration.test.js
-2026-10-28T03:00:09.0053104Z 125 compiled test file(s) passed.
-2026-10-28T03:00:09.0212530Z   VERIFICATION_HEAD_SHA: 659a4c10841bcea19700dcf51b5bd7a15aeec231
+- Delivery V2 gate: success
+- Repository CI gate: success
+Individual test reach confirmed from exact job log 122845120994:
+- [test] dev-server/entry-fill-rules.test.js
+- [test] dev-server/transaction-group-member-form-guard.test.js
+- [test] free-to-spend.test.js
+- [test] cash-flow-projection.integration.test.js
+- [test] manual-entry-fill-rules.integration.test.js
+- [test] transaction-creation-idempotency.integration.test.js
+Source: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294
+Chrome: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811; completed/success exact M
+Chrome artifact: 12820740707; 70 scenarios; 0 failures

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "source_artifact": {
-    "run_id": 40623696564,
-    "artifact_id": 12788522891,
-    "artifact_digest": "sha256:9067921c1039ceacc8baa3bfe5fcaf1673686b2a75fd42f977caa965cf9c8cc4",
-    "source_file": "statement-contextual-surfaces.json"
-  },
-  "subjectSha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
-  "route": "/lancamentos?accountId=cce6b387-45c3-4203-817f-aa60541077ac&month=2026-07",
+  "subjectSha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "route": "/lancamentos?accountId=06fd0b25-5b08-416a-bdd3-08c65a893712&month=2026-07",
   "scope": "real-application",
   "status": "passed",
-  "selection": "Exact execution records for issue #747 new-entry layout at required viewports and their executed negative controls.",
+  "source_artifact": {
+    "run_id": 40696534811,
+    "artifact_id": 12820740707,
+    "artifact_digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4",
+    "source_file": "statement-contextual-surfaces.json"
+  },
+  "selection": "Exact observed Chrome dialog, labels, bounds and adversarial controls on all three required viewports.",
   "observations": [
     {
       "state": "new",
@@ -35,6 +35,11 @@
         "dialogOverflowHidden": true,
         "panelScrollControlled": true,
         "footerActionColumns": 2,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
         "footerActionRowDelta": 52,
         "footerContinueRowDelta": 0,
         "footerContinueHidden": false,
@@ -81,6 +86,11 @@
         "dialogOverflowHidden": true,
         "panelScrollControlled": true,
         "footerActionColumns": 2,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
         "footerActionRowDelta": 65,
         "footerContinueRowDelta": 0,
         "footerContinueHidden": false,
@@ -127,6 +137,11 @@
         "dialogOverflowHidden": true,
         "panelScrollControlled": true,
         "footerActionColumns": 1,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
         "footerActionRowDelta": 104,
         "footerContinueRowDelta": 52,
         "footerContinueHidden": false,
@@ -153,13 +168,13 @@
   ],
   "controls": [
     {
-      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
       "viewport": {
         "width": 1366,
         "height": 768
       },
-      "mutation": "Dialog right-aligned but entirely inside the viewport",
-      "rejectedBecause": "new: dialog is off horizontal center (894px)",
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
       "restored": "passed"
     },
     {
@@ -173,43 +188,13 @@
       "restored": "passed"
     },
     {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
-      "viewport": {
-        "width": 1366,
-        "height": 768
-      },
-      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
-      "viewport": {
-        "width": 1366,
-        "height": 768
-      },
-      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: Continue touch target must be at least 44px",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
-      "viewport": {
-        "width": 1366,
-        "height": 768
-      },
-      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
       "viewport": {
         "width": 390,
         "height": 844
       },
-      "mutation": "Dialog right-aligned but entirely inside the viewport",
-      "rejectedBecause": "new: dialog is off horizontal center (104.5px)",
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
       "restored": "passed"
     },
     {
@@ -223,43 +208,13 @@
       "restored": "passed"
     },
     {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: Continue touch target must be at least 44px",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
-      "viewport": {
-        "width": 390,
-        "height": 844
-      },
-      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
       "viewport": {
         "width": 320,
         "height": 740
       },
-      "mutation": "Dialog right-aligned but entirely inside the viewport",
-      "rejectedBecause": "new: dialog is off horizontal center (80px)",
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
       "restored": "passed"
     },
     {
@@ -270,36 +225,6 @@
       },
       "mutation": "Cancel button shifted outside the dialog content box without changing the row",
       "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CANCEL-new",
-      "viewport": {
-        "width": 320,
-        "height": 740
-      },
-      "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
-      "viewport": {
-        "width": 320,
-        "height": 740
-      },
-      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: Continue touch target must be at least 44px",
-      "restored": "passed"
-    },
-    {
-      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
-      "viewport": {
-        "width": 320,
-        "height": 740
-      },
-      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
-      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
       "restored": "passed"
     }
   ]

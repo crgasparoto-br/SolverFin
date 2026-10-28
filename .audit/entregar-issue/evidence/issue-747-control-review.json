@@ -3,20 +3,21 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue": 747,
   "pull_request": 749,
-  "material_head_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
   "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
   "repository_ci": {
-    "run_id": 40623696529,
-    "conclusion": "success"
+    "run_id": 40696535294,
+    "conclusion": "success",
+    "job_id": 122845120994
   },
   "statement_visual_validation": {
-    "run_id": 40623696564,
+    "run_id": 40696534811,
     "conclusion": "success",
-    "artifact_id": 12788522891,
-    "artifact_digest": "sha256:9067921c1039ceacc8baa3bfe5fcaf1673686b2a75fd42f977caa965cf9c8cc4"
+    "artifact_id": 12820740707,
+    "artifact_digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4"
   },
   "delivery_audit_workspace": {
-    "run_id": 40623696510,
+    "run_id": 40696534938,
     "conclusion": "success"
   },
   "controls": [
@@ -152,7 +153,38 @@
       "status": "passed",
       "claim": "PR #749 remains open, draft, unmerged; delivery does not perform automatic merge.",
       "sources": [
-        "GitHub PR #749 remote metadata observed at material head 659a4c10841bcea19700dcf51b5bd7a15aeec231"
+        "GitHub PR #749 remote metadata observed at material head 2274927adaf4ee7679a4b3e322d727a3145f03c7"
+      ]
+    },
+    {
+      "id": "CASE-016",
+      "status": "passed",
+      "claim": "The group member controller only rewrites the specifically selected primary submit action, preserving Save and continue button name and hiding the continue action in group member mode.",
+      "sources": [
+        "apps/web/src/dev-server/transaction-group-member-form-guard.ts:135-226",
+        "apps/web/src/dev-server/transaction-group-member-form-guard.test.ts:20-65"
+      ]
+    },
+    {
+      "id": "CASE-017",
+      "status": "passed",
+      "claim": "Immutable manual_entry purpose survives rename and cannot be activated even with name and status changes on the same PATCH request; PostgreSQL enforces immutability.",
+      "sources": [
+        "apps/api/src/repositories/automation-rules.ts:127-195",
+        "apps/api/src/manual-entry-fill-rules.integration.test.ts:70-139",
+        "prisma/migrations/20261028124500_immutable_manual_rule_purpose/migration.sql:1-29"
+      ]
+    },
+    {
+      "id": "CASE-018",
+      "status": "passed",
+      "claim": "Inherited Statement footer-clipping controls were observed in real Chrome on the exact material SHA in 320, 390, 1366, with clipped-action and duplicate-name negative mutations rejected.",
+      "sources": [
+        "scripts/statement-visual/statement-contextual-surfaces.mjs:100-180",
+        "scripts/statement-visual/statement-contextual-action-labels.mjs:1-40",
+        "scripts/statement-visual/statement-contextual-assertions.mjs:1-95",
+        "evidence/issue-747-footer-controls.json",
+        "evidence/issue-747-footer-controls.json"
       ]
     }
   ]

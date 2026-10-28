@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "659a4c10841bcea19700dcf51b5bd7a15aeec231",
+  "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
   "base_sha": "7d151ce4ad1b0a412a281bf527f244bcd3bee042",
   "comparison_base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
   "policy": {
@@ -24,14 +24,19 @@
       "lines_after": 378
     },
     {
+      "path": "apps/api/src/repositories/automation-rule-contracts.ts",
+      "lines_before": null,
+      "lines_after": 32
+    },
+    {
       "path": "apps/api/src/repositories/automation-rules.ts",
       "lines_before": 564,
-      "lines_after": 574
+      "lines_after": 571
     },
     {
       "path": "apps/api/src/repositories/manual-entry-fill-rules.ts",
       "lines_before": null,
-      "lines_after": 71
+      "lines_after": 72
     },
     {
       "path": "apps/api/src/repositories/transaction-idempotency.ts",
@@ -79,9 +84,19 @@
       "lines_after": 88
     },
     {
+      "path": "apps/web/src/dev-server/transaction-group-member-form-guard.ts",
+      "lines_before": 329,
+      "lines_after": 339
+    },
+    {
       "path": "apps/web/src/dev-server/transactions-page-v2.ts",
       "lines_before": 1825,
       "lines_after": 1844
+    },
+    {
+      "path": "packages/domain/src/automation-rules.ts",
+      "lines_before": 271,
+      "lines_after": 279
     },
     {
       "path": "scripts/statement-visual/cards-interface.mjs",
@@ -114,14 +129,24 @@
       "lines_after": 521
     },
     {
+      "path": "scripts/statement-visual/statement-contextual-action-labels.mjs",
+      "lines_before": null,
+      "lines_after": 40
+    },
+    {
       "path": "scripts/statement-visual/statement-contextual-assertions.mjs",
       "lines_before": 82,
-      "lines_after": 113
+      "lines_after": 122
     },
     {
       "path": "scripts/statement-visual/statement-contextual-surfaces.mjs",
       "lines_before": 694,
-      "lines_after": 711
+      "lines_after": 714
+    },
+    {
+      "path": "scripts/statement-visual/transaction-group-modal.mjs",
+      "lines_before": 554,
+      "lines_after": 554
     },
     {
       "path": "scripts/statement-visual/transaction-group-pending-fixes.mjs",
