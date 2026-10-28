@@ -11,6 +11,7 @@ interface SavedRule {
   rule: {
     id: string;
     status: string;
+    purpose: "automation" | "manual_entry";
     financialProfileId: string;
     conditions: { descriptionIncludes?: string };
     actions: { categoryId?: string };
@@ -45,6 +46,8 @@ async function main(): Promise<void> {
   assert.equal(first.rule.id, second.rule.id);
   assert.equal(first.rule.status, "inactive");
   assert.equal(second.rule.status, "inactive");
+  assert.equal(first.rule.purpose, "manual_entry");
+  assert.equal(second.rule.purpose, "manual_entry");
 
   const list = await request(
     token,
@@ -79,6 +82,91 @@ async function main(): Promise<void> {
   assert.equal(activation.statusCode, 400);
   assert.equal(errorCode(activation), "MANUAL_FILL_RULE_MUST_BE_INACTIVE");
 
+  const rulePath = `/api/automation-rules/${first.rule.id}?profileId=${profileA}`;
+  // Renaming and activating the same manual rule cannot bypass its immutable origin.
+  const disguised = await request(token, "PATCH", rulePath, {
+    name: "Regra automática disfarçada",
+    status: "active",
+  });
+  assert.equal(disguised.statusCode, 400);
+  assert.equal(errorCode(disguised), "MANUAL_FILL_RULE_MUST_BE_INACTIVE");
+
+  const renamed = await request(token, "PATCH", rulePath, {
+    name: "Descrição manual renomeada",
+    purpose: "automation",
+  });
+  assert.equal(renamed.statusCode, 200);
+  assert.equal(body<SavedRule>(renamed).rule.purpose, "manual_entry");
+  assert.equal(body<SavedRule>(renamed).rule.status, "inactive");
+
+  // A second request cannot promote a previously renamed manual rule either.
+  const activatedAfterRename = await request(token, "PATCH", rulePath, {
+    status: "active",
+  });
+  assert.equal(activatedAfterRename.statusCode, 400);
+  assert.equal(errorCode(activatedAfterRename), "MANUAL_FILL_RULE_MUST_BE_INACTIVE");
+
+  const spoofed = await request(token, "PATCH", rulePath, {
+    purpose: "automation",
+    status: "active",
+  });
+  assert.equal(spoofed.statusCode, 400);
+  assert.equal(errorCode(spoofed), "MANUAL_FILL_RULE_MUST_BE_INACTIVE");
+
+  // Upsert must find the existing rule even after its display name changes.
+  const sameRule = await request(token, "POST", saveA, payload);
+  assert.equal(sameRule.statusCode, 200);
+  assert.equal(body<SavedRule>(sameRule).rule.id, first.rule.id);
+  assert.equal(body<SavedRule>(sameRule).rule.purpose, "manual_entry");
+
+  // SQL-level invariants prevent bypass by another writer or a future repository.
+  await assert.rejects(
+    () =>
+      getPool().query(
+        `update "AutomationRule" set "purpose" = 'automation' where "id" = $1`,
+        [first.rule.id],
+      ),
+    /purpose is immutable/,
+  );
+  await assert.rejects(
+    () =>
+      getPool().query(
+        `update "AutomationRule" set "status" = 'ACTIVE' where "id" = $1`,
+        [first.rule.id],
+      ),
+    /AutomationRule_manual_entry_inactive_check/,
+  );
+
+  // A normal automation may still be active and its name remains editable.
+  const automatic = await request(token, "POST", `/api/automation-rules?profileId=${profileA}`, {
+    name: "Automação legítima",
+    status: "active",
+    descriptionIncludes: "Mercado",
+    actionCategoryId: categoryA,
+    purpose: "manual_entry", // Generic API payload cannot choose the origin.
+  });
+  assert.equal(automatic.statusCode, 201);
+  const normalRule = body<SavedRule>(automatic).rule;
+  assert.equal(normalRule.purpose, "automation");
+  const normalUpdate = await request(
+    token,
+    "PATCH",
+    `/api/automation-rules/${normalRule.id}?profileId=${profileA}`,
+    { name: "Automação legítima revisada", status: "active" },
+  );
+  assert.equal(normalUpdate.statusCode, 200);
+  assert.equal(body<SavedRule>(normalUpdate).rule.status, "active");
+  const activeAgain = await request(
+    token,
+    "GET",
+    `/api/automation-rules?profileId=${profileA}&status=active`,
+  );
+  assert.equal(activeAgain.statusCode, 200);
+  assert.deepEqual(
+    body<{ rules: SavedRule["rule"][] }>(activeAgain).rules.map((rule) => rule.id),
+    [normalRule.id],
+  );
+
   // Category identifiers cannot cross financial-profile boundaries.
   const wrongCategory = await request(token, "POST", saveA, {
     description: "Item de outro perfil",
@@ -100,7 +188,7 @@ async function main(): Promise<void> {
   const count = await getPool().query<{ count: string }>(
     `select count(*)::text as count from "AutomationRule"
      where "financialProfileId" = $1 and "organizationId" is not null
-       and "name" like 'Preenchimento: %'`,
+       and "purpose" = 'manual_entry'`,
     [profileA],
   );
   assert.equal(Number(count.rows[0]?.count), 1);

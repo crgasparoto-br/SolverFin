@@ -5,6 +5,7 @@ import {
   parseTransactionExtractionPayload,
   type AiSuggestion,
   type AutomationRule,
+  type AutomationRulePurpose,
   type AutomationRuleActions,
   type AutomationRuleConditions,
   type AutomationRuleTarget,
@@ -24,6 +25,7 @@ export interface AutomationRuleDraft {
   priority?: number | undefined;
   /** Inactive entries are reusable form suggestions, not background automations. */
   status?: "active" | "inactive";
+  purpose?: AutomationRulePurpose;
   conditions: AutomationRuleConditions;
   actions: AutomationRuleActions;
   explanation?: string | undefined;
@@ -40,6 +42,7 @@ interface AutomationRuleRow {
   financialProfileId: string;
   name: string;
   status: string;
+  purpose: AutomationRulePurpose;
   priority: number;
   conditions: unknown;
   actions: unknown;
@@ -72,6 +75,7 @@ interface AiSuggestionRow {
 interface AutomationRuleInput {
   id: EntityId;
   name: string;
+  purpose: AutomationRulePurpose;
   status: "active" | "inactive";
   priority: number;
   conditions: AutomationRuleConditions;
@@ -101,7 +105,7 @@ export class AutomationRuleRepositoryError extends Error {
 }
 
 const AUTOMATION_RULE_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "name", "status",
-  "priority", "conditions", "actions", "explanation", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
+  "purpose", "priority", "conditions", "actions", "explanation", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId"`;
 const AI_SUGGESTION_SELECT_COLUMNS = `"id", "organizationId", "financialProfileId", "kind", "status",
   "sourceEntityId", "targetEntityId", "confidence", "explanation", "payload", "provider", "model", "reviewedByUserId",
   "reviewedAt", "createdAt", "updatedAt"`;
@@ -119,7 +123,11 @@ export async function listAutomationRulesForContext(
 
   return rows
     .map(mapAutomationRuleRow)
-    .filter((rule) => status === "all" || rule.status === status);
+    .filter(
+      (rule) =>
+        (status === "all" || rule.status === status) &&
+        (status !== "active" || rule.purpose !== "manual_entry"),
+    );
 }
 
 export const MANUAL_ENTRY_PREFIX = "Preenchimento: ";
@@ -129,9 +137,14 @@ export async function createAutomationRuleForContext(
   draft: AutomationRuleDraft,
 ): Promise<AutomationRule> {
   const now = new Date().toISOString();
+  const purpose: AutomationRulePurpose =
+    draft.purpose === "manual_entry" || draft.name.trim().startsWith(MANUAL_ENTRY_PREFIX)
+      ? "manual_entry"
+      : "automation";
   const rule = normalizeAutomationRule(context, {
     id: randomUUID(),
     name: draft.name,
+    purpose,
     status: draft.status ?? "active",
     priority: draft.priority ?? 100,
     conditions: draft.conditions,
@@ -145,9 +158,9 @@ export async function createAutomationRuleForContext(
 
   await query(
     `insert into "AutomationRule"
-      ("id", "organizationId", "financialProfileId", "name", "status", "priority", "conditions", "actions",
+      ("id", "organizationId", "financialProfileId", "name", "purpose", "status", "priority", "conditions", "actions",
        "explanation", "createdByUserId", "updatedByUserId", "createdAt", "updatedAt")
-     values ($1, $2, $3, $4, $5, $6, $7::jsonb, $8::jsonb, $9, $10, $11, $12, $13)`,
+     values ($1, $2, $3, $4, $5, $6, $7, $8::jsonb, $9::jsonb, $10, $11, $12, $13, $14)`,
     buildAutomationRuleParams(rule),
   );
 
@@ -164,6 +177,7 @@ export async function updateAutomationRuleForContext(
   const updated = normalizeAutomationRule(context, {
     id: current.id,
     name: patch.name ?? current.name,
+    purpose: current.purpose ?? "automation",
     status: patch.status ?? current.status,
     priority: patch.priority ?? current.priority,
     conditions: patch.conditions ?? current.conditions,
@@ -308,7 +322,10 @@ function normalizeAutomationRule(
   input: AutomationRuleInput,
 ): AutomationRule {
   const name = input.name.trim();
-  if (name.startsWith(MANUAL_ENTRY_PREFIX) && input.status !== "inactive") {
+  if (
+    (input.purpose === "manual_entry" || name.startsWith(MANUAL_ENTRY_PREFIX)) &&
+    input.status !== "inactive"
+  ) {
     throw new AutomationRuleRepositoryError(
       "MANUAL_FILL_RULE_MUST_BE_INACTIVE",
       "Regras de preenchimento manual não podem ser ativadas como automações.",
@@ -338,6 +355,7 @@ function normalizeAutomationRule(
     organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
     name,
+    purpose: input.purpose,
     status: input.status,
     priority: Number.isFinite(input.priority) ? input.priority : 100,
     conditions: sanitizeConditions(input.conditions),
@@ -506,6 +524,7 @@ function buildAutomationRuleParams(rule: AutomationRule): unknown[] {
     rule.organizationId,
     rule.financialProfileId,
     rule.name,
+    rule.purpose,
     rule.status.toUpperCase(),
     rule.priority,
     JSON.stringify(rule.conditions),
@@ -540,6 +559,7 @@ function mapAutomationRuleRow(row: AutomationRuleRow): AutomationRule {
     organizationId: row.organizationId,
     financialProfileId: row.financialProfileId,
     name: row.name,
+    purpose: row.purpose,
     status: row.status.toLowerCase() as AutomationRule["status"],
     priority: row.priority,
     conditions: row.conditions as AutomationRuleConditions,

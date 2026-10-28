@@ -15,7 +15,8 @@ test("regras de preenchimento são compartilhadas, acessíveis e nunca automáti
   assert.match(html, /role="listbox"/);
   assert.match(html, /aria-live="polite"/);
   assert.match(script, /rule\.status === "inactive"/);
-  assert.match(script, /rule\.name\.startsWith\(PREFIX\)/);
+  assert.match(script, /rule\.purpose === "manual_entry"/);
+  assert.doesNotMatch(script, /rule\.name\.startsWith\(PREFIX\)/);
   assert.match(script, /normalize\(rule\.description\)\.startsWith\(typed\)/);
   assert.match(script, /category\.dispatchEvent\(new Event\("change"/);
   assert.match(script, /"POST"/);

@@ -37,6 +37,7 @@ export async function upsertManualEntryFillRuleForContext(
   const ruleDraft: AutomationRuleDraft = {
     name: MANUAL_ENTRY_PREFIX + text.slice(0, 160 - MANUAL_ENTRY_PREFIX.length),
     status: "inactive",
+    purpose: "manual_entry",
     conditions: { descriptionIncludes: text },
     actions: { categoryId },
     explanation: "Sugestão manual de descrição e categoria. Nunca aplicar automaticamente.",
@@ -60,7 +61,7 @@ export async function upsertManualEntryFillRuleForContext(
     const rules = await listAutomationRulesForContext(context, "inactive");
     const existing = rules.find(
       (rule) =>
-        rule.name.startsWith(MANUAL_ENTRY_PREFIX) &&
+        rule.purpose === "manual_entry" &&
         normalizeManualEntry(rule.conditions.descriptionIncludes ?? "") === normalized,
     );
     if (existing) {
