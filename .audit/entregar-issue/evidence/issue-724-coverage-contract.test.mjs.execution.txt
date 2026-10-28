@@ -1,6 +1,6 @@
-HEAD: 3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0
+HEAD: 3ba651437260b0afe8e46a42a672016a4e2a5884
 COMMAND: node --test scripts/statement-visual/*.test.mjs
 EXIT_CODE: 0
 REACHED: scripts/statement-visual/coverage-contract.test.mjs
-ORIGIN: Official Repository CI run 40756529411 https://github.com/crgasparoto-br/SolverFin/actions/runs/40756529411 completed/success; current material SHA.
-LOCAL_TAP: bdbd23d378d735e0049614d10e57c2d149533750925bfa1aeadd06c2c60d41a0 116/116 passed
+ORIGIN: GitHub Repository CI run 40775679454 https://github.com/crgasparoto-br/SolverFin/actions/runs/40775679454; CRITICAL validation job 123124572976 completed/success at exact SHA.
+LOCAL_TAP: 3b8d3adedcae40a44b897dd873e691d044298506889b8584f607fdf494576512 118/118 passed; verified on restored exact-SHA GitHub Actions source bundle.

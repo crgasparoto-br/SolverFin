@@ -2,10 +2,10 @@
   "schema_version": 2,
   "status": "ready",
   "phase": "final",
-  "created_at": "2026-10-28T20:00:04.363079+00:00",
+  "created_at": "2026-10-28T22:27:14.512954+00:00",
   "identity": {
-    "head_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
-    "material_head_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+    "head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+    "material_head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
     "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
@@ -22,35 +22,19 @@
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
-    "material_head_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+    "work_item_start_sha": "f555e933e903df5f5c1439e0087099c5a0cb9933",
+    "material_head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
     "issue_changed_paths": [
-      ".audit/entregar-issue/negative-control-evidence-724.json",
-      ".audit/entregar-issue/standard-evidence.json",
       "apps/web/src/dev-server/dashboard-page-currency.test.ts",
-      "apps/web/src/dev-server/dashboard-page.test.ts",
       "apps/web/src/dev-server/dashboard-page.ts",
       "apps/web/src/dev-server/dashboard-styles.ts",
-      "apps/web/src/dev-server/shared-styles.test.ts",
-      "apps/web/src/dev-server/shell-pages.test.ts",
       "docs/DASHBOARD.md",
       "docs/VISUAL_VALIDATION.md",
-      "scripts/statement-visual/coverage-contract.test.mjs",
       "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
       "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
-      "scripts/statement-visual/issue-606-behavior-claims.mjs",
-      "scripts/statement-visual/issue-606-core-pages-execution.mjs",
-      "scripts/statement-visual/issue-606-dashboard-empty.mjs",
-      "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-      "scripts/statement-visual/issue-606-remediation-contract.mjs",
-      "scripts/statement-visual/issue-724-dashboard-error.mjs",
-      "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
-      "scripts/statement-visual/issue-724-dashboard-multi-currency-partial.mjs",
-      "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
-      "scripts/statement-visual/issue-724-dashboard-partial.mjs",
       "scripts/statement-visual/issue-724-dashboard-scenarios.mjs"
     ],
-    "issue_delta_sha256": "c74a02fb88537230515dd85c68a29ccf9eadc97a76daeceae7193d3331b78a7c"
+    "issue_delta_sha256": "4c56485ce7e899281a64ced9831997b86c0a6bcd8f2c95e3a5267d52e18fbc5a"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -60,12 +44,11 @@
       ".audit/entregar-issue/audit-source-result.json",
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
+      ".audit/entregar-issue/evidence/issue-724-chrome-exact-head.json",
       ".audit/entregar-issue/evidence/issue-724-coverage-contract.test.mjs.execution.txt",
-      ".audit/entregar-issue/evidence/issue-724-coverage.log",
       ".audit/entregar-issue/evidence/issue-724-dashboard-724-behavior-evidence.test.mjs.execution.txt",
       ".audit/entregar-issue/evidence/issue-724-dashboard-page-currency.test.ts.execution.txt",
       ".audit/entregar-issue/evidence/issue-724-dashboard-page.test.ts.execution.txt",
-      ".audit/entregar-issue/evidence/issue-724-independent-audit-report.json",
       ".audit/entregar-issue/evidence/issue-724-shared-styles.test.ts.execution.txt",
       ".audit/entregar-issue/evidence/issue-724-shell-pages.test.ts.execution.txt",
       ".audit/entregar-issue/evidence/issue-724-visual-unit-tests.log",
@@ -74,7 +57,6 @@
       ".audit/entregar-issue/negative-control-evidence-724.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
       ".audit/entregar-issue/standard-evidence.json"
     ]
   },
@@ -83,7 +65,7 @@
   "remediation_mode": "targeted-remediation",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "7a8115f421aff94e53441242039af18a99bf6f014b7d86d0f251eef8c030dd33"
+    "skill_sha256": "6844c654d779ff0e0953147d6e611a375e1982680344c9f8994427f245e0f664"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
@@ -118,8 +100,8 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "ffe85ef77fe4d2ad62969bcb51eed8239b742f93d7b822df03274d4124c96617",
-      "logical_sha256": "ffe85ef77fe4d2ad62969bcb51eed8239b742f93d7b822df03274d4124c96617",
+      "sha256": "f61cd8df6b3c07e1d362c6e14abead56a4c0ffd340391489cc079639ae7bcaeb",
+      "logical_sha256": "f61cd8df6b3c07e1d362c6e14abead56a4c0ffd340391489cc079639ae7bcaeb",
       "logical_size": 13850,
       "artifact_transport": {
         "format": "plain-json",
@@ -128,9 +110,9 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "736a9f45471746884bdc7dcbfc1976cd653b18d8007c455f21f81950216b8c1a",
-      "logical_sha256": "736a9f45471746884bdc7dcbfc1976cd653b18d8007c455f21f81950216b8c1a",
-      "logical_size": 17036,
+      "sha256": "3d8bc19b0a37a5c9ae3ef9720d6d69d47021ed6213e8885f0f734a20ea6f3d7d",
+      "logical_sha256": "3d8bc19b0a37a5c9ae3ef9720d6d69d47021ed6213e8885f0f734a20ea6f3d7d",
+      "logical_size": 18638,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -138,8 +120,8 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure-724.json",
-      "sha256": "65318727c99d55bb5406f378cbcfa1c618650a387103bdb01599a642d33fea52",
-      "logical_sha256": "65318727c99d55bb5406f378cbcfa1c618650a387103bdb01599a642d33fea52",
+      "sha256": "9715aaf5cd32068b9e0f73f22fb3153542d8994a25db0fce8df71ab6d7d8951b",
+      "logical_sha256": "9715aaf5cd32068b9e0f73f22fb3153542d8994a25db0fce8df71ab6d7d8951b",
       "logical_size": 5875,
       "artifact_transport": {
         "format": "plain-json",
@@ -158,9 +140,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "b3b3ba2450ace9bb706a4eeb32ca21fce354876cac6f8dcd89f6b07fef4f5b06",
-      "logical_sha256": "b3b3ba2450ace9bb706a4eeb32ca21fce354876cac6f8dcd89f6b07fef4f5b06",
-      "logical_size": 3495,
+      "sha256": "946278bd2490dcd1cff7a18ae08de41103da5ac5eaf3a12e43a1a26f141da081",
+      "logical_sha256": "946278bd2490dcd1cff7a18ae08de41103da5ac5eaf3a12e43a1a26f141da081",
+      "logical_size": 3882,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -178,9 +160,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "158913e300c1ce7c610b475239407d9ce405ad61d1bebe6337d6285158903520",
-      "logical_sha256": "158913e300c1ce7c610b475239407d9ce405ad61d1bebe6337d6285158903520",
-      "logical_size": 20799,
+      "sha256": "c965c892f08e23e1750d3ad96b1b23a96b3fe6391e4ac6cdb51d122086c028ce",
+      "logical_sha256": "c965c892f08e23e1750d3ad96b1b23a96b3fe6391e4ac6cdb51d122086c028ce",
+      "logical_size": 4210,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -188,9 +170,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "eb4d2c898620bdc39a22269421f64a7c830a6540fdadb95bc04a25d9db924e9d",
-      "logical_sha256": "eb4d2c898620bdc39a22269421f64a7c830a6540fdadb95bc04a25d9db924e9d",
-      "logical_size": 2842,
+      "sha256": "ed139b1faa2c14a9bb0466b689991af82ea9bf6430defef231197d3faae1f37d",
+      "logical_sha256": "ed139b1faa2c14a9bb0466b689991af82ea9bf6430defef231197d3faae1f37d",
+      "logical_size": 1110,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -208,7 +190,7 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+      "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },

@@ -1,0 +1,248 @@
+{
+  "schema_version": 1,
+  "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+  "source": "GitHub Actions Chrome visual validation; reports and PNGs from artifact 12854274655",
+  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40775679393",
+  "artifact_name": "statement-visual-evidence-3ba651437260b0afe8e46a42a672016a4e2a5884",
+  "artifact_id": 12854274655,
+  "artifact_zip_digest": "sha256:e38a75f19bbe1ed590a85d9509e02c8b124eb09f0f472dbb4c3088c1ccca7ac2",
+  "provenance": "real Dashboard SSR renderer with controlled API responses in authenticated Chrome; not production API integration",
+  "states": [
+    {
+      "state": "multi-currency",
+      "report_path": "issue-724-dashboard-multi-currency.json",
+      "report_sha256": "449eb7c1cf8259f59d113d34063cf84300c91172c061bdb960146e611a164bfd",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-724-dashboard-multi-currency-1366.png",
+          "screenshot_sha256": "4241b38cea274a0ef07cfa2985465bb5de8ad1358c738c5d9a649ecc1ad2e4f8",
+          "has_partial": false,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": null,
+          "intrusion_restored": null
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-724-dashboard-multi-currency-390.png",
+          "screenshot_sha256": "81ca3153b6538dab60be6950612127e14e1a8fc1ba7a5d291016c03d38548502",
+          "has_partial": false,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-724-dashboard-multi-currency-320.png",
+          "screenshot_sha256": "a632db7f7595097124608b9036c124c8ee3d2033586d7f92c55fbe605b536fdc",
+          "has_partial": false,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        }
+      ]
+    },
+    {
+      "state": "multi-currency-partial",
+      "report_path": "issue-724-dashboard-multi-currency-partial.json",
+      "report_sha256": "d03aa26fa5c538e16be899f0e5218e29b435b416198e9504722112906ae429ca",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-724-dashboard-multi-currency-partial-1366.png",
+          "screenshot_sha256": "9de4fdf2e34a84ade3d07c40df7c8fff41b5898904acaa19eb3e33e9b731ea16",
+          "has_partial": true,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": null,
+          "intrusion_restored": null
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-724-dashboard-multi-currency-partial-390.png",
+          "screenshot_sha256": "0192c9a04dc75071af97ee95d8a8a179735ab05fac4c9871f688d4724294bdb2",
+          "has_partial": true,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-724-dashboard-multi-currency-partial-320.png",
+          "screenshot_sha256": "99f835f3e26a0924fe0a838dfe1eef19914aacb6d3fe3083fae0f60b21ef9bff",
+          "has_partial": true,
+          "currency_count": 2,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        }
+      ]
+    },
+    {
+      "state": "partial",
+      "report_path": "issue-724-dashboard-partial.json",
+      "report_sha256": "35fb04873a92416565c7c88740cd5a1c9392d2213b311b508c8f6dbf8c8f778a",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-724-dashboard-partial-1366.png",
+          "screenshot_sha256": "b68b25a5b28cdfa39f4a2ca568ea906b92bc819ee9924e6db959d0d5964f2a82",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": null,
+          "intrusion_restored": null
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-724-dashboard-partial-390.png",
+          "screenshot_sha256": "148a01afcf948d0cd5ae0e8b7ddae4024bf4332848025d92bbff90e9f149ef7d",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-724-dashboard-partial-320.png",
+          "screenshot_sha256": "1daa2f8d6567a08788a525dd169a528e96503dd3c8ae1f777381c46abafcb93a",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true
+        }
+      ]
+    },
+    {
+      "state": "error",
+      "report_path": "issue-724-dashboard-error.json",
+      "report_sha256": "45e4ad7584c38a369481227f5a8bc5ffd673164fcad4d7da09ff50bb5ef346d1",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-724-dashboard-error-1366.png",
+          "screenshot_sha256": "574748553dd4155802a6747be9535f18d3e869c24404dfa7b20c78d1270994ec",
+          "has_partial": false,
+          "currency_count": 0,
+          "no_horizontal_overflow": true
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-724-dashboard-error-390.png",
+          "screenshot_sha256": "2323660cc3ca9d31c44f85a3e9495d3fa968ab5c6b4542ef7c2aaba1ae73b707",
+          "has_partial": false,
+          "currency_count": 0,
+          "no_horizontal_overflow": true
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-724-dashboard-error-320.png",
+          "screenshot_sha256": "04bc9ad69b02b492dde86a1a058e87655a268993eaa5ca0d22192898a2b1c769",
+          "has_partial": false,
+          "currency_count": 0,
+          "no_horizontal_overflow": true
+        }
+      ]
+    },
+    {
+      "state": "long-content",
+      "report_path": "issue-724-dashboard-long-content.json",
+      "report_sha256": "f468e129b6113072bf39b6b8c2809e8380d1841c7234a98f2954f597c7b65886",
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-724-dashboard-long-content-1366.png",
+          "screenshot_sha256": "64a8d441e1c61a36d846b0286528de0d89480f196addcea0f4bd9b0597d37245",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": null,
+          "intrusion_restored": null,
+          "expanded_screenshot_path": "issue-724-dashboard-long-content-1366-expanded.png",
+          "expanded_screenshot_sha256": "224e418f53f5c474e78e47247fb11b0f5a6e4dc30969a529625f1a945f44a427"
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-724-dashboard-long-content-390.png",
+          "screenshot_sha256": "966d9f61d860178739e65c423dfac8046650b8c7fc8de37eee58dd02a13bdf2f",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true,
+          "expanded_screenshot_path": "issue-724-dashboard-long-content-390-expanded.png",
+          "expanded_screenshot_sha256": "3751798accc9a190534ab40fe06211429e1cbc1ffc92a98247197fd98722590b"
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-724-dashboard-long-content-320.png",
+          "screenshot_sha256": "2dcf24107b9e881db7ad813dbb7febaf2ea77fb86c02197df123cb215860b3d9",
+          "has_partial": true,
+          "currency_count": 1,
+          "no_horizontal_overflow": true,
+          "first_action_in_first_fold": true,
+          "action_focus": true,
+          "evidence_enter_opened": true,
+          "intrusion_fails": true,
+          "intrusion_restored": true,
+          "expanded_screenshot_path": "issue-724-dashboard-long-content-320-expanded.png",
+          "expanded_screenshot_sha256": "a53d125985d2e299a624c305a4b0b170631373ec8192d39e2e285cd307d32d48"
+        }
+      ]
+    }
+  ]
+}

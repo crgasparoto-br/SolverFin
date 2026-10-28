@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+  "candidate_head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
@@ -27,7 +27,8 @@
         "Exact base and material candidate both contain inherited foreign handoff for issue 747, PR 749. Official delivery_target_binding on immutable base returned inherited-base-artifact and reuse_allowed=false. New issue #724 snapshot and independent source-bytes closure reconstructed."
       ],
       "validations": [
-        "Official validate_specification_coverage.py READY on issue #724 and source SHA; final same-SHA certificate builder, preflight and direct-parent result-only child validation required before accepting fixed closure."
+        "Official validate_specification_coverage.py READY on issue #724 and source SHA; final same-SHA certificate builder, preflight and direct-parent result-only child validation required before accepting fixed closure.",
+        "Rebuild final issue 724 / PR 744 certificate for 3ba6514; old 3fceee9 certificate remains historical, not accepted as current handoff."
       ]
     },
     {
@@ -47,9 +48,10 @@
         "Desktop and mobile SSR Dashboard now has compact per-currency BRL and USD rows and keeps Next Actions in first fold. Local real Chromium measurement for partial multicurrency 320x740 shows title bottom 695px and no horizontal overflow; regression and 600px-intrusion mutations are asserted in Chrome and source tests."
       ],
       "validations": [
-        "node --test scripts/statement-visual/*.test.mjs: 116/116 PASS at current material SHA",
-        "Repository CI run 40756529411 completed/success at SHA 3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
-        "Exact-SHA Chrome visual validation run 40756529386 must be confirmed terminal success before cert publication."
+        "node --test scripts/statement-visual/*.test.mjs: 118/118 PASS at current material SHA",
+        "Repository CI run 40775679454 completed/success at SHA 3ba651437260b0afe8e46a42a672016a4e2a5884",
+        "Exact-SHA Chrome visual validation run 40775679393 must be confirmed terminal success before cert publication.",
+        "Chrome report artifact 12854274655 revalidated at 3ba651437260b0afe8e46a42a672016a4e2a5884: all 5 states x 3 viewports; 320 and 390 first link visible, 600px intrusion fails and restores; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
@@ -67,7 +69,7 @@
       ],
       "validations": [
         "git diff --check base..material passed",
-        "Repository CI run 40756529411 completed/success at exact material SHA 3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        "Repository CI run 40775679454 completed/success at exact material SHA 3ba651437260b0afe8e46a42a672016a4e2a5884"
       ]
     }
   ]

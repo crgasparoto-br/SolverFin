@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
-  "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
-  "comparison_base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
+  "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+  "base_sha": "f555e933e903df5f5c1439e0087099c5a0cb9933",
+  "comparison_base_sha": "f555e933e903df5f5c1439e0087099c5a0cb9933",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -20,74 +20,23 @@
   "files": [
     {
       "path": "apps/web/src/dev-server/dashboard-page.ts",
-      "lines_before": 499,
+      "lines_before": 484,
       "lines_after": 484
     },
     {
       "path": "apps/web/src/dev-server/dashboard-styles.ts",
-      "lines_before": null,
-      "lines_after": 116
+      "lines_before": 116,
+      "lines_after": 125
     },
     {
       "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
-      "lines_before": null,
-      "lines_after": 106
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
-      "lines_before": 689,
-      "lines_after": 697
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
-      "lines_before": 297,
-      "lines_after": 380
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
-      "lines_before": 10,
-      "lines_after": 15
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-      "lines_before": 129,
-      "lines_after": 134
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-remediation-contract.mjs",
-      "lines_before": 343,
-      "lines_after": 368
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-error.mjs",
-      "lines_before": null,
-      "lines_after": 1
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
-      "lines_before": null,
-      "lines_after": 1
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency-partial.mjs",
-      "lines_before": null,
-      "lines_after": 1
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
-      "lines_before": null,
-      "lines_after": 1
-    },
-    {
-      "path": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
-      "lines_before": null,
-      "lines_after": 1
+      "lines_before": 106,
+      "lines_after": 126
     },
     {
       "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
-      "lines_before": null,
-      "lines_after": 347,
-      "justification": "One shared deterministic Chrome SSR runner exercises five Dashboard states, three viewports, keyboard, intrusion mutation and screenshots without duplicating scenario mechanics; remaining below the 500-line hard limit. Splitting by state would duplicate the fixture and CDP navigation logic."
+      "lines_before": 347,
+      "lines_after": 395
     }
   ],
   "blocking_files": []
