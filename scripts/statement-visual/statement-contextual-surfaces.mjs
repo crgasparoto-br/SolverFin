@@ -672,7 +672,7 @@ export async function validateStatementContextualSurfaces(
     const expectedFooterTouchControls = [];
     for (const state of ["new", "edit", "clone"]) {
       for (const viewport of ["1366x768", "390x844", "320x740"]) {
-        for (const action of ["CANCEL", "SAVE"]) {
+        for (const action of state === "edit" ? ["CANCEL", "SAVE"] : ["CANCEL", "CONTINUE", "SAVE"]) {
           expectedFooterTouchControls.push(
             `GS-CONTEXTUAL-NC-FOOTER-TOUCH-${action}-${state}@${viewport}`,
           );
