@@ -122,18 +122,16 @@ async function main(): Promise<void> {
   // SQL-level invariants prevent bypass by another writer or a future repository.
   await assert.rejects(
     () =>
-      getPool().query(
-        `update "AutomationRule" set "purpose" = 'automation' where "id" = $1`,
-        [first.rule.id],
-      ),
+      getPool().query(`update "AutomationRule" set "purpose" = 'automation' where "id" = $1`, [
+        first.rule.id,
+      ]),
     /purpose is immutable/,
   );
   await assert.rejects(
     () =>
-      getPool().query(
-        `update "AutomationRule" set "status" = 'ACTIVE' where "id" = $1`,
-        [first.rule.id],
-      ),
+      getPool().query(`update "AutomationRule" set "status" = 'ACTIVE' where "id" = $1`, [
+        first.rule.id,
+      ]),
     /AutomationRule_manual_entry_inactive_check/,
   );
 

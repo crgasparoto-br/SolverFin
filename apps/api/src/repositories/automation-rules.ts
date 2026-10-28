@@ -19,17 +19,9 @@ import {
 } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { query, withTransaction, type QueryExecutor } from "../db.js";
+import type { AutomationRuleDraft, AutomationRuleInput } from "./automation-rule-contracts.js";
 
-export interface AutomationRuleDraft {
-  name: string;
-  priority?: number | undefined;
-  /** Inactive entries are reusable form suggestions, not background automations. */
-  status?: "active" | "inactive";
-  purpose?: AutomationRulePurpose;
-  conditions: AutomationRuleConditions;
-  actions: AutomationRuleActions;
-  explanation?: string | undefined;
-}
+export type { AutomationRuleDraft } from "./automation-rule-contracts.js";
 
 export interface ApplyAutomationRulesResult {
   createdSuggestions: AiSuggestion[];
@@ -70,21 +62,6 @@ interface AiSuggestionRow {
   reviewedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
-}
-
-interface AutomationRuleInput {
-  id: EntityId;
-  name: string;
-  purpose: AutomationRulePurpose;
-  status: "active" | "inactive";
-  priority: number;
-  conditions: AutomationRuleConditions;
-  actions: AutomationRuleActions;
-  explanation?: string | undefined;
-  createdAt: string;
-  updatedAt: string;
-  createdByUserId?: EntityId | undefined;
-  updatedByUserId?: EntityId | undefined;
 }
 
 type PersistedAiSuggestion = Omit<AiSuggestion, "payload"> & { payload: unknown };
