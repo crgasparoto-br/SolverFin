@@ -507,7 +507,7 @@ async function submitControlIsKeyboardReady() {
     browser.cdp,
     `(() => {
       const form = document.querySelector("[data-form]");
-      const submit = form.querySelector('button[type="submit"]');
+      const submit = form.querySelector("[data-statement-save-primary]");
       submit.focus();
       return (
         document.activeElement === submit &&
@@ -609,7 +609,7 @@ async function readFormState(pageScrollBaseline) {
         pageScrollYStable: window.scrollY === pageScrollBefore,
         description: form.elements.namedItem("description").value,
         note: form.elements.namedItem("note").value,
-        submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
+        submitDisabled: form.querySelector("[data-statement-save-primary]")?.disabled === true,
         globalOverflow: document.documentElement.scrollWidth > visibleViewportWidth
       };
     })()`,

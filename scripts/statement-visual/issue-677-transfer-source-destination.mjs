@@ -344,7 +344,7 @@ async function submitWithSameAccount(sourceId) {
       form.destinationAccountId.dispatchEvent(new Event("change", { bubbles: true }));
       const valid = form.checkValidity();
       const message = form.destinationAccountId.validationMessage;
-      form.querySelector('[type="submit"]').click();
+      form.querySelector("[data-statement-save-primary]").click();
       await new Promise((resolve) => setTimeout(resolve, 300));
       window.fetch = nativeFetch;
       return { valid, message, requests };
@@ -426,7 +426,7 @@ async function submitTransfer(fixture, repeatMode) {
         if (delay === 350 && String(callback).includes("location.reload")) return 0;
         return nativeSetTimeout(callback, delay, ...args);
       };
-      form.querySelector('[type="submit"]').click();
+      form.querySelector("[data-statement-save-primary]").click();
       for (let attempt = 0; attempt < 80 && status === undefined; attempt += 1) {
         await new Promise((resolve) => nativeSetTimeout(resolve, 100));
       }

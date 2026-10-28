@@ -1421,7 +1421,7 @@ ${statementAttemptKeyScript}
       if (!form.checkValidity()) { form.reportValidity(); return; }
 ${statementSubmitPreparationScript}
       let shouldReload = false;
-      if (method === "POST") form.dataset.saveAttempted = "true";
+      if (method === "POST" && mode === "single") form.dataset.saveAttempted = "true";
       try {
         let response;
         if (mode === "fixed" && method === "POST") {
