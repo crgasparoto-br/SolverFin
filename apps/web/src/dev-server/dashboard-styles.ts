@@ -90,28 +90,28 @@ export function dashboardStyles(): string {
       .dashboard-metric .sf-metric-card-value { font-size: clamp(0.875rem, 4vw, 1rem); text-align: left; white-space: nowrap; }
       .dashboard-metric .sf-metric-card-detail { font-size: 0.75rem; grid-column: 1 / -1; line-height: 1.2; }
       .dashboard-metric .metric-drilldown { bottom: 8px; left: 11px; font-size: 0.75rem; }
-      /* In multi-currency mode, keep both currencies and the next decision in the first fold. */
-      .dashboard-primary-currencies[data-multicurrency="true"] { gap: 6px; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .currency-summary { gap: 3px; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .currency-heading .eyebrow { display: none; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .currency-heading h2 { font-size: 0.875rem; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .currency-summary .sf-summary-grid { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-lg); gap: 0; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric { display: grid; gap: 1px; min-width: 0; padding: 5px 10px; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric + .dashboard-metric { border-top: 1px solid var(--sf-color-border); }
-      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric .sf-metric-card { background: transparent; border: 0; border-radius: 0; box-shadow: none; column-gap: 10px; display: grid; grid-template-columns: minmax(0, 1fr) max-content; height: auto; padding: 0; row-gap: 1px; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-label { align-self: baseline; font-size: 0.75rem; line-height: 1.25; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-value { align-self: baseline; font-size: 0.8rem; line-height: 1.25; overflow-wrap: normal; text-align: right; white-space: nowrap; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-detail { font-size: 0.69rem; grid-column: 1 / -1; line-height: 1.2; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .metric-drilldown { font-size: 0.7rem; line-height: 1.2; position: static; width: fit-content; }
-      /* At narrow widths the labels and links already identify each KPI; retain
+      /* Compact currency rows on mobile so the first action remains usable in every state. */
+      .dashboard-primary-currencies { gap: 6px; }
+      .dashboard-primary-currencies .currency-summary { gap: 3px; }
+      .dashboard-primary-currencies .currency-heading .eyebrow { display: none; }
+      .dashboard-primary-currencies .currency-heading h2 { font-size: 0.875rem; }
+      .dashboard-primary-currencies .currency-summary .sf-summary-grid { background: var(--sf-color-surface); border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-lg); gap: 0; }
+      .dashboard-primary-currencies .dashboard-metric { display: grid; gap: 1px; min-width: 0; padding: 5px 10px; }
+      .dashboard-primary-currencies .dashboard-metric + .dashboard-metric { border-top: 1px solid var(--sf-color-border); }
+      .dashboard-primary-currencies .dashboard-metric .sf-metric-card { background: transparent; border: 0; border-radius: 0; box-shadow: none; column-gap: 10px; display: grid; grid-template-columns: minmax(0, 1fr) max-content; height: auto; padding: 0; row-gap: 1px; }
+      .dashboard-primary-currencies .sf-metric-card-label { align-self: baseline; font-size: 0.75rem; line-height: 1.25; }
+      .dashboard-primary-currencies .sf-metric-card-value { align-self: baseline; font-size: 0.8rem; line-height: 1.25; overflow-wrap: normal; text-align: right; white-space: nowrap; }
+      .dashboard-primary-currencies .sf-metric-card-detail { font-size: 0.69rem; grid-column: 1 / -1; line-height: 1.2; }
+      .dashboard-primary-currencies .metric-drilldown { font-size: 0.7rem; line-height: 1.2; position: static; width: fit-content; }
+      /* KPI labels and links identify values; retain
          supplementary copy for assistive technology without hiding actions. */
-      .dashboard-hero[data-multicurrency="true"] .sf-page-header-description,
-      .dashboard-primary-currencies[data-multicurrency="true"] .sf-metric-card-detail {
+      .dashboard-hero .sf-page-header-description,
+      .dashboard-primary-currencies .sf-metric-card-detail {
         border: 0; clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden;
         padding: 0; position: absolute; white-space: nowrap; width: 1px;
       }
-      .dashboard-hero[data-multicurrency="true"] .data-quality[data-quality="partial"] span { font-size: 0.75rem; line-height: 1.2; }
-      .dashboard-primary-currencies[data-multicurrency="true"] .dashboard-metric { padding-block: 4px; }
+      .dashboard-hero .data-quality[data-quality="partial"] span { font-size: 0.75rem; line-height: 1.2; }
+      .dashboard-primary-currencies .dashboard-metric { padding-block: 4px; }
       .next-actions { gap: 5px; padding-top: 6px; }
       .next-action-rows .row { padding: 6px 0; }
       .dashboard-supporting-metric { grid-template-columns: minmax(0, 1fr) auto; align-items: center; padding: 8px 0; }

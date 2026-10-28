@@ -127,8 +127,11 @@ visível.
 
 O runner cobre multimoeda completa e parcial, parcial de moeda única, erro e
 conteúdo longo em 1366×768, 390×844 e 320×740, com capturas individuais,
-medição de primeira dobra e Enter nos links de evidência. Os cenários usam o
-renderizador SSR real com respostas de API controladas inseridas numa sessão
+medição de primeira dobra e Enter nos links de evidência. A compactação
+mobile deve valer para moeda única e múltiplas moedas; parcial e conteúdo
+longo também exigem o link da primeira ação completo na tela de 320×740.
+Os cenários usam o renderizador SSR real com respostas de API controladas
+inseridas numa sessão
 Chrome autenticada: isso é **SSR simulado**, não integração real com a API em
 produção. O fluxo normal e o vazio permanecem verificados com dados reais do
 ambiente de teste. Os valores e drilldowns por moeda, o aviso parcial visível,

@@ -146,11 +146,12 @@ O teste de hierarquia deve rejeitar um painel de decisão intrusivo colocado ant
 
 Em 320×740 e 390×844 a dobra inicial deve conter **o título e o link operacional
 completo da primeira ação**, não apenas o cabeçalho de "Próximas ações". A correção
-da A-74402 identifica o modo multimoeda no SSR e reduz a densidade redundante
-apenas nos dispositivos estreitos. A descrição introdutória e os subtítulos dos
-KPIs permanecem no DOM e disponíveis a tecnologias assistivas, embora sejam
-visualmente compactados; os títulos, valores BRL/USD e links de evidências
-continuam visíveis. O aviso de dados parciais continua visível e legível.
+da A-74402 reduz a densidade das linhas de saldos tanto para moeda única
+quanto para BRL/USD, incluindo dados parciais e conteúdo longo nos dispositivos
+estreitos. A descrição introdutória e os subtítulos dos KPIs permanecem no
+DOM e disponíveis a tecnologias assistivas, embora sejam visualmente
+compactados; os títulos, valores por moeda e links de evidências continuam
+visíveis. O aviso de dados parciais continua visível e legível.
 
 O gate Chrome mede separadamente os limites visuais do título e do link da
 primeira ação, exige destino navegável e foco por teclado, além da ordem dos
