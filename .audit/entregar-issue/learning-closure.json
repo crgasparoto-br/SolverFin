@@ -3,17 +3,16 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
-    "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
+    "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
     "finding_ids": [
-      "A-005",
-      "A-006",
-      "A-007"
-    ]
+      "A-74401",
+      "A-74402"
+    ],
+    "audit_report_sha256": "ba3648bae39ad4f8b49c34446dfd9faebbf8d12dab23e751efa5eed4a7ffe1f0"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "Targeted remediation of three issue-specific failures using existing quality and independent-audit standards; no unproven systemic classification."
+    "reason": "Both failures are target-specific applications of already existing canonical gates: certified-handoff semantic binding and exact-SHA responsive visual/negative controls. No new global skill rule is required."
   },
   "skill_changes": []
 }

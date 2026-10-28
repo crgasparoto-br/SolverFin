@@ -1,0 +1,706 @@
+TAP version 13
+# Subtest: login helper never exposes the raw authentication response
+ok 1 - login helper never exposes the raw authentication response
+  ---
+  duration_ms: 0.758008
+  type: 'test'
+  ...
+# Subtest: clean and explicitly redacted evidence is accepted
+ok 2 - clean and explicitly redacted evidence is accepted
+  ---
+  duration_ms: 11.469584
+  type: 'test'
+  ...
+# Subtest: literal session-token leak is rejected without echoing the secret
+ok 3 - literal session-token leak is rejected without echoing the secret
+  ---
+  duration_ms: 1.694673
+  type: 'test'
+  ...
+# Subtest: authorization header sibling is rejected
+ok 4 - authorization header sibling is rejected
+  ---
+  duration_ms: 0.27992
+  type: 'test'
+  ...
+# Subtest: session cookie sibling is rejected
+ok 5 - session cookie sibling is rejected
+  ---
+  duration_ms: 0.161653
+  type: 'test'
+  ...
+# Subtest: raw auth payload sibling is rejected
+ok 6 - raw auth payload sibling is rejected
+  ---
+  duration_ms: 0.317426
+  type: 'test'
+  ...
+# Subtest: \#715: first desktop purchase must be fully readable, not just begin above the fold
+ok 7 - \#715: first desktop purchase must be fully readable, not just begin above the fold
+  ---
+  duration_ms: 1.320471
+  type: 'test'
+  ...
+# Subtest: \#715: mobile invoice amount leads the header and rejects a late decision
+ok 8 - \#715: mobile invoice amount leads the header and rejects a late decision
+  ---
+  duration_ms: 1.274391
+  type: 'test'
+  ...
+# Subtest: screenshot retries one transient Chrome compositor timeout and preserves evidence
+ok 9 - screenshot retries one transient Chrome compositor timeout and preserves evidence
+  ---
+  duration_ms: 314.763834
+  type: 'test'
+  ...
+# Subtest: screenshot fails closed when Chrome repeatedly times out
+ok 10 - screenshot fails closed when Chrome repeatedly times out
+  ---
+  duration_ms: 302.028609
+  type: 'test'
+  ...
+# Subtest: screenshot does not retry non-transient Chrome protocol errors
+ok 11 - screenshot does not retry non-transient Chrome protocol errors
+  ---
+  duration_ms: 0.399369
+  type: 'test'
+  ...
+# Subtest: canonical visual coverage contract is internally consistent
+ok 12 - canonical visual coverage contract is internally consistent
+  ---
+  duration_ms: 4.397047
+  type: 'test'
+  ...
+# Subtest: equivalent route/state/layout/interaction/data fingerprints are rejected
+ok 13 - equivalent route/state/layout/interaction/data fingerprints are rejected
+  ---
+  duration_ms: 1.738238
+  type: 'test'
+  ...
+# Subtest: critical component coverage cannot disappear silently
+ok 14 - critical component coverage cannot disappear silently
+  ---
+  duration_ms: 1.020361
+  type: 'test'
+  ...
+# Subtest: a component fixture cannot satisfy critical structural real-flow coverage
+ok 15 - a component fixture cannot satisfy critical structural real-flow coverage
+  ---
+  duration_ms: 0.865208
+  type: 'test'
+  ...
+# Subtest: a state fixture cannot impersonate a real structural filter flow
+ok 16 - a state fixture cannot impersonate a real structural filter flow
+  ---
+  duration_ms: 1.167722
+  type: 'test'
+  ...
+# Subtest: a route-shaped record without real-browser execution cannot satisfy structural coverage
+ok 17 - a route-shaped record without real-browser execution cannot satisfy structural coverage
+  ---
+  duration_ms: 2.181082
+  type: 'test'
+  ...
+# Subtest: a route-shaped record without an explicit component claim cannot satisfy structural coverage
+ok 18 - a route-shaped record without an explicit component claim cannot satisfy structural coverage
+  ---
+  duration_ms: 2.010106
+  type: 'test'
+  ...
+# Subtest: canonical structural real-flow mappings cover only critical components
+ok 19 - canonical structural real-flow mappings cover only critical components
+  ---
+  duration_ms: 0.330125
+  type: 'test'
+  ...
+# Subtest: a foundation fixture cannot substitute a pilot route alternate state
+ok 20 - a foundation fixture cannot substitute a pilot route alternate state
+  ---
+  duration_ms: 1.567112
+  type: 'test'
+  ...
+# Subtest: a secondary coverage failure keeps its exact route and state identity
+ok 21 - a secondary coverage failure keeps its exact route and state identity
+  ---
+  duration_ms: 1.699455
+  type: 'test'
+  ...
+# Subtest: candidate visual SHA replaces merge-preview SHA in child evidence
+ok 22 - candidate visual SHA replaces merge-preview SHA in child evidence
+  ---
+  duration_ms: 1.942255
+  type: 'test'
+  ...
+# Subtest: new multi-coverage scenarios fail closed without a focused execution override
+ok 23 - new multi-coverage scenarios fail closed without a focused execution override
+  ---
+  duration_ms: 0.492459
+  type: 'test'
+  ...
+# Subtest: focused overrides cannot retain interaction metadata without semantic assertions
+ok 24 - focused overrides cannot retain interaction metadata without semantic assertions
+  ---
+  duration_ms: 1.905128
+  type: 'test'
+  ...
+# Subtest: semantic proof rejects a missing declared interaction while identity stays correct
+ok 25 - semantic proof rejects a missing declared interaction while identity stays correct
+  ---
+  duration_ms: 0.581432
+  type: 'test'
+  ...
+# Subtest: semantic proof rejects a sibling route identity even when assertions are complete
+ok 26 - semantic proof rejects a sibling route identity even when assertions are complete
+  ---
+  duration_ms: 0.306159
+  type: 'test'
+  ...
+# Subtest: legacy retirement evidence remains mandatory after an adapter disappears
+ok 27 - legacy retirement evidence remains mandatory after an adapter disappears
+  ---
+  duration_ms: 0.917857
+  type: 'test'
+  ...
+# Subtest: legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
+ok 28 - legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
+  ---
+  duration_ms: 2.361343
+  type: 'test'
+  ...
+# Subtest: a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
+ok 29 - a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
+  ---
+  duration_ms: 1.418087
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency produces evidence only after all three widths pass
+ok 30 - Dashboard \#724 multi-currency produces evidence only after all three widths pass
+  ---
+  duration_ms: 3.555094
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+ok 31 - Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.507381
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 partial produces evidence only after all three widths pass
+ok 32 - Dashboard \#724 partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.364848
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 error produces evidence only after all three widths pass
+ok 33 - Dashboard \#724 error produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.248512
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 long-content produces evidence only after all three widths pass
+ok 34 - Dashboard \#724 long-content produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.502915
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects missing compact-mobile coverage
+ok 35 - Dashboard \#724 rejects missing compact-mobile coverage
+  ---
+  duration_ms: 1.704267
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+ok 36 - Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+  ---
+  duration_ms: 0.953691
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects a missing keyboard action
+ok 37 - Dashboard \#724 rejects a missing keyboard action
+  ---
+  duration_ms: 0.648072
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency rejects a mobile first-fold regression
+ok 38 - Dashboard \#724 multi-currency rejects a mobile first-fold regression
+  ---
+  duration_ms: 1.341823
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+ok 39 - Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+  ---
+  duration_ms: 1.748263
+  type: 'test'
+  ...
+# Subtest: full-width fields coexist with actual pairs, independent of DOM order
+ok 40 - full-width fields coexist with actual pairs, independent of DOM order
+  ---
+  duration_ms: 1.29244
+  type: 'test'
+  ...
+# Subtest: 3+1 is not two columns, even though the old average says two
+ok 41 - 3+1 is not two columns, even though the old average says two
+  ---
+  duration_ms: 1.997628
+  type: 'test'
+  ...
+# Subtest: a late DOM field placed on an earlier row cannot escape the measurement
+ok 42 - a late DOM field placed on an earlier row cannot escape the measurement
+  ---
+  duration_ms: 0.26673
+  type: 'test'
+  ...
+# Subtest: all mobile fields must form one column
+ok 43 - all mobile fields must form one column
+  ---
+  duration_ms: 0.238158
+  type: 'test'
+  ...
+# Subtest: label overflow, collision, cropped money and duplicate currency fail independently
+ok 44 - label overflow, collision, cropped money and duplicate currency fail independently
+  ---
+  duration_ms: 1.188454
+  type: 'test'
+  ...
+# Subtest: a complete first desktop transaction remains visible
+ok 45 - a complete first desktop transaction remains visible
+  ---
+  duration_ms: 1.60628
+  type: 'test'
+  ...
+# Subtest: excess vertical chrome cannot pass only because horizontal layout is correct
+ok 46 - excess vertical chrome cannot pass only because horizontal layout is correct
+  ---
+  duration_ms: 0.816285
+  type: 'test'
+  ...
+# Subtest: desktop balance must not overlap the value column
+ok 47 - desktop balance must not overlap the value column
+  ---
+  duration_ms: 0.192248
+  type: 'test'
+  ...
+# Subtest: mobile reflow is not forced into a desktop height budget
+ok 48 - mobile reflow is not forced into a desktop height budget
+  ---
+  duration_ms: 0.143506
+  type: 'test'
+  ...
+# Subtest: sidebar and typography regressions remain rejected
+ok 49 - sidebar and typography regressions remain rejected
+  ---
+  duration_ms: 0.282454
+  type: 'test'
+  ...
+# Subtest: missing viewport dimensions cannot bypass the density check
+ok 50 - missing viewport dimensions cannot bypass the density check
+  ---
+  duration_ms: 0.18644
+  type: 'test'
+  ...
+# Subtest: a category folded back under the description is rejected on desktop
+ok 51 - a category folded back under the description is rejected on desktop
+  ---
+  duration_ms: 0.248713
+  type: 'test'
+  ...
+# Subtest: a category running into the amount column is rejected
+ok 52 - a category running into the amount column is rejected
+  ---
+  duration_ms: 0.19313
+  type: 'test'
+  ...
+# Subtest: a movement row without its glyph tile is rejected on desktop
+ok 53 - a movement row without its glyph tile is rejected on desktop
+  ---
+  duration_ms: 0.318088
+  type: 'test'
+  ...
+# Subtest: a glyph placed after the date is rejected on desktop
+ok 54 - a glyph placed after the date is rejected on desktop
+  ---
+  duration_ms: 0.444397
+  type: 'test'
+  ...
+# Subtest: visible elements outside the viewport fail the Golden Screen gate
+ok 55 - visible elements outside the viewport fail the Golden Screen gate
+  ---
+  duration_ms: 0.954813
+  type: 'test'
+  ...
+# Subtest: filter action overlap is rejected
+ok 56 - filter action overlap is rejected
+  ---
+  duration_ms: 0.310526
+  type: 'test'
+  ...
+# Subtest: exposed status text fails the icon-only contract
+ok 57 - exposed status text fails the icon-only contract
+  ---
+  duration_ms: 0.337116
+  type: 'test'
+  ...
+# Subtest: overlapping summary values fail the Golden Screen gate
+ok 58 - overlapping summary values fail the Golden Screen gate
+  ---
+  duration_ms: 0.363456
+  type: 'test'
+  ...
+# Subtest: a long currency value must remain within its own summary card
+ok 59 - a long currency value must remain within its own summary card
+  ---
+  duration_ms: 0.275003
+  type: 'test'
+  ...
+# Subtest: Chrome must inject and reject a long summary value escaping its card
+ok 60 - Chrome must inject and reject a long summary value escaping its card
+  ---
+  duration_ms: 0.489234
+  type: 'test'
+  ...
+# Subtest: mobile month clipping must have a negative control
+ok 61 - mobile month clipping must have a negative control
+  ---
+  duration_ms: 0.145499
+  type: 'test'
+  ...
+# Subtest: budgets-normal requires observed mobile proof even without component or legacy claims
+ok 62 - budgets-normal requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 1.39345
+  type: 'test'
+  ...
+# Subtest: dashboard-empty requires observed mobile proof even without component or legacy claims
+ok 63 - dashboard-empty requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 0.203085
+  type: 'test'
+  ...
+# Subtest: accounts-cards-empty requires observed mobile proof even without component or legacy claims
+ok 64 - accounts-cards-empty requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 0.096264
+  type: 'test'
+  ...
+# Subtest: supplemental empty-state records bind desktop-mobile metadata to observed assertions
+ok 65 - supplemental empty-state records bind desktop-mobile metadata to observed assertions
+  ---
+  duration_ms: 0.210065
+  type: 'test'
+  ...
+# Subtest: component fixtures remain outside real-flow desktop-mobile behavior binding
+ok 66 - component fixtures remain outside real-flow desktop-mobile behavior binding
+  ---
+  duration_ms: 0.105528
+  type: 'test'
+  ...
+# Subtest: fitting tables are exercised with wide content and restored
+ok 67 - fitting tables are exercised with wide content and restored
+  ---
+  duration_ms: 0.881342
+  type: 'test'
+  ...
+# Subtest: visible or hidden overflow cannot satisfy local scrolling
+ok 68 - visible or hidden overflow cannot satisfy local scrolling
+  ---
+  duration_ms: 0.136896
+  type: 'test'
+  ...
+# Subtest: document expansion is rejected even when the table scrolls
+ok 69 - document expansion is rejected even when the table scrolls
+  ---
+  duration_ms: 0.106911
+  type: 'test'
+  ...
+# Subtest: an invisible or absent table is not evidence
+ok 70 - an invisible or absent table is not evidence
+  ---
+  duration_ms: 0.957096
+  type: 'test'
+  ...
+# Subtest: accepts the horizontal hierarchy with one exposed action
+ok 71 - accepts the horizontal hierarchy with one exposed action
+  ---
+  duration_ms: 1.59922
+  type: 'test'
+  ...
+# Subtest: rejects stacked desktop hierarchy even with the right nodes
+ok 72 - rejects stacked desktop hierarchy even with the right nodes
+  ---
+  duration_ms: 0.988533
+  type: 'test'
+  ...
+# Subtest: rejects three exposed actions and lost secondary actions
+ok 73 - rejects three exposed actions and lost secondary actions
+  ---
+  duration_ms: 0.573611
+  type: 'test'
+  ...
+# Subtest: rejects an initially open menu and a summary sidebar
+ok 74 - rejects an initially open menu and a summary sidebar
+  ---
+  duration_ms: 0.298688
+  type: 'test'
+  ...
+# Subtest: accepts mobile stacking but rejects reversed financial context
+ok 75 - accepts mobile stacking but rejects reversed financial context
+  ---
+  duration_ms: 0.188533
+  type: 'test'
+  ...
+# Subtest: rejects the pre-fix mobile composition that delays the movement list
+ok 76 - rejects the pre-fix mobile composition that delays the movement list
+  ---
+  duration_ms: 0.165898
+  type: 'test'
+  ...
+# Subtest: keeps the account chevron at the right edge on desktop and mobile
+ok 77 - keeps the account chevron at the right edge on desktop and mobile
+  ---
+  duration_ms: 0.69957
+  type: 'test'
+  ...
+# Subtest: desktop period and Current month share both account-selector edges
+ok 78 - desktop period and Current month share both account-selector edges
+  ---
+  duration_ms: 0.416745
+  type: 'test'
+  ...
+# Subtest: rejects a hidden currency selector or a currency selector editable on one account
+ok 79 - rejects a hidden currency selector or a currency selector editable on one account
+  ---
+  duration_ms: 0.537486
+  type: 'test'
+  ...
+# Subtest: rejects selector left in query or orphaned from original GET form
+ok 80 - rejects selector left in query or orphaned from original GET form
+  ---
+  duration_ms: 0.5002
+  type: 'test'
+  ...
+# Subtest: rejects admin-style stacked filters at desktop widths
+ok 81 - rejects admin-style stacked filters at desktop widths
+  ---
+  duration_ms: 0.282584
+  type: 'test'
+  ...
+# Subtest: rejects desktop filters hidden from the visual composition
+ok 82 - rejects desktop filters hidden from the visual composition
+  ---
+  duration_ms: 0.158558
+  type: 'test'
+  ...
+# Subtest: rejects desktop composition hiding the first movement below the fold
+ok 83 - rejects desktop composition hiding the first movement below the fold
+  ---
+  duration_ms: 0.125899
+  type: 'test'
+  ...
+# Subtest: rejects a partially clipped first desktop movement
+ok 84 - rejects a partially clipped first desktop movement
+  ---
+  duration_ms: 0.118217
+  type: 'test'
+  ...
+# Subtest: rejects first desktop transaction rendered with zero height
+ok 85 - rejects first desktop transaction rendered with zero height
+  ---
+  duration_ms: 0.109975
+  type: 'test'
+  ...
+# Subtest: rejects truncated default financial filter choices on desktop
+ok 86 - rejects truncated default financial filter choices on desktop
+  ---
+  duration_ms: 0.481162
+  type: 'test'
+  ...
+# Subtest: rejects a truncated desktop search placeholder
+ok 87 - rejects a truncated desktop search placeholder
+  ---
+  duration_ms: 0.29978
+  type: 'test'
+  ...
+# Subtest: rejects overlapping desktop sort and Apply controls
+ok 88 - rejects overlapping desktop sort and Apply controls
+  ---
+  duration_ms: 0.16047
+  type: 'test'
+  ...
+# Subtest: metadata below the description does not overlap despite sharing horizontal space
+ok 89 - metadata below the description does not overlap despite sharing horizontal space
+  ---
+  duration_ms: 0.957396
+  type: 'test'
+  ...
+# Subtest: adjacent columns and touching edges do not overlap
+ok 90 - adjacent columns and touching edges do not overlap
+  ---
+  duration_ms: 0.285679
+  type: 'test'
+  ...
+# Subtest: real horizontal and vertical collisions are rejected in either ordering
+ok 91 - real horizontal and vertical collisions are rejected in either ordering
+  ---
+  duration_ms: 0.964727
+  type: 'test'
+  ...
+# Subtest: expanded details overlapping a metadata row are detected
+ok 92 - expanded details overlapping a metadata row are detected
+  ---
+  duration_ms: 0.128874
+  type: 'test'
+  ...
+# Subtest: non-rendered boxes and subpixel touching are not collisions
+ok 93 - non-rendered boxes and subpixel touching are not collisions
+  ---
+  duration_ms: 0.13343
+  type: 'test'
+  ...
+# Subtest: invalid geometry fails closed
+ok 94 - invalid geometry fails closed
+  ---
+  duration_ms: 0.33975
+  type: 'test'
+  ...
+# Subtest: accepts a contained viewport with independently scrollable financial charts
+ok 95 - accepts a contained viewport with independently scrollable financial charts
+  ---
+  duration_ms: 2.426411
+  type: 'test'
+  ...
+# Subtest: rejects a genuine out-of-viewport layout, not just local scrolling
+ok 96 - rejects a genuine out-of-viewport layout, not just local scrolling
+  ---
+  duration_ms: 1.452569
+  type: 'test'
+  ...
+# Subtest: rejects hidden or clipped local charts and charts outside their viewport
+ok 97 - rejects hidden or clipped local charts and charts outside their viewport
+  ---
+  duration_ms: 1.286901
+  type: 'test'
+  ...
+# Subtest: fails closed if the report boundary is absent
+ok 98 - fails closed if the report boundary is absent
+  ---
+  duration_ms: 0.56002
+  type: 'test'
+  ...
+# Subtest: supports an explicit viewport boundary for cash-flow and SSR error states
+ok 99 - supports an explicit viewport boundary for cash-flow and SSR error states
+  ---
+  duration_ms: 0.853581
+  type: 'test'
+  ...
+# Subtest: A718-05: catches visually clipped selected values even without global overflow
+ok 100 - A718-05: catches visually clipped selected values even without global overflow
+  ---
+  duration_ms: 14.113185
+  type: 'test'
+  ...
+# Subtest: A718-05: rejects missing filter form instead of silently accepting an empty set
+ok 101 - A718-05: rejects missing filter form instead of silently accepting an empty set
+  ---
+  duration_ms: 0.600531
+  type: 'test'
+  ...
+# Subtest: \#718 adapter validates original Chrome evidence and full viewport coverage
+ok 102 - \#718 adapter validates original Chrome evidence and full viewport coverage
+  ---
+  duration_ms: 3.225689
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects category trend scrollbar, tall matrix rows or detached review alerts
+ok 103 - \#718 adapter rejects category trend scrollbar, tall matrix rows or detached review alerts
+  ---
+  duration_ms: 1.9065
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects incomplete currency coverage or mobile overflow
+ok 104 - \#718 adapter rejects incomplete currency coverage or mobile overflow
+  ---
+  duration_ms: 0.501403
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects untested or un-restored negative controls
+ok 105 - \#718 adapter rejects untested or un-restored negative controls
+  ---
+  duration_ms: 1.640461
+  type: 'test'
+  ...
+# Subtest: \#718 adapter does not accept an omitted small mobile viewport
+ok 106 - \#718 adapter does not accept an omitted small mobile viewport
+  ---
+  duration_ms: 0.277437
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects opening-only screenshot evidence with no offscreen captures
+ok 107 - \#718 adapter rejects opening-only screenshot evidence with no offscreen captures
+  ---
+  duration_ms: 0.343836
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects a capture without visible monetary content or currency context
+ok 108 - \#718 adapter rejects a capture without visible monetary content or currency context
+  ---
+  duration_ms: 0.449114
+  type: 'test'
+  ...
+# Subtest: \#718 rejects missing cash-flow currency/layer and mobile state evidence
+ok 109 - \#718 rejects missing cash-flow currency/layer and mobile state evidence
+  ---
+  duration_ms: 1.996886
+  type: 'test'
+  ...
+# Subtest: \#718 rejects cash-flow money mix, mobile overflow and broken recovery link
+ok 110 - \#718 rejects cash-flow money mix, mobile overflow and broken recovery link
+  ---
+  duration_ms: 3.45281
+  type: 'test'
+  ...
+# Subtest: \#718 rejects overlapping trend currency text and an ineffective negative control
+ok 111 - \#718 rejects overlapping trend currency text and an ineffective negative control
+  ---
+  duration_ms: 0.909604
+  type: 'test'
+  ...
+# Subtest: A718-05 adapter rejects clipped desktop selections despite no page overflow
+ok 112 - A718-05 adapter rejects clipped desktop selections despite no page overflow
+  ---
+  duration_ms: 0.875874
+  type: 'test'
+  ...
+# Subtest: A718-05 adapter requires real tablet coverage
+ok 113 - A718-05 adapter requires real tablet coverage
+  ---
+  duration_ms: 0.324727
+  type: 'test'
+  ...
+# Subtest: creation and cloning support primary action below Continue at 320, 390 and 1366
+ok 114 - creation and cloning support primary action below Continue at 320, 390 and 1366
+  ---
+  duration_ms: 1.554182
+  type: 'test'
+  ...
+# Subtest: editing requires one visible primary submit, allowing narrow stacking
+ok 115 - editing requires one visible primary submit, allowing narrow stacking
+  ---
+  duration_ms: 0.215834
+  type: 'test'
+  ...
+# Subtest: negative controls reject undersized buttons and leaked create-only action
+ok 116 - negative controls reject undersized buttons and leaked create-only action
+  ---
+  duration_ms: 1.97956
+  type: 'test'
+  ...
+1..116
+# tests 116
+# suites 0
+# pass 116
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 706.753114

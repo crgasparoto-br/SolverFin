@@ -1,1 +1,387 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"codebase-grounding","compression":"gzip","encoded_size":3464,"encoded_sha256":"e051988140c499eb71dbd6f19c1a9568478f6379da4fb9ee14687d411d1bc222","decoded_size":26125,"decoded_sha256":"4161894ea3b46d85080c01d3a7c612c88e39aea1d8ddf71b3837837ed44ee3d6","parts":[{"path":"codebase-grounding.parts/part-000.b64","size":3464,"sha256":"e051988140c499eb71dbd6f19c1a9568478f6379da4fb9ee14687d411d1bc222"}]}
+{
+  "schema_version": 2,
+  "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+  "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
+  "creations": [
+    {
+      "path": "apps/web/src/dev-server/dashboard-styles.ts",
+      "kind": "file",
+      "name": "dashboard-styles.ts",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" apps/web/src/dev-server/shared-styles.ts",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shared-styles.ts",
+            "reason_not_reused": "Common design-system styles already exist; the extracted 101-line Dashboard-specific layout avoids duplicating canonical tokens or editing shared styling."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Common design-system styles already exist; the extracted 101-line Dashboard-specific layout avoids duplicating canonical tokens or editing shared styling."
+    },
+    {
+      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
+      "kind": "file",
+      "name": "dashboard-724-behavior-evidence.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-error.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-error.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-long-content.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-multi-currency.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-partial.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-dashboard-empty.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+            "reason_not_reused": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing empty-state runner covers a fresh authenticated profile; the new one-line wrapper isolates a different SSR state without duplicating the shared executor."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-scenarios.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"dashboard\" scripts/statement-visual/issue-606-core-pages-execution.mjs",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Searched existing dashboard renderer, shared styles and Chrome scenario runners before introducing scoped implementation.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+            "reason_not_reused": "Existing Chrome core-pages validates live normal Dashboard; distinct controlled SSR edge-state runner is required for multi-currency/partial/error/long-content."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Existing Chrome core-pages validates live normal Dashboard; distinct controlled SSR edge-state runner is required for multi-currency/partial/error/long-content."
+    },
+    {
+      "path": "scripts/statement-visual/issue-724-dashboard-multi-currency-partial.mjs",
+      "kind": "file",
+      "name": "issue-724-dashboard-multi-currency-partial.mjs",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-724-dashboard-multi-currency\" scripts/statement-visual",
+          "git diff --name-status db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0"
+        ],
+        "scope": "Existing shared scenario runner and thin wrappers were inspected to avoid a fifth duplicate Chrome engine.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
+            "reason_not_reused": "Shared runner is reused via a minimal one-line module entrypoint to register a distinct partial multicurrency state."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "One-line import wrapper reuses the shared CDP executor and supports separate canonical coverage fingerprint; no duplicated DOM fixture or API layer."
+    }
+  ],
+  "references": [],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- apps/web/src/dev-server/dashboard-page-currency.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:unit --workspace @solverfin/web",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "apps/web/src/dev-server/dashboard-page-currency.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-page-currency.test.ts.execution.txt",
+        "evidence_sha256": "8555671a145028d77f399c49adea07a0928b9582210721c1fc424caa25b53daa"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/dashboard-page.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- apps/web/src/dev-server/dashboard-page.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/dashboard-page.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:unit --workspace @solverfin/web",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "apps/web/src/dev-server/dashboard-page.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-page.test.ts.execution.txt",
+        "evidence_sha256": "5689b4f32e29c414cb9bcd95d9355fcb80cbf134f385ebc2fad7ed1b07a17be6"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shared-styles.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- apps/web/src/dev-server/shared-styles.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shared-styles.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:unit --workspace @solverfin/web",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "apps/web/src/dev-server/shared-styles.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shared-styles.test.ts.execution.txt",
+        "evidence_sha256": "22958778870f658f8ac77579764205fc67da958e0ca34284d46ecd039161f0f5"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shell-pages.test.ts",
+      "operation": "modified",
+      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- apps/web/src/dev-server/shell-pages.test.ts",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shell-pages.test.ts",
+            "case": "Dashboard SSR view, shared style and shell regression assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:unit --workspace @solverfin/web",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "apps/web/src/dev-server/shell-pages.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shell-pages.test.ts.execution.txt",
+        "evidence_sha256": "1f108dca5fd90251c660646838211b45681ea84dab24508dd1b493ec7dd3b858"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.test.mjs",
+      "operation": "modified",
+      "scenario": "Chrome scenario coverage and fingerprint assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- scripts/statement-visual/coverage-contract.test.mjs",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "node --test scripts/statement-visual/*.test.mjs",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.test.mjs",
+            "case": "Chrome scenario coverage and fingerprint assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "node --test scripts/statement-visual/*.test.mjs",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "scripts/statement-visual/coverage-contract.test.mjs"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-coverage-contract.test.mjs.execution.txt",
+        "evidence_sha256": "8702d26649f5966a8219426d77e0df24f1de1644deaa892ec482905a8bb89e20"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+      "operation": "added",
+      "scenario": "Chrome scenario coverage and fingerprint assertions",
+      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "search": {
+        "queries": [
+          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0 -- scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+        ],
+        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "runner": "node --test scripts/statement-visual/*.test.mjs",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.test.mjs",
+            "case": "Chrome scenario coverage and fingerprint assertions",
+            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
+            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The added semantic-evidence adapter needs its own focused mutation tests; existing canonical tests cover existing components.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "node --test scripts/statement-visual/*.test.mjs",
+        "exit_code": 0,
+        "subject_sha": "3fceee9d6c7da7a7c86986f6a8d67aca1728d1b0",
+        "reached_tests": [
+          "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-724-behavior-evidence.test.mjs.execution.txt",
+        "evidence_sha256": "c5763d77fe7abb65d6ce1284f0178bc9b6167cf3fe209cb5df7d1e08f7daf2bd"
+      }
+    }
+  ]
+}
