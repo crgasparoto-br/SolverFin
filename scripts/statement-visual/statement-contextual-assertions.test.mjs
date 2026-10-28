@@ -15,6 +15,9 @@ function measured(state, columns) {
     dialogOverflowHidden: true,
     panelScrollControlled: true,
     footerActionHeights: { cancel: 44, continue: state === "edit" ? 0 : 44, save: 44 },
+    footerActionLabels: state === "edit"
+      ? ["Cancelar", "Salvar lançamento"]
+      : ["Cancelar", "Salvar e continuar", "Salvar lançamento"],
     footerActionColumns: columns,
     footerActionRowDelta: columns === 1 ? 52 : state === "edit" ? 0 : 52,
     footerContinueRowDelta: columns === 1 ? 52 : 0,
@@ -53,6 +56,9 @@ test("editing requires one visible primary submit, allowing narrow stacking", ()
 });
 
 test("negative controls reject undersized buttons and leaked create-only action", () => {
+  const mislabeled = measured("new", 2);
+  mislabeled.footerActionLabels[1] = "Salvar lançamento";
+  assert.throws(() => assertContextualSurface(mislabeled, "new", true), /footer action labels/);
   const tooSmall = measured("new", 2);
   tooSmall.footerActionHeights.continue = 32;
   assert.throws(() => assertContextualSurface(tooSmall, "new", true), /Continue touch target/);

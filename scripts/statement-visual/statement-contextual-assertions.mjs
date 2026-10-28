@@ -19,6 +19,14 @@ export function assertContextualSurface(measured, state, dialog) {
       assert.equal(measured.documentScrollLocked, true, `${state}: background remains scrollable`);
       assert.equal(measured.dialogOverflowHidden, true, `${state}: dialog has a second scrollbar`);
       assert.equal(measured.panelScrollControlled, true, `${state}: form must own scrolling`);
+      const expectedActionLabels = state === "edit"
+        ? ["Cancelar", "Salvar lançamento"]
+        : ["Cancelar", "Salvar e continuar", "Salvar lançamento"];
+      assert.deepEqual(
+        measured.footerActionLabels,
+        expectedActionLabels,
+        `${state}: footer action labels must remain distinct and accessible`,
+      );
       for (const action of ["cancel", "save"]) {
         const height = measured.footerActionHeights?.[action];
         assert.ok(

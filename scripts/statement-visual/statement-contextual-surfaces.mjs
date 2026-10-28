@@ -130,6 +130,9 @@ export async function validateStatementContextualSurfaces(
         dialogOverflowHidden: !!surface && getComputedStyle(surface).overflowY === 'hidden',
         panelScrollControlled: !!panel && getComputedStyle(panel).overflowY === 'auto',
         footerActionColumns: footerGroup ? getComputedStyle(footerGroup).gridTemplateColumns.split(" ").length : null,
+        footerActionLabels: [footerCancel, footerContinue, footerSave]
+          .filter(node => node && !node.hidden && node.getClientRects().length > 0)
+          .map(node => (node.getAttribute('aria-label') || node.textContent || '').trim()),
         footerActionRowDelta: footerCancel && footerSave
           ? Math.abs(footerCancel.getBoundingClientRect().top - footerSave.getBoundingClientRect().top)
           : null,
@@ -157,6 +160,37 @@ export async function validateStatementContextualSurfaces(
   const capture = async (state, width, height, selector, extra = {}) => {
     const measured = await measure(selector);
     assertContextualSurface(measured, state, selector.startsWith("dialog"));
+    if (state === "new") {
+      const originalLabel = await read(`(() => {
+        const button = document.querySelector(${JSON.stringify(selector)}).querySelector('[data-statement-save-continue]');
+        const original = button.textContent;
+        button.textContent = "Salvar lançamento";
+        return original;
+      })()`);
+      let rejectedBecause;
+      try {
+        const mislabeled = await measure(selector);
+        assert.throws(
+          () => assertContextualSurface(mislabeled, state, true),
+          (error) => {
+            rejectedBecause = error.message;
+            return error.code === "ERR_ASSERTION" && /footer action labels/.test(error.message);
+          },
+        );
+      } finally {
+        await read(`(() => {
+          document.querySelector(${JSON.stringify(selector)}).querySelector('[data-statement-save-continue]').textContent = ${JSON.stringify(originalLabel)};
+        })()`);
+      }
+      assertContextualSurface(await measure(selector), state, true);
+      report.controls.push({
+        id: "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+        viewport: { width, height },
+        mutation: "Save and continue mislabeled as the primary Save action",
+        rejectedBecause,
+        restored: "passed",
+      });
+    }
     const file = `statement-contextual-${state}-${width}x${height}.png`;
     await screenshot(cdp, join(outputDir, file));
     const accessibilityFile = `statement-contextual-${state}-${width}x${height}-ax.json`;
