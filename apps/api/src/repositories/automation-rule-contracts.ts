@@ -30,4 +30,3 @@ export interface AutomationRuleInput {
   createdByUserId?: EntityId | undefined;
   updatedByUserId?: EntityId | undefined;
 }
-

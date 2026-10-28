@@ -23,14 +23,26 @@ assert.match(enhanced, /Não foi possível comunicar com o servidor/);
 assert.match(enhanced, /catch \{/);
 assert.match(enhanced, /finally \{/);
 assert.match(enhanced, /if \(submit\) submit\.disabled = false/);
-assert.equal((enhanced.match(/querySelector\('\[data-statement-save-primary\]'\)/g) ?? []).length, 3,
-  "group guard must only edit/disable the primary submit, never Save and continue");
-assert.doesNotMatch(enhanced, /querySelector\('\[type="submit"\]'\)/,
-  "generic first-submit selector would overwrite Save and continue");
-assert.match(enhanced, /continueButton\.hidden = true/,
-  "group member mode must hide Save and continue");
-assert.match(enhanced, /continueButton\.hidden = transactionForm\.dataset\.method === "PATCH"/,
-  "leaving group member mode restores creation-only action visibility");
+assert.equal(
+  (enhanced.match(/querySelector\('\[data-statement-save-primary\]'\)/g) ?? []).length,
+  3,
+  "group guard must only edit/disable the primary submit, never Save and continue",
+);
+assert.doesNotMatch(
+  enhanced,
+  /querySelector\('\[type="submit"\]'\)/,
+  "generic first-submit selector would overwrite Save and continue",
+);
+assert.match(
+  enhanced,
+  /continueButton\.hidden = true/,
+  "group member mode must hide Save and continue",
+);
+assert.match(
+  enhanced,
+  /continueButton\.hidden = transactionForm\.dataset\.method === "PATCH"/,
+  "leaving group member mode restores creation-only action visibility",
+);
 assert.doesNotMatch(
   enhanced,
   /window\.setTimeout\(function \(\) \{ window\.location\.reload\(\); \}, 350\)/,
