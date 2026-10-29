@@ -98,11 +98,14 @@ try {
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(350);
-  const mixed = await evaluate(browser.cdp, `(() => ({
+  const mixed = await evaluate(
+    browser.cdp,
+    `(() => ({
     rows: document.querySelectorAll('.budget-results tbody tr').length,
     currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
-  }))()`);
+  }))()`,
+  );
   assert.ok(mixed.rows >= 10, "Budget long-list scenario must include ten or more rows");
   assert.ok(mixed.currencies.includes("BRL") && mixed.currencies.includes("USD"));
   assert.ok(mixed.focused.includes("BRL") && mixed.focused.includes("USD"));
@@ -111,12 +114,15 @@ try {
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
   await sleep(350);
-  const filtered = await evaluate(browser.cdp, `(() => ({
+  const filtered = await evaluate(
+    browser.cdp,
+    `(() => ({
     currency: document.querySelector('select[name="currency"]')?.value,
     status: document.querySelector('select[name="status"]')?.value,
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
     documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
-  }))()`);
+  }))()`,
+  );
   assert.equal(filtered.currency, "USD");
   assert.equal(filtered.status, "active");
   assert.ok(filtered.focused.includes("USD") && !filtered.focused.includes("BRL"));
@@ -126,19 +132,24 @@ try {
   await setViewport(browser.cdp, 320, 740);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=EUR&status=active`);
   await sleep(350);
-  const empty = await evaluate(browser.cdp, `(() => ({
+  const empty = await evaluate(
+    browser.cdp,
+    `(() => ({
     currency: document.querySelector('select[name="currency"]')?.value,
     message: (document.querySelector('main')?.textContent ?? '').includes('Nenhum resultado com estes filtros'),
     focusCount: document.querySelectorAll('.budget-focus-item').length,
     documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
-  }))()`);
+  }))()`,
+  );
   assert.deepEqual(empty, { currency: "EUR", message: true, focusCount: 0, documentFits: true });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-empty-compact.png"));
 
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
   await sleep(350);
-  const dialogs = await evaluate(browser.cdp, `(() => {
+  const dialogs = await evaluate(
+    browser.cdp,
+    `(() => {
     const createTrigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
     createTrigger?.click();
     const create = document.querySelector('#new-budget-dialog');
@@ -150,16 +161,135 @@ try {
     const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
     const editOpen = edit?.open === true &&
       Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
+    edit?.close();
     return { createOpen, editOpen };
-  })()`);
+  })()`,
+  );
   assert.deepEqual(dialogs, { createOpen: true, editOpen: true });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
+  // Exercise the actual form submit handlers and persisted data, not just dialog presence.
+  const creation = await evaluate(
+    browser.cdp,
+    `(() => {
+    const trigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
+    trigger?.click();
+    const dialog = document.getElementById('new-budget-dialog');
+    const form = dialog?.querySelector('form[data-api-path="/api/budgets"]');
+    if (!dialog?.open || !form) return { submitted: false, reason: 'create-dialog-missing' };
+    const field = (name) => form.elements.namedItem(name);
+    const categoryId = field('categoryId')?.value;
+    if (!categoryId) return { submitted: false, reason: 'expense-category-missing' };
+    field('periodStartOn').value = '2032-05-01';
+    field('periodEndOn').value = '2032-05-31';
+    field('currency').value = 'USD';
+    field('plannedAmountMinor').value = '1234,56';
+    const valid = form.checkValidity();
+    if (valid) form.requestSubmit();
+    return { submitted: valid, categoryId, dialogOpened: true };
+  })()`,
+  );
+  assert.equal(creation.submitted, true, `Create budget form was invalid: ${JSON.stringify(creation)}`);
+  const created = await waitForBudget(browser.cdp, {
+    categoryId: creation.categoryId,
+    periodStartOn: "2032-05-01",
+    plannedAmountMinor: 123456,
+  });
+  assert.equal(created.currency, "USD");
+  await sleep(350);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
+  const createdRow = await evaluate(
+    browser.cdp,
+    `(() => {
+    const row = Array.from(document.querySelectorAll('.budget-results tr[data-row-key]'))
+      .find((item) => item.getAttribute('data-row-key') === '${created.id}');
+    return { present: Boolean(row), currency: row?.querySelector('[data-column="currency"]')?.textContent?.trim(),
+      planned: row?.querySelector('[data-column="planned"]')?.textContent?.trim() };
+  })()`,
+  );
+  assert.equal(createdRow.present, true, "New budget is absent after a fresh SSR reload");
+  assert.equal(createdRow.currency, "USD");
+  assert.match(createdRow.planned, /1\.234,56/);
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-created-desktop.png"));
+
+  const edit = await evaluate(
+    browser.cdp,
+    `(() => {
+    const trigger = document.querySelector('[data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
+    trigger?.click();
+    const dialog = document.getElementById('edit-budget-dialog-${created.id}');
+    const form = dialog?.querySelector('form[data-api-method="PATCH"]');
+    if (!dialog?.open || !form) return { submitted: false, reason: 'edit-dialog-missing' };
+    form.elements.namedItem('plannedAmountMinor').value = '2345,67';
+    const valid = form.checkValidity();
+    if (valid) form.requestSubmit();
+    return { submitted: valid, dialogOpened: true };
+  })()`,
+  );
+  assert.equal(edit.submitted, true, `Edit budget form was invalid: ${JSON.stringify(edit)}`);
+  const edited = await waitForBudget(browser.cdp, {
+    id: created.id,
+    plannedAmountMinor: 234567,
+  });
+  assert.equal(edited.id, created.id, "Editing must update the existing budget, not duplicate it");
+  await sleep(350);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
+  const editedRow = await evaluate(
+    browser.cdp,
+    `(() => {
+    const row = Array.from(document.querySelectorAll('.budget-results tr[data-row-key]'))
+      .find((item) => item.getAttribute('data-row-key') === '${created.id}');
+    return { present: Boolean(row), planned: row?.querySelector('[data-column="planned"]')?.textContent?.trim(),
+      currency: row?.querySelector('[data-column="currency"]')?.textContent?.trim() };
+  })()`,
+  );
+  assert.equal(editedRow.present, true, "Edited budget disappeared on reload");
+  assert.equal(editedRow.currency, "USD");
+  assert.match(editedRow.planned, /2\.345,67/);
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edited-desktop.png"));
+
+  // A rejected update must remain in the edit dialog with a retry opportunity and no mutation.
+  const invalid = await evaluate(
+    browser.cdp,
+    `(() => {
+    const trigger = document.querySelector('[data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
+    trigger?.click();
+    const dialog = document.getElementById('edit-budget-dialog-${created.id}');
+    const form = dialog?.querySelector('form[data-api-method="PATCH"]');
+    if (!dialog?.open || !form) return { submitted: false };
+    form.elements.namedItem('periodEndOn').value = '2032-04-30';
+    const valid = form.checkValidity();
+    if (valid) form.requestSubmit();
+    return { submitted: valid };
+  })()`,
+  );
+  assert.equal(invalid.submitted, true, "Invalid period did not reach the API");
+  const rejection = await waitForBrowserState(
+    browser.cdp,
+    `(() => {
+    const dialog = document.getElementById('edit-budget-dialog-${created.id}');
+    const status = dialog?.querySelector('.form-status.error');
+    const button = dialog?.querySelector('button[type="submit"]');
+    if (!status?.textContent?.trim() || button?.disabled || !dialog?.open) return null;
+    return { errorVisible: true, buttonEnabled: true, dialogOpen: true,
+      retainedValue: dialog.querySelector('[name="plannedAmountMinor"]')?.value,
+      url: location.search };
+  })()`,
+  );
+  assert.equal(rejection.retainedValue, "2345,67");
+  assert.equal(rejection.url, "?currency=USD&status=active");
+  const unchanged = await readBudget(browser.cdp, created.id);
+  assert.equal(unchanged.plannedAmountMinor, 234567, "Rejected update changed persisted amount");
+  assert.equal(unchanged.periodEndOn, "2032-05-31", "Rejected update changed persisted period");
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-error-retry-desktop.png"));
   report.issue725Acceptance = {
     fixtureCurrency: fixture.currency,
     mixed,
     filtered,
     empty,
     dialogs,
+    creation: { categoryId: creation.categoryId, id: created.id, persisted: createdRow },
+    editing: { id: edited.id, persisted: editedRow },
+    rejection,
   };
 
   await writeFile(
@@ -263,4 +393,35 @@ function budgetAcceptanceFixtureExpression() {
     });
     return { ok: response.ok, status: response.status, currency: 'USD' };
   })()`;
+}
+
+async function readBudget(cdp, id) {
+  return evaluate(cdp, `(async () => {
+    const response = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
+    if (!response.ok) throw new Error('Budget readback failed: ' + response.status);
+    const body = await response.json();
+    return (body.budgets ?? []).find((budget) => budget.id === ${JSON.stringify(id)}) ?? null;
+  })()`);
+}
+
+async function waitForBudget(cdp, expected) {
+  return waitForBrowserState(cdp, `(async () => {
+    const response = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
+    if (!response.ok) throw new Error('Budget readback failed: ' + response.status);
+    const body = await response.json();
+    return (body.budgets ?? []).find((budget) => {
+      return ${JSON.stringify(expected.id ?? null)} !== null
+        ? budget.id === ${JSON.stringify(expected.id ?? null)} && budget.plannedAmountMinor === ${expected.plannedAmountMinor}
+        : budget.categoryId === ${JSON.stringify(expected.categoryId ?? null)} && budget.periodStartOn === ${JSON.stringify(expected.periodStartOn ?? null)} && budget.plannedAmountMinor === ${expected.plannedAmountMinor};
+    }) ?? null;
+  })()`);
+}
+
+async function waitForBrowserState(cdp, expression) {
+  for (let attempt = 0; attempt < 40; attempt += 1) {
+    const state = await evaluate(cdp, expression);
+    if (state) return state;
+    await sleep(250);
+  }
+  throw new Error("Budget browser operation did not reach the expected observable state");
 }

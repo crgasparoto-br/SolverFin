@@ -685,6 +685,9 @@ ${sharedDialogStyles()}
       .budget-row-actions button { flex: 1 1 130px; white-space: normal; }
       .budget-period { white-space: normal; }
       .budget-focus-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .budget-focus-values dd { font-size: .87rem; }
+      .budget-focus-values .sf-money { column-gap: 2px; }
+      .budget-focus-values .sf-money-currency { font-size: .61rem; }
       .budget-focus-values > div:last-child { grid-column: 1 / -1; }
       .budget-focus-item { padding: 12px; }
       .budget-results .sf-table tbody { gap: 8px; }

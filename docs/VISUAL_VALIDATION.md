@@ -254,6 +254,34 @@ Coberturas representativas atuais incluem:
 
 O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar quando rota, estado, layout, interacao, audiencia ou perfil de dados representar risco diferente.
 
+### Issue #725 — Baseline historica autenticada e remediacao (29/10/2026)
+
+A captura **anterior a primeira edicao da PR #751** ja existia no run Chrome
+[40811518620](https://github.com/crgasparoto-br/SolverFin/actions/runs/40811518620)
+(PR #744, HEAD `5028326a422167f12da21c8573f2709e939f31cd`). O artefato
+`statement-visual-evidence-5028326a422167f12da21c8573f2709e939f31cd`
+inclui `issue-606-budgets-desktop.png` (1366x768),
+`issue-606-budgets-mobile.png` (390x844) e o JSON do piloto com
+`generatedAt=2026-10-29T03:27:03.314Z`. O blob de
+`apps/web/src/dev-server/budgets-page.ts` e
+`8a2a1b515e6677d9bbd6dca866e1234a4710aa44`, **identico** na PR #744 e
+na base original da PR #751 (`develop@9265025a21c39528131f3319943d0125c5cf9538`).
+A captura desktop documenta quatro cards de contagem acima do detalhe financeiro:
+`Ativos`, `Sem orcamento`, `Sem categoria` e `Moedas`, com valores de
+planejado/realizado abaixo da primeira leitura. O run precede a abertura da
+PR #751, em `2026-10-29T11:12:57Z`, mas a interpretacao retrospectiva
+**nao implica** que a equipe implementadora tenha realizado a inspecao
+previa exigida pela issue. Essa limitacao procedimental deve permanecer
+explicita na auditoria independente.
+
+O novo piloto `/orcamentos` exige 1366x768, 390x844 e 320x740, moedas
+BRL/USD separadas, lista longa, filtro sem resultado, ordem das secoes,
+controles negativos reversiveis para hierarquia e truncamento,
+**criacao e edicao por formulario real com releitura persistida**, alem de
+falha de edicao que preserva os campos e permite correcao e nova tentativa.
+As capturas e o JSON gerados pelo Chrome no HEAD definitivo devem ser
+inspecionados; sucesso do runner isolado nao aprova qualidade visual.
+
 ## Retirada de pos-processadores HTML
 
 `legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final. O registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` e exigir `behavior:legacy:<id>`; o adaptador comportamental somente emite essa assertion depois de validar o criterio discriminante observado e persistido pelo fluxo no SHA corrente.
