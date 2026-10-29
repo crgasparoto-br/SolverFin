@@ -54,10 +54,7 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       );
     }
     assert.ok(geometry.cancelRect?.width >= 44 && geometry.cancelRect?.height >= 40);
-    await screenshot(
-      cdp,
-      join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`),
-    );
+    await screenshot(cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
     const { x, y, width, height } = geometry.cancelRect;
     await cdp.send("Input.dispatchMouseEvent", {
       type: "mouseMoved",

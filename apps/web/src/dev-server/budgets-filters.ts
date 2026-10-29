@@ -38,4 +38,3 @@ export function renderBudgetFilters(
     </details><p class="budget-filter-context">Recorte atual: moeda <strong>${renderText(filters.currency ?? "todas, sem consolidação")}</strong> · estado <strong>${filters.status === "active" ? "ativos" : filters.status === "archived" ? "arquivados" : "todos"}</strong></p>`,
   });
 }
-
