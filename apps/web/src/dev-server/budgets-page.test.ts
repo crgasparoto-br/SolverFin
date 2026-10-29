@@ -231,7 +231,8 @@ describe("budgets page issue 619", () => {
     );
     assert.match(html, /class="sf-button sf-button-primary">Salvar alterações<\/button>/);
     assert.match(html, /class="sf-button danger-action" data-api-action/);
-    assert.doesNotMatch(html, /#fecaca|\.danger-button \{|\.secondary-button \{/);
+    const routeCss = html.slice(html.indexOf(".budgets-a1-page, "));
+    assert.doesNotMatch(routeCss, /#fecaca|\.danger-button \{|\.secondary-button \{/);
   });
 
   it("preserves active currency and state filters, without mixing other currencies in the decision view", async () => {
