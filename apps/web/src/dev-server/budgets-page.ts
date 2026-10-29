@@ -384,6 +384,7 @@ ${renderBudgetActionMenuStyles()}
     .budget-results .sf-table td[data-column="planned"] .sf-money-value,
     .budget-results .sf-table td[data-column="realized"] .sf-money-value,
     .budget-results .sf-table td[data-column="available"] .sf-money-value { font-weight: 800; }
+    .budget-results .sf-table .sf-money-value { white-space: nowrap; overflow-wrap: normal; word-break: normal; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
     .budget-results .sf-table { min-width: 1380px; width: 100%; }
     .budget-results .sf-table th { white-space: nowrap; word-break: normal; overflow-wrap: normal; }

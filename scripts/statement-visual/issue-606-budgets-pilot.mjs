@@ -72,6 +72,11 @@ try {
       `Budget financial text is clipped at ${viewport.name}`,
     );
     assert.equal(
+      measurements.tableMoneyUnbroken,
+      true,
+      `Budget table splits a monetary number at ${viewport.name}`,
+    );
+    assert.equal(
       measurements.trailingCurrencyCodesAbsent,
       true,
       `Budget repeats the explicit currency code after an amount at ${viewport.name}`,
@@ -92,6 +97,8 @@ try {
         hierarchyRestored: true,
         clippedValueRejected: true,
         clippedValueRestored: true,
+        brokenNumberRejected: true,
+        brokenNumberRestored: true,
         trailingCodeRejected: true,
         trailingCodeRestored: true,
       });
@@ -354,6 +361,9 @@ function measurementExpression() {
     const moneyNodes = Array.from(document.querySelectorAll('.budget-focus .sf-money, .budget-results .sf-money'));
     const trailingCurrencyCodesAbsent = moneyNodes.every(node =>
       !node.querySelector('.sf-money-currency') && !/\s[A-Z]{3}$/.test(node.textContent?.trim() ?? ''));
+    const tableMoneyUnbroken = Array.from(
+      document.querySelectorAll('.budget-results .sf-table .sf-money-value'),
+    ).every((node) => getComputedStyle(node).whiteSpace === 'nowrap');
     const mobileFilterCollapsed = !document.querySelector('[data-budget-mobile-filters]')?.open;
     const financialLabelsLegible = financialNodes.every((node) => {
       const style = getComputedStyle(node);
@@ -363,6 +373,7 @@ function measurementExpression() {
       hierarchyValid,
       decisionLabelsVisible,
       financialLabelsLegible,
+      tableMoneyUnbroken,
       trailingCurrencyCodesAbsent,
       mobileFilterCollapsed,
       pathname: location.pathname,
@@ -404,11 +415,20 @@ function negativeControlExpression() {
     bogusCode.className = 'sf-money-currency';
     bogusCode.textContent = money.dataset.currency;
     money.append(bogusCode);
+    const tableNumber = document.querySelector('.budget-results .sf-table .sf-money-value');
+    if (!tableNumber) return { error: 'No table financial value to test' };
+    const originalTableStyle = tableNumber.getAttribute('style');
+    tableNumber.style.setProperty('white-space', 'normal', 'important');
+    tableNumber.style.setProperty('overflow-wrap', 'anywhere', 'important');
+    const brokenNumberRejected = probe().tableMoneyUnbroken === false;
+    if (originalTableStyle === null) tableNumber.removeAttribute('style');
+    else tableNumber.setAttribute('style', originalTableStyle);
+    const brokenNumberRestored = probe().tableMoneyUnbroken === true;
     const trailingCodeRejected = probe().trailingCurrencyCodesAbsent === false;
     bogusCode.remove();
     const trailingCodeRestored = probe().trailingCurrencyCodesAbsent === true;
     return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored,
-      trailingCodeRejected, trailingCodeRestored };
+      brokenNumberRejected, brokenNumberRestored, trailingCodeRejected, trailingCodeRestored };
   })()`;
 }
 
