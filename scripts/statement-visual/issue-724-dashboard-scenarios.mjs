@@ -58,6 +58,12 @@ try {
     assert.equal(measurements.viewportWidth, width, "Viewport identity mismatch");
     assert.equal(measurements.noHorizontalOverflow, true, state + " overflow at " + width);
     assert.equal(measurements.mainPresent, true, "Dashboard main region missing");
+    if (width <= 390) {
+      assert.ok(
+        measurements.navigationHeight > 0 && measurements.navigationHeight <= 80,
+        state + " mobile navigation stretches beyond its contents at " + width,
+      );
+    }
     if (state === "error") {
       assert.equal(measurements.hasError, true, "Error panel was not rendered");
       assert.equal(measurements.currencyCount, 0, "Error state leaked totals");
@@ -108,6 +114,19 @@ try {
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     const item = { width, height, screenshot: stem + ".png", measurements };
+    if (state === "error" && width <= 390) {
+      const negative = await evaluate(
+        browser.cdp,
+        "(" + navigationStretchProbe.toString() + ")()",
+      );
+      assert.equal(
+        negative.stretchedHeight > 80,
+        true,
+        "Stretched grid must fail compact navigation",
+      );
+      assert.equal(negative.restoredHeight <= 80, true, "Compact navigation must recover");
+      item.navigationStretchProbe = negative;
+    }
     if (state !== "error" && width <= 390) {
       const intrusivePanel = await evaluate(
         browser.cdp,
@@ -303,6 +322,7 @@ function inspectDashboard() {
     documentUrl: location.href,
     noHorizontalOverflow: root.scrollWidth <= root.clientWidth + 1,
     mainPresent: Boolean(document.querySelector("main")),
+    navigationHeight: document.querySelector(".sidebar")?.getBoundingClientRect().height ?? null,
     hasError: document.body.textContent.includes("Não foi possível carregar o Dashboard"),
     hasPartial: Boolean(document.querySelector('[data-quality="partial"]')),
     currencyCount: summaries.length,
@@ -344,6 +364,16 @@ function inspectDashboard() {
       "Descrição extensa de compromisso financeiro",
     ),
   };
+}
+function navigationStretchProbe() {
+  const shell = document.querySelector(".app-shell");
+  const sidebar = document.querySelector(".sidebar");
+  const previousRows = shell.style.gridTemplateRows;
+  shell.style.gridTemplateRows = "auto auto";
+  const stretchedHeight = sidebar.getBoundingClientRect().height;
+  shell.style.gridTemplateRows = previousRows;
+  const restoredHeight = sidebar.getBoundingClientRect().height;
+  return { stretchedHeight, restoredHeight };
 }
 function intrusivePanelProbe() {
   const action = document.querySelector(".next-actions");

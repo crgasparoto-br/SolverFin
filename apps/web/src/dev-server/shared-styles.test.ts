@@ -58,6 +58,18 @@ describe("shared shell styles", () => {
     assert.match(css, /\.nav-more-toggle\[aria-expanded="true"\]\s*\{[^}]*color:\s*#1d4ed8/s);
   });
 
+  it("keeps the compact shell header content-sized in short SSR states", () => {
+    const css = sharedShellStyles();
+    const mobileCss = css.slice(
+      css.indexOf(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
+    );
+
+    assert.match(
+      mobileCss,
+      /\.app-shell\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*grid-template-rows:\s*max-content minmax\(0, 1fr\)/s,
+    );
+  });
+
   it("derives executable SSR output from a changed canonical token without a second edit", () => {
     const changedTokens: SolverFinDesignTokens = {
       ...solverFinDesignTokens,

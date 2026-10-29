@@ -103,6 +103,16 @@ O executor Chrome `scripts/statement-visual/categories-interface.mjs` produz `ca
 
 ## Gate discriminante — Issue #724, Dashboard A1
 
+### Contrato do shell no mobile para estados curtos
+
+Na rota `/dashboard`, o estado vazio e a falha do resumo devem manter a navegação
+autenticada compacta (altura da `.sidebar` de até 80 px em 320×740 e 390×844),
+sem distribuir o espaço vertical livre para a barra superior. A grade do shell
+móvel usa a primeira linha com altura intrínseca e a segunda com o restante.
+Os cenários Chrome vazio real e erro SSR controlado devem rejeitar explicitamente
+a regressão de duas linhas implícitas `auto auto` e comprovar a restauração,
+preservando a disposição desktop, foco e navegação horizontal.
+
 No Chrome autenticado, medir 1366×768, 390×844 e 320×740 no SHA material final.
 Registar cenários **normal, multi-moeda, vazio, dados parciais, falha do resumo e
 conteúdo longo**, identificando estado, screenshot e foco. Confirmar que a posição

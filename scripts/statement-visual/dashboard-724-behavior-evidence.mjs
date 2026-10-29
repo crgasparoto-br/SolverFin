@@ -38,6 +38,22 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
     assert.ok(viewport.screenshot, "Chrome viewport has no screenshot");
     await requireArtifact(viewport.screenshot);
     artifacts.push(viewport.screenshot);
+    if (viewport.width <= 390) {
+      assert.ok(
+        measurements.navigationHeight > 0 && measurements.navigationHeight <= 80,
+        "Compact shell navigation stretches in mobile viewport",
+      );
+      if (state === "error") {
+        assert.ok(
+          viewport.navigationStretchProbe?.stretchedHeight > 80,
+          "Missing shell navigation stretch negative control",
+        );
+        assert.ok(
+          viewport.navigationStretchProbe?.restoredHeight <= 80,
+          "Shell navigation did not recover after negative control",
+        );
+      }
+    }
     if (state === "error") {
       assert.equal(measurements.hasError, true, "SSR error state not rendered");
       assert.equal(measurements.currencyCount, 0, "Error state leaked currency summaries");
