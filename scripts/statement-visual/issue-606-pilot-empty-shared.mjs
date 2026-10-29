@@ -93,7 +93,9 @@ export async function runPilotEmptyState({
         );
         // Deliberately restore the implicit two-auto-row grid. A short page must
         // then fail the height bound, while restoring the real CSS must pass.
-        const negative = await evaluate(browser.cdp, `(() => {
+        const negative = await evaluate(
+          browser.cdp,
+          `(() => {
           const shell = document.querySelector('.app-shell');
           const sidebar = document.querySelector('.sidebar');
           const before = shell.style.gridTemplateRows;
@@ -102,7 +104,8 @@ export async function runPilotEmptyState({
           shell.style.gridTemplateRows = before;
           const restoredHeight = sidebar.getBoundingClientRect().height;
           return { stretchedHeight, restoredHeight };
-        })()`);
+        })()`,
+        );
         assert.ok(
           negative.stretchedHeight > 80,
           `${route} navigation negative control did not detect the stretched grid at ${width}px.`,

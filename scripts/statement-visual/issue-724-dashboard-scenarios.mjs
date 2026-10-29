@@ -115,10 +115,7 @@ try {
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     const item = { width, height, screenshot: stem + ".png", measurements };
     if (state === "error" && width <= 390) {
-      const negative = await evaluate(
-        browser.cdp,
-        "(" + navigationStretchProbe.toString() + ")()",
-      );
+      const negative = await evaluate(browser.cdp, "(" + navigationStretchProbe.toString() + ")()");
       assert.equal(
         negative.stretchedHeight > 80,
         true,

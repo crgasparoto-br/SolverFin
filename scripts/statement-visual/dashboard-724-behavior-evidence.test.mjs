@@ -76,19 +76,31 @@ test("Dashboard #724 rejects mobile navigation stretching and a bypassed negativ
   const mobile = input.viewports.find((viewport) => viewport.width === 320);
   mobile.measurements.navigationHeight = 270;
   await assert.rejects(
-    collectDashboard724Evidence("error", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
     /Compact shell navigation stretches/,
   );
   mobile.measurements.navigationHeight = 60;
   mobile.navigationStretchProbe.stretchedHeight = 60;
   await assert.rejects(
-    collectDashboard724Evidence("error", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
     /Missing shell navigation stretch negative control/,
   );
   mobile.navigationStretchProbe.stretchedHeight = 270;
   mobile.navigationStretchProbe.restoredHeight = 270;
   await assert.rejects(
-    collectDashboard724Evidence("error", async () => input, async () => {}),
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
     /Shell navigation did not recover/,
   );
 });
