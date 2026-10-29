@@ -617,6 +617,10 @@ ${sharedDialogStyles()}
     .budget-results .sf-table-wrap { overflow-x: auto; }
     .budget-results .sf-table { min-width: 1380px; width: 100%; }
     .budget-results .sf-table th { white-space: nowrap; word-break: normal; overflow-wrap: normal; }
+    .budget-results .sf-table th:last-child,
+    .budget-results .sf-table td:last-child { position: sticky; right: 0; z-index: 1; box-shadow: -5px 0 12px -12px var(--text); }
+    .budget-results .sf-table th:last-child { background: var(--sf-color-background); z-index: 2; }
+    .budget-results .sf-table td:last-child { background: var(--surface); }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
@@ -659,6 +663,8 @@ ${sharedDialogStyles()}
       .budgets-a1-page .sf-page-header-description { font-size: .82rem; line-height: 1.3; }
       .budget-section-heading { align-items: start; flex-direction: column; }
       .budget-results .sf-table { display: block; min-width: 0; }
+      .budget-results .sf-table th:last-child,
+      .budget-results .sf-table td:last-child { position: static; right: auto; box-shadow: none; }
       .budget-results .sf-table caption { display: block; }
       .budget-results .sf-table thead { height: 1px; margin: -1px; overflow: hidden; position: absolute; width: 1px; clip: rect(0 0 0 0); }
       .budget-results .sf-table tbody { display: grid; gap: 10px; }
