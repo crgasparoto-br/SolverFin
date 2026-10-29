@@ -144,7 +144,7 @@ describe("budgets page issue 619", () => {
     const html = await renderBudgetsPage("token");
 
     const focusIndex = html.indexOf('<section class="budget-focus"');
-    const detailIndex = html.indexOf('<section class="budget-results"');
+    const detailIndex = html.indexOf('<section class="budget-results panel"');
     const inventoryIndex = html.indexOf('<section class="budget-inventory"');
     assert.ok(focusIndex > 0 && focusIndex < detailIndex && detailIndex < inventoryIndex);
     assert.equal((html.match(/class="budget-focus-item"/g) ?? []).length, 2);
@@ -167,7 +167,7 @@ describe("budgets page issue 619", () => {
     const html = await renderBudgetsPage("token", url);
     const focus = html.slice(
       html.indexOf('<section class="budget-focus"'),
-      html.indexOf('<section class="budget-results"'),
+      html.indexOf('<section class="budget-results panel"'),
     );
 
     assert.match(html, /<option value="USD" selected>/);
