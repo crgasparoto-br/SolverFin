@@ -3,83 +3,72 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "candidate_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
-    "audited_head_sha": "4483c0752bf9ed080101c5cf5aa8205c8c8833e2",
-    "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949"
+    "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
+    "audit_report_sha256": "ba3648bae39ad4f8b49c34446dfd9faebbf8d12dab23e751efa5eed4a7ffe1f0",
+    "audited_head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-005",
+      "source_id": "A-74401",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        "apps/web/src/dev-server/transaction-group-member-form-guard.ts",
-        "apps/web/src/dev-server/transaction-group-member-form-guard.test.ts",
-        "scripts/statement-visual/statement-contextual-action-labels.mjs",
-        "scripts/statement-visual/statement-contextual-assertions.mjs",
-        "scripts/statement-visual/statement-contextual-assertions.test.mjs",
-        "scripts/statement-visual/statement-contextual-surfaces.mjs"
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/handoff-ready.json"
       ],
       "evidence": [
-        "evidence/issue-747-control-review.json",
-        "evidence/issue-747-footer-controls.json"
+        "Exact base and material candidate both contain inherited foreign handoff for issue 747, PR 749. Official delivery_target_binding on immutable base returned inherited-base-artifact and reuse_allowed=false. New issue #724 snapshot and independent source-bytes closure reconstructed."
       ],
       "validations": [
-        "GitHub Repository CI exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294",
-        "Chrome visual exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811",
-        "Adversarial control A-005 evaluated on material 2274927adaf4ee7679a4b3e322d727a3145f03c7"
+        "Current candidate 64f2011c828b65eda92c7807a0fd085374d5d2c8 contains producer-specific issue 724/PR744 artifacts; official binding and builder must be rerun on final exact material.",
+        "Official GitHub Actions Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251 and Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319 are success for material head; recertification will create a direct result-only child."
       ]
     },
     {
       "source_kind": "finding",
-      "source_id": "A-006",
+      "source_id": "A-74402",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        "prisma/migrations/20261028124500_immutable_manual_rule_purpose/migration.sql",
-        "prisma/schema.prisma",
-        "apps/api/src/repositories/automation-rule-contracts.ts",
-        "apps/api/src/repositories/automation-rules.ts",
-        "apps/api/src/repositories/manual-entry-fill-rules.ts",
-        "apps/api/src/manual-entry-fill-rules.integration.test.ts",
-        "packages/domain/src/automation-rules.ts",
-        "packages/domain/src/automation-rules.test.ts"
+        "apps/web/src/dev-server/dashboard-page.ts",
+        "apps/web/src/dev-server/dashboard-styles.ts",
+        "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
+        "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
+        "scripts/statement-visual/issue-724-dashboard-multi-currency-partial.mjs"
       ],
       "evidence": [
-        "evidence/issue-747-control-review.json",
-        "evidence/issue-747-footer-controls.json"
+        "Current Chrome artifact 12866566790 at 64f2011c828b65eda92c7807a0fd085374d5d2c8 confirms first operational action title/link at 320/390px for 5 SSR states where actionable; multimoeda BRL/USD separated, no overflow, deliberate 600px intrusion moves link off first fold and restoration recovers."
       ],
       "validations": [
-        "GitHub Repository CI exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294",
-        "Chrome visual exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811",
-        "Adversarial control A-006 evaluated on material 2274927adaf4ee7679a4b3e322d727a3145f03c7"
+        "Node visual unit tests 119/119 PASS at material 64f2011c828b65eda92c7807a0fd085374d5d2c8; log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "GitHub Actions CRITICAL CI run 40800860251 completed/success",
+        "Chrome run 40800860319 / artifact 12866566790 all 5 special SSR states x three viewports, verified screenshot/report sha256; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "source_kind": "finding",
-      "source_id": "A-007",
+      "source_kind": "recommendation",
+      "source_id": "REC-744-01",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/inherited-controls.json",
-        ".audit/entregar-issue/evidence/issue-747-footer-controls.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json"
+        "docs/DASHBOARD.md",
+        "docs/VISUAL_VALIDATION.md"
       ],
       "evidence": [
-        "evidence/issue-747-control-review.json",
-        "evidence/issue-747-footer-controls.json"
+        "Documentation now describes all five supplemental controlled SSR states and distinguishes Chrome data provenance from real API integration."
       ],
       "validations": [
-        "GitHub Repository CI exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294",
-        "Chrome visual exact material SHA: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811",
-        "Adversarial control A-007 evaluated on material 2274927adaf4ee7679a4b3e322d727a3145f03c7"
+        "Existing docs/DASHBOARD.md and docs/VISUAL_VALIDATION.md preserve explicit distinction between controlled SSR and live API; git diff --check 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 passed.",
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251 passed material 64f2011c828b65eda92c7807a0fd085374d5d2c8."
       ]
     }
   ]

@@ -1,198 +1,249 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
   "requirements": [
     {
-      "requirement_id": "REQ-719-01",
+      "requirement_id": "REQ-724-01",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-01 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-01",
+        "id": "NC-724-01",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-01",
-        "expected": "Removing a catalogued route must fail 14/14 coverage",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "e89afb61d40f448089d11b720d24df5843bfe421ed825159e90591f2ff116db7",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "The candidate is on develop and a mutated main base is rejected by the canonical invariant",
+        "observed": "No merge occurred. Official delivery_target_binding.py rejected inherited #747/#749 artifacts; rebind to issue #724.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "The candidate is on develop and a mutated main base is rejected by the canonical invariant",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-02",
+      "requirement_id": "REQ-724-02",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-02 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-02",
+        "id": "NC-724-02",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-02",
-        "expected": "Priority categories must be preserved",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "75a4c77f9ac6f04b13caee176219afdbe30f67df605e7156925c7a446ecd61cd",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Any changed apps/api, packages/domain or prisma path fails the presentation-only scope",
+        "observed": "Git diff of previous certified handoff 98cb31ee..material 64f2011c contains only 8 UI/test/doc paths, no API, database or finance-contract modifications.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Any changed apps/api, packages/domain or prisma path fails the presentation-only scope",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-03",
+      "requirement_id": "REQ-724-03",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-03 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-03",
+        "id": "NC-724-03",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-03",
-        "expected": "Legacy migration must not confer new visual acceptance",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "ce6dd240c3c945f5abe351dc8f1c286952301823492f9d9dbc92280c95114a5c",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Putting a decision/secondary section before next actions fails assertCockpitHierarchy",
+        "observed": "dashboard-page.test.ts mutates a secondary section before Next Actions and expects assert.throws.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Putting a decision/secondary section before next actions fails assertCockpitHierarchy",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-04",
+      "requirement_id": "REQ-724-04",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-04 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-04",
+        "id": "NC-724-04",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-04",
-        "expected": "Derivation must preserve one target issue for each distinct route",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "20ee9847125d4ddb820f248624646fcb3d0a7615d22b71475a13414b3f71eb80",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "More than two metrics per currency triggers the expected SSR metric-count assertion",
+        "observed": "dashboard-page.test.ts asserts exactly two main cards and three supporting metrics.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "More than two metrics per currency triggers the expected SSR metric-count assertion",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-05",
+      "requirement_id": "REQ-724-05",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-05 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-05",
+        "id": "NC-724-05",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-05",
-        "expected": "Epic link must point to 702",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "0d910e6c682913321ea2b5b23a854364f280871e939d7566f004549a194b5602",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Leaking financial KPIs on 503 or concealing partial warning is rejected",
+        "observed": "Chrome runner reports error with zero currencies and partial with warning in the five states.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Leaking financial KPIs on 503 or concealing partial warning is rejected",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-06",
+      "requirement_id": "REQ-724-06",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-06 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-06",
+        "id": "NC-724-06",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-06",
-        "expected": "Inventory may not silently include implementation work",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "aeeac8e71102d99597d0140e4ead2fefbc60da0daa6a4ddf9c30bfb68f2e1ab2",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Missing 320px screenshot/record makes adapter reject the scenario",
+        "observed": "dashboard-724-behavior-evidence.test.mjs removes 320 viewport and expects rejection.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Missing 320px screenshot/record makes adapter reject the scenario",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-07",
+      "requirement_id": "REQ-724-07",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-07 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-07",
+        "id": "NC-724-07",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-07",
-        "expected": "Frozen source SHA must not be replaced",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "92e4cbfa0d4ae84d73b4902d2b5ef24b1295f0dc811ba4764f8dad5a6d372a8c",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Letting action title exit first fold or allowing long values to wrap makes adapter reject",
+        "observed": "Chrome checked 320/390 first action title and operational link for complete/partial multimoeda, partial single currency and long content; Node mutations reject missing link, wrapping, first-fold failure.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Letting action title exit first fold or allowing long values to wrap makes adapter reject",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     },
     {
-      "requirement_id": "REQ-719-08",
+      "requirement_id": "REQ-724-08",
       "positive_evidence": [
-        "apps/web/src/app-shell/routes.ts and docs/product/GOLDEN_SCREEN_PHASE2_INVENTORY.md inspected on material SHA",
-        "Repository CI #39889196325 success; the only modified path is documentation"
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-08 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
       ],
       "primary_negative_control": {
-        "id": "NC-719-08",
+        "id": "NC-724-08",
         "status": "passed",
-        "procedure": "python prepare-evidence.py local positive and mutation checks for REQ-719-08",
-        "expected": "Waived routes cannot be silently reclassified",
-        "observed": "The deliberately altered document was rejected",
-        "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-719.json",
-        "evidence_sha256": "69d27f2a81d4477aa702a5ba5481e0531f04a8a47ce4c8efe2af52faf0690b8a",
-        "raw_case_sha256": "0923adc0f7210c99cddd620e827a6fb55064b5972dca055ec10976386b4982bc",
-        "plausible_wrong_implementation": "A missing route or incorrect classification could appear complete if only the doc heading were inspected.",
-        "evidence_scope_note": "Local in-memory mutation of Markdown evidence, not a mutated production build"
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "When Enter fails to open target detail, browser/adapter rejects",
+        "observed": "dashboard-724-behavior-evidence.test.mjs alters keyboard.open=false and expects adapter rejection; Chrome confirms Enter in all healthy states.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "When Enter fails to open target detail, browser/adapter rejects",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
       },
       "regression_evidence": [
-        "git diff --check 26b2721beb73bc31021e9cc1af513e98bbac584c..ecdadf4c3f04ab85dd54d2779a0de337781d1ded passed",
-        "Repository CI #39889196325 STANDARD validation passed"
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+      ]
+    },
+    {
+      "requirement_id": "REQ-724-09",
+      "positive_evidence": [
+        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
+        "Issue #724/REQ-724-09 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-724-09",
+        "status": "passed",
+        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
+        "expected": "Artificial 600px panel must make next action leave first fold; after removal it must reappear",
+        "observed": "Chrome reports for four nonerror special states show intrusivePanel.actionVisibleAfterIntrusion=false and actionVisibleAfterRemoval=true at 320/390.",
+        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
+        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
+        "plausible_wrong_implementation": "Artificial 600px panel must make next action leave first fold; after removal it must reappear",
+        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+      },
+      "regression_evidence": [
+        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
+        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
+        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
       ]
     }
   ]

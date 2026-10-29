@@ -414,7 +414,9 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
 
     /* ── Mobile ── */
     @media (max-width: ${tokens.breakpoints.shellCompact}) {
-      .app-shell { grid-template-columns: 1fr; }
+      /* Explicit rows prevent a short page from stretching the mobile navigation
+         to consume unused viewport height (notably empty and error states). */
+      .app-shell { grid-template-columns: 1fr; grid-template-rows: max-content minmax(0, 1fr); }
       .sidebar {
         flex-direction: row;
         flex-wrap: nowrap;

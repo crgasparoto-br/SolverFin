@@ -35,6 +35,16 @@ const resolveAuthenticatedSources = (
     };
   }
 
+  if (routeId === "dashboard") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /dashboardStyles\(\)/);
+    assert.match(renderer, /import \{ dashboardStyles \} from "\.\/dashboard-styles\.js"/);
+    return {
+      renderer,
+      styles: readModuleSource("dashboard-styles.js"),
+    };
+  }
+
   const source = readModuleSource(moduleFileName);
   return { renderer: source, styles: source };
 };

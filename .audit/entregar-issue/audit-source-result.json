@@ -1,35 +1,51 @@
 {
   "schema_version": 1,
-  "kind": "independent-audit-rejection",
-  "repository": "crgasparoto-br/SolverFin",
-  "issue_number": 747,
-  "pull_request_number": 749,
-  "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
-  "head_sha": "4483c0752bf9ed080101c5cf5aa8205c8c8833e2",
-  "conclusion": "REPROVADA",
-  "source_markdown_sha256": "eb7c9d97bece46ba5bab2aa23db99e2646cbf79bc18738968ee1d516673b6bf5",
-  "source_markdown_note": "Audit report originated in a separate read-only conversation, not produced by the remediation controller.",
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
+  "head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+    "material_head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+    "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
+    "issue_number": 724,
+    "pull_request_number": 744
+  },
+  "external_report": {
+    "sha256": "7e504c48a7893b7a492038f03c46a3336862f1ea0cce64a43a2c6d856eb2088b",
+    "path": "evidence/issue-724-independent-audit-report.json"
+  },
   "findings": [
     {
-      "id": "A-005",
+      "id": "A-74401",
       "disposition": "blocking",
       "status": "open",
+      "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "title": "Save and continue label overwritten by group-member guard"
+      "category": "inherited-foreign-handoff",
+      "summary": "Prior certificate targets #747 / PR #749 and must be rebuilt for #724 / PR #744 at exact SHA."
     },
     {
-      "id": "A-006",
+      "id": "A-74402",
       "disposition": "blocking",
       "status": "open",
+      "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "title": "Manual rule may be renamed while activated"
-    },
-    {
-      "id": "A-007",
-      "disposition": "blocking",
-      "status": "open",
-      "remediation_mode": "targeted-remediation",
-      "title": "Statement footer inherited control retired based on unrelated issue 742"
+      "category": "mobile-first-fold-multi-currency",
+      "summary": "Multicurrency mobile stacked primary KPI cards hid next actions below first viewport; gated first-fold visibility absent."
     }
-  ]
+  ],
+  "recommendations": [
+    {
+      "id": "REC-744-01",
+      "disposition": "recommendation",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "summary": "Docs describe Chrome scenarios as pending despite evidence."
+    }
+  ],
+  "provenance_note": "Prior separate-context review findings are preserved in evidence/issue-724-independent-audit-report.json and identifiable SHA-256. No cryptographic signer or cross-session authentication claimed."
 }

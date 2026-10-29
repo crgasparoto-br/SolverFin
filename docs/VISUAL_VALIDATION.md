@@ -101,6 +101,55 @@ A rota `/categorias` aplica a qualidade visual da Golden Screen do Extrato à á
 
 O executor Chrome `scripts/statement-visual/categories-interface.mjs` produz `categories-interface.json`, capturas iniciais `categories-desktop.png`, `categories-mobile.png`, `categories-compact-mobile.png`, dos diálogos e **quatro capturas discriminantes** `categories-mobile-hierarchy.png`, `categories-compact-mobile-hierarchy.png`, `categories-mobile-long-name.png` e `categories-compact-mobile-long-name.png`. Estas últimas devem mostrar linhas reais abaixo dos filtros, com três níveis visíveis, situação e ação por linha, além do nome longo e seu menu totalmente dentro da viewport. Em 320 px, a hierarquia reduz recuos decorativos e o espaçador de linhas sem filhos, preservando controles de 44 px para dar largura legível ao nome; o gate falha se as três linhas não estiverem visíveis ou se a área útil do nome ficar abaixo de 85 px. A evidência deve identificar o **SHA material exato**, a rota, os dados de teste, as interações e o viewport. Os testes `categories-golden-screen.test.ts` protegem estrutura e regressões de renderização; **testes e CI verdes não substituem revisão visual e auditoria independente desta subissue**.
 
+## Gate discriminante — Issue #724, Dashboard A1
+
+### Contrato do shell no mobile para estados curtos
+
+Na rota `/dashboard`, o estado vazio e a falha do resumo devem manter a navegação
+autenticada compacta (altura da `.sidebar` de até 80 px em 320×740 e 390×844),
+sem distribuir o espaço vertical livre para a barra superior. A grade do shell
+móvel usa a primeira linha com altura intrínseca e a segunda com o restante.
+Os cenários Chrome vazio real e erro SSR controlado devem rejeitar explicitamente
+a regressão de duas linhas implícitas `auto auto` e comprovar a restauração,
+preservando a disposição desktop, foco e navegação horizontal.
+
+No Chrome autenticado, medir 1366×768, 390×844 e 320×740 no SHA material final.
+Registar cenários **normal, multi-moeda, vazio, dados parciais, falha do resumo e
+conteúdo longo**, identificando estado, screenshot e foco. Confirmar que a posição
+por moeda e a próxima ação precedem os indicadores complementares (receitas,
+despesas e compromissos), projeção detalhada, insights, cartões de decisão,
+lista de movimentos e índice de evidências, sem perder saldos, variações, receitas,
+despesas, compromissos, nenhuma moeda e nenhum link de conta.
+
+No mobile, os dois indicadores principais e a faixa secundária refluem sem overflow
+horizontal; testar Tab, foco visível, Enter e `details/summary`. Links com
+`#dashboard-evidence-*` devem abrir o detalhe correto mesmo após o índice mudar
+para a parte final da página. A falha parcial mantém os KPIs válidos visíveis.
+
+**Controle negativo:** introduzir um painel secundário de 600 px antes de
+"Próximas ações" deve deslocar o **link da primeira ação** para fora da primeira
+dobra em 320×740 e 390×844, enquanto sua remoção restaura a visibilidade. O
+título de seção, isoladamente, **não** comprova que a ação está utilizável.
+Exigir que o título da primeira ação e o link completo tenham geometria visível
+na dobra inicial, com URL de destino e foco por teclado; a adaptação de evidência
+deve rejeitar mutações que escondam somente o link, mesmo com o título ainda
+visível.
+
+O runner cobre multimoeda completa e parcial, parcial de moeda única, erro e
+conteúdo longo em 1366×768, 390×844 e 320×740, com capturas individuais,
+medição de primeira dobra e Enter nos links de evidência. A compactação
+mobile deve valer para moeda única e múltiplas moedas; parcial e conteúdo
+longo também exigem o link da primeira ação completo na tela de 320×740.
+Os cenários usam o renderizador SSR real com respostas de API controladas
+inseridas numa sessão
+Chrome autenticada: isso é **SSR simulado**, não integração real com a API em
+produção. O fluxo normal e o vazio permanecem verificados com dados reais do
+ambiente de teste. Os valores e drilldowns por moeda, o aviso parcial visível,
+a ausência de overflow e a ordem semântica devem ser preservados; a cópia
+suplementar dos KPIs permanece disponível a leitores de tela. As capturas
+precisam corresponder ao SHA material final e passar por revisão visual
+independente; CI e SSR verdes, isoladamente, não substituem a revisão.
+
 ## Unidade de cobertura
 
 Cada evidencia representativa declara, no minimo:
