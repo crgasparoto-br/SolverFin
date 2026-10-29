@@ -49,6 +49,7 @@ export function renderBudgetActionMenuScriptTag(): string {
     if (globalThis.__solverFinBudgetActionMenusBound) return;
     globalThis.__solverFinBudgetActionMenusBound = true;
     var openRoot = null;
+    var dialogReturnTriggers = new Map();
     function triggerOf(root) { return root?.querySelector('[data-budget-menu-trigger]'); }
     function popoverOf(root) { return root?.querySelector('[data-budget-menu-popover]'); }
     function closeMenu(refocus) {
@@ -87,8 +88,12 @@ export function renderBudgetActionMenuScriptTag(): string {
       }
       var item = target.closest('[data-budget-action-menu] [role="menuitem"]');
       if (item) {
-        // Keep the opener visible until the shared dialog restores focus on close.
-        if (!item.hasAttribute('data-sf-dialog-open')) closeMenu(true);
+        var dialogId = item.getAttribute('data-sf-dialog-open');
+        if (dialogId) {
+          dialogReturnTriggers.set(dialogId, triggerOf(item.closest('[data-budget-action-menu]')));
+        } else {
+          closeMenu(true);
+        }
         return;
       }
       if (openRoot && !openRoot.contains(target)) closeMenu(false);
@@ -111,11 +116,16 @@ export function renderBudgetActionMenuScriptTag(): string {
       if (openRoot && !document.querySelector('dialog[open]') && !openRoot.contains(event.target)) closeMenu(false);
     });
     document.addEventListener('close', function(event) {
-      if (openRoot && event.target instanceof HTMLDialogElement &&
-          openRoot.querySelector('[data-sf-dialog-open="' + event.target.id + '"]')) closeMenu(true);
+      if (!(event.target instanceof HTMLDialogElement)) return;
+      var trigger = dialogReturnTriggers.get(event.target.id);
+      if (!trigger) return;
+      dialogReturnTriggers.delete(event.target.id);
+      closeMenu(false);
+      if (trigger.isConnected) trigger.focus({ preventScroll: true });
     }, true);
     window.addEventListener('resize', function() { closeMenu(false); });
     document.addEventListener('scroll', function(event) {
+      if (document.querySelector('dialog[open]')) return;
       if (openRoot && !popoverOf(openRoot)?.contains(event.target)) closeMenu(false);
     }, true);
   })();</script>`;
