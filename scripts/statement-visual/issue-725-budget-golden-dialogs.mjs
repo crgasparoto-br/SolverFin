@@ -191,14 +191,25 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
     assert.deepEqual(menuEvidence.labels, ["Atualizar", "Editar", "Arquivar"]);
     assert.equal(menuEvidence.icons, true, `Budget menu icons missing at ${viewport.name}`);
     await screenshot(cdp, join(outputDir, `issue-725-budget-actions-${viewport.name}.png`));
-    const initialMenuFocus = await evaluate(cdp, `(() => {
-      const root = Array.from(document.querySelectorAll(".budget-focus [data-budget-action-menu]"))
-        .find((candidate) => candidate.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]'));
-      const first = root?.querySelector('[role="menuitem"]');
-      first?.focus();
-      return Boolean(first && document.activeElement === first);
-    })()`);
-    assert.equal(initialMenuFocus, true, `Budget menu first item focus failed at ${viewport.name}`);
+    const keyboardReady = await evaluate(
+      cdp,
+      `(() => {
+        const root = Array.from(document.querySelectorAll(".budget-focus [data-budget-action-menu]"))
+          .find((candidate) => candidate.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]'));
+        const trigger = root?.querySelector("[data-budget-menu-trigger]");
+        const popup = root?.querySelector("[data-budget-menu-popover]");
+        if (!trigger || !popup) return { opened: false, firstFocused: false };
+        if (!popup.hidden) trigger.click();
+        trigger.click();
+        const first = popup.querySelector('[role="menuitem"]');
+        return { opened: !popup.hidden, firstFocused: document.activeElement === first };
+      })()`,
+    );
+    assert.deepEqual(
+      keyboardReady,
+      { opened: true, firstFocused: true },
+      `Budget menu keyboard initialization failed at ${viewport.name}`,
+    );
     await cdp.send("Input.dispatchKeyEvent", {
       type: "keyDown",
       key: "ArrowDown",

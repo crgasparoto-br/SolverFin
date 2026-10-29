@@ -254,7 +254,7 @@ function renderBudgetTable(
           id: "category",
           header: "Categoria",
           renderCell: (row) =>
-            `<div class="budget-category"><strong>${renderText(row.categoryName)}</strong>${renderBudgetStatus(row, true)}</div>`,
+            `<div class="budget-category">${renderBudgetStatus(row, true)}<strong>${renderText(row.categoryName)}</strong></div>`,
         },
         {
           id: "period",
@@ -392,6 +392,7 @@ ${renderBudgetActionMenuStyles()}
     .budget-results .sf-table td:last-child { position: sticky; right: 0; z-index: 1; box-shadow: -5px 0 12px -12px var(--text); }
     .budget-results .sf-table th:last-child { background: var(--sf-color-background); z-index: 2; }
     .budget-results .sf-table td:last-child { background: var(--surface); }
+    .budget-results .sf-table td:last-child:has(.budget-action-popover:not([hidden])) { z-index: 3; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }

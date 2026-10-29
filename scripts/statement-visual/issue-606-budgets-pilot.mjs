@@ -137,6 +137,80 @@ try {
   assert.ok(mixed.focused.includes("BRL") && mixed.focused.includes("USD"));
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-two-currencies-desktop.png"));
 
+  const iconFirstTable = await evaluate(
+    browser.cdp,
+    `(() => Array.from(document.querySelectorAll('.budget-results td[data-column="category"] .budget-category'))
+      .every((category) => category.firstElementChild?.classList.contains('budget-state') &&
+        category.children[1]?.tagName === 'STRONG'))()`,
+  );
+  assert.equal(iconFirstTable, true, "Budget category must begin with the situation icon");
+
+  const menuForLayerCheck = await evaluate(
+    browser.cdp,
+    `(() => {
+      const root = Array.from(document.querySelectorAll('.budget-results [data-budget-action-menu]'))
+        .find((item) => item.querySelector('[data-api-path$="/archive"]') &&
+          item.closest('tr')?.nextElementSibling?.querySelector('[data-budget-action-menu]'));
+      const trigger = root?.querySelector('[data-budget-menu-trigger]');
+      trigger?.scrollIntoView({ block: 'start', inline: 'nearest' });
+      return Boolean(trigger);
+    })()`,
+  );
+  assert.equal(menuForLayerCheck, true, "Long list must include consecutive budget action menus");
+  await sleep(160);
+  const menuLayering = await evaluate(
+    browser.cdp,
+    `(() => {
+      const root = Array.from(document.querySelectorAll('.budget-results [data-budget-action-menu]'))
+        .find((item) => item.querySelector('[data-api-path$="/archive"]') &&
+          item.closest('tr')?.nextElementSibling?.querySelector('[data-budget-action-menu]'));
+      const trigger = root.querySelector('[data-budget-menu-trigger]');
+      trigger.click();
+      const popup = root.querySelector('[data-budget-menu-popover]');
+      const upperCell = root.closest('td');
+      const lowerTrigger = root.closest('tr').nextElementSibling.querySelector('[data-budget-menu-trigger]');
+      const lowerCell = lowerTrigger.closest('td');
+      const box = popup.getBoundingClientRect();
+      const lower = lowerTrigger.getBoundingClientRect();
+      const left = Math.max(box.left, lower.left);
+      const right = Math.min(box.right, lower.right);
+      const top = Math.max(box.top, lower.top);
+      const bottom = Math.min(box.bottom, lower.bottom);
+      const overlapsNextTrigger = right - left > 2 && bottom - top > 2;
+      const x = Math.round((left + right) / 2);
+      const y = Math.round((top + bottom) / 2);
+      const menuAboveTrigger = overlapsNextTrigger ? popup.contains(document.elementFromPoint(x, y)) : null;
+      const upperZ = Number(getComputedStyle(upperCell).zIndex);
+      const lowerZ = Number(getComputedStyle(lowerCell).zIndex);
+      let negativeOccluded = null;
+      if (overlapsNextTrigger) {
+        const previous = upperCell.style.zIndex;
+        upperCell.style.zIndex = '0';
+        negativeOccluded = !popup.contains(document.elementFromPoint(x, y));
+        upperCell.style.zIndex = previous;
+      }
+      return {
+        opened: !popup.hidden,
+        upperZ,
+        lowerZ,
+        overlapsNextTrigger,
+        menuAboveTrigger,
+        negativeOccluded,
+        contained: box.left >= 0 && box.right <= innerWidth + 1 &&
+          box.top >= 0 && box.bottom <= innerHeight + 1,
+      };
+    })()`,
+  );
+  assert.equal(menuLayering.opened, true, "Budget table action menu must open");
+  assert.equal(menuLayering.contained, true, "Budget table action menu must stay within viewport");
+  assert.ok(menuLayering.upperZ > menuLayering.lowerZ, "Open menu must paint above lower row actions");
+  if (menuLayering.overlapsNextTrigger) {
+    assert.equal(menuLayering.menuAboveTrigger, true, "Next row action button obscures the open menu");
+    assert.equal(menuLayering.negativeOccluded, true, "Removing the stacking fix must expose the regression");
+  }
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-menu-layer-desktop.png"));
+  report.menuLayering = menuLayering;
+
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
   await sleep(350);

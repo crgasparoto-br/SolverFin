@@ -54,7 +54,7 @@ function renderBudgetFocusItem(row: BudgetRowViewModel): string {
       ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
       : "";
   return `<article class="budget-focus-item">
-    <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div><div class="budget-focus-head-actions">${renderBudgetStatus(row)}${renderBudgetActionMenu(row, "focus")}</div></div>
+    <div class="budget-focus-item-header"><div class="budget-focus-item-context"><div class="budget-focus-category">${renderBudgetStatus(row, true)}<h3>${renderText(row.categoryName)}</h3></div><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div><div class="budget-focus-head-actions">${renderBudgetActionMenu(row, "focus")}</div></div>
     <dl class="budget-focus-values"><div><dt>Planejado</dt><dd>${planned}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(row.actualAmountMinor, row.currency)}</dd></div><div><dt>Disponível</dt><dd>${available}</dd></div></dl>
     ${remaining}${overBudget}
   </article>`;
@@ -65,7 +65,7 @@ export function renderBudgetStatus(row: BudgetRowViewModel, compact = false): st
   const labels: Record<string, string> = {
     archived: "Arquivado",
     no_activity: "Sem movimentação",
-    on_track: "Dentro do planejado",
+    on_track: "Dentro do planejamento",
     approaching: "Próximo do limite",
     exceeded: "Acima do planejado",
     unbudgeted: "Sem orçamento",
@@ -126,6 +126,8 @@ export function renderBudgetFocusStyles(): string {
     .budget-focus-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 12px; min-width: 0; padding: 14px 16px; }
     .budget-focus-item-header { align-items: start; display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: space-between; min-width: 0; }
     .budget-focus-item-context { min-width: 0; }
+    .budget-focus-category { align-items: flex-start; display: flex; gap: 8px; min-width: 0; }
+    .budget-focus-category .budget-state { flex: none; margin-top: 2px; }
     .budget-focus-item h3 { font-size: .96rem; line-height: 1.3; margin: 0; overflow-wrap: anywhere; }
     .budget-focus-meta { color: var(--muted); font-size: .76rem; margin: 3px 0 0; }
     .budget-focus-values { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; min-width: 0; }
@@ -145,7 +147,9 @@ export function renderBudgetFocusStyles(): string {
     .budget-inventory dl > div { align-items: baseline; display: flex; gap: 5px; }
     .budget-inventory dt { color: var(--muted); font-size: .74rem; }
     .budget-inventory dd { color: var(--text); font-size: .82rem; font-variant-numeric: tabular-nums; font-weight: 800; margin: 0; }
-    .budget-category { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+    .budget-category { align-items: flex-start; display: flex; gap: 8px; min-width: 0; overflow-wrap: anywhere; }
+    .budget-category .budget-state { flex: none; margin-top: 1px; }
+    .budget-category strong { min-width: 0; }
     .budget-results .sf-table th, .budget-results .sf-table td { padding: 8px 10px; }
 `;
 }
