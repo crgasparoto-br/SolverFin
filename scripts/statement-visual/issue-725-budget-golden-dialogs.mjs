@@ -107,13 +107,30 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       assert.equal(fieldStates[key], true, `Budget form ${key} failed at ${viewport.name}`);
     }
     await screenshot(cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
-    const { x, y, width, height } = geometry.cancelRect;
+    const hoverTarget = await evaluate(
+      cdp,
+      `(() => {
+        const cancel = document.querySelector('#new-budget-dialog .budget-form-actions [data-sf-dialog-close]');
+        if (!cancel) return null;
+        cancel.scrollIntoView({ block: 'center', inline: 'nearest' });
+        const rect = cancel.getBoundingClientRect();
+        return {
+          x: Math.round(rect.left + rect.width / 2),
+          y: Math.round(rect.top + rect.height / 2),
+          withinViewport: rect.left >= 0 && rect.right <= innerWidth && rect.top >= 0 && rect.bottom <= innerHeight,
+        };
+      })()`,
+    );
+    assert.ok(
+      hoverTarget?.withinViewport,
+      `Cancel button outside viewport at ${viewport.name}`,
+    );
     await cdp.send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
-      x: Math.round(x + width / 2),
-      y: Math.round(y + height / 2),
+      x: hoverTarget.x,
+      y: hoverTarget.y,
     });
-    await sleep(100);
+    await sleep(160);
     const modalStates = await evaluate(
       cdp,
       `(async () => {
@@ -129,9 +146,16 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       cancel.disabled = true;
       const disabledReducedOpacity = Number(getComputedStyle(cancel).opacity) < 1;
       cancel.disabled = false;
+      const closed = new Promise((resolve) => {
+        const timeout = setTimeout(() => resolve(false), 1200);
+        dialog.addEventListener('close', () => {
+          clearTimeout(timeout);
+          resolve(true);
+        }, { once: true });
+      });
       cancel.click();
-      await new Promise(resolve => setTimeout(resolve, 0));
-      return { hoverNeutral, disabledReducedOpacity, canceled: !dialog.open, focusRestored: document.activeElement === trigger };
+      const closeEventObserved = await closed;
+      return { hoverNeutral, disabledReducedOpacity, canceled: closeEventObserved && !dialog.open, focusRestored: document.activeElement === trigger };
     })()`,
     );
     assert.deepEqual(
