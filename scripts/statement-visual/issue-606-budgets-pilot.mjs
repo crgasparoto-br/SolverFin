@@ -236,7 +236,10 @@ try {
   const edit = await evaluate(
     browser.cdp,
     `(() => {
-    const trigger = document.querySelector('[data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
+    const row = document.querySelector('.budget-results tr[data-row-key="${created.id}"]');
+    const menuButton = row?.querySelector('[data-budget-menu-trigger]');
+    menuButton?.click();
+    const trigger = row?.querySelector('[data-budget-menu-popover]:not([hidden]) [data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
     trigger?.click();
     const dialog = document.getElementById('edit-budget-dialog-${created.id}');
     const form = dialog?.querySelector('form[data-api-method="PATCH"]');
@@ -273,7 +276,10 @@ try {
   const invalid = await evaluate(
     browser.cdp,
     `(() => {
-    const trigger = document.querySelector('[data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
+    const row = document.querySelector('.budget-results tr[data-row-key="${created.id}"]');
+    const menuButton = row?.querySelector('[data-budget-menu-trigger]');
+    menuButton?.click();
+    const trigger = row?.querySelector('[data-budget-menu-popover]:not([hidden]) [data-sf-dialog-open="edit-budget-dialog-${created.id}"]');
     trigger?.click();
     const dialog = document.getElementById('edit-budget-dialog-${created.id}');
     const form = dialog?.querySelector('form[data-api-method="PATCH"]');

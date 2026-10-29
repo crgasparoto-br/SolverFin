@@ -165,11 +165,55 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       },
       `Golden Screen modal state failed at ${viewport.name}`,
     );
+
+    const menuEvidence = await evaluate(
+      cdp,
+      `(() => {
+        const budget = Array.from(document.querySelectorAll('.budget-focus [data-budget-action-menu]'))
+          .find((root) => root.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]'));
+        const trigger = budget?.querySelector('[data-budget-menu-trigger]');
+        trigger?.scrollIntoView({ block: 'center', inline: 'nearest' });
+        trigger?.click();
+        const popup = budget?.querySelector('[data-budget-menu-popover]');
+        const box = popup?.getBoundingClientRect();
+        return {
+          opened: popup?.hidden === false && trigger?.getAttribute('aria-expanded') === 'true',
+          contained: Boolean(box && box.left >= 0 && box.right <= innerWidth + 1 &&
+            box.top >= 0 && box.bottom <= innerHeight + 1),
+          labels: Array.from(popup?.querySelectorAll('[role="menuitem"]') ?? []).map((item) => item.textContent.trim()),
+          icons: Array.from(popup?.querySelectorAll('[role="menuitem"]') ?? [])
+            .every((item) => Boolean(item.querySelector('svg[aria-hidden="true"]'))),
+        };
+      })()`,
+    );
+    assert.equal(menuEvidence.opened, true, `Budget menu did not open at ${viewport.name}`);
+    assert.equal(menuEvidence.contained, true, `Budget menu overflow at ${viewport.name}`);
+    assert.deepEqual(menuEvidence.labels, ["Atualizar", "Editar", "Arquivar"]);
+    assert.equal(menuEvidence.icons, true, `Budget menu icons missing at ${viewport.name}`);
+    await screenshot(cdp, join(outputDir, `issue-725-budget-actions-${viewport.name}.png`));
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown", key: "ArrowDown", code: "ArrowDown", windowsVirtualKeyCode: 40,
+    });
+    const arrow = await evaluate(cdp, `document.activeElement?.textContent?.trim() === 'Editar'`);
+    assert.equal(arrow, true, `Budget menu arrow navigation failed at ${viewport.name}`);
+    await cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27,
+    });
+    const escape = await evaluate(
+      cdp,
+      `(() => {
+        const budget = document.querySelector('.budget-focus [data-budget-menu-trigger][aria-expanded="false"]');
+        return Boolean(budget && document.activeElement === budget &&
+          budget.closest('[data-budget-action-menu]').querySelector('[data-budget-menu-popover]').hidden);
+      })()`,
+    );
+    assert.equal(escape, true, `Budget menu Escape/focus restoration failed at ${viewport.name}`);
     goldenDialogs.push({
       viewport: `${viewport.width}x${viewport.height}`,
       geometry,
       fieldStates,
       modalStates,
+      menuEvidence,
     });
   }
   return goldenDialogs;
@@ -203,14 +247,17 @@ export async function checkBudgetDialogCancellation(cdp) {
         neutral?.backgroundColor === surface;
       const createClosedEvent = await cancelAndWait(create, createCancel);
       const createCanceled = createClosedEvent && !create?.open && document.activeElement === createTrigger;
-      const editTrigger = document.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
+      const editTrigger = document.querySelector('.budget-results [data-sf-dialog-open^="edit-budget-dialog-"]');
+      const menuTrigger = editTrigger?.closest('[data-budget-action-menu]')?.querySelector('[data-budget-menu-trigger]');
+      menuTrigger?.click();
+      if (editTrigger?.closest('[data-budget-menu-popover]')?.hidden) throw new Error('Edit action is hidden');
       editTrigger?.click();
       const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
       const editOpen = edit?.open === true &&
         Boolean(edit.querySelector('form[data-api-method="PATCH"] select[name="currency"]'));
       const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
       const editClosedEvent = await cancelAndWait(edit, editCancel);
-      const editCanceled = editClosedEvent && !edit?.open && document.activeElement === editTrigger;
+      const editCanceled = editClosedEvent && !edit?.open && document.activeElement === menuTrigger;
       return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
     })()`,
   );

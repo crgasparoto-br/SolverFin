@@ -286,9 +286,74 @@ describe("budgets page issue 619", () => {
       3,
     );
     assert.match(html, /class="sf-button sf-button-primary">Salvar alterações<\/button>/);
-    assert.match(html, /class="sf-button danger-action" data-api-action/);
+    assert.match(html, /class="budget-action-item budget-action-danger" data-api-action/);
     const routeCss = html.slice(html.indexOf(".budgets-a1-page, "));
     assert.doesNotMatch(routeCss, /#fecaca|\.danger-button \{|\.secondary-button \{/);
+  });
+
+
+  it("shows a single primary creation action and unified icon-only three-dot menu triggers", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token");
+    const focus = html.slice(html.indexOf('<section class="budget-focus"'), html.indexOf('<section class="budget-results panel"'));
+    const table = html.slice(html.indexOf('<section class="budget-results panel"'), html.indexOf('<section class="budget-inventory"'));
+    assert.match(html, /budget-primary-action/);
+    assert.match(html, /data-sf-dialog-open="new-budget-dialog"/);
+    assert.equal((focus.match(/data-budget-action-menu-context="focus"/g) ?? []).length, 2);
+    assert.equal((table.match(/data-budget-action-menu-context="table"/g) ?? []).length, 2);
+    assert.match(table, /data-column="composition"/);
+    assert.match(table, /data-column="actions"/);
+    assert.doesNotMatch(focus, /budget-focus-actions|class="sf-dialog-trigger/);
+    for (const section of [focus, table]) {
+      assert.match(section, /data-budget-menu-trigger aria-haspopup="menu"/);
+      assert.match(section, /aria-expanded="false"/);
+      assert.match(section, /role="menu"[^>]* hidden/);
+      assert.match(section, /data-api-method="GET" data-api-path="\/api\/budgets\/budget-brl\/usage"/);
+      assert.match(section, /data-sf-dialog-open="edit-budget-dialog-budget-brl"/);
+      assert.match(section, /data-api-method="POST" data-api-path="\/api\/budgets\/budget-brl\/archive"/);
+      assert.match(section, /<svg[^>]*aria-hidden="true"/);
+    }
+    assert.match(html, /event.key === 'Escape'/);
+    assert.match(html, /event.key === 'ArrowDown'/);
+    assert.match(html, /document.addEventListener\('close'/);
+  });
+
+  it("uses status icons and keeps contextual creation or categorization for unbudgeted rows", async () => {
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets/dashboard") {
+        return json({
+          usage: [
+            unbudgetedUsage({ categoryId: "health", realizedAmountMinor: 500, committedAmountMinor: 0 }),
+            unbudgetedUsage({ source: "uncategorized", realizedAmountMinor: 700, committedAmountMinor: 0 }),
+          ],
+        });
+      }
+      if (url.pathname === "/api/budgets") return json({ budgets: [] });
+      if (url.pathname === "/api/categories") return categoriesJson();
+      return json({});
+    };
+    const html = await renderBudgetsPage("token");
+    assert.match(html, /role="img" class="budget-state[^"]*" data-budget-state="unbudgeted" title="Sem orçamento" aria-label="Sem orçamento"/);
+    assert.match(html, /data-budget-action-menu-context="table"/);
+    assert.match(html, /role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog"/);
+    assert.match(html, /role="menuitem" class="budget-action-item" href="\/lancamentos"/);
+    assert.doesNotMatch(html, /data-api-path="\/api\/budgets\/unbudgeted:/);
+  });
+
+  it("does not offer an archive operation for archived budgets", async () => {
+    const defaultFetch = baseFetch();
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets") {
+        return json({ budgets: [{ ...budget("budget-brl", "BRL", 100_000), status: "archived" }] });
+      }
+      return defaultFetch(input);
+    };
+    const html = await renderBudgetsPage("token");
+    assert.match(html, /data-budget-state="archived"/);
+    assert.match(html, /data-sf-dialog-open="edit-budget-dialog-budget-brl"/);
+    assert.doesNotMatch(html, /data-api-path="\/api\/budgets\/budget-brl\/archive"/);
   });
 
   it("preserves active currency and state filters, without mixing other currencies in the decision view", async () => {

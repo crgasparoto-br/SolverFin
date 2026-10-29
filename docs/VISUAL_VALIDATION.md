@@ -426,3 +426,9 @@ No extrato, `details.account-remuneration-audit > summary` deve receber foco e a
 - Moeda usa o catálogo `accountCurrencies` existente (BRL, USD, EUR), com BRL preselecionado na criação e manutenção explícita de uma moeda legada na edição. Não existe digitação redundante do código nem conversão automática.
 - Valor planejado usa máscara pt-BR de centavos (`1.234,56`), prefixo monetário sincronizado com a escolha da moeda e verificação de formato seguro antes do POST/PATCH. O código ISO não se repete ao final do valor.
 - Novo e editar compartilham o diálogo e os controles neutros/primários da Golden Screen, com labels, foco, Escape, cancelamento, mensagens de erro e retorno de foco. Conferir em Chrome autenticado desktop 1366×768 e mobile 390×844/320×740, incluindo categoria não selecionada, BRL→USD→EUR, digitação, valor negativo rejeitado, reedição e persistência.
+
+### PR #751 — Menu e iconografia Golden Screen de Orçamentos
+
+Em `/orcamentos`, `Novo orçamento` é a única ação primária da página. Cards de foco e linhas detalhadas compartilham o mesmo menu de três pontos com ícones semânticos: Atualizar, Editar e Arquivar (somente ativos, com confirmação). Categorias sem orçamento abrem a criação; itens sem categoria seguem para o Extrato. A composição financeira permanece acessível em coluna própria, fora do menu de manutenção.
+
+O gate Chrome de 1366×768, 390×844 e 320×740 deve provar menu visível sem corte da tabela, navegação por setas, Escape e retorno de foco ao acionador após edição, além dos fluxos POST/PATCH, erro e moeda já existentes. Status usam ícones com rótulo acessível e tooltip; apresentação não recalcula valores nem mistura moedas.
