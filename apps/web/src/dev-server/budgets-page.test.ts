@@ -112,7 +112,7 @@ describe("budgets page issue 619", () => {
 
     const html = await renderBudgetsPage("token");
     assert.match(html, /Sem categoria/);
-    assert.match(html, /Abrir Extrato para categorizar/);
+    assert.match(html, /Categorizar no Extrato/);
     assert.match(html, /Não se aplica sem orçamento/);
     assert.doesNotMatch(html, /edit-budget-dialog-uncategorized:/);
   });
