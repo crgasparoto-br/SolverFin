@@ -61,8 +61,23 @@ try {
       true,
       `Budget decision labels missing at ${viewport.name}`,
     );
+    assert.equal(
+      measurements.financialLabelsLegible,
+      true,
+      `Budget financial text is clipped at ${viewport.name}`,
+    );
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
+    if (viewport.name === "desktop") {
+      const controls = await evaluate(browser.cdp, negativeControlExpression());
+      assert.deepEqual(controls, {
+        hierarchyRejected: true,
+        hierarchyRestored: true,
+        clippedValueRejected: true,
+        clippedValueRestored: true,
+      });
+      report.negativeControls = controls;
+    }
     report.scenarios.push({
       route: "/orcamentos",
       state: "normal",
@@ -106,9 +121,15 @@ function measurementExpression() {
     const auxiliary = document.querySelector('.budget-inventory');
     const hierarchyValid = Boolean(details && auxiliary && (details.compareDocumentPosition(auxiliary) & Node.DOCUMENT_POSITION_FOLLOWING) && (!focus || (focus.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING)));
     const decisionLabelsVisible = !focus || ['Planejado', 'Realizado', 'Disponível'].every((label) => Array.from(focus.querySelectorAll('dt')).some((term) => term.textContent?.trim() === label));
+    const financialNodes = Array.from(document.querySelectorAll('main .sf-money, main .budget-currency'));
+    const financialLabelsLegible = financialNodes.every((node) => {
+      const style = getComputedStyle(node);
+      return !(['hidden', 'clip'].includes(style.overflowX) && node.scrollWidth > node.clientWidth + 1);
+    });
     return {
       hierarchyValid,
       decisionLabelsVisible,
+      financialLabelsLegible,
       pathname: location.pathname,
       viewportWidth,
       documentFits: document.documentElement.scrollWidth <= viewportWidth + 1,
@@ -116,5 +137,34 @@ function measurementExpression() {
       hasHeading: Array.from(document.querySelectorAll('h1, main h2')).some(visible),
       essentialOutsideViewport,
     };
+  })()`;
+}
+
+function negativeControlExpression() {
+  return `(() => {
+    const probe = () => ${measurementExpression()};
+    const inventory = document.querySelector('.budget-inventory');
+    const details = document.querySelector('.budget-results');
+    if (!inventory || !details) return { error: 'Missing budget sections' };
+    const marker = document.createComment('restore-inventory-position');
+    inventory.before(marker);
+    details.before(inventory);
+    const hierarchyRejected = probe().hierarchyValid === false;
+    marker.replaceWith(inventory);
+    const hierarchyRestored = probe().hierarchyValid === true;
+
+    const money = document.querySelector('.budget-focus .sf-money') ||
+      document.querySelector('.budget-results .sf-money');
+    if (!money) return { error: 'No rendered financial value to test' };
+    const originalStyle = money.getAttribute('style');
+    money.style.setProperty('width', '1px', 'important');
+    money.style.setProperty('overflow-x', 'hidden', 'important');
+    money.style.setProperty('white-space', 'nowrap', 'important');
+    money.style.setProperty('display', 'block', 'important');
+    const clippedValueRejected = probe().financialLabelsLegible === false;
+    if (originalStyle === null) money.removeAttribute('style');
+    else money.setAttribute('style', originalStyle);
+    const clippedValueRestored = probe().financialLabelsLegible === true;
+    return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored };
   })()`;
 }
