@@ -91,6 +91,72 @@ try {
     });
   }
 
+
+  // This fixture modifies only the disposable Chrome CI database, never production data.
+  const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression());
+  assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(fixture)}`);
+
+  await setViewport(browser.cdp, 1366, 768);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos`);
+  await sleep(350);
+  const mixed = await evaluate(browser.cdp, `(() => ({
+    rows: document.querySelectorAll('.budget-results tbody tr').length,
+    currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
+    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
+  }))()`);
+  assert.ok(mixed.rows >= 10, "Budget long-list scenario must include ten or more rows");
+  assert.ok(mixed.currencies.includes("BRL") && mixed.currencies.includes("USD"));
+  assert.ok(mixed.focused.includes("BRL") && mixed.focused.includes("USD"));
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-two-currencies-desktop.png"));
+
+  await setViewport(browser.cdp, 390, 844);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
+  await sleep(350);
+  const filtered = await evaluate(browser.cdp, `(() => ({
+    currency: document.querySelector('select[name="currency"]')?.value,
+    status: document.querySelector('select[name="status"]')?.value,
+    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
+    documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }))()`);
+  assert.equal(filtered.currency, "USD");
+  assert.equal(filtered.status, "active");
+  assert.ok(filtered.focused.includes("USD") && !filtered.focused.includes("BRL"));
+  assert.equal(filtered.documentFits, true);
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-usd-mobile.png"));
+
+  await setViewport(browser.cdp, 320, 740);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=EUR&status=active`);
+  await sleep(350);
+  const empty = await evaluate(browser.cdp, `(() => ({
+    currency: document.querySelector('select[name="currency"]')?.value,
+    message: (document.querySelector('main')?.textContent ?? '').includes('Nenhum resultado com estes filtros'),
+    focusCount: document.querySelectorAll('.budget-focus-item').length,
+    documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+  }))()`);
+  assert.deepEqual(empty, { currency: "EUR", message: true, focusCount: 0, documentFits: true });
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-empty-compact.png"));
+
+  await setViewport(browser.cdp, 1366, 768);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
+  await sleep(350);
+  const dialogs = await evaluate(browser.cdp, `(() => {
+    const createTrigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
+    createTrigger?.click();
+    const create = document.querySelector('#new-budget-dialog');
+    const createOpen = create?.open === true &&
+      Boolean(create.querySelector('form[data-api-path="/api/budgets"]'));
+    create?.close();
+    const editTrigger = document.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
+    editTrigger?.click();
+    const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
+    const editOpen = edit?.open === true &&
+      Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
+    return { createOpen, editOpen };
+  })()`);
+  assert.deepEqual(dialogs, { createOpen: true, editOpen: true });
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
+  report.issue725Acceptance = { fixtureCurrency: fixture.currency, mixed, filtered, empty, dialogs };
+
   await writeFile(
     join(outputDir, "issue-606-budgets-pilot.json"),
     `${JSON.stringify(report, null, 2)}\n`,
@@ -166,5 +232,30 @@ function negativeControlExpression() {
     else money.setAttribute('style', originalStyle);
     const clippedValueRestored = probe().financialLabelsLegible === true;
     return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored };
+  })()`;
+}
+
+function budgetAcceptanceFixtureExpression() {
+  return `(async () => {
+    const categoriesResponse = await fetch('/api/categories?status=all', { credentials: 'same-origin' });
+    if (!categoriesResponse.ok) {
+      return { ok: false, stage: 'categories', status: categoriesResponse.status };
+    }
+    const categories = (await categoriesResponse.json()).categories ?? [];
+    const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
+    if (!category?.id) return { ok: false, stage: 'expense-category' };
+    const response = await fetch('/api/budgets', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        categoryId: category.id,
+        periodStartOn: '2028-04-01',
+        periodEndOn: '2028-04-30',
+        currency: 'USD',
+        plannedAmountMinor: 500000,
+      }),
+    });
+    return { ok: response.ok, status: response.status, currency: 'USD' };
   })()`;
 }
