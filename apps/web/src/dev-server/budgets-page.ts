@@ -110,7 +110,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           eyebrow: "Planejamento por categoria",
           title: "Orçamentos",
           description:
-            "Acompanhe planejado, realizado, comprometido, projetado e disponível por período e moeda. Itens sem orçamento ou sem categoria permanecem separados.",
+            "Acompanhe planejado, realizado e disponível por período e moeda.",
           actionsHtml: newBudgetTrigger,
         },
       )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
@@ -249,11 +249,14 @@ function renderBudgetFilters(
 }
 
 function budgetFocusPriority(row: BudgetRowViewModel): number {
-  if (row.usageStatus === "exceeded") return 0;
-  if (row.usageStatus === "approaching") return 1;
-  if (row.source === "uncategorized" || row.source === "unbudgeted") return 2;
-  if (row.usageStatus === "unavailable") return 3;
-  return 4;
+  if (row.status === "archived") return 7;
+  if (row.source === "budget") {
+    if (row.usageStatus === "exceeded") return 0;
+    if (row.usageStatus === "approaching") return 1;
+    if (row.usageStatus === "unavailable") return 2;
+    return 3;
+  }
+  return row.source === "unbudgeted" ? 4 : 5;
 }
 
 function renderBudgetFocus(rows: readonly BudgetRowViewModel[]): string {
@@ -270,7 +273,7 @@ function renderBudgetFocus(rows: readonly BudgetRowViewModel[]): string {
     .slice(0, 3);
 
   return `<section class="budget-focus" aria-labelledby="budget-focus-title">
-    <div class="budget-focus-title"><div><p class="eyebrow">Prioridade financeira</p><h2 id="budget-focus-title">Planejado, realizado e disponível</h2></div><p>Destaques individuais por moeda; sem consolidação cambial. Consulte todos os itens abaixo.</p></div>
+    <div class="budget-focus-title"><div><p class="eyebrow">Prioridade financeira</p><h2 id="budget-focus-title">Planejado, realizado e disponível</h2></div><p>Um destaque por moeda, sem somar moedas diferentes.</p></div>
     <div class="budget-focus-grid">${featured.map(renderBudgetFocusItem).join("")}</div>
   </section>`;
 }
@@ -562,6 +565,7 @@ ${sharedDialogStyles()}
     .budgets-heading { display: contents; }
     .budgets-a1-page .sf-page-header { align-items: center; }
     .budget-primary-action, .secondary-button, .danger-button { min-height: 40px; }
+    .budget-primary-action { white-space: nowrap; }
     .budget-filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(150px, 220px) minmax(150px, 220px) 1fr; width: 100%; }
     .budget-filter-form label { display: grid; gap: 5px; }
     .budget-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
@@ -590,7 +594,7 @@ ${sharedDialogStyles()}
     .budget-focus-values .sf-money { display: inline-flex; flex-wrap: wrap; gap: 2px 4px; white-space: normal; }
     .budget-focus-values .sf-money-currency { font-size: .69rem; font-weight: 700; }
     .budget-focus-actions { display: flex; justify-content: flex-start; }
-    .budget-focus-actions .secondary-button { min-height: 36px; }
+    .budget-focus-actions .secondary-button { min-height: 44px; }
     .budget-state { color: var(--sf-color-muted-text); display: inline-block; font-size: .73rem; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
     .budget-state--attention { color: var(--sf-color-danger); }
     .budget-state--positive { color: var(--sf-color-success); }
@@ -606,7 +610,8 @@ ${sharedDialogStyles()}
     .budget-results .sf-table td[data-column="realized"] .sf-money-value,
     .budget-results .sf-table td[data-column="available"] .sf-money-value { font-weight: 800; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
-    .budget-results .sf-table { min-width: 1080px; width: 100%; }
+    .budget-results .sf-table { min-width: 1380px; width: 100%; }
+    .budget-results .sf-table th { white-space: nowrap; word-break: normal; overflow-wrap: normal; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
@@ -640,8 +645,13 @@ ${sharedDialogStyles()}
       .budget-filter-actions > * { flex: 1 1 160px; justify-content: center; }
     }
     @media (max-width: 560px) {
-      .budget-filter-form, .budget-edit-grid { grid-template-columns: 1fr; }
-      .budget-filter-actions, .budget-edit-grid .form-status, .budget-edit-grid button[type="submit"] { grid-column: auto; }
+      .budget-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .budget-filter-form label, .budget-filter-form select { min-width: 0; width: 100%; }
+      .budget-filter-actions { grid-column: 1 / -1; flex-wrap: nowrap; }
+      .budget-filter-actions > * { flex: 1 1 0; min-width: 0; }
+      .budget-edit-grid { grid-template-columns: 1fr; }
+      .budget-edit-grid .form-status, .budget-edit-grid button[type="submit"] { grid-column: auto; }
+      .budgets-a1-page .sf-page-header-description { font-size: .82rem; line-height: 1.3; }
       .budget-section-heading { align-items: start; flex-direction: column; }
       .budget-results .sf-table { display: block; min-width: 0; }
       .budget-results .sf-table caption { display: block; }

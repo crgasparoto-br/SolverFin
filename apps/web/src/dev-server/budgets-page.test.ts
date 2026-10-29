@@ -139,6 +139,30 @@ describe("budgets page issue 619", () => {
     assert.match(html, /name="currency"[^>]*value="BRL"/);
     assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/);
   });
+
+  it("features a planned budget before unbudgeted spending in the same currency", async () => {
+    const normalFetch = baseFetch();
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets/dashboard") {
+        return json({
+          usage: [unbudgetedUsage({ categoryId: "health", realizedAmountMinor: 9_000, committedAmountMinor: 0 })],
+        });
+      }
+      return normalFetch(input);
+    };
+
+    const html = await renderBudgetsPage("token");
+    const focus = html.slice(
+      html.indexOf('<section class="budget-focus"'),
+      html.indexOf('<section class="budget-results panel"'),
+    );
+    assert.equal((focus.match(/class="budget-focus-item"/g) ?? []).length, 2);
+    assert.doesNotMatch(focus, /budget-unbudgeted-plan/);
+    assert.match(focus, /Editar orçamento/);
+    assert.match(html, /Crie um orçamento para definir um valor planejado/);
+  });
+
   it("prioritizes individual financial decisions before table detail and auxiliary counts", async () => {
     globalThis.fetch = baseFetch();
     const html = await renderBudgetsPage("token");
