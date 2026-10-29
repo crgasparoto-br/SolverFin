@@ -297,7 +297,7 @@ try {
       url: location.search };
   })()`,
   );
-  assert.equal(rejection.retainedValue, "2345,67");
+  assert.equal(rejection.retainedValue, "2.345,67");
   assert.equal(rejection.url, "?currency=USD&status=active");
   const unchanged = await readBudget(browser.cdp, created.id);
   assert.equal(unchanged.plannedAmountMinor, 234567, "Rejected update changed persisted amount");
