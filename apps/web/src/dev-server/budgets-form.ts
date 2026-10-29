@@ -121,4 +121,3 @@ function renderBudgetCurrencyOptions(selectedCurrency?: string): string {
       .join("")
   );
 }
-
