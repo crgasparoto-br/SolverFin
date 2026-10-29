@@ -422,15 +422,22 @@ function renderCategoryOptions(
       path: buildCategoryPath(category.id, index),
     }))
     .sort((left, right) => left.path.localeCompare(right.path, "pt-BR"));
-  const stillAvailable = expenseCategories.some(({ category }) => category.id === selectedCategoryId);
-  const placeholder = selectedCategoryId && !stillAvailable
-    ? `<option value="" disabled selected>Categoria anterior indisponível — selecione outra</option>`
-    : `<option value="" disabled${!selectedCategoryId ? " selected" : ""}>Selecione uma categoria</option>`;
-  return placeholder + expenseCategories
-    .map(({ category, path }) =>
-      `<option value="${renderText(category.id)}"${selectedCategoryId === category.id ? " selected" : ""}>${renderText(path)}${category.status !== "active" ? " (arquivada)" : ""}</option>`,
-    )
-    .join("");
+  const stillAvailable = expenseCategories.some(
+    ({ category }) => category.id === selectedCategoryId,
+  );
+  const placeholder =
+    selectedCategoryId && !stillAvailable
+      ? `<option value="" disabled selected>Categoria anterior indisponível — selecione outra</option>`
+      : `<option value="" disabled${!selectedCategoryId ? " selected" : ""}>Selecione uma categoria</option>`;
+  return (
+    placeholder +
+    expenseCategories
+      .map(
+        ({ category, path }) =>
+          `<option value="${renderText(category.id)}"${selectedCategoryId === category.id ? " selected" : ""}>${renderText(path)}${category.status !== "active" ? " (arquivada)" : ""}</option>`,
+      )
+      .join("")
+  );
 }
 
 function renderBudgetCurrencyOptions(selectedCurrency?: string): string {
@@ -446,11 +453,15 @@ function renderBudgetCurrencyOptions(selectedCurrency?: string): string {
   const placeholder = selectedCurrency
     ? ""
     : '<option value="" disabled selected>Selecione uma moeda</option>';
-  return placeholder + options
-    .map((currency) =>
-      `<option value="${renderText(currency)}"${selectedCurrency === currency ? " selected" : ""}>${renderText(currency)}${accountCurrencies.some((available) => available === currency) ? "" : " (já cadastrada)"}</option>`,
-    )
-    .join("");
+  return (
+    placeholder +
+    options
+      .map(
+        (currency) =>
+          `<option value="${renderText(currency)}"${selectedCurrency === currency ? " selected" : ""}>${renderText(currency)}${accountCurrencies.some((available) => available === currency) ? "" : " (já cadastrada)"}</option>`,
+      )
+      .join("")
+  );
 }
 
 function renderShell(content: string): string {

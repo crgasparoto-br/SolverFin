@@ -92,10 +92,18 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
           validMoneyRestored, fieldContained };
       })()`,
     );
-    assert.deepEqual(fieldStates.currencies, ['BRL', 'USD', 'EUR']);
-    for (const key of ['defaultBRL', 'emptyCategoryRejected', 'chosenCategoryValid',
-      'switchedToUSD', 'typedMoneyFormatted', 'switchedToEUR', 'invalidNegativeRejected',
-      'validMoneyRestored', 'fieldContained']) {
+    assert.deepEqual(fieldStates.currencies, ["BRL", "USD", "EUR"]);
+    for (const key of [
+      "defaultBRL",
+      "emptyCategoryRejected",
+      "chosenCategoryValid",
+      "switchedToUSD",
+      "typedMoneyFormatted",
+      "switchedToEUR",
+      "invalidNegativeRejected",
+      "validMoneyRestored",
+      "fieldContained",
+    ]) {
       assert.equal(fieldStates[key], true, `Budget form ${key} failed at ${viewport.name}`);
     }
     await screenshot(cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
@@ -136,7 +144,12 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       },
       `Golden Screen modal state failed at ${viewport.name}`,
     );
-    goldenDialogs.push({ viewport: `${viewport.width}x${viewport.height}`, geometry, fieldStates, modalStates });
+    goldenDialogs.push({
+      viewport: `${viewport.width}x${viewport.height}`,
+      geometry,
+      fieldStates,
+      modalStates,
+    });
   }
   return goldenDialogs;
 }
