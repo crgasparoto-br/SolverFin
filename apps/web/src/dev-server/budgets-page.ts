@@ -331,7 +331,10 @@ interface BudgetTableRow extends BudgetRowViewModel {
 function groupBudgetRowsByCategory(rows: readonly BudgetRowViewModel[]): BudgetTableRow[] {
   const groups = new Map<string, BudgetRowViewModel[]>();
   for (const row of rows) {
-    const key = JSON.stringify([row.categoryId ?? `source:${row.source}`, row.currency ?? "unknown"]);
+    const key = JSON.stringify([
+      row.categoryId ?? `source:${row.source}`,
+      row.currency ?? "unknown",
+    ]);
     const group = groups.get(key) ?? [];
     group.push(row);
     groups.set(key, group);
@@ -366,7 +369,8 @@ function renderBudgetCategoryTree(row: BudgetTableRow): string {
   const parentLabel = parents.length
     ? `<span class="budget-category-parent">${renderText(parents.join(" › "))}</span>`
     : "";
-  const marker = depth > 0 ? '<span class="budget-category-branch" aria-hidden="true">↳</span>' : "";
+  const marker =
+    depth > 0 ? '<span class="budget-category-branch" aria-hidden="true">↳</span>' : "";
   return `<div class="budget-category">${renderBudgetStatus(row, true)}<div class="budget-category-tree" data-category-depth="${depth}" style="--budget-category-depth:${depth}">${parentLabel}<strong>${marker}${renderText(name)}</strong></div></div>`;
 }
 

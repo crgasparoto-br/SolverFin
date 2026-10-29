@@ -103,7 +103,11 @@ try {
         return aligned;
       })()`,
     );
-    assert.equal(buttonGeometry, true, `Budget filter Apply/Clear dimensions mismatch at ${viewport.name}`);
+    assert.equal(
+      buttonGeometry,
+      true,
+      `Budget filter Apply/Clear dimensions mismatch at ${viewport.name}`,
+    );
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     if (viewport.name === "desktop") {
@@ -154,8 +158,15 @@ try {
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
   }))()`,
   );
-  assert.ok(mixed.rows + mixed.historyCount >= 10, "Budget long-list scenario must preserve ten or more period records");
-  assert.equal(mixed.uniqueCategories, true, "Budget detail must have only one main row per category and currency");
+  assert.ok(
+    mixed.rows + mixed.historyCount >= 10,
+    "Budget long-list scenario must preserve ten or more period records",
+  );
+  assert.equal(
+    mixed.uniqueCategories,
+    true,
+    "Budget detail must have only one main row per category and currency",
+  );
   assert.ok(mixed.currencies.includes("BRL") && mixed.currencies.includes("USD"));
   assert.ok(mixed.focused.includes("BRL") && mixed.focused.includes("USD"));
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-two-currencies-desktop.png"));

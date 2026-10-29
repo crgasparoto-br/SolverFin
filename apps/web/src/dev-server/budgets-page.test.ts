@@ -481,12 +481,18 @@ describe("budgets page issue 619", () => {
       return originalFetch(input);
     };
     const html = await renderBudgetsPage("token");
-    assert.match(html, /data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" data-budget-prefill-category-id="health"/);
+    assert.match(
+      html,
+      /data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" data-budget-prefill-category-id="health"/,
+    );
     assert.match(html, /class="budget-action-item" data-sf-dialog-open="new-budget-dialog"/);
     assert.match(html, /requested && option.value === requested && !option.disabled/);
     assert.match(html, /category.value = Array.from\(category.options\)/);
     assert.match(html, /category.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/);
-    const newDialog = html.slice(html.indexOf('id="new-budget-dialog"'), html.indexOf('id="edit-budget-dialog-'));
+    const newDialog = html.slice(
+      html.indexOf('id="new-budget-dialog"'),
+      html.indexOf('id="edit-budget-dialog-'),
+    );
     assert.match(newDialog, /<option value="health">Saúde<\/option>/);
     assert.match(newDialog, /<option value="" disabled selected>Selecione uma categoria<\/option>/);
   });
@@ -503,7 +509,12 @@ describe("budgets page issue 619", () => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets") {
         return json({
-          budgets: [budget("budget-brl", "BRL", 100_000), october, nested, budget("budget-usd", "USD", 20_000)],
+          budgets: [
+            budget("budget-brl", "BRL", 100_000),
+            october,
+            nested,
+            budget("budget-usd", "USD", 20_000),
+          ],
         });
       }
       if (url.pathname === "/api/budgets/budget-oct/usage") {
@@ -516,7 +527,9 @@ describe("budgets page issue 619", () => {
         });
       }
       if (url.pathname === "/api/budgets/budget-child/usage") {
-        return json({ usage: { ...usage("budget-child", "BRL", 50_000, 10_000, 0), categoryId: "groceries" } });
+        return json({
+          usage: { ...usage("budget-child", "BRL", 50_000, 10_000, 0), categoryId: "groceries" },
+        });
       }
       return originalFetch(input);
     };
@@ -532,8 +545,14 @@ describe("budgets page issue 619", () => {
     assert.match(table, /class="budget-period-history"/);
     assert.match(table, /data-api-path="\/api\/budgets\/budget-brl\/archive"/);
     assert.match(table, /data-budget-action-menu-context="history"/);
-    assert.match(table, /data-category-depth="1"[^>]*><span class="budget-category-parent">Alimentação<\/span>/);
-    assert.match(table, /<strong><span class="budget-category-branch" aria-hidden="true">↳<\/span>Mercado<\/strong>/);
+    assert.match(
+      table,
+      /data-category-depth="1"[^>]*><span class="budget-category-parent">Alimentação<\/span>/,
+    );
+    assert.match(
+      table,
+      /<strong><span class="budget-category-branch" aria-hidden="true">↳<\/span>Mercado<\/strong>/,
+    );
     assert.doesNotMatch(table, /Acompanhamento consolidado/);
     assert.match(table, /sem somar moedas ou períodos/);
 
@@ -555,9 +574,18 @@ describe("budgets page issue 619", () => {
 
   it("keeps Apply and Clear aligned and treats malformed periods as inactive", async () => {
     globalThis.fetch = baseFetch();
-    const html = await renderBudgetsPage("token", new URL("http://solverfin.test/orcamentos?period=2026-02-31:2026-02-31"));
-    assert.match(html, /class="sf-button sf-button-primary sf-focus-ring">Aplicar filtros<\/button>/);
-    assert.match(html, /class="sf-button sf-button-secondary sf-focus-ring" href="\/orcamentos">Limpar<\/a>/);
+    const html = await renderBudgetsPage(
+      "token",
+      new URL("http://solverfin.test/orcamentos?period=2026-02-31:2026-02-31"),
+    );
+    assert.match(
+      html,
+      /class="sf-button sf-button-primary sf-focus-ring">Aplicar filtros<\/button>/,
+    );
+    assert.match(
+      html,
+      /class="sf-button sf-button-secondary sf-focus-ring" href="\/orcamentos">Limpar<\/a>/,
+    );
     assert.match(html, /budget-filter-actions > \.sf-button \{[^}]*width: 148px/);
     assert.match(html, /data-budget-mobile-filters data-active-filters="false" open/);
     assert.match(html, /<select name="period">/);

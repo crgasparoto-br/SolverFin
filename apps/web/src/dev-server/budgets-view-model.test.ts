@@ -199,7 +199,12 @@ describe("budgets view-model issue 619", () => {
       periodStartOn: "2026-09-01",
       periodEndOn: "2026-09-30",
     });
-    for (const value of ["2026-02-30:2026-02-31", "2026-10-31:2026-10-01", "2026-9-01:2026-09-30", "not-a-date"]) {
+    for (const value of [
+      "2026-02-30:2026-02-31",
+      "2026-10-31:2026-10-01",
+      "2026-9-01:2026-09-30",
+      "not-a-date",
+    ]) {
       assert.equal(parseBudgetPeriod(value), undefined);
     }
   });
