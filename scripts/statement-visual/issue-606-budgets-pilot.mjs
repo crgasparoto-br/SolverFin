@@ -4,7 +4,10 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
-import { checkBudgetGoldenDialogs } from "./issue-725-budget-golden-dialogs.mjs";
+import {
+  checkBudgetDialogCancellation,
+  checkBudgetGoldenDialogs,
+} from "./issue-725-budget-golden-dialogs.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -172,42 +175,7 @@ try {
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
   await sleep(350);
-  const dialogs = await evaluate(
-    browser.cdp,
-    `(async () => {
-    const createTrigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
-    createTrigger?.click();
-    const create = document.querySelector('#new-budget-dialog');
-    const createOpen = create?.open === true &&
-      Boolean(create.querySelector('form[data-api-path="/api/budgets"]'));
-    const createCancel = create?.querySelector('.budget-form-actions [data-sf-dialog-close]');
-    const neutral = createCancel && getComputedStyle(createCancel);
-    const surface = getComputedStyle(document.querySelector('.sf-filter-bar')).backgroundColor;
-    const neutralCancel = createCancel?.classList.contains('sf-button-secondary') &&
-      neutral?.backgroundColor === surface;
-    createCancel?.click();
-    await new Promise(resolve => setTimeout(resolve, 0));
-    const createCanceled = create?.open === false && document.activeElement === createTrigger;
-    const editTrigger = document.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
-    editTrigger?.click();
-    const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
-    const editOpen = edit?.open === true &&
-      Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
-    const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
-    editCancel?.click();
-    await new Promise(resolve => setTimeout(resolve, 0));
-    const editCanceled = edit?.open === false && document.activeElement === editTrigger;
-    return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
-  })()`,
-  );
-  assert.deepEqual(dialogs, {
-    createOpen: true,
-    editOpen: true,
-    neutralCancel: true,
-    createCanceled: true,
-    editCanceled: true,
-  });
-  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
+  const dialogs = await checkBudgetDialogCancellation(browser.cdp);
   report.goldenDialogs = await checkBudgetGoldenDialogs(browser.cdp, baseUrl, outputDir);
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);

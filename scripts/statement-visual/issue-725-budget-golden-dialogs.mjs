@@ -96,3 +96,52 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
   }
   return goldenDialogs;
 }
+
+export async function checkBudgetDialogCancellation(cdp) {
+  const dialogs = await evaluate(
+    cdp,
+    `(async () => {
+      const cancelAndWait = async (dialog, button) => {
+        if (!dialog || !button) return false;
+        const closed = new Promise((resolve) => {
+          const timeout = setTimeout(() => resolve(false), 1200);
+          dialog.addEventListener('close', () => {
+            clearTimeout(timeout);
+            resolve(true);
+          }, { once: true });
+        });
+        button.click();
+        return await closed;
+      };
+      const createTrigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
+      createTrigger?.click();
+      const create = document.querySelector('#new-budget-dialog');
+      const createOpen = create?.open === true &&
+        Boolean(create.querySelector('form[data-api-path="/api/budgets"]'));
+      const createCancel = create?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+      const neutral = createCancel && getComputedStyle(createCancel);
+      const surface = getComputedStyle(document.querySelector('.sf-filter-bar')).backgroundColor;
+      const neutralCancel = createCancel?.classList.contains('sf-button-secondary') &&
+        neutral?.backgroundColor === surface;
+      const createClosedEvent = await cancelAndWait(create, createCancel);
+      const createCanceled = createClosedEvent && !create?.open && document.activeElement === createTrigger;
+      const editTrigger = document.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
+      editTrigger?.click();
+      const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
+      const editOpen = edit?.open === true &&
+        Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
+      const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+      const editClosedEvent = await cancelAndWait(edit, editCancel);
+      const editCanceled = editClosedEvent && !edit?.open && document.activeElement === editTrigger;
+      return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
+    })()`,
+  );
+  assert.deepEqual(dialogs, {
+    createOpen: true,
+    editOpen: true,
+    neutralCancel: true,
+    createCanceled: true,
+    editCanceled: true,
+  });
+  return dialogs;
+}
