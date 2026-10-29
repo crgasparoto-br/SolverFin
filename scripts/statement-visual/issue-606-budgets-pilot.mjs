@@ -4,6 +4,8 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { measurementExpression, negativeControlExpression } from "./issue-725-budget-measurements.mjs";
+import { checkBudgetMenuPrefillPeriod } from "./issue-725-budget-menu-checks.mjs";
 import {
   checkBudgetDialogCancellation,
   checkBudgetGoldenDialogs,
@@ -180,130 +182,10 @@ try {
   );
   assert.equal(iconFirstTable, true, "Budget category must begin with the situation icon");
 
-  const menuForLayerCheck = await evaluate(
-    browser.cdp,
-    `(() => {
-      const root = Array.from(document.querySelectorAll('.budget-results [data-budget-action-menu]'))
-        .find((item) => item.querySelector('[data-api-path$="/archive"]') &&
-          item.closest('tr')?.nextElementSibling?.querySelector('[data-budget-action-menu]'));
-      const trigger = root?.querySelector('[data-budget-menu-trigger]');
-      trigger?.scrollIntoView({ block: 'start', inline: 'nearest' });
-      return Boolean(trigger);
-    })()`,
-  );
-  assert.equal(menuForLayerCheck, true, "Long list must include consecutive budget action menus");
-  await sleep(160);
-  const menuLayering = await evaluate(
-    browser.cdp,
-    `(() => {
-      const root = Array.from(document.querySelectorAll('.budget-results [data-budget-action-menu]'))
-        .find((item) => item.querySelector('[data-api-path$="/archive"]') &&
-          item.closest('tr')?.nextElementSibling?.querySelector('[data-budget-action-menu]'));
-      const trigger = root.querySelector('[data-budget-menu-trigger]');
-      trigger.click();
-      const popup = root.querySelector('[data-budget-menu-popover]');
-      const upperCell = root.closest('td');
-      const lowerTrigger = root.closest('tr').nextElementSibling.querySelector('[data-budget-menu-trigger]');
-      const lowerCell = lowerTrigger.closest('td');
-      const box = popup.getBoundingClientRect();
-      const lower = lowerTrigger.getBoundingClientRect();
-      const left = Math.max(box.left, lower.left);
-      const right = Math.min(box.right, lower.right);
-      const top = Math.max(box.top, lower.top);
-      const bottom = Math.min(box.bottom, lower.bottom);
-      const overlapsNextTrigger = right - left > 2 && bottom - top > 2;
-      const x = Math.round((left + right) / 2);
-      const y = Math.round((top + bottom) / 2);
-      const menuAboveTrigger = overlapsNextTrigger ? popup.contains(document.elementFromPoint(x, y)) : null;
-      const upperZ = Number(getComputedStyle(upperCell).zIndex);
-      const lowerZ = Number(getComputedStyle(lowerCell).zIndex);
-      let negativeOccluded = null;
-      if (overlapsNextTrigger) {
-        const previous = upperCell.style.zIndex;
-        upperCell.style.zIndex = '0';
-        negativeOccluded = !popup.contains(document.elementFromPoint(x, y));
-        upperCell.style.zIndex = previous;
-      }
-      return {
-        opened: !popup.hidden,
-        upperZ,
-        lowerZ,
-        overlapsNextTrigger,
-        menuAboveTrigger,
-        negativeOccluded,
-        contained: box.left >= 0 && box.right <= innerWidth + 1 &&
-          box.top >= 0 && box.bottom <= innerHeight + 1,
-      };
-    })()`,
-  );
-  assert.equal(menuLayering.opened, true, "Budget table action menu must open");
-  assert.equal(menuLayering.contained, true, "Budget table action menu must stay within viewport");
-  assert.ok(
-    menuLayering.upperZ > menuLayering.lowerZ,
-    "Open menu must paint above lower row actions",
-  );
-  if (menuLayering.overlapsNextTrigger) {
-    assert.equal(
-      menuLayering.menuAboveTrigger,
-      true,
-      "Next row action button obscures the open menu",
-    );
-    assert.equal(
-      menuLayering.negativeOccluded,
-      true,
-      "Removing the stacking fix must expose the regression",
-    );
-  }
-  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-menu-layer-desktop.png"));
-  report.menuLayering = menuLayering;
-
-  const prefill = await evaluate(
-    browser.cdp,
-    `(() => {
-      const create = document.querySelector('.budget-results [data-budget-prefill-category-id]:not([data-budget-prefill-category-id=""])');
-      const menu = create?.closest('[data-budget-action-menu]');
-      const trigger = menu?.querySelector('[data-budget-menu-trigger]');
-      const dialog = document.getElementById('new-budget-dialog');
-      const category = dialog?.querySelector('select[name="categoryId"]');
-      if (!create || !trigger || !dialog || !category) return { found: false };
-      const chosen = create.getAttribute('data-budget-prefill-category-id');
-      trigger.click();
-      create.click();
-      const selected = dialog.open && category.value === chosen;
-      dialog.querySelector('[data-sf-dialog-close]').click();
-      document.querySelector('.budget-primary-action[data-sf-dialog-open="new-budget-dialog"]')?.click();
-      const reset = dialog.open && category.value === '';
-      dialog.querySelector('[data-sf-dialog-close]').click();
-      return { found: true, selected, reset };
-    })()`,
-  );
-  assert.deepEqual(prefill, { found: true, selected: true, reset: true });
-  report.categoryPrefill = prefill;
-
-  const optionPeriod = await evaluate(
-    browser.cdp,
-    `(() => {
-      const options = Array.from(document.querySelectorAll('.budget-filter-form select[name="period"] option'));
-      return options.find((option) => option.value)?.value ?? null;
-    })()`,
-  );
-  assert.ok(optionPeriod, "Budget period filter must list registered exact periods");
-  await navigate(browser.cdp, `${baseUrl}/orcamentos?period=${encodeURIComponent(optionPeriod)}`);
-  await sleep(200);
-  const periodFilter = await evaluate(
-    browser.cdp,
-    `(() => {
-      const period = document.querySelector('.budget-filter-form select[name="period"]');
-      return {
-        selected: period?.value ?? null,
-        active: document.querySelector('[data-budget-mobile-filters]')?.dataset.activeFilters === 'true',
-        context: document.querySelector('.budget-filter-context')?.textContent?.includes('período'),
-      };
-    })()`,
-  );
-  assert.deepEqual(periodFilter, { selected: optionPeriod, active: true, context: true });
-  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-period-selected-desktop.png"));
-  report.selectedPeriod = periodFilter;
+  const menuResults = await checkBudgetMenuPrefillPeriod(browser.cdp, baseUrl, outputDir);
+  report.menuLayering = menuResults.menuLayering;
+  report.categoryPrefill = menuResults.categoryPrefill;
+  report.selectedPeriod = menuResults.selectedPeriod;
 
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(200);
@@ -505,102 +387,6 @@ try {
   console.log("Issue 606 budgets desktop and mobile baseline validation passed.");
 } finally {
   await browser.close(outputDir);
-}
-
-function measurementExpression() {
-  return `(() => {
-    const viewportWidth = document.documentElement.clientWidth;
-    const visible = (element) => {
-      if (!(element instanceof HTMLElement)) return false;
-      const style = getComputedStyle(element);
-      const rect = element.getBoundingClientRect();
-      return style.display !== 'none' && style.visibility !== 'hidden' && rect.width > 0 && rect.height > 0;
-    };
-    const essential = Array.from(document.querySelectorAll('main a, main button, main input, main select')).filter(visible);
-    const essentialOutsideViewport = essential
-      .filter((element) => {
-        const rect = element.getBoundingClientRect();
-        return rect.right < -1 || rect.left > viewportWidth + 1;
-      })
-      .map((element) => element.getAttribute('aria-label') || element.textContent?.trim() || element.tagName);
-    const focus = document.querySelector('.budget-focus');
-    const details = document.querySelector('.budget-results');
-    const auxiliary = document.querySelector('.budget-inventory');
-    const hierarchyValid = Boolean(details && auxiliary && (details.compareDocumentPosition(auxiliary) & Node.DOCUMENT_POSITION_FOLLOWING) && (!focus || (focus.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING)));
-    const decisionLabelsVisible = !focus || ['Planejado', 'Realizado', 'Disponível'].every((label) => Array.from(focus.querySelectorAll('dt')).some((term) => term.textContent?.trim() === label));
-    const financialNodes = Array.from(document.querySelectorAll('main .sf-money, main .budget-currency'));
-    const moneyNodes = Array.from(document.querySelectorAll('.budget-focus .sf-money, .budget-results .sf-money'));
-    const trailingCurrencyCodesAbsent = moneyNodes.every(node =>
-      !node.querySelector('.sf-money-currency') && !/\s[A-Z]{3}$/.test(node.textContent?.trim() ?? ''));
-    const tableMoneyUnbroken = Array.from(
-      document.querySelectorAll('.budget-results .sf-table .sf-money-value'),
-    ).every((node) => getComputedStyle(node).whiteSpace === 'nowrap');
-    const mobileFilterCollapsed = !document.querySelector('[data-budget-mobile-filters]')?.open;
-    const financialLabelsLegible = financialNodes.every((node) => {
-      const style = getComputedStyle(node);
-      return !(['hidden', 'clip'].includes(style.overflowX) && node.scrollWidth > node.clientWidth + 1);
-    });
-    return {
-      hierarchyValid,
-      decisionLabelsVisible,
-      financialLabelsLegible,
-      tableMoneyUnbroken,
-      trailingCurrencyCodesAbsent,
-      mobileFilterCollapsed,
-      pathname: location.pathname,
-      viewportWidth,
-      documentFits: document.documentElement.scrollWidth <= viewportWidth + 1,
-      hasMain: Boolean(document.querySelector('main')),
-      hasHeading: Array.from(document.querySelectorAll('h1, main h2')).some(visible),
-      essentialOutsideViewport,
-    };
-  })()`;
-}
-
-function negativeControlExpression() {
-  return `(() => {
-    const probe = () => ${measurementExpression()};
-    const inventory = document.querySelector('.budget-inventory');
-    const details = document.querySelector('.budget-results');
-    if (!inventory || !details) return { error: 'Missing budget sections' };
-    const marker = document.createComment('restore-inventory-position');
-    inventory.before(marker);
-    details.before(inventory);
-    const hierarchyRejected = probe().hierarchyValid === false;
-    marker.replaceWith(inventory);
-    const hierarchyRestored = probe().hierarchyValid === true;
-
-    const money = document.querySelector('.budget-focus .sf-money') ||
-      document.querySelector('.budget-results .sf-money');
-    if (!money) return { error: 'No rendered financial value to test' };
-    const originalStyle = money.getAttribute('style');
-    money.style.setProperty('width', '1px', 'important');
-    money.style.setProperty('overflow-x', 'hidden', 'important');
-    money.style.setProperty('white-space', 'nowrap', 'important');
-    money.style.setProperty('display', 'block', 'important');
-    const clippedValueRejected = probe().financialLabelsLegible === false;
-    if (originalStyle === null) money.removeAttribute('style');
-    else money.setAttribute('style', originalStyle);
-    const clippedValueRestored = probe().financialLabelsLegible === true;
-    const bogusCode = document.createElement('small');
-    bogusCode.className = 'sf-money-currency';
-    bogusCode.textContent = money.dataset.currency;
-    money.append(bogusCode);
-    const tableNumber = document.querySelector('.budget-results .sf-table .sf-money-value');
-    if (!tableNumber) return { error: 'No table financial value to test' };
-    const originalTableStyle = tableNumber.getAttribute('style');
-    tableNumber.style.setProperty('white-space', 'normal', 'important');
-    tableNumber.style.setProperty('overflow-wrap', 'anywhere', 'important');
-    const brokenNumberRejected = probe().tableMoneyUnbroken === false;
-    if (originalTableStyle === null) tableNumber.removeAttribute('style');
-    else tableNumber.setAttribute('style', originalTableStyle);
-    const brokenNumberRestored = probe().tableMoneyUnbroken === true;
-    const trailingCodeRejected = probe().trailingCurrencyCodesAbsent === false;
-    bogusCode.remove();
-    const trailingCodeRestored = probe().trailingCurrencyCodesAbsent === true;
-    return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored,
-      brokenNumberRejected, brokenNumberRestored, trailingCodeRejected, trailingCodeRestored };
-  })()`;
 }
 
 function budgetAcceptanceFixtureExpression() {
