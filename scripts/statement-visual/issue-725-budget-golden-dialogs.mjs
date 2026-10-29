@@ -121,10 +121,7 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
         };
       })()`,
     );
-    assert.ok(
-      hoverTarget?.withinViewport,
-      `Cancel button outside viewport at ${viewport.name}`,
-    );
+    assert.ok(hoverTarget?.withinViewport, `Cancel button outside viewport at ${viewport.name}`);
     await cdp.send("Input.dispatchMouseEvent", {
       type: "mouseMoved",
       x: hoverTarget.x,
