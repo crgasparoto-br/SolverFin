@@ -146,7 +146,13 @@ describe("budgets page issue 619", () => {
       const url = new URL(String(input), "http://solverfin.test");
       if (url.pathname === "/api/budgets/dashboard") {
         return json({
-          usage: [unbudgetedUsage({ categoryId: "health", realizedAmountMinor: 9_000, committedAmountMinor: 0 })],
+          usage: [
+            unbudgetedUsage({
+              categoryId: "health",
+              realizedAmountMinor: 9_000,
+              committedAmountMinor: 0,
+            }),
+          ],
         });
       }
       return normalFetch(input);
@@ -159,6 +165,7 @@ describe("budgets page issue 619", () => {
     );
     assert.equal((focus.match(/class="budget-focus-item"/g) ?? []).length, 2);
     assert.doesNotMatch(focus, /budget-unbudgeted-plan/);
+    assert.match(focus, /Restante \(antes dos compromissos\)/);
     assert.match(focus, /Editar orçamento/);
     assert.match(html, /Crie um orçamento para definir um valor planejado/);
   });

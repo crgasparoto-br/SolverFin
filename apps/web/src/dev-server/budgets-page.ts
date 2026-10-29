@@ -109,8 +109,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
         {
           eyebrow: "Planejamento por categoria",
           title: "Orçamentos",
-          description:
-            "Acompanhe planejado, realizado e disponível por período e moeda.",
+          description: "Acompanhe planejado, realizado e disponível por período e moeda.",
           actionsHtml: newBudgetTrigger,
         },
       )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
@@ -287,6 +286,10 @@ function renderBudgetFocusItem(row: BudgetRowViewModel): string {
     row.source === "budget"
       ? renderBudgetMoney(row.availableAmountMinor, row.currency)
       : '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
+  const remaining =
+    row.source === "budget"
+      ? `<p class="budget-focus-remaining">Restante (antes dos compromissos): ${renderBudgetMoney(row.remainingAmountMinor, row.currency)}</p>`
+      : "";
   const overBudget =
     row.source === "budget" && row.overBudgetAmountMinor !== null && row.overBudgetAmountMinor > 0
       ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
@@ -294,7 +297,7 @@ function renderBudgetFocusItem(row: BudgetRowViewModel): string {
   return `<article class="budget-focus-item">
     <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div>${renderBudgetStatus(row)}</div>
     <dl class="budget-focus-values"><div><dt>Planejado</dt><dd>${planned}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(row.actualAmountMinor, row.currency)}</dd></div><div><dt>Disponível</dt><dd>${available}</dd></div></dl>
-    ${overBudget}<div class="budget-focus-actions">${renderBudgetFocusAction(row)}</div>
+    ${remaining}${overBudget}<div class="budget-focus-actions">${renderBudgetFocusAction(row)}</div>
   </article>`;
 }
 
@@ -593,6 +596,8 @@ ${sharedDialogStyles()}
     .budget-focus-values dd { font-size: 1.04rem; font-variant-numeric: tabular-nums; font-weight: 800; margin: 3px 0 0; overflow-wrap: anywhere; }
     .budget-focus-values .sf-money { display: inline-flex; flex-wrap: wrap; gap: 2px 4px; white-space: normal; }
     .budget-focus-values .sf-money-currency { font-size: .69rem; font-weight: 700; }
+    .budget-focus-remaining { color: var(--muted); font-size: .76rem; margin: 0; }
+    .budget-focus-remaining .sf-money { color: var(--text); font-weight: 700; }
     .budget-focus-actions { display: flex; justify-content: flex-start; }
     .budget-focus-actions .secondary-button { min-height: 44px; }
     .budget-state { color: var(--sf-color-muted-text); display: inline-block; font-size: .73rem; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }

@@ -181,7 +181,7 @@ A tabela apresenta, por item:
 
 Para `unbudgeted`, o planejado aparece como **Sem orçamento**. Para `uncategorized`, aparece como **Sem categoria**. O disponivel e explicitamente inaplicavel quando nao existe orcamento real.
 
-A leitura inicial apresenta ate tres recortes individuais, priorizando situacoes que requerem atencao e preservando um destaque por moeda. Cada recorte exibe categoria, periodo, moeda, planejado, realizado, disponivel, situacao recebida da API e acao contextual. A tabela continua contendo todos os itens, incluindo comprometido, projetado, disponivel, status e acoes. Contagens de catalogo aparecem apenas em uma faixa auxiliar abaixo da tabela; nenhuma delas se torna um total financeiro. Filtros ativos seguem identificados no SSR, inclusive quando nao ha resultados.
+A leitura inicial apresenta ate tres recortes individuais, priorizando situacoes que requerem atencao e preservando um destaque por moeda. Cada recorte exibe categoria, periodo, moeda, planejado, realizado, disponivel, restante antes dos compromissos, situacao recebida da API e acao contextual. A tabela continua contendo todos os itens, incluindo comprometido, projetado, disponivel, status e acoes. Contagens de catalogo aparecem apenas em uma faixa auxiliar abaixo da tabela; nenhuma delas se torna um total financeiro. Filtros ativos seguem identificados no SSR, inclusive quando nao ha resultados.
 
 A tela nao calcula `committed`, `projected`, `available` nem `overBudget`.
 
