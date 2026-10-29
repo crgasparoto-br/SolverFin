@@ -192,12 +192,18 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
     assert.equal(menuEvidence.icons, true, `Budget menu icons missing at ${viewport.name}`);
     await screenshot(cdp, join(outputDir, `issue-725-budget-actions-${viewport.name}.png`));
     await cdp.send("Input.dispatchKeyEvent", {
-      type: "keyDown", key: "ArrowDown", code: "ArrowDown", windowsVirtualKeyCode: 40,
+      type: "keyDown",
+      key: "ArrowDown",
+      code: "ArrowDown",
+      windowsVirtualKeyCode: 40,
     });
     const arrow = await evaluate(cdp, `document.activeElement?.textContent?.trim() === 'Editar'`);
     assert.equal(arrow, true, `Budget menu arrow navigation failed at ${viewport.name}`);
     await cdp.send("Input.dispatchKeyEvent", {
-      type: "keyDown", key: "Escape", code: "Escape", windowsVirtualKeyCode: 27,
+      type: "keyDown",
+      key: "Escape",
+      code: "Escape",
+      windowsVirtualKeyCode: 27,
     });
     const escape = await evaluate(
       cdp,

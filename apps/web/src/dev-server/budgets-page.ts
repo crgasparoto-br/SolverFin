@@ -13,7 +13,11 @@ import {
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
-import { renderBudgetActionMenu, renderBudgetActionMenuScriptTag, renderBudgetActionMenuStyles } from "./budgets-action-menu.js";
+import {
+  renderBudgetActionMenu,
+  renderBudgetActionMenuScriptTag,
+  renderBudgetActionMenuStyles,
+} from "./budgets-action-menu.js";
 import {
   renderBudgetFocus,
   renderBudgetInventory,
@@ -124,7 +128,9 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
       )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
         .filter((row) => row.source === "budget")
         .map((row) => renderBudgetEditDialog(row, categories))
-        .join("")}${renderSolverFinUiInteractionsScriptTag()}${renderBudgetActionMenuScriptTag()}${budgetRuntimeScript()}</div>`,
+        .join(
+          "",
+        )}${renderSolverFinUiInteractionsScriptTag()}${renderBudgetActionMenuScriptTag()}${budgetRuntimeScript()}</div>`,
     }),
   );
 }
@@ -324,9 +330,10 @@ function renderAvailableCell(row: BudgetRowViewModel): string {
 
 function renderBudgetComposition(row: BudgetRowViewModel): string {
   const details = renderCompositionDetails(row);
-  const hint = row.source === "unbudgeted"
-    ? '<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span>'
-    : "";
+  const hint =
+    row.source === "unbudgeted"
+      ? '<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span>'
+      : "";
   return `<div class="budget-composition-cell">${details}${hint}</div>`;
 }
 

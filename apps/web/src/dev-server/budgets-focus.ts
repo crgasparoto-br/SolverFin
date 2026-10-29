@@ -84,8 +84,12 @@ export function renderBudgetStatus(row: BudgetRowViewModel, compact = false): st
   } as const;
   const glyph = glyphs[status as keyof typeof glyphs] ?? "info";
   const label = labels[status] ?? "Situação não identificada";
-  const tone = status === "exceeded" || status === "approaching"
-    ? "attention" : status === "on_track" ? "positive" : "neutral";
+  const tone =
+    status === "exceeded" || status === "approaching"
+      ? "attention"
+      : status === "on_track"
+        ? "positive"
+        : "neutral";
   return `<span role="img" class="budget-state budget-state--${tone}" data-budget-state="${renderText(status)}" title="${renderText(label)}" aria-label="${renderText(label)}">${icon(glyph, 16)}${compact ? "" : `<span class="budget-state-label">${renderText(label)}</span>`}</span>`;
 }
 

@@ -2,17 +2,21 @@ import { renderText } from "../design-system/primitives.js";
 import { icon } from "./icons.js";
 import type { BudgetRowViewModel } from "./budgets-view-model.js";
 
-export function renderBudgetActionMenu(row: BudgetRowViewModel, context: "focus" | "table"): string {
+export function renderBudgetActionMenu(
+  row: BudgetRowViewModel,
+  context: "focus" | "table",
+): string {
   const id = renderText(`budget-actions-${context}-${encodeURIComponent(row.id)}`);
   const path = `/api/budgets/${encodeURIComponent(row.id)}`;
   const editId = renderText(`edit-budget-dialog-${row.id}`);
-  const items = row.source === "budget"
-    ? `<button type="button" role="menuitem" class="budget-action-item" data-api-action data-api-method="GET" data-api-path="${path}/usage" title="Atualizar acompanhamento">${icon("refresh-cw", 16)}<span>Atualizar</span></button>
+  const items =
+    row.source === "budget"
+      ? `<button type="button" role="menuitem" class="budget-action-item" data-api-action data-api-method="GET" data-api-path="${path}/usage" title="Atualizar acompanhamento">${icon("refresh-cw", 16)}<span>Atualizar</span></button>
       <button type="button" role="menuitem" class="budget-action-item" data-sf-dialog-open="${editId}" data-open-dialog="${editId}" title="Editar orçamento">${icon("pencil", 16)}<span>Editar</span></button>
       ${row.status === "archived" ? "" : `<button type="button" role="menuitem" class="budget-action-item budget-action-danger" data-api-action data-api-method="POST" data-api-path="${path}/archive" data-api-confirm="Arquivar este orçamento?" title="Arquivar orçamento">${icon("archive", 16)}<span>Arquivar</span></button>`}`
-    : row.source === "uncategorized"
-      ? `<a role="menuitem" class="budget-action-item" href="/lancamentos" title="Categorizar no Extrato">${icon("tag", 16)}<span>Categorizar no Extrato</span></a>`
-      : `<button type="button" role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" title="Novo orçamento">${icon("plus", 16)}<span>Novo orçamento</span></button>`;
+      : row.source === "uncategorized"
+        ? `<a role="menuitem" class="budget-action-item" href="/lancamentos" title="Categorizar no Extrato">${icon("tag", 16)}<span>Categorizar no Extrato</span></a>`
+        : `<button type="button" role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" title="Novo orçamento">${icon("plus", 16)}<span>Novo orçamento</span></button>`;
   const label = renderText(row.categoryName);
   return `<div class="budget-action-menu" data-budget-action-menu data-budget-action-menu-context="${context}">
     <button type="button" class="sf-button sf-button-ghost sf-focus-ring budget-action-trigger" data-budget-menu-trigger aria-haspopup="menu" aria-controls="${id}" aria-expanded="false" aria-label="Ações de ${label}" title="Mais ações">${icon("more-vertical", 18)}</button>

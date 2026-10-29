@@ -291,12 +291,17 @@ describe("budgets page issue 619", () => {
     assert.doesNotMatch(routeCss, /#fecaca|\.danger-button \{|\.secondary-button \{/);
   });
 
-
   it("shows a single primary creation action and unified icon-only three-dot menu triggers", async () => {
     globalThis.fetch = baseFetch();
     const html = await renderBudgetsPage("token");
-    const focus = html.slice(html.indexOf('<section class="budget-focus"'), html.indexOf('<section class="budget-results panel"'));
-    const table = html.slice(html.indexOf('<section class="budget-results panel"'), html.indexOf('<section class="budget-inventory"'));
+    const focus = html.slice(
+      html.indexOf('<section class="budget-focus"'),
+      html.indexOf('<section class="budget-results panel"'),
+    );
+    const table = html.slice(
+      html.indexOf('<section class="budget-results panel"'),
+      html.indexOf('<section class="budget-inventory"'),
+    );
     assert.match(html, /budget-primary-action/);
     assert.match(html, /data-sf-dialog-open="new-budget-dialog"/);
     assert.equal((focus.match(/data-budget-action-menu-context="focus"/g) ?? []).length, 2);
@@ -308,9 +313,15 @@ describe("budgets page issue 619", () => {
       assert.match(section, /data-budget-menu-trigger aria-haspopup="menu"/);
       assert.match(section, /aria-expanded="false"/);
       assert.match(section, /role="menu"[^>]* hidden/);
-      assert.match(section, /data-api-method="GET" data-api-path="\/api\/budgets\/budget-brl\/usage"/);
+      assert.match(
+        section,
+        /data-api-method="GET" data-api-path="\/api\/budgets\/budget-brl\/usage"/,
+      );
       assert.match(section, /data-sf-dialog-open="edit-budget-dialog-budget-brl"/);
-      assert.match(section, /data-api-method="POST" data-api-path="\/api\/budgets\/budget-brl\/archive"/);
+      assert.match(
+        section,
+        /data-api-method="POST" data-api-path="\/api\/budgets\/budget-brl\/archive"/,
+      );
       assert.match(section, /<svg[^>]*aria-hidden="true"/);
     }
     assert.match(html, /event.key === 'Escape'/);
@@ -324,8 +335,16 @@ describe("budgets page issue 619", () => {
       if (url.pathname === "/api/budgets/dashboard") {
         return json({
           usage: [
-            unbudgetedUsage({ categoryId: "health", realizedAmountMinor: 500, committedAmountMinor: 0 }),
-            unbudgetedUsage({ source: "uncategorized", realizedAmountMinor: 700, committedAmountMinor: 0 }),
+            unbudgetedUsage({
+              categoryId: "health",
+              realizedAmountMinor: 500,
+              committedAmountMinor: 0,
+            }),
+            unbudgetedUsage({
+              source: "uncategorized",
+              realizedAmountMinor: 700,
+              committedAmountMinor: 0,
+            }),
           ],
         });
       }
@@ -334,9 +353,15 @@ describe("budgets page issue 619", () => {
       return json({});
     };
     const html = await renderBudgetsPage("token");
-    assert.match(html, /role="img" class="budget-state[^"]*" data-budget-state="unbudgeted" title="Sem orçamento" aria-label="Sem orçamento"/);
+    assert.match(
+      html,
+      /role="img" class="budget-state[^"]*" data-budget-state="unbudgeted" title="Sem orçamento" aria-label="Sem orçamento"/,
+    );
     assert.match(html, /data-budget-action-menu-context="table"/);
-    assert.match(html, /role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog"/);
+    assert.match(
+      html,
+      /role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog"/,
+    );
     assert.match(html, /role="menuitem" class="budget-action-item" href="\/lancamentos"/);
     assert.doesNotMatch(html, /data-api-path="\/api\/budgets\/unbudgeted:/);
   });
