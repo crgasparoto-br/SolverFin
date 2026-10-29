@@ -188,7 +188,11 @@ try {
     return { submitted: valid, categoryId, dialogOpened: true };
   })()`,
   );
-  assert.equal(creation.submitted, true, `Create budget form was invalid: ${JSON.stringify(creation)}`);
+  assert.equal(
+    creation.submitted,
+    true,
+    `Create budget form was invalid: ${JSON.stringify(creation)}`,
+  );
   const created = await waitForBudget(browser.cdp, {
     categoryId: creation.categoryId,
     periodStartOn: "2032-05-01",
@@ -396,16 +400,21 @@ function budgetAcceptanceFixtureExpression() {
 }
 
 async function readBudget(cdp, id) {
-  return evaluate(cdp, `(async () => {
+  return evaluate(
+    cdp,
+    `(async () => {
     const response = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
     if (!response.ok) throw new Error('Budget readback failed: ' + response.status);
     const body = await response.json();
     return (body.budgets ?? []).find((budget) => budget.id === ${JSON.stringify(id)}) ?? null;
-  })()`);
+  })()`,
+  );
 }
 
 async function waitForBudget(cdp, expected) {
-  return waitForBrowserState(cdp, `(async () => {
+  return waitForBrowserState(
+    cdp,
+    `(async () => {
     const response = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
     if (!response.ok) throw new Error('Budget readback failed: ' + response.status);
     const body = await response.json();
@@ -414,7 +423,8 @@ async function waitForBudget(cdp, expected) {
         ? budget.id === ${JSON.stringify(expected.id ?? null)} && budget.plannedAmountMinor === ${expected.plannedAmountMinor}
         : budget.categoryId === ${JSON.stringify(expected.categoryId ?? null)} && budget.periodStartOn === ${JSON.stringify(expected.periodStartOn ?? null)} && budget.plannedAmountMinor === ${expected.plannedAmountMinor};
     }) ?? null;
-  })()`);
+  })()`,
+  );
 }
 
 async function waitForBrowserState(cdp, expression) {
