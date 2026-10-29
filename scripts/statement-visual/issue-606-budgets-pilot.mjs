@@ -175,7 +175,8 @@ try {
     browser.cdp,
     `(() => Array.from(document.querySelectorAll('.budget-results td[data-column="category"] .budget-category'))
       .every((category) => category.firstElementChild?.classList.contains('budget-state') &&
-        category.children[1]?.tagName === 'STRONG'))()`,
+        category.children[1]?.classList.contains('budget-category-tree') &&
+        Boolean(category.children[1]?.querySelector('strong'))))()`,
   );
   assert.equal(iconFirstTable, true, "Budget category must begin with the situation icon");
 

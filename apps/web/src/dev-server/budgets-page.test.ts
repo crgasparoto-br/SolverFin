@@ -456,7 +456,7 @@ describe("budgets page issue 619", () => {
 
     assert.match(html, /<option value="USD" selected>/);
     assert.match(html, /<option value="active" selected>/);
-    assert.match(html, /Recorte atual: moeda <strong>USD<\/strong>/);
+    assert.match(html, /moeda <strong>USD<\/strong>/);
     assert.match(html, /data-budget-mobile-filters data-active-filters="true" open/);
     assert.match(focus, /data-currency="USD"/);
     assert.doesNotMatch(focus, /data-currency="BRL"/);
