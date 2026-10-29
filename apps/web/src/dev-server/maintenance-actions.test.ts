@@ -105,10 +105,12 @@ async function cardsExposeBlockArchivePurchaseAndInvoiceActions(): Promise<void>
 async function budgetsExposeUsageAndArchiveActions(): Promise<void> {
   const html = await renderBudgetsPage("token");
 
-  assert.match(
-    html,
-    /data-api-path="\/api\/budgets\/budget-1\/usage" title="Atualizar acompanhamento">Atualizar<\/button>/,
-  );
+  const refreshAction = html.match(
+    /<button[^>]*data-api-path="\/api\/budgets\/budget-1\/usage"[^>]*>[\s\S]*?<\/button>/,
+  )?.[0];
+  assert.ok(refreshAction, "O menu de ações deve atualizar o acompanhamento do orçamento");
+  assert.match(refreshAction, /<svg[^>]*aria-hidden="true"/);
+  assert.match(refreshAction, /<span>Atualizar<\/span>/);
   assert.match(
     html,
     /data-api-path="\/api\/budgets\/budget-1\/archive" data-api-confirm="Arquivar este orçamento\?"/,
