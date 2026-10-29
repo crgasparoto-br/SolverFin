@@ -419,3 +419,10 @@ Parcelas elegiveis apresentam `adjustedInstallmentAmount` sem liberar dados prot
 ### Issue #734 — foco na memória de cálculo CDI após menu de ações
 
 No extrato, `details.account-remuneration-audit > summary` deve receber foco e alternar com Enter tanto no desktop quanto no mobile. Quando o menu de ações da mesma linha está aberto, o fluxo de teclado fecha primeiro esse menu com **Escape**, verifica o seu fechamento e então move foco para a memória de cálculo. O controle negativo continua rejeitando resumo que não receba foco e Enter que não expanda/recolha. A evidência `issue-490-account-remuneration.json` só é considerada completa se o fluxo desktop/mobile terminar, incluindo o teste do menu de ações; uma falha no caso primário mantém o caso mobile dependente reprovado, sem mascaramento.
+
+### Issue #725 — Formulário de Novo/Editar orçamento (Golden Screen)
+
+- Categoria usa seleção obrigatória explícita com caminho hierárquico completo de despesas; criação não escolhe a primeira categoria implicitamente. Edição identifica categorias arquivadas já vinculadas, mas impede sua seleção para um novo orçamento.
+- Moeda usa o catálogo `accountCurrencies` existente (BRL, USD, EUR), com BRL preselecionado na criação e manutenção explícita de uma moeda legada na edição. Não existe digitação redundante do código nem conversão automática.
+- Valor planejado usa máscara pt-BR de centavos (`1.234,56`), prefixo monetário sincronizado com a escolha da moeda e verificação de formato seguro antes do POST/PATCH. O código ISO não se repete ao final do valor.
+- Novo e editar compartilham o diálogo e os controles neutros/primários da Golden Screen, com labels, foco, Escape, cancelamento, mensagens de erro e retorno de foco. Conferir em Chrome autenticado desktop 1366×768 e mobile 390×844/320×740, incluindo categoria não selecionada, BRL→USD→EUR, digitação, valor negativo rejeitado, reedição e persistência.

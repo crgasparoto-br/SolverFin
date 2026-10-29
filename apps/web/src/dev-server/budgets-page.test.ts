@@ -136,8 +136,50 @@ describe("budgets page issue 619", () => {
     const html = await renderBudgetsPage("token");
     assert.match(html, /data-open-dialog="new-budget-dialog"/);
     assert.match(html, /id="edit-budget-dialog-budget-brl"/);
-    assert.match(html, /name="currency"[^>]*value="BRL"/);
+    assert.match(html, /<select name="currency" data-budget-currency-select required><option value="BRL" selected>/);
     assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/);
+  });
+
+  it("uses a required hierarchical category selector and a real supported-currency dropdown", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token");
+    const createStart = html.indexOf('<dialog class="sf-dialog" id="new-budget-dialog"');
+    const editStart = html.indexOf('<dialog class="sf-dialog" id="edit-budget-dialog-');
+    assert.ok(createStart > 0 && editStart > createStart);
+    const create = html.slice(createStart, editStart);
+    const edit = html.slice(editStart);
+
+    assert.match(create, /<select name="categoryId" required><option value="" disabled selected>Selecione uma categoria/);
+    assert.match(create, /<option value="groceries">Alimentação › Mercado<\/option>/);
+    assert.doesNotMatch(create, /value="retired"|value="salary"/);
+    assert.match(edit, /<option value="food" selected>Alimentação<\/option>/);
+    assert.match(create, /<select name="currency" data-budget-currency-select required>/);
+    for (const currency of ["BRL", "USD", "EUR"]) {
+      assert.match(create, new RegExp(`<option value="${currency}"`));
+    }
+    assert.match(create, /<option value="BRL" selected>/);
+    assert.doesNotMatch(create, /<input name="currency"/);
+    assert.match(create, /data-budget-currency-symbol aria-hidden="true">R\$/);
+    assert.match(create, /name="plannedAmountMinor" data-money data-budget-money/);
+    assert.match(edit, /name="plannedAmountMinor" data-money data-budget-money value="1\.000,00"/);
+    assert.match(html, /Number\.isSafeInteger\(minor\)/);
+    assert.match(html, /setCustomValidity\("O valor planejado não pode ser negativo\."\)/);
+  });
+
+  it("keeps a previously selected archived expense category explicit during editing", async () => {
+    const normal = baseFetch();
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets") {
+        return json({ budgets: [{ ...budget("budget-brl", "BRL", 100_000), categoryId: "retired" }] });
+      }
+      return normal(input);
+    };
+    const html = await renderBudgetsPage("token");
+    const create = html.slice(html.indexOf('id="new-budget-dialog"'), html.indexOf('id="edit-budget-dialog-'));
+    const edit = html.slice(html.indexOf('id="edit-budget-dialog-'));
+    assert.doesNotMatch(create, /value="retired"/);
+    assert.match(edit, /<option value="retired" selected>Alimentação › Antiga \(arquivada\)<\/option>/);
   });
 
   it("features a planned budget before unbudgeted spending in the same currency", async () => {
@@ -307,6 +349,9 @@ function categoriesJson(): Response {
     categories: [
       { id: "food", name: "Alimentação", kind: "expense", status: "active" },
       { id: "health", name: "Saúde", kind: "expense", status: "active" },
+      { id: "groceries", name: "Mercado", kind: "expense", status: "active", parentCategoryId: "food" },
+      { id: "retired", name: "Antiga", kind: "expense", status: "archived", parentCategoryId: "food" },
+      { id: "salary", name: "Salário", kind: "income", status: "active" },
     ],
   });
 }

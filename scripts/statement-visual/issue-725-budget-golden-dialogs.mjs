@@ -54,6 +54,50 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       );
     }
     assert.ok(geometry.cancelRect?.width >= 44 && geometry.cancelRect?.height >= 40);
+    const fieldStates = await evaluate(
+      cdp,
+      `(() => {
+        const dialog = document.getElementById('new-budget-dialog');
+        const form = dialog.querySelector('form');
+        const category = form.elements.namedItem('categoryId');
+        const currency = form.elements.namedItem('currency');
+        const amount = form.elements.namedItem('plannedAmountMinor');
+        const prefix = form.querySelector('[data-budget-currency-symbol]');
+        const currencies = Array.from(currency?.options ?? []).map((item) => item.value);
+        const emptyCategoryRejected = category.value === '' && category.validity.valueMissing;
+        const categoryOption = Array.from(category.options).find((item) => item.value && !item.disabled);
+        if (categoryOption) category.value = categoryOption.value;
+        const chosenCategoryValid = Boolean(categoryOption && category.validity.valid);
+        const defaultBRL = currency.value === 'BRL' && prefix?.textContent === 'R$';
+        currency.value = 'USD';
+        currency.dispatchEvent(new Event('change', { bubbles: true }));
+        const switchedToUSD = currency.value === 'USD' && prefix?.textContent?.includes('$');
+        amount.value = '123456';
+        amount.dispatchEvent(new Event('input', { bubbles: true }));
+        const typedMoneyFormatted = amount.value === '1.234,56';
+        currency.value = 'EUR';
+        currency.dispatchEvent(new Event('change', { bubbles: true }));
+        const switchedToEUR = currency.value === 'EUR' && prefix?.textContent?.includes('€');
+        amount.value = '-100';
+        amount.dispatchEvent(new Event('input', { bubbles: true }));
+        const invalidNegativeRejected = amount.validity.customError;
+        amount.value = '1.234,56';
+        amount.dispatchEvent(new Event('input', { bubbles: true }));
+        const validMoneyRestored = amount.value === '1.234,56' && amount.validity.valid;
+        const rect = amount.getBoundingClientRect();
+        const panelRect = dialog.getBoundingClientRect();
+        const fieldContained = rect.left >= panelRect.left - 2 && rect.right <= panelRect.right + 2;
+        return { defaultBRL, currencies, emptyCategoryRejected, chosenCategoryValid,
+          switchedToUSD, typedMoneyFormatted, switchedToEUR, invalidNegativeRejected,
+          validMoneyRestored, fieldContained };
+      })()`,
+    );
+    assert.deepEqual(fieldStates.currencies, ['BRL', 'USD', 'EUR']);
+    for (const key of ['defaultBRL', 'emptyCategoryRejected', 'chosenCategoryValid',
+      'switchedToUSD', 'typedMoneyFormatted', 'switchedToEUR', 'invalidNegativeRejected',
+      'validMoneyRestored', 'fieldContained']) {
+      assert.equal(fieldStates[key], true, `Budget form ${key} failed at ${viewport.name}`);
+    }
     await screenshot(cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
     const { x, y, width, height } = geometry.cancelRect;
     await cdp.send("Input.dispatchMouseEvent", {
@@ -92,7 +136,7 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       },
       `Golden Screen modal state failed at ${viewport.name}`,
     );
-    goldenDialogs.push({ viewport: `${viewport.width}x${viewport.height}`, geometry, modalStates });
+    goldenDialogs.push({ viewport: `${viewport.width}x${viewport.height}`, geometry, fieldStates, modalStates });
   }
   return goldenDialogs;
 }
@@ -129,7 +173,7 @@ export async function checkBudgetDialogCancellation(cdp) {
       editTrigger?.click();
       const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
       const editOpen = edit?.open === true &&
-        Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
+        Boolean(edit.querySelector('form[data-api-method="PATCH"] select[name="currency"]'));
       const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
       const editClosedEvent = await cancelAndWait(edit, editCancel);
       const editCanceled = editClosedEvent && !edit?.open && document.activeElement === editTrigger;

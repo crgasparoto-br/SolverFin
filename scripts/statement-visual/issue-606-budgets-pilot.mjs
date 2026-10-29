@@ -189,11 +189,17 @@ try {
     const form = dialog?.querySelector('form[data-api-path="/api/budgets"]');
     if (!dialog?.open || !form) return { submitted: false, reason: 'create-dialog-missing' };
     const field = (name) => form.elements.namedItem(name);
-    const categoryId = field('categoryId')?.value;
+    const categorySelect = field('categoryId');
+    if (categorySelect && !categorySelect.value) {
+      const firstExpense = Array.from(categorySelect.options).find((option) => option.value && !option.disabled);
+      if (firstExpense) categorySelect.value = firstExpense.value;
+    }
+    const categoryId = categorySelect?.value;
     if (!categoryId) return { submitted: false, reason: 'expense-category-missing' };
     field('periodStartOn').value = '2032-05-01';
     field('periodEndOn').value = '2032-05-31';
     field('currency').value = 'USD';
+    field('currency').dispatchEvent(new Event('change', { bubbles: true }));
     field('plannedAmountMinor').value = '1234,56';
     const valid = form.checkValidity();
     if (valid) form.requestSubmit();

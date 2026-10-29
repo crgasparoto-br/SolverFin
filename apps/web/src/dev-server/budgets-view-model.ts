@@ -275,7 +275,7 @@ function validateUsage(
   return usage;
 }
 
-function buildCategoryPath(
+export function buildCategoryPath(
   categoryId: string,
   categoryIndex: ReadonlyMap<string, CategoryRecord>,
 ): string {

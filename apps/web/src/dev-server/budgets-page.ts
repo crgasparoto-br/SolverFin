@@ -13,6 +13,8 @@ import {
   renderText,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
+import { formatMoneyInput } from "./accounts-cards/presentation.js";
+import { accountCurrencies } from "./accounts-cards/view-model.js";
 import {
   renderBudgetFocus,
   renderBudgetInventory,
@@ -25,6 +27,7 @@ import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import {
   buildBudgetsPageViewModel,
+  buildCategoryPath,
   type BudgetPresentationFilters,
   type BudgetRecord,
   type BudgetRowViewModel,
@@ -389,32 +392,65 @@ function renderBudgetFields(
     row?.source === "budget" && row.plannedAmountMinor !== null
       ? renderText(formatMoneyInput(row.plannedAmountMinor))
       : "";
-  return `<label>Categoria<select name="categoryId" required>${renderCategoryOptions(categories, row?.categoryId)}</select></label>
+  const selectedCurrency = row ? row.currency : "BRL";
+  const currencySymbol = selectedCurrency
+    ? (new Intl.NumberFormat("pt-BR", { style: "currency", currency: selectedCurrency })
+        .formatToParts(0)
+        .find((part) => part.type === "currency")?.value ?? selectedCurrency)
+    : "";
+  return `<label class="budget-category-field">Categoria
+      <select name="categoryId" required>${renderCategoryOptions(categories, row?.categoryId)}</select></label>
     <label>Início do período<input name="periodStartOn" type="date" value="${renderText(row?.periodStartOn ?? "")}" required></label>
     <label>Fim do período<input name="periodEndOn" type="date" value="${renderText(row?.periodEndOn ?? "")}" required></label>
-    <label>Moeda<input name="currency" value="${renderText(row?.currency ?? "")}" inputmode="text" maxlength="3" pattern="[A-Za-z]{3}" placeholder="BRL" autocomplete="off" required></label>
-    <label>Valor planejado<input name="plannedAmountMinor" data-money value="${plannedValue}" inputmode="decimal" placeholder="0,00" required></label>`;
+    <label>Moeda<select name="currency" data-budget-currency-select required>${renderBudgetCurrencyOptions(selectedCurrency)}</select></label>
+    <label>Valor planejado<span class="budget-money-field"><span class="budget-money-prefix" data-budget-currency-symbol aria-hidden="true">${renderText(currencySymbol)}</span><input name="plannedAmountMinor" data-money data-budget-money value="${plannedValue}" inputmode="decimal" autocomplete="off" placeholder="0,00" required></span></label>`;
 }
 
 function renderCategoryOptions(
   categories: readonly CategoryRecord[],
   selectedCategoryId?: string,
 ): string {
-  const activeExpenses = categories.filter(
-    (category) => category.kind === "expense" && category.status === "active",
-  );
-  return activeExpenses
-    .slice()
-    .sort((left, right) => left.name.localeCompare(right.name, "pt-BR"))
-    .map(
+  const index = new Map(categories.map((category) => [category.id, category]));
+  const expenseCategories = categories
+    .filter(
       (category) =>
-        `<option value="${renderText(category.id)}"${selectedCategoryId === category.id ? " selected" : ""}>${renderText(category.name)}</option>`,
+        category.kind === "expense" &&
+        (category.status === "active" || category.id === selectedCategoryId),
+    )
+    .map((category) => ({
+      category,
+      path: buildCategoryPath(category.id, index),
+    }))
+    .sort((left, right) => left.path.localeCompare(right.path, "pt-BR"));
+  const stillAvailable = expenseCategories.some(({ category }) => category.id === selectedCategoryId);
+  const placeholder = selectedCategoryId && !stillAvailable
+    ? `<option value="" disabled selected>Categoria anterior indisponível — selecione outra</option>`
+    : `<option value="" disabled${!selectedCategoryId ? " selected" : ""}>Selecione uma categoria</option>`;
+  return placeholder + expenseCategories
+    .map(({ category, path }) =>
+      `<option value="${renderText(category.id)}"${selectedCategoryId === category.id ? " selected" : ""}>${renderText(path)}${category.status !== "active" ? " (arquivada)" : ""}</option>`,
     )
     .join("");
 }
 
-function formatMoneyInput(amountMinor: number): string {
-  return (amountMinor / 100).toFixed(2).replace(".", ",");
+function renderBudgetCurrencyOptions(selectedCurrency?: string): string {
+  const options: string[] = [...accountCurrencies];
+  if (
+    selectedCurrency &&
+    /^[A-Z]{3}$/.test(selectedCurrency) &&
+    !options.includes(selectedCurrency)
+  ) {
+    // Existing budgets may use a valid legacy currency outside the account catalog.
+    options.push(selectedCurrency);
+  }
+  const placeholder = selectedCurrency
+    ? ""
+    : '<option value="" disabled selected>Selecione uma moeda</option>';
+  return placeholder + options
+    .map((currency) =>
+      `<option value="${renderText(currency)}"${selectedCurrency === currency ? " selected" : ""}>${renderText(currency)}${accountCurrencies.some((available) => available === currency) ? "" : " (já cadastrada)"}</option>`,
+    )
+    .join("");
 }
 
 function renderShell(content: string): string {
@@ -475,7 +511,12 @@ ${renderBudgetFocusStyles()}
     .budget-composition li { display: grid; gap: 2px; text-align: left; }
     .budget-composition li > span:last-child { font-weight: 750; }
     .budget-edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .budget-edit-grid label { display: grid; gap: 5px; }
+    .budget-edit-grid label { display: grid; gap: 5px; min-width: 0; }
+    .budget-edit-grid label > input, .budget-edit-grid label > select { min-width: 0; width: 100%; }
+    .budget-edit-grid .budget-category-field { grid-column: 1 / -1; }
+    .budget-money-field { display: block; min-width: 0; position: relative; }
+    .budget-money-prefix { color: var(--sf-color-muted-text); font-weight: var(--sf-font-weight-semibold); left: var(--sf-space-3); pointer-events: none; position: absolute; top: 50%; transform: translateY(-50%); }
+    .budget-money-field input { font-variant-numeric: tabular-nums; min-width: 0; padding-inline-start: 60px; text-align: right; width: 100%; }
     .budget-edit-grid .form-status, .budget-edit-grid .budget-form-actions { grid-column: 1 / -1; }
     .budget-form-actions { display: flex; flex-wrap: wrap; gap: var(--sf-space-2); justify-content: flex-end; }
     .budget-form-actions .sf-button { min-height: var(--sf-density-interactive-target-min); }
@@ -499,6 +540,7 @@ ${renderBudgetFocusStyles()}
       .budget-filter-actions > * { flex: 1 1 0; min-width: 0; }
       .budget-edit-grid { grid-template-columns: 1fr; }
       .budget-edit-grid .form-status, .budget-edit-grid .budget-form-actions { grid-column: auto; }
+      .budget-edit-grid .budget-category-field { grid-column: 1 / -1; }
       .budget-form-actions > * { flex: 1 1 0; }
       .budgets-a1-page .sf-page-header-description { font-size: .82rem; line-height: 1.3; }
       .budget-section-heading { align-items: start; flex-direction: column; }
@@ -562,10 +604,40 @@ function budgetRuntimeScript(): string {
       return status;
     }
     function moneyToMinor(value) {
-      var normalized = String(value || "").trim().replace(/\\s/g, "").replace(/\\./g, "").replace(",", ".");
-      var amount = Number(normalized);
-      return Number.isFinite(amount) ? Math.round(amount * 100) : NaN;
+      var normalized = String(value || "").trim();
+      if (!/^(?:\\d+|\\d{1,3}(?:\\.\\d{3})+)(?:,\\d{1,2})?$/.test(normalized)) return NaN;
+      var parts = normalized.split(",");
+      var minor = Number(parts[0].replace(/\\./g, "")) * 100 + Number((parts[1] || "").padEnd(2, "0"));
+      return Number.isSafeInteger(minor) ? minor : NaN;
     }
+    document.addEventListener("input", function(event) {
+      var input = event.target;
+      if (!(input instanceof HTMLInputElement) || !input.matches("[data-budget-money]")) return;
+      if (input.value.includes("-")) {
+        input.setCustomValidity("O valor planejado não pode ser negativo.");
+        return;
+      }
+      var digits = input.value.replace(/\\D/g, "");
+      if (!digits) { input.value = ""; input.setCustomValidity(""); return; }
+      var minor = Number(digits);
+      if (!Number.isSafeInteger(minor)) {
+        input.setCustomValidity("Informe um valor dentro do limite permitido.");
+        return;
+      }
+      input.value = (minor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      input.setCustomValidity("");
+    });
+    document.addEventListener("change", function(event) {
+      var select = event.target;
+      if (!(select instanceof HTMLSelectElement) || !select.matches("[data-budget-currency-select]")) return;
+      var symbol = select.closest("form")?.querySelector("[data-budget-currency-symbol]");
+      if (!symbol) return;
+      try {
+        var currency = new Intl.NumberFormat("pt-BR", { style: "currency", currency: select.value })
+          .formatToParts(0).find(function(part) { return part.type === "currency"; });
+        symbol.textContent = currency?.value || select.value;
+      } catch (_) { symbol.textContent = select.value; }
+    });
     function buildPayload(form) {
       var payload = {};
       new FormData(form).forEach(function(value, key) {
@@ -573,7 +645,7 @@ function budgetRuntimeScript(): string {
         if (!text) return;
         if (key === "plannedAmountMinor") {
           var minor = moneyToMinor(text);
-          if (!Number.isFinite(minor)) throw new Error("Informe um valor planejado válido.");
+          if (!Number.isSafeInteger(minor)) throw new Error("Informe um valor planejado válido.");
           payload[key] = minor;
         } else if (key === "alertThresholdPercent") {
           payload[key] = Number(text);
