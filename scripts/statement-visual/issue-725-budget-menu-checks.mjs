@@ -81,7 +81,6 @@ export async function checkBudgetMenuPrefillPeriod(cdp, baseUrl, outputDir) {
   }
   await screenshot(cdp, join(outputDir, "issue-725-budgets-menu-layer-desktop.png"));
 
-
   const prefill = await evaluate(
     cdp,
     `(() => {
@@ -103,7 +102,6 @@ export async function checkBudgetMenuPrefillPeriod(cdp, baseUrl, outputDir) {
     })()`,
   );
   assert.deepEqual(prefill, { found: true, selected: true, reset: true });
-
 
   const optionPeriod = await evaluate(
     cdp,
@@ -128,7 +126,6 @@ export async function checkBudgetMenuPrefillPeriod(cdp, baseUrl, outputDir) {
   );
   assert.deepEqual(periodFilter, { selected: optionPeriod, active: true, context: true });
   await screenshot(cdp, join(outputDir, "issue-725-budgets-period-selected-desktop.png"));
-
 
   return { menuLayering, categoryPrefill: prefill, selectedPeriod: periodFilter };
 }

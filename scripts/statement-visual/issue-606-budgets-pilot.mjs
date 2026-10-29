@@ -4,7 +4,10 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
-import { measurementExpression, negativeControlExpression } from "./issue-725-budget-measurements.mjs";
+import {
+  measurementExpression,
+  negativeControlExpression,
+} from "./issue-725-budget-measurements.mjs";
 import { checkBudgetMenuPrefillPeriod } from "./issue-725-budget-menu-checks.mjs";
 import {
   checkBudgetDialogCancellation,
