@@ -73,7 +73,11 @@ try {
       `Budget repeats the explicit currency code after an amount at ${viewport.name}`,
     );
     if (viewport.width <= 560) {
-      assert.equal(measurements.mobileFilterCollapsed, true, "Unused mobile filters must be progressive");
+      assert.equal(
+        measurements.mobileFilterCollapsed,
+        true,
+        "Unused mobile filters must be progressive",
+      );
     }
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
@@ -156,7 +160,11 @@ try {
   }))()`,
   );
   assert.deepEqual(empty, {
-    currency: "EUR", message: true, focusCount: 0, documentFits: true, activeFiltersExpanded: true,
+    currency: "EUR",
+    message: true,
+    focusCount: 0,
+    documentFits: true,
+    activeFiltersExpanded: true,
   });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-empty-compact.png"));
 
@@ -192,7 +200,11 @@ try {
   })()`,
   );
   assert.deepEqual(dialogs, {
-    createOpen: true, editOpen: true, neutralCancel: true, createCanceled: true, editCanceled: true,
+    createOpen: true,
+    editOpen: true,
+    neutralCancel: true,
+    createCanceled: true,
+    editCanceled: true,
   });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
   const goldenDialogs = [];
@@ -204,7 +216,9 @@ try {
     await setViewport(browser.cdp, viewport.width, viewport.height);
     await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
     await sleep(200);
-    const geometry = await evaluate(browser.cdp, `(() => {
+    const geometry = await evaluate(
+      browser.cdp,
+      `(() => {
       const trigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
       trigger?.click();
       const dialog = document.getElementById('new-budget-dialog');
@@ -226,16 +240,37 @@ try {
         confirmPrimary: Boolean(confirm && confirm.classList.contains('sf-button-primary') && getComputedStyle(confirm).backgroundColor === primary),
         cancelRect: cancelRect && { x: cancelRect.x, y: cancelRect.y, width: cancelRect.width, height: cancelRect.height },
       };
-    })()`);
-    for (const check of ['open', 'centered', 'contained', 'scrollablePanel', 'cancelNeutral', 'confirmPrimary']) {
-      assert.equal(geometry[check], true, `Golden Screen modal ${check} failed at ${viewport.name}`);
+    })()`,
+    );
+    for (const check of [
+      "open",
+      "centered",
+      "contained",
+      "scrollablePanel",
+      "cancelNeutral",
+      "confirmPrimary",
+    ]) {
+      assert.equal(
+        geometry[check],
+        true,
+        `Golden Screen modal ${check} failed at ${viewport.name}`,
+      );
     }
     assert.ok(geometry.cancelRect?.width >= 44 && geometry.cancelRect?.height >= 40);
-    await screenshot(browser.cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
+    await screenshot(
+      browser.cdp,
+      join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`),
+    );
     const { x, y, width, height } = geometry.cancelRect;
-    await browser.cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(x + width / 2), y: Math.round(y + height / 2) });
+    await browser.cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved",
+      x: Math.round(x + width / 2),
+      y: Math.round(y + height / 2),
+    });
     await sleep(100);
-    const modalStates = await evaluate(browser.cdp, `(async () => {
+    const modalStates = await evaluate(
+      browser.cdp,
+      `(async () => {
       const dialog = document.getElementById('new-budget-dialog');
       const trigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
       const cancel = dialog.querySelector('.budget-form-actions [data-sf-dialog-close]');
@@ -251,10 +286,18 @@ try {
       cancel.click();
       await new Promise(resolve => setTimeout(resolve, 0));
       return { hoverNeutral, disabledReducedOpacity, canceled: !dialog.open, focusRestored: document.activeElement === trigger };
-    })()`);
-    assert.deepEqual(modalStates, {
-      hoverNeutral: true, disabledReducedOpacity: true, canceled: true, focusRestored: true,
-    }, `Golden Screen modal state failed at ${viewport.name}`);
+    })()`,
+    );
+    assert.deepEqual(
+      modalStates,
+      {
+        hoverNeutral: true,
+        disabledReducedOpacity: true,
+        canceled: true,
+        focusRestored: true,
+      },
+      `Golden Screen modal state failed at ${viewport.name}`,
+    );
     goldenDialogs.push({ viewport: `${viewport.width}x${viewport.height}`, geometry, modalStates });
   }
   report.goldenDialogs = goldenDialogs;

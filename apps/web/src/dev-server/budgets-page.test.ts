@@ -221,7 +221,14 @@ describe("budgets page issue 619", () => {
     globalThis.fetch = baseFetch();
     const html = await renderBudgetsPage("token");
     assert.equal((html.match(/class="budget-form-actions"/g) ?? []).length, 3);
-    assert.equal((html.match(/class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar<\/button>/g) ?? []).length, 3);
+    assert.equal(
+      (
+        html.match(
+          /class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar<\/button>/g,
+        ) ?? []
+      ).length,
+      3,
+    );
     assert.match(html, /class="sf-button sf-button-primary">Salvar alterações<\/button>/);
     assert.match(html, /class="sf-button danger-action" data-api-action/);
     assert.doesNotMatch(html, /#fecaca|\.danger-button \{|\.secondary-button \{/);
