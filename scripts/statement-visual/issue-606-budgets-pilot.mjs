@@ -28,6 +28,7 @@ try {
   for (const viewport of [
     { width: 1366, height: 768, name: "desktop" },
     { width: 390, height: 844, name: "mobile" },
+    { width: 320, height: 740, name: "compact-mobile" },
   ]) {
     await setViewport(browser.cdp, viewport.width, viewport.height);
     await navigate(browser.cdp, `${baseUrl}/orcamentos`);
@@ -50,6 +51,8 @@ try {
       0,
       `Budgets has essential controls outside viewport at ${viewport.name}`,
     );
+    assert.equal(measurements.hierarchyValid, true, `Budget financial hierarchy differs at ${viewport.name}`);
+    assert.equal(measurements.decisionLabelsVisible, true, `Budget decision labels missing at ${viewport.name}`);
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     report.scenarios.push({
@@ -90,7 +93,14 @@ function measurementExpression() {
         return rect.right < -1 || rect.left > viewportWidth + 1;
       })
       .map((element) => element.getAttribute('aria-label') || element.textContent?.trim() || element.tagName);
+    const focus = document.querySelector('.budget-focus');
+    const details = document.querySelector('.budget-results');
+    const auxiliary = document.querySelector('.budget-inventory');
+    const hierarchyValid = Boolean(details && auxiliary && (details.compareDocumentPosition(auxiliary) & Node.DOCUMENT_POSITION_FOLLOWING) && (!focus || (focus.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING)));
+    const decisionLabelsVisible = !focus || ['Planejado', 'Realizado', 'Disponível'].every((label) => Array.from(focus.querySelectorAll('dt')).some((term) => term.textContent?.trim() === label));
     return {
+      hierarchyValid,
+      decisionLabelsVisible,
       pathname: location.pathname,
       viewportWidth,
       documentFits: document.documentElement.scrollWidth <= viewportWidth + 1,

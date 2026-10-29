@@ -12,8 +12,6 @@ import {
   renderPageHeader,
   renderRecoverableError,
   renderSolverFinUiInteractionsScriptTag,
-  renderSummaryGrid,
-  renderMetricCard,
   renderText,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
@@ -22,6 +20,7 @@ import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import {
   buildBudgetsPageViewModel,
   type BudgetPresentationFilters,
+  type BudgetsPageViewModel,
   type BudgetRecord,
   type BudgetRowViewModel,
   type BudgetUsageLoad,
@@ -44,11 +43,15 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
     return renderShell(
       renderPageContainer({
         className: "budgets-a1-page",
-        childrenHtml: renderRecoverableError({
+        childrenHtml: `<div data-budgets-archetype="A1">${renderPageHeader({
+          eyebrow: "Planejamento por categoria",
+          title: "Orçamentos",
+          description: "Confira o acompanhamento por período e moeda.",
+        })}${renderRecoverableError({
           title: "Não foi possível carregar os orçamentos",
           description: budgetsResult.error,
-          actionHtml: '<a class="button-link" href="/orcamentos">Tentar novamente</a>',
-        }),
+          actionHtml: `<a class="button-link" href="/orcamentos${renderText(url?.search ?? "")}">Tentar novamente</a>`,
+        })}</div>`,
       }),
     );
   }
@@ -110,32 +113,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
             "Acompanhe planejado, realizado, comprometido, projetado e disponível por período e moeda. Itens sem orçamento ou sem categoria permanecem separados.",
           actionsHtml: newBudgetTrigger,
         },
-      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderSummaryGrid(
-        {
-          childrenHtml: [
-            renderSummaryMetric(
-              "Ativos",
-              String(viewModel.activeCount),
-              "Orçamentos disponíveis para acompanhamento",
-            ),
-            renderSummaryMetric(
-              "Sem orçamento",
-              String(viewModel.unbudgetedCount),
-              "Categorias identificadas sem valor planejado",
-            ),
-            renderSummaryMetric(
-              "Sem categoria",
-              String(viewModel.uncategorizedCount),
-              "Itens que ainda precisam ser categorizados",
-            ),
-            renderSummaryMetric(
-              "Moedas",
-              String(new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size),
-              "Sempre analisadas separadamente",
-            ),
-          ].join(""),
-        },
-      )}${renderBudgetTable(viewModel.rows)}${renderNewBudgetDialog(categories)}${viewModel.rows
+      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
         .filter((row) => row.source === "budget")
         .map((row) => renderBudgetEditDialog(row, categories))
         .join("")}${renderSolverFinUiInteractionsScriptTag()}${budgetRuntimeScript()}</div>`,
@@ -239,9 +217,10 @@ function renderBudgetFilters(
   currencies: readonly string[],
   filters: BudgetPresentationFilters,
 ): string {
+  const visibleCurrencies = Array.from(new Set([...currencies, ...(filters.currency ? [filters.currency] : [])])).sort();
   const currencyOptions = [
     '<option value="">Todas as moedas</option>',
-    ...currencies.map(
+    ...visibleCurrencies.map(
       (currency) =>
         `<option value="${renderText(currency)}"${filters.currency === currency ? " selected" : ""}>${renderText(currency)}</option>`,
     ),
@@ -263,23 +242,108 @@ function renderBudgetFilters(
       <label>Moeda<select name="currency">${currencyOptions}</select></label>
       <label>Estado<select name="status">${statusOptions}</select></label>
       <div class="budget-filter-actions"><button type="submit" class="sf-button sf-button-primary">Aplicar filtros</button><a class="button-link secondary-button" href="/orcamentos">Limpar</a></div>
-    </form>`,
+    </form><p class="budget-filter-context">Recorte atual: moeda <strong>${renderText(filters.currency ?? "todas, sem consolidação")}</strong> · estado <strong>${filters.status === "active" ? "ativos" : filters.status === "archived" ? "arquivados" : "todos"}</strong></p>`,
   });
 }
 
-function renderSummaryMetric(label: string, value: string, detail: string): string {
-  return renderMetricCard({ label, value, detail, tone: "neutral" });
+function budgetFocusPriority(row: BudgetRowViewModel): number {
+  if (row.usageStatus === "exceeded") return 0;
+  if (row.usageStatus === "approaching") return 1;
+  if (row.source === "uncategorized" || row.source === "unbudgeted") return 2;
+  if (row.usageStatus === "unavailable") return 3;
+  return 4;
 }
 
-function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
+function renderBudgetFocus(rows: readonly BudgetRowViewModel[]): string {
+  if (rows.length === 0) return "";
+  const shownCurrencies = new Set<string>();
+  const featured = [...rows]
+    .sort((left, right) => budgetFocusPriority(left) - budgetFocusPriority(right))
+    .filter((row) => {
+      const currencyKey = row.currency ?? `unknown:${row.id}`;
+      if (shownCurrencies.has(currencyKey)) return false;
+      shownCurrencies.add(currencyKey);
+      return true;
+    })
+    .slice(0, 3);
+
+  return `<section class="budget-focus" aria-labelledby="budget-focus-title">
+    <div class="budget-focus-title"><div><p class="eyebrow">Prioridade financeira</p><h2 id="budget-focus-title">Planejado, realizado e disponível</h2></div><p>Destaques individuais por moeda; sem consolidação cambial. Consulte todos os itens abaixo.</p></div>
+    <div class="budget-focus-grid">${featured.map(renderBudgetFocusItem).join("")}</div>
+  </section>`;
+}
+
+function renderBudgetFocusItem(row: BudgetRowViewModel): string {
+  const planned = row.source === "budget"
+    ? renderBudgetMoney(row.plannedAmountMinor, row.currency)
+    : `<span class="budget-unbudgeted-plan">${row.source === "uncategorized" ? "Sem categoria" : "Sem orçamento"}</span>`;
+  const available = row.source === "budget"
+    ? renderBudgetMoney(row.availableAmountMinor, row.currency)
+    : '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
+  const overBudget = row.source === "budget" && row.overBudgetAmountMinor !== null && row.overBudgetAmountMinor > 0
+    ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
+    : "";
+  return `<article class="budget-focus-item">
+    <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div>${renderBudgetStatus(row)}</div>
+    <dl class="budget-focus-values"><div><dt>Planejado</dt><dd>${planned}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(row.actualAmountMinor, row.currency)}</dd></div><div><dt>Disponível</dt><dd>${available}</dd></div></dl>
+    ${overBudget}<div class="budget-focus-actions">${renderBudgetFocusAction(row)}</div>
+  </article>`;
+}
+
+function renderBudgetFocusAction(row: BudgetRowViewModel): string {
+  if (row.source === "uncategorized") {
+    return '<a class="button-link secondary-button" href="/lancamentos">Categorizar no Extrato</a>';
+  }
+  const dialogId = row.source === "budget" ? `edit-budget-dialog-${row.id}` : "new-budget-dialog";
+  const label = row.source === "budget" ? "Editar orçamento" : "Criar orçamento";
+  return renderDialogTrigger({
+    dialogId,
+    label,
+    variant: "secondary",
+    className: "secondary-button",
+  }).replace("<button ", `<button data-open-dialog="${renderText(dialogId)}" `);
+}
+
+function renderBudgetStatus(row: BudgetRowViewModel): string {
+  const status = row.status === "archived" ? "archived" : row.usageStatus;
+  const labels: Record<string, string> = {
+    archived: "Arquivado",
+    no_activity: "Sem movimentação",
+    on_track: "Dentro do planejado",
+    approaching: "Próximo do limite",
+    exceeded: "Acima do planejado",
+    unbudgeted: "Sem orçamento",
+    uncategorized: "Sem categoria",
+    unavailable: "Acompanhamento indisponível",
+  };
+  const tone = status === "exceeded" || status === "approaching"
+    ? "attention"
+    : status === "on_track" ? "positive" : "neutral";
+  return `<span class="budget-state budget-state--${tone}" data-budget-state="${renderText(status)}">${labels[status] ?? "Situação não identificada"}</span>`;
+}
+
+function renderBudgetInventory(viewModel: BudgetsPageViewModel): string {
+  const visibleCurrencyCount = new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size;
+  return `<section class="budget-inventory" aria-labelledby="budget-inventory-title">
+    <h2 id="budget-inventory-title">Contagens auxiliares</h2>
+    <dl><div><dt>Ativos</dt><dd>${viewModel.activeCount}</dd></div><div><dt>Sem orçamento</dt><dd>${viewModel.unbudgetedCount}</dd></div><div><dt>Sem categoria</dt><dd>${viewModel.uncategorizedCount}</dd></div><div><dt>Moedas no recorte</dt><dd>${visibleCurrencyCount}</dd></div></dl>
+  </section>`;
+}
+
+function renderBudgetTable(
+  rows: readonly BudgetRowViewModel[],
+  filters: BudgetPresentationFilters,
+): string {
   if (rows.length === 0) {
     return `<section class="budget-results panel">${renderEmptyState({
-      title: "Nenhum item para acompanhar.",
-      description: "Crie um orçamento ou ajuste os filtros para acompanhar outra moeda ou estado.",
+      title: filters.currency || filters.status ? "Nenhum resultado com estes filtros." : "Nenhum item para acompanhar.",
+      description: filters.currency || filters.status
+        ? "Ajuste os filtros de moeda ou estado para consultar outro recorte."
+        : "Crie um orçamento para iniciar o acompanhamento.",
     })}</section>`;
   }
 
-  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Acompanhamento</p><h2 id="budgets-list-title">Planejado, realizado, comprometido e projetado</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
+  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Todos os itens</p><h2 id="budgets-list-title">Acompanhamento detalhado</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
     {
       caption: "Orçamentos, categorias sem orçamento e itens sem categoria por período e moeda",
       rows,
@@ -288,7 +352,7 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
         {
           id: "category",
           header: "Categoria",
-          renderCell: (row) => `<strong>${renderText(row.categoryName)}</strong>`,
+          renderCell: (row) => `<div class="budget-category"><strong>${renderText(row.categoryName)}</strong>${renderBudgetStatus(row)}</div>`,
         },
         {
           id: "period",
@@ -320,6 +384,12 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           renderCell: (row) => renderBudgetMoney(row.actualAmountMinor, row.currency),
         },
         {
+          id: "available",
+          header: "Disponível",
+          align: "end",
+          renderCell: (row) => renderAvailableCell(row),
+        },
+        {
           id: "committed",
           header: "Comprometido",
           align: "end",
@@ -330,12 +400,6 @@ function renderBudgetTable(rows: readonly BudgetRowViewModel[]): string {
           header: "Projetado",
           align: "end",
           renderCell: (row) => renderBudgetMoney(row.projectedAmountMinor, row.currency),
-        },
-        {
-          id: "available",
-          header: "Disponível",
-          align: "end",
-          renderCell: (row) => renderAvailableCell(row),
         },
         {
           id: "actions",
@@ -492,6 +556,41 @@ ${sharedDialogStyles()}
     .budget-section-heading > div { display: grid; gap: 2px; }
     .budget-section-heading h2 { margin: 0; }
     .budget-section-heading > span { color: var(--muted); font-size: .8rem; font-weight: 700; }
+
+    .budget-filter-context { color: var(--muted); font-size: .78rem; margin: 0; }
+    .budget-filter-context strong { color: var(--text); font-weight: 700; }
+    .budget-focus { display: grid; gap: 10px; min-width: 0; }
+    .budget-focus-title { align-items: end; display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; }
+    .budget-focus-title h2 { font-size: 1.2rem; margin: 0; }
+    .budget-focus-title > p { color: var(--muted); font-size: .78rem; margin: 0; max-width: 460px; }
+    .budget-focus-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 265px), 1fr)); min-width: 0; }
+    .budget-focus-item { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 12px; min-width: 0; padding: 14px 16px; }
+    .budget-focus-item-header { align-items: start; display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: space-between; min-width: 0; }
+    .budget-focus-item-context { min-width: 0; }
+    .budget-focus-item h3 { font-size: .96rem; line-height: 1.3; margin: 0; overflow-wrap: anywhere; }
+    .budget-focus-meta { color: var(--muted); font-size: .76rem; margin: 3px 0 0; }
+    .budget-focus-values { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; min-width: 0; }
+    .budget-focus-values > div { min-width: 0; }
+    .budget-focus-values dt { color: var(--muted); font-size: .73rem; font-weight: 700; }
+    .budget-focus-values dd { font-size: 1.04rem; font-variant-numeric: tabular-nums; font-weight: 800; margin: 3px 0 0; overflow-wrap: anywhere; }
+    .budget-focus-values .sf-money { display: inline-flex; flex-wrap: wrap; gap: 2px 4px; white-space: normal; }
+    .budget-focus-values .sf-money-currency { font-size: .69rem; font-weight: 700; }
+    .budget-focus-actions { display: flex; justify-content: flex-start; }
+    .budget-focus-actions .secondary-button { min-height: 36px; }
+    .budget-state { color: var(--sf-color-muted-text); display: inline-block; font-size: .73rem; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
+    .budget-state--attention { color: var(--sf-color-danger); }
+    .budget-state--positive { color: var(--sf-color-success); }
+    .budget-inventory { align-items: baseline; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 9px 0 0; }
+    .budget-inventory h2 { color: var(--muted); font-size: .78rem; font-weight: 700; margin: 0; }
+    .budget-inventory dl { display: flex; flex-wrap: wrap; gap: 7px 16px; margin: 0; }
+    .budget-inventory dl > div { align-items: baseline; display: flex; gap: 5px; }
+    .budget-inventory dt { color: var(--muted); font-size: .74rem; }
+    .budget-inventory dd { color: var(--text); font-size: .82rem; font-variant-numeric: tabular-nums; font-weight: 800; margin: 0; }
+    .budget-category { display: grid; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
+    .budget-results .sf-table th, .budget-results .sf-table td { padding: 8px 10px; }
+    .budget-results .sf-table td[data-column="planned"] .sf-money-value,
+    .budget-results .sf-table td[data-column="realized"] .sf-money-value,
+    .budget-results .sf-table td[data-column="available"] .sf-money-value { font-weight: 800; }
     .budget-results .sf-table-wrap { overflow-x: auto; }
     .budget-results .sf-table { min-width: 1080px; width: 100%; }
     .budget-results td { vertical-align: middle; }
@@ -550,6 +649,14 @@ ${sharedDialogStyles()}
       .budget-row-actions { justify-content: flex-start; min-width: 0; }
       .budget-row-actions button { flex: 1 1 130px; white-space: normal; }
       .budget-period { white-space: normal; }
+      .budget-focus-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .budget-focus-values > div:last-child { grid-column: 1 / -1; }
+      .budget-focus-item { padding: 12px; }
+      .budget-results .sf-table tbody { gap: 8px; }
+      .budget-results .sf-table td { gap: 6px; grid-template-columns: 88px minmax(0, 1fr); padding: 8px 10px; }
+      .budget-results .sf-table td[data-column="planned"],
+      .budget-results .sf-table td[data-column="realized"],
+      .budget-results .sf-table td[data-column="available"] { font-size: 1rem; }
     }`;
 }
 

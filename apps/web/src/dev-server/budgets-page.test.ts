@@ -139,6 +139,66 @@ describe("budgets page issue 619", () => {
     assert.match(html, /name="currency"[^>]*value="BRL"/);
     assert.match(html, /data-api-method="PATCH" data-api-path="\/api\/budgets\/budget-brl"/);
   });
+  it("prioritizes individual financial decisions before table detail and auxiliary counts", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token");
+
+    const focusIndex = html.indexOf('<section class="budget-focus"');
+    const detailIndex = html.indexOf('<section class="budget-results"');
+    const inventoryIndex = html.indexOf('<section class="budget-inventory"');
+    assert.ok(focusIndex > 0 && focusIndex < detailIndex && detailIndex < inventoryIndex);
+    assert.equal((html.match(/class="budget-focus-item"/g) ?? []).length, 2);
+    assert.match(html, /class="budget-focus-values"/);
+    assert.match(html, /data-budget-state="on_track"/);
+    assert.match(html, /name="currency"/);
+    assert.match(html, /data-currency="BRL"/);
+    assert.match(html, /data-currency="USD"/);
+    assert.match(html, /data-open-dialog="edit-budget-dialog-budget-brl"/);
+
+    const table = html.slice(detailIndex, inventoryIndex);
+    assert.ok(table.indexOf('data-column="available"') < table.indexOf('data-column="committed"'));
+    assert.match(table, /Dentro do planejado/);
+    assert.match(table, /data-column="projected"/);
+  });
+
+  it("preserves active currency and state filters, without mixing other currencies in the decision view", async () => {
+    globalThis.fetch = baseFetch();
+    const url = new URL("http://solverfin.test/orcamentos?currency=USD&status=active");
+    const html = await renderBudgetsPage("token", url);
+    const focus = html.slice(html.indexOf('<section class="budget-focus"'), html.indexOf('<section class="budget-results"'));
+
+    assert.match(html, /<option value="USD" selected>/);
+    assert.match(html, /<option value="active" selected>/);
+    assert.match(html, /Recorte atual: moeda <strong>USD<\/strong>/);
+    assert.match(focus, /data-currency="USD"/);
+    assert.doesNotMatch(focus, /data-currency="BRL"/);
+    assert.equal((focus.match(/class="budget-focus-item"/g) ?? []).length, 1);
+  });
+
+  it("keeps an unmatched filter selected and distinguishes filtered empty from an empty catalog", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage(
+      "token",
+      new URL("http://solverfin.test/orcamentos?currency=EUR&status=archived"),
+    );
+    assert.match(html, /<option value="EUR" selected>/);
+    assert.match(html, /<option value="archived" selected>/);
+    assert.match(html, /Nenhum resultado com estes filtros/);
+    assert.doesNotMatch(html, /<section class="budget-focus"/);
+    assert.match(html, /<section class="budget-inventory"/);
+  });
+
+  it("keeps an error recoverable on the same filtered URL", async () => {
+    globalThis.fetch = async (): Promise<Response> => new Response("unavailable", { status: 503 });
+    const html = await renderBudgetsPage(
+      "token",
+      new URL("http://solverfin.test/orcamentos?currency=USD&status=active"),
+    );
+    assert.match(html, /<h1[^>]*>Orçamentos<\/h1>/);
+    assert.match(html, /Não foi possível carregar os orçamentos/);
+    assert.match(html, /href="\/orcamentos\?currency=USD&amp;status=active"/);
+  });
+
 });
 
 function baseFetch() {
