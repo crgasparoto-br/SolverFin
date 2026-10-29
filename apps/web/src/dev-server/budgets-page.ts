@@ -31,6 +31,7 @@ import { renderAuthenticatedShellDocument } from "./shell.js";
 import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import {
   buildBudgetsPageViewModel,
+  parseBudgetPeriod,
   type BudgetPresentationFilters,
   type BudgetRecord,
   type BudgetRowViewModel,
@@ -69,11 +70,11 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
 
   const budgets = budgetsResult.data.budgets;
   const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const filters = readFilters(url);
   const [usageLoads, dashboardLoad] = await Promise.all([
     loadBudgetUsage(token, budgets),
-    loadBudgetDashboardUsage(token, budgets),
+    loadBudgetDashboardUsage(token, budgets, filters),
   ]);
-  const filters = readFilters(url);
   const viewModel = buildBudgetsPageViewModel(
     budgets,
     categories,
@@ -125,7 +126,7 @@ export async function renderBudgetsPage(token: string, url?: URL): Promise<strin
           description: "Acompanhe planejado, realizado e disponível por período e moeda.",
           actionsHtml: newBudgetTrigger,
         },
-      )}</div>${renderBudgetFilters(viewModel.currencies, filters)}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
+      )}</div>${renderBudgetFilters(viewModel.currencies, filters, [currentMonthPeriod(), ...budgets])}${categoryWarning}${usageWarning}${unbudgetedWarning}${renderBudgetFocus(viewModel.rows)}${renderBudgetTable(viewModel.rows, filters)}${renderBudgetInventory(viewModel)}${renderNewBudgetDialog(categories)}${viewModel.rows
         .filter((row) => row.source === "budget")
         .map((row) => renderBudgetEditDialog(row, categories))
         .join(
@@ -156,8 +157,10 @@ async function loadBudgetUsage(
 async function loadBudgetDashboardUsage(
   token: string,
   budgets: readonly BudgetRecord[],
+  filters: BudgetPresentationFilters,
 ): Promise<BudgetDashboardUsageLoad> {
-  const periods = budgetDashboardPeriods(budgets);
+  const selected = parseBudgetPeriod(filters.period);
+  const periods = selected ? [selected] : budgetDashboardPeriods(budgets);
   const results = await Promise.all(
     periods.map(async (period) => {
       const params = new URLSearchParams({
@@ -221,9 +224,11 @@ function currentMonthPeriod(
 function readFilters(url?: URL): BudgetPresentationFilters {
   const currency = url?.searchParams.get("currency")?.trim().toUpperCase();
   const status = url?.searchParams.get("status");
+  const period = url?.searchParams.get("period") ?? undefined;
   return {
     ...(currency && /^[A-Z]{3}$/.test(currency) ? { currency } : {}),
     ...(status === "active" || status === "archived" ? { status } : {}),
+    ...(period && parseBudgetPeriod(period) ? { period } : {}),
   };
 }
 
@@ -234,33 +239,32 @@ function renderBudgetTable(
   if (rows.length === 0) {
     return `<section class="budget-results panel">${renderEmptyState({
       title:
-        filters.currency || filters.status
+        filters.currency || filters.status || filters.period
           ? "Nenhum resultado com estes filtros."
           : "Nenhum item para acompanhar.",
       description:
-        filters.currency || filters.status
-          ? "Ajuste os filtros de moeda ou estado para consultar outro recorte."
+        filters.currency || filters.status || filters.period
+          ? "Ajuste os filtros de período, moeda ou estado para consultar outro recorte."
           : "Crie um orçamento ou ajuste os filtros para acompanhar outra moeda ou estado.",
     })}</section>`;
   }
 
-  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Todos os itens</p><h2 id="budgets-list-title">Acompanhamento detalhado</h2></div><span>${rows.length} item${rows.length === 1 ? "" : "s"}</span></div>${renderDataTable(
+  const displayRows = groupBudgetRowsByCategory(rows);
+  return `<section class="budget-results panel" aria-labelledby="budgets-list-title"><div class="budget-section-heading"><div><p class="eyebrow">Por categoria e moeda</p><h2 id="budgets-list-title">Acompanhamento detalhado</h2></div><span>${displayRows.length} categoria${displayRows.length === 1 ? "" : "s"}</span></div><p class="budget-period-note">Valores do período exibido em cada linha; outros períodos disponíveis ao expandir, sem somar moedas ou períodos.</p>${renderDataTable(
     {
-      caption: "Orçamentos, categorias sem orçamento e itens sem categoria por período e moeda",
-      rows,
+      caption: "Uma linha por categoria e moeda, com períodos anteriores expansíveis",
+      rows: displayRows,
       rowKey: (row) => row.id,
       columns: [
         {
           id: "category",
           header: "Categoria",
-          renderCell: (row) =>
-            `<div class="budget-category">${renderBudgetStatus(row, true)}<strong>${renderText(row.categoryName)}</strong></div>`,
+          renderCell: (row) => renderBudgetCategoryTree(row),
         },
         {
           id: "period",
           header: "Período",
-          renderCell: (row) =>
-            `<span class="budget-period">${renderText(formatDateOnly(row.periodStartOn))}<span aria-hidden="true"> → </span>${renderText(formatDateOnly(row.periodEndOn))}</span>`,
+          renderCell: (row) => renderBudgetTablePeriod(row),
         },
         {
           id: "currency",
@@ -319,6 +323,67 @@ function renderBudgetTable(
   )}</section>`;
 }
 
+interface BudgetTableRow extends BudgetRowViewModel {
+  relatedPeriods: BudgetRowViewModel[];
+}
+
+/** Display grouping only: never add monetary amounts across periods or currencies. */
+function groupBudgetRowsByCategory(rows: readonly BudgetRowViewModel[]): BudgetTableRow[] {
+  const groups = new Map<string, BudgetRowViewModel[]>();
+  for (const row of rows) {
+    const key = JSON.stringify([row.categoryId ?? `source:${row.source}`, row.currency ?? "unknown"]);
+    const group = groups.get(key) ?? [];
+    group.push(row);
+    groups.set(key, group);
+  }
+  return [...groups.values()]
+    .map((group) => {
+      const ordered = [...group].sort(
+        (left, right) =>
+          right.periodEndOn.localeCompare(left.periodEndOn) ||
+          right.periodStartOn.localeCompare(left.periodStartOn) ||
+          (left.source === "budget" ? 0 : 1) - (right.source === "budget" ? 0 : 1) ||
+          (left.status === "active" ? 0 : 1) - (right.status === "active" ? 0 : 1) ||
+          left.id.localeCompare(right.id),
+      );
+      const [latest, ...relatedPeriods] = ordered;
+      if (!latest) throw new Error("Budget category group cannot be empty.");
+      return { ...latest, relatedPeriods };
+    })
+    .sort(
+      (left, right) =>
+        left.categoryName.localeCompare(right.categoryName, "pt-BR") ||
+        (left.currency ?? "").localeCompare(right.currency ?? "") ||
+        left.id.localeCompare(right.id),
+    );
+}
+
+function renderBudgetCategoryTree(row: BudgetTableRow): string {
+  const parts = row.categoryPath?.length ? row.categoryPath : [row.categoryName];
+  const name = parts[parts.length - 1] ?? row.categoryName;
+  const parents = parts.slice(0, -1);
+  const depth = Math.min(parents.length, 5);
+  const parentLabel = parents.length
+    ? `<span class="budget-category-parent">${renderText(parents.join(" › "))}</span>`
+    : "";
+  const marker = depth > 0 ? '<span class="budget-category-branch" aria-hidden="true">↳</span>' : "";
+  return `<div class="budget-category">${renderBudgetStatus(row, true)}<div class="budget-category-tree" data-category-depth="${depth}" style="--budget-category-depth:${depth}">${parentLabel}<strong>${marker}${renderText(name)}</strong></div></div>`;
+}
+
+function renderBudgetTablePeriod(row: BudgetTableRow): string {
+  const current = `<span class="budget-period">${renderText(formatDateOnly(row.periodStartOn))}<span aria-hidden="true"> → </span>${renderText(formatDateOnly(row.periodEndOn))}</span>`;
+  if (!row.relatedPeriods.length) return current;
+  const older = row.relatedPeriods
+    .map(
+      (item) =>
+        `<li class="budget-history-entry"><div class="budget-history-heading">${renderBudgetStatus(item, true)}<strong>${renderText(formatDateOnly(item.periodStartOn))} a ${renderText(formatDateOnly(item.periodEndOn))}</strong>${renderBudgetActionMenu(item, "history")}</div><dl class="budget-history-values"><div><dt>Planejado</dt><dd>${item.source === "budget" ? renderBudgetMoney(item.plannedAmountMinor, item.currency) : "Sem orçamento"}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(item.actualAmountMinor, item.currency)}</dd></div><div><dt>Disponível</dt><dd>${renderAvailableCell(item)}</dd></div><div><dt>Comprometido</dt><dd>${renderBudgetMoney(item.committedAmountMinor, item.currency)}</dd></div><div><dt>Projetado</dt><dd>${renderBudgetMoney(item.projectedAmountMinor, item.currency)}</dd></div></dl>${renderCompositionDetails(item)}</li>`,
+    )
+    .join("");
+  const count = row.relatedPeriods.length;
+  const label = `${count} outro${count === 1 ? "" : "s"} período${count === 1 ? "" : "s"}`;
+  return `${current}<details class="budget-period-history"><summary>${label} — ver valores e ações</summary><ul>${older}</ul></details>`;
+}
+
 function renderAvailableCell(row: BudgetRowViewModel): string {
   if (row.source !== "budget") {
     return '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
@@ -370,14 +435,16 @@ ${sharedDialogStyles()}
     .budget-primary-action { white-space: nowrap; }
     .budget-filter-panel { min-width: 0; width: 100%; }
     .budget-filter-toggle { display: none; }
-    .budget-filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(150px, 220px) minmax(150px, 220px) 1fr; margin-top: 0; width: 100%; }
+    .budget-filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(135px, 1fr)) auto; margin-top: 0; width: 100%; }
     .budget-filter-form label { display: grid; gap: 5px; }
     .budget-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .budget-filter-actions > .sf-button { align-items: center; box-sizing: border-box; display: inline-flex; justify-content: center; min-height: var(--sf-density-interactive-target-min); width: 148px; }
     .budget-results { display: grid; gap: 12px; min-width: 0; }
     .budget-section-heading { align-items: end; display: flex; gap: 12px; justify-content: space-between; }
     .budget-section-heading > div { display: grid; gap: 2px; }
     .budget-section-heading h2 { margin: 0; }
     .budget-section-heading > span { color: var(--muted); font-size: .8rem; font-weight: 700; }
+    .budget-period-note { color: var(--muted); font-size: .75rem; margin: -6px 0 0; }
 
 ${renderBudgetFocusStyles()}
 ${renderBudgetActionMenuStyles()}
@@ -393,9 +460,25 @@ ${renderBudgetActionMenuStyles()}
     .budget-results .sf-table th:last-child { background: var(--sf-color-background); z-index: 2; }
     .budget-results .sf-table td:last-child { background: var(--surface); }
     .budget-results .sf-table td:last-child:has(.budget-action-popover:not([hidden])) { z-index: 3; }
+    .budget-results .sf-table td[data-column="period"]:has(.budget-action-popover:not([hidden])) { position: relative; z-index: 4; }
     .budget-results td { vertical-align: middle; }
     .budget-currency { letter-spacing: .04em; }
     .budget-period { white-space: nowrap; }
+    .budget-category-tree { display: grid; gap: 2px; min-width: 0; padding-inline-start: calc(var(--budget-category-depth, 0) * 10px); }
+    .budget-category-tree strong { align-items: baseline; display: flex; gap: 5px; overflow-wrap: anywhere; }
+    .budget-category-parent { color: var(--muted); font-size: .7rem; line-height: 1.2; }
+    .budget-category-branch { color: var(--muted); }
+    .budget-category-tree[data-category-depth]:not([data-category-depth="0"]) { border-inline-start: 1px solid var(--line); }
+    .budget-period-history { margin-top: 5px; max-width: 520px; }
+    .budget-period-history > summary { color: var(--sf-color-muted-text); cursor: pointer; font-size: .75rem; font-weight: 700; }
+    .budget-period-history > ul { display: grid; gap: 8px; list-style: none; margin: 8px 0 0; padding: 0; }
+    .budget-history-entry { border-top: 1px solid var(--line); display: grid; gap: 6px; padding-top: 8px; }
+    .budget-history-heading { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+    .budget-history-heading > strong { font-size: .76rem; }
+    .budget-history-values { display: grid; gap: 4px 9px; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0; }
+    .budget-history-values dt { color: var(--muted); font-size: .68rem; }
+    .budget-history-values dd { font-size: .77rem; font-weight: 750; margin: 0; }
+    .budget-history-entry .budget-composition { min-width: 0; }
     .budget-usage { display: grid; gap: 6px; min-width: 150px; }
     .budget-usage > div { align-items: center; display: flex; flex-wrap: wrap; gap: 7px; justify-content: space-between; }
     .budget-usage progress { accent-color: var(--primary); height: 8px; width: 100%; }
@@ -434,8 +517,9 @@ ${renderBudgetActionMenuStyles()}
       .budget-filter-panel[open] > .budget-filter-form { margin-top: var(--sf-space-3); }
       .budget-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
       .budget-filter-form label, .budget-filter-form select { min-width: 0; width: 100%; }
+      .budget-filter-form label:first-child { grid-column: 1 / -1; }
       .budget-filter-actions { grid-column: 1 / -1; flex-wrap: nowrap; }
-      .budget-filter-actions > * { flex: 1 1 0; min-width: 0; }
+      .budget-filter-actions > * { flex: 1 1 0; min-width: 0; width: 100%; }
       .budget-edit-grid { grid-template-columns: 1fr; }
       .budget-edit-grid .form-status, .budget-edit-grid .budget-form-actions { grid-column: auto; }
       .budget-edit-grid .budget-category-field { grid-column: 1 / -1; }

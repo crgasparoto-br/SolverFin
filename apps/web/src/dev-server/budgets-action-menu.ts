@@ -4,7 +4,7 @@ import type { BudgetRowViewModel } from "./budgets-view-model.js";
 
 export function renderBudgetActionMenu(
   row: BudgetRowViewModel,
-  context: "focus" | "table",
+  context: "focus" | "table" | "history",
 ): string {
   const id = renderText(`budget-actions-${context}-${encodeURIComponent(row.id)}`);
   const path = `/api/budgets/${encodeURIComponent(row.id)}`;
@@ -16,7 +16,7 @@ export function renderBudgetActionMenu(
       ${row.status === "archived" ? "" : `<button type="button" role="menuitem" class="budget-action-item budget-action-danger" data-api-action data-api-method="POST" data-api-path="${path}/archive" data-api-confirm="Arquivar este orçamento?" title="Arquivar orçamento">${icon("archive", 16)}<span>Arquivar</span></button>`}`
       : row.source === "uncategorized"
         ? `<a role="menuitem" class="budget-action-item" href="/lancamentos" title="Categorizar no Extrato">${icon("tag", 16)}<span>Categorizar no Extrato</span></a>`
-        : `<button type="button" role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" title="Novo orçamento">${icon("plus", 16)}<span>Novo orçamento</span></button>`;
+        : `<button type="button" role="menuitem" class="budget-action-item" data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" data-budget-prefill-category-id="${renderText(row.categoryId ?? "")}" title="Novo orçamento">${icon("plus", 16)}<span>Novo orçamento</span></button>`;
   const label = renderText(row.categoryName);
   return `<div class="budget-action-menu" data-budget-action-menu data-budget-action-menu-context="${context}">
     <button type="button" class="sf-button sf-button-ghost sf-focus-ring budget-action-trigger" data-budget-menu-trigger aria-haspopup="menu" aria-controls="${id}" aria-expanded="false" aria-label="Ações de ${label}" title="Mais ações">${icon("more-vertical", 18)}</button>
@@ -73,6 +73,17 @@ export function renderBudgetActionMenuScriptTag(): string {
     document.addEventListener('click', function(event) {
       var target = event.target instanceof Element ? event.target : null;
       if (!target) return;
+      var newBudgetOpener = target.closest('[data-sf-dialog-open="new-budget-dialog"]');
+      if (newBudgetOpener) {
+        var category = document.querySelector('#new-budget-dialog select[name="categoryId"]');
+        if (category instanceof HTMLSelectElement) {
+          var requested = newBudgetOpener.getAttribute("data-budget-prefill-category-id") || "";
+          category.value = Array.from(category.options).some(function(option) {
+            return requested && option.value === requested && !option.disabled;
+          }) ? requested : "";
+          category.dispatchEvent(new Event("change", { bubbles: true }));
+        }
+      }
       var trigger = target.closest('[data-budget-menu-trigger]');
       if (trigger) {
         var root = trigger.closest('[data-budget-action-menu]');

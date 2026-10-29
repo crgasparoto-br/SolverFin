@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   buildBudgetsPageViewModel,
+  parseBudgetPeriod,
   type BudgetRecord,
   type BudgetUsageLoad,
   type BudgetUsageRecord,
@@ -161,6 +162,46 @@ describe("budgets view-model issue 619", () => {
     assert.equal(uncategorized.projectedAmountMinor, 15_000);
     assert.equal(result.unbudgetedCount, 1);
     assert.equal(result.uncategorizedCount, 1);
+  });
+
+  it("filters exact registered periods without recalculating or merging native usage", () => {
+    const october: BudgetRecord = {
+      ...brlBudget,
+      id: "october",
+      periodStartOn: "2026-10-01",
+      periodEndOn: "2026-10-31",
+      plannedAmountMinor: 250_000,
+    };
+    const september = usage(brlBudget, 30_000);
+    const octoberUsage = usage(october, 40_000);
+    const result = buildBudgetsPageViewModel(
+      [brlBudget, october, usdBudget],
+      categories,
+      new Map([
+        [brlBudget.id, september],
+        [october.id, octoberUsage],
+        [usdBudget.id, usage(usdBudget, 500)],
+      ]),
+      { period: "2026-10-01:2026-10-31", currency: "BRL" },
+      [dashboardUsage("unbudgeted")],
+    );
+
+    assert.equal(result.rows.length, 1);
+    assert.equal(result.rows[0]?.id, "october");
+    assert.equal(result.rows[0]?.plannedAmountMinor, 250_000);
+    assert.equal(result.rows[0]?.actualAmountMinor, 40_000);
+    assert.deepEqual(result.rows[0]?.categoryPath, ["Casa", "Mercado"]);
+    assert.ok(!result.rows.some((row) => row.currency === "USD"));
+  });
+
+  it("rejects impossible and reversed period ranges rather than silently selecting them", () => {
+    assert.deepEqual(parseBudgetPeriod("2026-09-01:2026-09-30"), {
+      periodStartOn: "2026-09-01",
+      periodEndOn: "2026-09-30",
+    });
+    for (const value of ["2026-02-30:2026-02-31", "2026-10-31:2026-10-01", "2026-9-01:2026-09-30", "not-a-date"]) {
+      assert.equal(parseBudgetPeriod(value), undefined);
+    }
   });
 
   it("filters every source by native currency without relabeling", () => {

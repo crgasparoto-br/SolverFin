@@ -463,6 +463,106 @@ describe("budgets page issue 619", () => {
     assert.equal((focus.match(/class="budget-focus-item"/g) ?? []).length, 1);
   });
 
+  it("preselects the expense category only when creating from its three-dot menu", async () => {
+    const originalFetch = baseFetch();
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets/dashboard") {
+        return json({
+          usage: [
+            unbudgetedUsage({
+              categoryId: "health",
+              realizedAmountMinor: 2500,
+              committedAmountMinor: 0,
+            }),
+          ],
+        });
+      }
+      return originalFetch(input);
+    };
+    const html = await renderBudgetsPage("token");
+    assert.match(html, /data-sf-dialog-open="new-budget-dialog" data-open-dialog="new-budget-dialog" data-budget-prefill-category-id="health"/);
+    assert.match(html, /class="budget-action-item" data-sf-dialog-open="new-budget-dialog"/);
+    assert.match(html, /requested && option.value === requested && !option.disabled/);
+    assert.match(html, /category.value = Array.from\(category.options\)/);
+    assert.match(html, /category.dispatchEvent\(new Event\("change", \{ bubbles: true \}\)\)/);
+    const newDialog = html.slice(html.indexOf('id="new-budget-dialog"'), html.indexOf('id="edit-budget-dialog-'));
+    assert.match(newDialog, /<option value="health">Saúde<\/option>/);
+    assert.match(newDialog, /<option value="" disabled selected>Selecione uma categoria<\/option>/);
+  });
+
+  it("shows one category/currency row with exact period history, no artificial sums", async () => {
+    const originalFetch = baseFetch();
+    const october = {
+      ...budget("budget-oct", "BRL", 120_000),
+      periodStartOn: "2026-10-01",
+      periodEndOn: "2026-10-31",
+    };
+    const nested = { ...budget("budget-child", "BRL", 50_000), categoryId: "groceries" };
+    globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
+      const url = new URL(String(input), "http://solverfin.test");
+      if (url.pathname === "/api/budgets") {
+        return json({
+          budgets: [budget("budget-brl", "BRL", 100_000), october, nested, budget("budget-usd", "USD", 20_000)],
+        });
+      }
+      if (url.pathname === "/api/budgets/budget-oct/usage") {
+        return json({
+          usage: {
+            ...usage("budget-oct", "BRL", 120_000, 60_000, 10_000),
+            periodStartOn: "2026-10-01",
+            periodEndOn: "2026-10-31",
+          },
+        });
+      }
+      if (url.pathname === "/api/budgets/budget-child/usage") {
+        return json({ usage: { ...usage("budget-child", "BRL", 50_000, 10_000, 0), categoryId: "groceries" } });
+      }
+      return originalFetch(input);
+    };
+
+    const html = await renderBudgetsPage("token");
+    const table = html.slice(
+      html.indexOf('<section class="budget-results panel"'),
+      html.indexOf('<section class="budget-inventory"'),
+    );
+    assert.equal((table.match(/<tr data-row-key=/g) ?? []).length, 3);
+    assert.equal((table.match(/class="budget-history-entry"/g) ?? []).length, 1);
+    assert.match(table, /1\.200,00/);
+    assert.match(table, /class="budget-period-history"/);
+    assert.match(table, /data-api-path="\/api\/budgets\/budget-brl\/archive"/);
+    assert.match(table, /data-budget-action-menu-context="history"/);
+    assert.match(table, /data-category-depth="1"[^>]*><span class="budget-category-parent">Alimentação<\/span>/);
+    assert.match(table, /<strong><span class="budget-category-branch" aria-hidden="true">↳<\/span>Mercado<\/strong>/);
+    assert.doesNotMatch(table, /Acompanhamento consolidado/);
+    assert.match(table, /sem somar moedas ou períodos/);
+
+    const selected = await renderBudgetsPage(
+      "token",
+      new URL("http://solverfin.test/orcamentos?period=2026-10-01%3A2026-10-31&currency=BRL"),
+    );
+    const filtered = selected.slice(
+      selected.indexOf('<section class="budget-results panel"'),
+      selected.indexOf('<section class="budget-inventory"'),
+    );
+    assert.match(selected, /<option value="2026-10-01:2026-10-31" selected>/);
+    assert.match(selected, /data-budget-mobile-filters data-active-filters="true"/);
+    assert.equal((filtered.match(/<tr data-row-key=/g) ?? []).length, 1);
+    assert.doesNotMatch(filtered, /budget-history-entry/);
+    assert.match(filtered, /data-row-key="budget-oct"/);
+    assert.doesNotMatch(filtered, /data-row-key="budget-brl"/);
+  });
+
+  it("keeps Apply and Clear aligned and treats malformed periods as inactive", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token", new URL("http://solverfin.test/orcamentos?period=2026-02-31:2026-02-31"));
+    assert.match(html, /class="sf-button sf-button-primary sf-focus-ring">Aplicar filtros<\/button>/);
+    assert.match(html, /class="sf-button sf-button-secondary sf-focus-ring" href="\/orcamentos">Limpar<\/a>/);
+    assert.match(html, /budget-filter-actions > \.sf-button \{[^}]*width: 148px/);
+    assert.match(html, /data-budget-mobile-filters data-active-filters="false" open/);
+    assert.match(html, /<select name="period">/);
+  });
+
   it("keeps an unmatched filter selected and distinguishes filtered empty from an empty catalog", async () => {
     globalThis.fetch = baseFetch();
     const html = await renderBudgetsPage(

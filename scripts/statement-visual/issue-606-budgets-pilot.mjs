@@ -88,6 +88,22 @@ try {
         "Unused mobile filters must be progressive",
       );
     }
+    const buttonGeometry = await evaluate(
+      browser.cdp,
+      `(() => {
+        const panel = document.querySelector('[data-budget-mobile-filters]');
+        const wasOpen = panel?.open;
+        if (panel) panel.open = true;
+        const apply = document.querySelector('.budget-filter-actions button[type="submit"]')?.getBoundingClientRect();
+        const clear = document.querySelector('.budget-filter-actions a')?.getBoundingClientRect();
+        const aligned = Boolean(apply && clear && apply.height > 0 && clear.height > 0 &&
+          Math.abs(apply.height - clear.height) <= 1 &&
+          Math.abs(apply.width - clear.width) <= 1);
+        if (panel) panel.open = wasOpen;
+        return aligned;
+      })()`,
+    );
+    assert.equal(buttonGeometry, true, `Budget filter Apply/Clear dimensions mismatch at ${viewport.name}`);
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     if (viewport.name === "desktop") {
@@ -128,11 +144,18 @@ try {
     browser.cdp,
     `(() => ({
     rows: document.querySelectorAll('.budget-results tbody tr').length,
+    historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
+    uniqueCategories: (() => {
+      const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
+        [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
+      return new Set(keys).size === keys.length;
+    })(),
     currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
   }))()`,
   );
-  assert.ok(mixed.rows >= 10, "Budget long-list scenario must include ten or more rows");
+  assert.ok(mixed.rows + mixed.historyCount >= 10, "Budget long-list scenario must preserve ten or more period records");
+  assert.equal(mixed.uniqueCategories, true, "Budget detail must have only one main row per category and currency");
   assert.ok(mixed.currencies.includes("BRL") && mixed.currencies.includes("USD"));
   assert.ok(mixed.focused.includes("BRL") && mixed.focused.includes("USD"));
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-two-currencies-desktop.png"));
@@ -221,6 +244,57 @@ try {
   }
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-menu-layer-desktop.png"));
   report.menuLayering = menuLayering;
+
+  const prefill = await evaluate(
+    browser.cdp,
+    `(() => {
+      const create = document.querySelector('.budget-results [data-budget-prefill-category-id]:not([data-budget-prefill-category-id=""])');
+      const menu = create?.closest('[data-budget-action-menu]');
+      const trigger = menu?.querySelector('[data-budget-menu-trigger]');
+      const dialog = document.getElementById('new-budget-dialog');
+      const category = dialog?.querySelector('select[name="categoryId"]');
+      if (!create || !trigger || !dialog || !category) return { found: false };
+      const chosen = create.getAttribute('data-budget-prefill-category-id');
+      trigger.click();
+      create.click();
+      const selected = dialog.open && category.value === chosen;
+      dialog.querySelector('[data-sf-dialog-close]').click();
+      document.querySelector('.budget-primary-action[data-sf-dialog-open="new-budget-dialog"]')?.click();
+      const reset = dialog.open && category.value === '';
+      dialog.querySelector('[data-sf-dialog-close]').click();
+      return { found: true, selected, reset };
+    })()`,
+  );
+  assert.deepEqual(prefill, { found: true, selected: true, reset: true });
+  report.categoryPrefill = prefill;
+
+  const optionPeriod = await evaluate(
+    browser.cdp,
+    `(() => {
+      const options = Array.from(document.querySelectorAll('.budget-filter-form select[name="period"] option'));
+      return options.find((option) => option.value)?.value ?? null;
+    })()`,
+  );
+  assert.ok(optionPeriod, "Budget period filter must list registered exact periods");
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?period=${encodeURIComponent(optionPeriod)}`);
+  await sleep(200);
+  const periodFilter = await evaluate(
+    browser.cdp,
+    `(() => {
+      const period = document.querySelector('.budget-filter-form select[name="period"]');
+      return {
+        selected: period?.value ?? null,
+        active: document.querySelector('[data-budget-mobile-filters]')?.dataset.activeFilters === 'true',
+        context: document.querySelector('.budget-filter-context')?.textContent?.includes('período'),
+      };
+    })()`,
+  );
+  assert.deepEqual(periodFilter, { selected: optionPeriod, active: true, context: true });
+  await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-period-selected-desktop.png"));
+  report.selectedPeriod = periodFilter;
+
+  await navigate(browser.cdp, `${baseUrl}/orcamentos`);
+  await sleep(200);
 
   await setViewport(browser.cdp, 390, 844);
   await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
