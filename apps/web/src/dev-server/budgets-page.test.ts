@@ -284,21 +284,29 @@ describe("budgets page issue 619", () => {
       focus.indexOf("</div>", focus.indexOf('<div class="budget-focus-category">')),
     );
     assert.ok(featured.includes('aria-label="Dentro do planejamento"'));
-    assert.ok(featured.indexOf('data-budget-state="on_track"') < featured.indexOf("<h3>Alimentação</h3>"));
+    assert.ok(
+      featured.indexOf('data-budget-state="on_track"') < featured.indexOf("<h3>Alimentação</h3>"),
+    );
     assert.doesNotMatch(featured, /budget-state-label/);
 
     const categories = Array.from(
       table.matchAll(/<div class="budget-category">([\s\S]*?)<\/div>/g),
-      (match) => match[1],
+      (match) => match[1] ?? "",
     );
-    const planned = categories.find((markup) => markup.includes('data-budget-state="on_track"'));
-    const unbudgeted = categories.find((markup) =>
-      markup.includes('data-budget-state="unbudgeted"'),
-    );
+    const planned =
+      categories.find((markup) => markup.includes('data-budget-state="on_track"')) ?? "";
+    const unbudgeted =
+      categories.find((markup) => markup.includes('data-budget-state="unbudgeted"')) ?? "";
     assert.ok(planned?.includes('aria-label="Dentro do planejamento"'));
     assert.ok(unbudgeted?.includes('aria-label="Sem orçamento"'));
-    assert.ok(planned.indexOf('data-budget-state="on_track"') < planned.indexOf("<strong>Alimentação</strong>"));
-    assert.ok(unbudgeted.indexOf('data-budget-state="unbudgeted"') < unbudgeted.indexOf("<strong>Saúde</strong>"));
+    assert.ok(
+      planned.indexOf('data-budget-state="on_track"') <
+        planned.indexOf("<strong>Alimentação</strong>"),
+    );
+    assert.ok(
+      unbudgeted.indexOf('data-budget-state="unbudgeted"') <
+        unbudgeted.indexOf("<strong>Saúde</strong>"),
+    );
     assert.doesNotMatch(planned, /budget-state-label/);
     assert.doesNotMatch(unbudgeted, /budget-state-label/);
   });
@@ -379,7 +387,10 @@ describe("budgets page issue 619", () => {
     assert.match(html, /event.key === 'Escape'/);
     assert.match(html, /event.key === 'ArrowDown'/);
     assert.match(html, /document.addEventListener\('close'/);
-    assert.match(html, /\.budget-results \.sf-table td:last-child:has\(\.budget-action-popover:not\(\[hidden\]\)\) \{ z-index: 3; \}/);
+    assert.match(
+      html,
+      /\.budget-results \.sf-table td:last-child:has\(\.budget-action-popover:not\(\[hidden\]\)\) \{ z-index: 3; \}/,
+    );
   });
 
   it("uses status icons and keeps contextual creation or categorization for unbudgeted rows", async () => {

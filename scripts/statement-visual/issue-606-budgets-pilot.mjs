@@ -156,7 +156,11 @@ try {
       return Boolean(trigger);
     })()`,
   );
-  assert.equal(menuForLayerCheck, true, "Long list must include consecutive budget action menus");
+  assert.equal(
+    menuForLayerCheck,
+    true,
+    "Long list must include consecutive budget action menus",
+  );
   await sleep(160);
   const menuLayering = await evaluate(
     browser.cdp,
@@ -202,11 +206,26 @@ try {
     })()`,
   );
   assert.equal(menuLayering.opened, true, "Budget table action menu must open");
-  assert.equal(menuLayering.contained, true, "Budget table action menu must stay within viewport");
-  assert.ok(menuLayering.upperZ > menuLayering.lowerZ, "Open menu must paint above lower row actions");
+  assert.equal(
+    menuLayering.contained,
+    true,
+    "Budget table action menu must stay within viewport",
+  );
+  assert.ok(
+    menuLayering.upperZ > menuLayering.lowerZ,
+    "Open menu must paint above lower row actions",
+  );
   if (menuLayering.overlapsNextTrigger) {
-    assert.equal(menuLayering.menuAboveTrigger, true, "Next row action button obscures the open menu");
-    assert.equal(menuLayering.negativeOccluded, true, "Removing the stacking fix must expose the regression");
+    assert.equal(
+      menuLayering.menuAboveTrigger,
+      true,
+      "Next row action button obscures the open menu",
+    );
+    assert.equal(
+      menuLayering.negativeOccluded,
+      true,
+      "Removing the stacking fix must expose the regression",
+    );
   }
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-menu-layer-desktop.png"));
   report.menuLayering = menuLayering;
