@@ -1,81 +1,81 @@
 {
   "schema_version": 2,
-  "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
-  "base_sha": "f555e933e903df5f5c1439e0087099c5a0cb9933",
+  "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+  "base_sha": "98cb31eef42406b09e6644067490b24bdd1bc3ba",
   "creations": [],
   "references": [],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+      "path": "apps/web/src/dev-server/shared-styles.test.ts",
       "operation": "modified",
-      "scenario": "Dashboard SSR view, shared style and shell regression assertions",
-      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "scenario": "Shared mobile shell grid and nonstretched navigation with 320/390 viewport states",
+      "requirement": "Issue #724 mobile navigation, Chrome negative controls, Golden Screen first fold and preserved currency isolation.",
       "search": {
         "queries": [
-          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3ba651437260b0afe8e46a42a672016a4e2a5884 -- apps/web/src/dev-server/dashboard-page-currency.test.ts",
-          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+          "git diff 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 -- apps/web/src/dev-server/shared-styles.test.ts",
+          "git grep -n \"navigationStretchProbe\" scripts/statement-visual"
         ],
-        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "scope": "Existing canonical regression suites extended; no redundant parallel test runner.",
         "runner": "npm run test",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
-            "case": "Dashboard SSR view, shared style and shell regression assertions",
-            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
-            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+            "path": "apps/web/src/dev-server/shared-styles.test.ts",
+            "case": "Shared mobile shell grid and nonstretched navigation with 320/390 viewport states",
+            "oracle": "Test mutates/validates observable layout behavior, failing when shell navigation stretches or when negative controls bypassed.",
+            "comparison": "Preserve existing test suite and extend cases rather than copying component/DOM tests."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Existing canonical test was extended to cover changed hierarchy without obsolete duplication.",
+      "justification": "Added discriminating negative assertion inside the existing test suite for the affected path.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+        "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
         "reached_tests": [
-          "apps/web/src/dev-server/dashboard-page-currency.test.ts"
+          "apps/web/src/dev-server/shared-styles.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-page-currency.test.ts.execution.txt",
-        "evidence_sha256": "07b7148009e7001a8d60ee9d670b345b2c3bfcd4da03e0d4d40132b3d4583ff2"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shared-styles.test.ts.execution.txt",
+        "evidence_sha256": "f845099799c73630a6cd6c99b8272577af036b87228ce1385ad6ec8578c759db"
       }
     },
     {
       "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
       "operation": "modified",
-      "scenario": "Chrome scenario coverage and fingerprint assertions",
-      "requirement": "Issue #724 Golden Screen Dashboard hierarchy, responsiveness, states, and Chrome negative control.",
+      "scenario": "Dashboard controlled SSR Chrome evidence adapter detects navigation stretching, first-fold and broken negatives",
+      "requirement": "Issue #724 mobile navigation, Chrome negative controls, Golden Screen first fold and preserved currency isolation.",
       "search": {
         "queries": [
-          "git diff db820f12ccb4ff35303d3e7a3e03c6a79437545f..3ba651437260b0afe8e46a42a672016a4e2a5884 -- scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
-          "git grep -n \"dashboard\" apps/web/src/dev-server scripts/statement-visual"
+          "git diff 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 -- scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+          "git grep -n \"navigationStretchProbe\" scripts/statement-visual"
         ],
-        "scope": "Existing test for the same route/component reused instead of adding duplicate suites.",
+        "scope": "Existing canonical regression suites extended; no redundant parallel test runner.",
         "runner": "node --test scripts/statement-visual/*.test.mjs",
         "candidates": [
           {
-            "path": "scripts/statement-visual/coverage-contract.test.mjs",
-            "case": "Chrome scenario coverage and fingerprint assertions",
-            "oracle": "Assert observable SSR/DOM/visual-contract output after implementation",
-            "comparison": "A distinct negative-control adapter unit suite is necessary when action is added; other existing tests are extended."
+            "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+            "case": "Dashboard controlled SSR Chrome evidence adapter detects navigation stretching, first-fold and broken negatives",
+            "oracle": "Test mutates/validates observable layout behavior, failing when shell navigation stretches or when negative controls bypassed.",
+            "comparison": "Preserve existing test suite and extend cases rather than copying component/DOM tests."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Extended existing visual-evidence adapter test with additional single-currency partial/long-content mobile first-fold negative controls.",
+      "justification": "Added discriminating negative assertion inside the existing test suite for the affected path.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+        "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
         "reached_tests": [
           "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-724-behavior-evidence.test.mjs.execution.txt",
-        "evidence_sha256": "be0d283a5e523991c327508c16bab4ec73885d4b64e1d7f041ae7a670c031043"
+        "evidence_sha256": "42e55b046bf96516fe979815dc7cb778b4c12fe3473852878ab022d53dab9b29"
       }
     }
   ]

@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "subject_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
-  "source": "GitHub Actions Chrome visual validation; reports and PNGs from artifact 12854274655",
-  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40775679393",
-  "artifact_name": "statement-visual-evidence-3ba651437260b0afe8e46a42a672016a4e2a5884",
-  "artifact_id": 12854274655,
-  "artifact_zip_digest": "sha256:e38a75f19bbe1ed590a85d9509e02c8b124eb09f0f472dbb4c3088c1ccca7ac2",
-  "provenance": "real Dashboard SSR renderer with controlled API responses in authenticated Chrome; not production API integration",
+  "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+  "source": "GitHub Actions Chrome visual validation; files extracted from artifact 12866566790",
+  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319",
+  "artifact_name": "statement-visual-evidence-64f2011c828b65eda92c7807a0fd085374d5d2c8",
+  "artifact_id": 12866566790,
+  "artifact_zip_digest": "sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
+  "provenance": "Authenticated Chrome visual run; real Dashboard SSR renderer with controlled API responses for special states, NOT production API integration",
   "states": [
     {
       "state": "multi-currency",
       "report_path": "issue-724-dashboard-multi-currency.json",
-      "report_sha256": "449eb7c1cf8259f59d113d34063cf84300c91172c061bdb960146e611a164bfd",
+      "report_sha256": "5262b3ccfbd1616094d6fb2d65b3936ce2540afcb9a233041fa55e16ccd51bad",
       "viewports": [
         {
           "width": 1366,
@@ -21,6 +21,7 @@
           "has_partial": false,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 768,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -35,6 +36,7 @@
           "has_partial": false,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -49,6 +51,7 @@
           "has_partial": false,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -60,7 +63,7 @@
     {
       "state": "multi-currency-partial",
       "report_path": "issue-724-dashboard-multi-currency-partial.json",
-      "report_sha256": "d03aa26fa5c538e16be899f0e5218e29b435b416198e9504722112906ae429ca",
+      "report_sha256": "391b94590e20a6526bc24f74daf6b0fe9d1d8678d775b788f951c9ef61656c32",
       "viewports": [
         {
           "width": 1366,
@@ -70,6 +73,7 @@
           "has_partial": true,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 768,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -84,6 +88,7 @@
           "has_partial": true,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -98,6 +103,7 @@
           "has_partial": true,
           "currency_count": 2,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -109,7 +115,7 @@
     {
       "state": "partial",
       "report_path": "issue-724-dashboard-partial.json",
-      "report_sha256": "35fb04873a92416565c7c88740cd5a1c9392d2213b311b508c8f6dbf8c8f778a",
+      "report_sha256": "b9140efd3cc859369f2f8d3bec44a5ae033c16415cfe49f64a9723c264dec454",
       "viewports": [
         {
           "width": 1366,
@@ -119,6 +125,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 768,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -133,6 +140,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -147,6 +155,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -158,7 +167,7 @@
     {
       "state": "error",
       "report_path": "issue-724-dashboard-error.json",
-      "report_sha256": "45e4ad7584c38a369481227f5a8bc5ffd673164fcad4d7da09ff50bb5ef346d1",
+      "report_sha256": "f744b8b70a203ceeb74381d44ef686ad9cb116f60c9b897cad4fea67beb40f6a",
       "viewports": [
         {
           "width": 1366,
@@ -167,32 +176,43 @@
           "screenshot_sha256": "574748553dd4155802a6747be9535f18d3e869c24404dfa7b20c78d1270994ec",
           "has_partial": false,
           "currency_count": 0,
-          "no_horizontal_overflow": true
+          "no_horizontal_overflow": true,
+          "navigation_height_px": 768
         },
         {
           "width": 390,
           "height": 844,
           "screenshot_path": "issue-724-dashboard-error-390.png",
-          "screenshot_sha256": "2323660cc3ca9d31c44f85a3e9495d3fa968ab5c6b4542ef7c2aaba1ae73b707",
+          "screenshot_sha256": "3f6630ac6c4e8ed42c001c7a84ebd2c8371f108e79e23d6fbe21223d68127e4d",
           "has_partial": false,
           "currency_count": 0,
-          "no_horizontal_overflow": true
+          "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
+          "navigation_negative": {
+            "stretchedHeight": 357.5,
+            "restoredHeight": 52
+          }
         },
         {
           "width": 320,
           "height": 740,
           "screenshot_path": "issue-724-dashboard-error-320.png",
-          "screenshot_sha256": "04bc9ad69b02b492dde86a1a058e87655a268993eaa5ca0d22192898a2b1c769",
+          "screenshot_sha256": "1512360849e5eeb5434337c626309ea02df05594ad162d96bf945f856539828e",
           "has_partial": false,
           "currency_count": 0,
-          "no_horizontal_overflow": true
+          "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
+          "navigation_negative": {
+            "stretchedHeight": 295,
+            "restoredHeight": 52
+          }
         }
       ]
     },
     {
       "state": "long-content",
       "report_path": "issue-724-dashboard-long-content.json",
-      "report_sha256": "f468e129b6113072bf39b6b8c2809e8380d1841c7234a98f2954f597c7b65886",
+      "report_sha256": "5b7f41dac3c3af0e94c3eee0f5e0c5773fe24e0825552288eb4c97e4f708ec39",
       "viewports": [
         {
           "width": 1366,
@@ -202,6 +222,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 768,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -218,6 +239,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -234,6 +256,7 @@
           "has_partial": true,
           "currency_count": 1,
           "no_horizontal_overflow": true,
+          "navigation_height_px": 52,
           "first_action_in_first_fold": true,
           "action_focus": true,
           "evidence_enter_opened": true,
@@ -244,5 +267,86 @@
         }
       ]
     }
-  ]
+  ],
+  "baseline_states": [
+    {
+      "state": "empty",
+      "report_path": "issue-606-dashboard-empty.json",
+      "report_sha256": "7f5c807ba41178f95eb91ca1514c22de60bcce84a0047f4eb9a3fd8ac62ad563",
+      "failures": [],
+      "viewports": [
+        {
+          "width": 1366,
+          "height": 768,
+          "screenshot_path": "issue-606-dashboard-empty-1366.png",
+          "screenshot_sha256": "9907da24c42c8edb6bb0bffb90bdfe54d9a64df72df0c0691c8c6322b9fa2f53",
+          "navigation_height_px": 768,
+          "navigation_negative": null
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "screenshot_path": "issue-606-dashboard-empty-390.png",
+          "screenshot_sha256": "e3e6cbab87316aefaa23177538d585a98de01ef0e7b6dcafbfcc92137423dae9",
+          "navigation_height_px": 52,
+          "navigation_negative": {
+            "stretchedHeight": 280.203125,
+            "restoredHeight": 52
+          }
+        },
+        {
+          "width": 320,
+          "height": 740,
+          "screenshot_path": "issue-606-dashboard-empty-320.png",
+          "screenshot_sha256": "a8ddeffd37c99a6427f6335a9772243385fec33f3aa30a8b347777f46e208b11",
+          "navigation_height_px": 52,
+          "navigation_negative": {
+            "stretchedHeight": 196.171875,
+            "restoredHeight": 52
+          }
+        }
+      ]
+    }
+  ],
+  "shell_navigation_probe": {
+    "required_compact_max_height_px": 80,
+    "states": {
+      "error": [
+        {
+          "width": 390,
+          "normal": 52,
+          "negative": {
+            "stretchedHeight": 357.5,
+            "restoredHeight": 52
+          }
+        },
+        {
+          "width": 320,
+          "normal": 52,
+          "negative": {
+            "stretchedHeight": 295,
+            "restoredHeight": 52
+          }
+        }
+      ],
+      "empty": [
+        {
+          "width": 390,
+          "normal": 52,
+          "negative": {
+            "stretchedHeight": 280.203125,
+            "restoredHeight": 52
+          }
+        },
+        {
+          "width": 320,
+          "normal": 52,
+          "negative": {
+            "stretchedHeight": 196.171875,
+            "restoredHeight": 52
+          }
+        }
+      ]
+    }
+  }
 }

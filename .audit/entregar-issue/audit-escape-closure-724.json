@@ -5,7 +5,7 @@
       "escape_id": "A-74401",
       "escape_class": "inherited-foreign-handoff",
       "status": "passed",
-      "revalidated_head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+      "revalidated_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
@@ -67,7 +67,7 @@
       "escape_id": "A-74402",
       "escape_class": "incomplete-multi-currency-first-fold-coverage",
       "status": "passed",
-      "revalidated_head_sha": "3ba651437260b0afe8e46a42a672016a4e2a5884",
+      "revalidated_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
       "source_audit": {
         "kind": "independent-rejection",
         "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
@@ -82,8 +82,8 @@
       "literal_case": {
         "status": "passed",
         "procedure": "Run the corrected five-state Chrome runner at 320x740, 390x844 and 1366x768 with controlled SSR sources, and assert first-fold visibility of the next action after both currency summaries.",
-        "observed": "At 320x740 with two currencies and partial data, the next-action title ends at approximately 695 px and remains in view. The Chrome runner requires the same first-fold property for multimoeda complete and partial.",
-        "evidence": "evidence/issue-724-visual-unit-tests.log"
+        "observed": "At 320x740 and 390x844, Chrome 12866566790 confirms first title AND operational action link visible with BRL+USD; all nonerror SSR states pass, overlay test fails and restoration recovers.",
+        "evidence": "evidence/issue-724-chrome-exact-head.json"
       },
       "sibling_cases": [
         {
@@ -91,14 +91,14 @@
           "surface": "mobile-viewport",
           "dimension": "600px panel insertion",
           "status": "passed",
-          "evidence": "Chrome negative-control inserts 600px panel and demands action leave the first fold; removal restores visibility."
+          "evidence": "GitHub Chrome run 40800860319; real visual 600px intrusion on mobile, report sha256 in evidence/issue-724-chrome-exact-head.json"
         },
         {
           "id": "A-74402-wrap",
           "surface": "primary-currency-value",
           "dimension": "long monetary amount wrapping",
           "status": "passed",
-          "evidence": "Chrome asserts no wrapping; dedicated test in dashboard-724-behavior-evidence.test.mjs mutates primaryValuesOnOneLine to false and expects failure."
+          "evidence": "Current Node 119/119 run includes adapter mutated currency value wrapping assertion; raw log evidence/issue-724-visual-unit-tests.log"
         }
       ],
       "prevention_change": {

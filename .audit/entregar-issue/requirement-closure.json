@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/work744/cert-new/specification-snapshot.json",
+    "path": "specification-snapshot.json",
     "sha256": "c5f54f8354bdbaefc9b7685019ca262aa6a044e430277ae0bcbea626b905aacd"
   },
   "primary_issue_source_id": "SRC-ISSUE",
@@ -24,7 +24,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-002",
@@ -45,7 +45,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-003",
@@ -62,7 +62,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-004",
@@ -81,7 +81,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-005",
@@ -98,7 +98,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-006",
@@ -115,7 +115,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-007",
@@ -134,7 +134,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-008",
@@ -154,7 +154,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-009",
@@ -171,7 +171,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 3ba651437260b0afe8e46a42a672016a4e2a5884; independent approval is a separate external gate, not claimed here."
+      "rationale": "Producer-side code, SSR, viewports, keyboard, docs and negative controls checked at 64f2011c828b65eda92c7807a0fd085374d5d2c8; independent approval is a separate external gate, not claimed here."
     },
     {
       "id": "OBL-010",
@@ -316,11 +316,10 @@
       "OBL-010"
     ],
     "evidence": [
-      "Primary issue canonical 10 obligation lines were rederived without PR narrative",
-      "Actual Git diff limited to dashboard SSR/CSS/tests/visual docs",
-      "Exact-SHA Chrome artifact reports and negative control tests independent of PR text",
-      "Independent audit of OBL-010 remains deferred and blocks closure",
-      "Material 3ba651437260b0afe8e46a42a672016a4e2a5884 reconstructs the issue-local dashboard delta; exact-SHA independent reviewer acceptance remains a separate gate and is not claimed."
+      "10 source obligations rederived from immutable issue #724 body; OBL-010 remains deferred until independent audit, not producer-approved",
+      "Issue-local delta 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 spans 8 UI, source visual test and documentation paths; no API/money changes",
+      "Local 119/119 visual tests and authenticated Chrome run 40800860319 at 64f2011c828b65eda92c7807a0fd085374d5d2c8; negative navigation height stretch and restoration observed in genuine Chrome report bytes",
+      "CI green and certificate do not constitute independent approval; OBL-010 remains deferred."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
