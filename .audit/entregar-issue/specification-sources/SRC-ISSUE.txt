@@ -6,20 +6,20 @@
 
 **Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.
 
-**Rota / arquétipo:** `/dashboard`, A1 Cockpit. **Prioridade:** P1 (primeiro acesso / posição financeira).
-**Antecedentes:** #591, #608. A migração anterior não constitui aceite da Golden Screen.
+**Rota / arquétipo:** `/orcamentos`, A1 Cockpit. **Prioridade:** P1 (planejamento de caixa).
+**Antecedentes:** #591, #613 e contrato atual `docs/API_BUDGETS_GOALS_ALERTS.md`. Não duplicar escopo funcional da #619.
 
 ### Delta observável na fonte
-Em `apps/web/src/dev-server/dashboard-page.ts`, `renderDashboardContent` (linhas ~150–189) apresenta sucessivamente `dashboard-hero.panel`, navegação de moedas `currency-nav.panel`, resumos individuais, projeção, insights, `next-actions.panel`, `decision-grid` de `renderCard` (~334–347) e `list-panel`. A composição privilegia múltiplas superfícies/coletâneas antes de uma leitura única de posição/variação/próxima decisão; confrontar a densidade real com A1 e a referência aprovada.
+`apps/web/src/dev-server/budgets-page.ts` em `renderPageContainer` (~103–137) emite **quatro `renderMetricCard`** de contagem — Ativos, Sem orçamento, Sem categoria, Moedas — *antes* da tabela com valores financeiros planejado/realizado/comprometido/projetado (~282–320). Esses contadores podem competir visualmente com a decisão operacional; `budget-results.panel` e a barra de filtros completam a carga inicial. Comparar com hierarquia A1, preservando integralmente dados atuais.
 
 ### Escopo fechado
-- Comparar a dobra inicial e reordenar/hierarquizar indicadores, horizonte e próxima ação, preservando separação BRL/USD, drilldowns, projeção e insights existentes.
-- Reduzir envoltórios redundantes e competição entre cartões/ações **somente onde o Chrome comprovar excesso**, sem remover indicadores nem mudar cálculos.
-- Preservar estados de dados parciais, vazios e erros, inclusive metas de desempenho e fallback SSR.
+- Reorganizar primeira leitura para período, moeda, orçamento/execução/alerta e ação contextual; tornar contagens informativas secundárias, sem criar somas ou KPIs não existentes na API.
+- Ajustar densidade da tabela e filtros por moeda/estado, com estado ativo evidente e mesma operação SSR.
+- Preservar orçamento sem categoria, `unbudgeted`, alertas, controle de permissão, modais de novo/editar e campos atuais da #613 e da #619 quando já existentes.
 
 ### Aceite / regressão
-- [ ] Capturas comparativas 1366×768, 390×844, 320×740 no SHA material, normal, multi-moeda, vazio, falha parcial e conteúdo longo.
-- [ ] Saldo/resultado por moeda e próxima ação distinguíveis na primeira leitura; listas/evidências secundárias; sem cards universais, sem recorte horizontal.
-- [ ] Ações e drilldowns existentes operáveis por teclado/foco; nenhum total somado entre moedas; contratos #608 preservados.
-- [ ] Controle negativo: introduzir card/painel intrusivo ou elevar módulo secundário acima da decisão principal deve reprovar avaliação de densidade/hierarquia; restauração passa.
-- [ ] Testes SSR, CI e gate Chrome relevantemente verdes exact-SHA; revisão visual e auditoria técnica **independentes**, com links de capturas/relatórios.
+- [ ] Evidências Chrome no SHA 1366×768 / 390×844 / 320×740, dois códigos de moeda, lista longa, filtro sem resultado, erro, criação/edição.
+- [ ] Valores planejado/realizado/remanescente e estado dominam contadores de catálogo; labels/status/moedas explícitos; filtros permanecem operáveis e persistentes.
+- [ ] Nenhum recálculo de status/saldo no renderer, nenhuma mistura BRL/USD, nem zeros sintéticos para dados ausentes.
+- [ ] Controles negativos: priorização artificial de contagens e truncamento de moeda/valores devem ser rejeitados; restauração passa.
+- [ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e parecer visual/técnico independente.

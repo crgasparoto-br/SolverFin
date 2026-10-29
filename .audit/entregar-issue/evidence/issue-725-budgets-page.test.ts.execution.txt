@@ -1,0 +1,7 @@
+HEAD: 7b7569493277a19b41eb1494b4abad9f90470342
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/budgets-page.test.ts
+SOURCE: GitHub Actions CRITICAL validation, run 40882125637, exact material HEAD; https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637
+OBSERVED: official job log records [test] dev-server/budgets-page.test.js and # pass 10, plus full npm run test success.
+NOTE: This file is an independently cross-checkable log-derived identity witness, not a full copy of GitHub job logs.

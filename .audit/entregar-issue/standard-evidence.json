@@ -1,249 +1,259 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+  "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
   "requirements": [
     {
-      "requirement_id": "REQ-724-01",
+      "requirement_id": "REQ-725-01",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-01 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "develop exact-base ancestor verified; prior #714/Golden Screen conventions reused without automatic merge. Official target binding negative control rejected inherited #724 certificate.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-01",
+        "id": "NC-725-BASE",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "The candidate is on develop and a mutated main base is rejected by the canonical invariant",
-        "observed": "No merge occurred. Official delivery_target_binding.py rejected inherited #747/#749 artifacts; rebind to issue #724.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "The candidate is on develop and a mutated main base is rejected by the canonical invariant",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Run official delivery_target_binding.py on exact M and base B; compare blob identities",
+        "expected": "Classify inherited artifact as invalid for issue #725",
+        "observed": "Status inherited-base-artifact; source issue=724, PR=744; reuse_allowed=false",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-inherited-binding.json",
+        "evidence_sha256": "55a77a7a931a37287d3beedc1430f163800db2afce000fd38b1c1799bf0b0ea6",
+        "plausible_wrong_implementation": "Issue 725 current delivery mistakenly inherits issue #724 certificate"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-02",
+      "requirement_id": "REQ-725-02",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-02 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Diff strictly presentation/SSR/test/docs; historical run 40811518620 proves pre-existing divergence with same Git blob before PR, but does NOT prove operator personally inspected Chrome before editing; this procedurally unresolved fact remains visible for external acceptance.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-02",
+        "id": "NC-725-NOSCOPE",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Any changed apps/api, packages/domain or prisma path fails the presentation-only scope",
-        "observed": "Git diff of previous certified handoff 98cb31ee..material 64f2011c contains only 8 UI/test/doc paths, no API, database or finance-contract modifications.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Any changed apps/api, packages/domain or prisma path fails the presentation-only scope",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
+        "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
+        "observed": "Exact git diff 9265025a..7b756949 contains 6 files, all presentation/SSR/test/docs",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
+        "evidence_sha256": "442733a9520cae2e2741e4c3ce6aea6b650742c7619c27759acdf289dde0b5d0",
+        "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-03",
+      "requirement_id": "REQ-725-03",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-03 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Prior #591/#613/#619 budget contract preserved; no financial/API endpoints, authorization, model or money services modified; SSR uses existing models and components.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-03",
+        "id": "NC-725-NOSCOPE",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Putting a decision/secondary section before next actions fails assertCockpitHierarchy",
-        "observed": "dashboard-page.test.ts mutates a secondary section before Next Actions and expects assert.throws.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Putting a decision/secondary section before next actions fails assertCockpitHierarchy",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
+        "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
+        "observed": "Exact git diff 9265025a..7b756949 contains 6 files, all presentation/SSR/test/docs",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
+        "evidence_sha256": "442733a9520cae2e2741e4c3ce6aea6b650742c7619c27759acdf289dde0b5d0",
+        "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-04",
+      "requirement_id": "REQ-725-04",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-04 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Original base emitted four count metrics before financial table; current SSR uses renderBudgetFocus ahead of detail and renderBudgetInventory afterwards, retaining the full table.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-04",
+        "id": "NC-725-HIERARCHY",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "More than two metrics per currency triggers the expected SSR metric-count assertion",
-        "observed": "dashboard-page.test.ts asserts exactly two main cards and three supporting metrics.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "More than two metrics per currency triggers the expected SSR metric-count assertion",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Chrome pilot moves .budget-inventory ahead of .budget-results, checks hierarchyValid then restores DOM",
+        "expected": "Mutated order rejected; original hierarchy accepted",
+        "observed": "hierarchyRejected=true and hierarchyRestored=true in Chrome exact material report",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Auxiliary inventory promoted ahead of the financial decision view"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-05",
+      "requirement_id": "REQ-725-05",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-05 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Focus shows period, explicit currency, planned/realized/available, API usageStatus, contextual edit/create/categorize; up to three distinct currencies, no aggregation.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-05",
+        "id": "NC-725-HIERARCHY",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Leaking financial KPIs on 503 or concealing partial warning is rejected",
-        "observed": "Chrome runner reports error with zero currencies and partial with warning in the five states.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Leaking financial KPIs on 503 or concealing partial warning is rejected",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Chrome pilot moves .budget-inventory ahead of .budget-results, checks hierarchyValid then restores DOM",
+        "expected": "Mutated order rejected; original hierarchy accepted",
+        "observed": "hierarchyRejected=true and hierarchyRestored=true in Chrome exact material report",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Auxiliary inventory promoted ahead of the financial decision view"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-06",
+      "requirement_id": "REQ-725-06",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-06 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "SSR filters retain currency/status and filtered-empty state; table compact CSS; 390/320 Chrome measurements confirm no document overflow and visible controls.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-06",
+        "id": "NC-725-EMPTY",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Missing 320px screenshot/record makes adapter reject the scenario",
-        "observed": "dashboard-724-behavior-evidence.test.mjs removes 320 viewport and expects rejection.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Missing 320px screenshot/record makes adapter reject the scenario",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Chrome opens /orcamentos?currency=EUR&status=active at 320x740 and checks selection after SSR",
+        "expected": "Selected EUR and explicit no-results message persist",
+        "observed": "empty={currency:EUR,message:true,focusCount:0,documentFits:true} in Chrome report",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Active filter is lost when no budget matches"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-07",
+      "requirement_id": "REQ-725-07",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-07 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Preserves unbudgeted/uncategorized, unavailable usage warnings, full category table and details, create/edit dialogs; Chrome real POST/PATCH and rejected PATCH with API rereads passed.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-07",
+        "id": "NC-725-PERSIST",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Letting action title exit first fold or allowing long values to wrap makes adapter reject",
-        "observed": "Chrome checked 320/390 first action title and operational link for complete/partial multimoeda, partial single currency and long content; Node mutations reject missing link, wrapping, first-fold failure.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Letting action title exit first fold or allowing long values to wrap makes adapter reject",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Chrome creates USD 1234.56 via POST, reloads SSR, PATCHes 2345.67, reloads and checks ID, row and amount",
+        "expected": "Re-read after navigation shows same ID and updated planned amount, not a duplicate",
+        "observed": "Chrome creation/editing persisted true; updated planned US$ 2.345,67 and same ID",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Create/edit forms show a toast without durable API persistence"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-08",
+      "requirement_id": "REQ-725-08",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-08 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Exact Chrome run 40882125668 artifact 12900314848 proves 1366×768, 390×844, 320×740, long list>=10, BRL/USD, filter empty, creation/editing/error, reversible negative controls. Screenshots internally inspected.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-08",
+        "id": "NC-725-FAIL",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "When Enter fails to open target detail, browser/adapter rejects",
-        "observed": "dashboard-724-behavior-evidence.test.mjs alters keyboard.open=false and expects adapter rejection; Chrome confirms Enter in all healthy states.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "When Enter fails to open target detail, browser/adapter rejects",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "Chrome submits invalid period end before start, verifies error and preserved form/URL, rereads API persisted amount",
+        "expected": "Error retained modal, value 2345,67, active URL and no persisted change",
+        "observed": "Chrome rejection.errorVisible=true, dialogOpen=true, retainedValue=2345,67, unchanged persisted API",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Failed PATCH loses modal form and active filters or mutates persisted data"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     },
     {
-      "requirement_id": "REQ-724-09",
+      "requirement_id": "REQ-725-09",
       "positive_evidence": [
-        "Exact-SHA Repository CI run 40800860251, CRITICAL validation and web tests completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Chrome visual validation run 40800860319, completed/success at 64f2011c828b65eda92c7807a0fd085374d5d2c8; artifact 12866566790 digest sha256:c59f1b593bbd0e053715627b0b933da557022effc1d073d7ece8c5fa3b5e78f9",
-        "Controller-generated Chrome report/PNG sha256 and state assertions available at evidence/issue-724-chrome-exact-head.json; SHA256 2d46ac606ace12c7755fd66a2fc6243afc7c4af5682c4d0a25f3bbe0a3334b97",
-        "Issue #724/REQ-724-09 dashboard SSR visual behavior and source reviewed against authenticated Git bundle HEAD 64f2011c828b65eda92c7807a0fd085374d5d2c8"
+        "Financial decision precedes inventory, explicit money and status per currency, selected filter state and no-results message persisted across SSR.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
       ],
       "primary_negative_control": {
-        "id": "NC-724-09",
+        "id": "NC-725-MULTI",
         "status": "passed",
-        "procedure": "Executed at 64f2011c828b65eda92c7807a0fd085374d5d2c8: Node 119 passing tests, exact-SHA CI 40800860251, Chrome reports 40800860319 with genuine mutations; source-only controls separately checked against actual git diff.",
-        "expected": "Artificial 600px panel must make next action leave first fold; after removal it must reappear",
-        "observed": "Chrome reports for four nonerror special states show intrusivePanel.actionVisibleAfterIntrusion=false and actionVisibleAfterRemoval=true at 320/390.",
-        "head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "evidence_path": ".audit/entregar-issue/negative-control-evidence-724.json",
-        "evidence_sha256": "080452c1acc06e6f587a2068813cde2eec5202187aacae429631f1728ef74c3d",
-        "plausible_wrong_implementation": "Artificial 600px panel must make next action leave first fold; after removal it must reappear",
-        "evidence_scope_note": "Controlled SSR/adapter and source mutation; Chrome assertions independently bound to exact material SHA, no live API replay implied."
+        "procedure": "SSR budgets-page.test.ts verifies focus USD filter cannot show BRL and refuses fabricated realized values; Chrome checks BRL+USD separate and filter USD only",
+        "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
+        "observed": "CI budgets-page.test.js # pass 10; Chrome mixed.focused=[BRL,USD] and filtered.focused=[USD]",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "BRL and USD accidentally added in a synthetic aggregate or selected cross-currency focus"
       },
       "regression_evidence": [
-        "Actual local Node --test scripts/statement-visual/*.test.mjs: 119/119 PASS; raw log evidence/issue-724-visual-unit-tests.log sha256 1cbcfb87b460855fd9569f8d92932f30b87e1c55a87d195d2cfa9f9fba44c158",
-        "Coverage: 67 modules, 75 executions; local log evidence/issue-724-coverage.log sha256 371c15da4ed8ec39265902114d5ce203410388b5303cc7a20309be14a55a65ff",
-        "Exact-SHA Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251, Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860319, audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/40802203226 terminal successes on material 64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "Navigation stretch probes 320/390 px in Chrome error/empty: normal and restored 52px, deliberately stretched >80 px; evidence/issue-724-chrome-exact-head.json"
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
+      ]
+    },
+    {
+      "requirement_id": "REQ-725-10",
+      "positive_evidence": [
+        "Money values/status are sourced from budgets-view-model and validated API usage; null stays unavailable; no BRL/USD mix/sum and no synthetic zero. SSR tests covered mismatched usage.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
+      ],
+      "primary_negative_control": {
+        "id": "NC-725-MULTI",
+        "status": "passed",
+        "procedure": "SSR budgets-page.test.ts verifies focus USD filter cannot show BRL and refuses fabricated realized values; Chrome checks BRL+USD separate and filter USD only",
+        "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
+        "observed": "CI budgets-page.test.js # pass 10; Chrome mixed.focused=[BRL,USD] and filtered.focused=[USD]",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "BRL and USD accidentally added in a synthetic aggregate or selected cross-currency focus"
+      },
+      "regression_evidence": [
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
+      ]
+    },
+    {
+      "requirement_id": "REQ-725-11",
+      "positive_evidence": [
+        "Chrome pilot deliberately moves auxiliary section ahead and clips currency/amount; both mutations rejected, both reversions restored; raw report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d.",
+        "Exact material SHA 7b7569493277a19b41eb1494b4abad9f90470342 Repository CI CRITICAL https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "Authenticated Chrome on 7b7569493277a19b41eb1494b4abad9f90470342: https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668; source artifact 12900314848; report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
+      ],
+      "primary_negative_control": {
+        "id": "NC-725-CLIP",
+        "status": "passed",
+        "procedure": "Chrome pilot forces 1px money width and overflow-x:hidden, checks financialLabelsLegible then restores inline styles",
+        "expected": "Clipped value rejected; restored value readable",
+        "observed": "clippedValueRejected=true and clippedValueRestored=true in Chrome exact material report",
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
+        "plausible_wrong_implementation": "Financial currency and value clipped by a narrow overflow-hidden cell"
+      },
+      "regression_evidence": [
+        "Existing budgets-page.test.ts 10 executed cases and full CRITICAL suite passed on 7b7569493277a19b41eb1494b4abad9f90470342 run 40882125637.",
+        "Chrome issue-606-budgets-pilot.json on same HEAD has three viewport records, mixed BRL/USD, filter no-results and positive/negative real DOM checks; run 40882125668."
       ]
     }
   ]

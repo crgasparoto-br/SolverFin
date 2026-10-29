@@ -3,49 +3,31 @@
   "contract_version": "2026-08-20.3",
   "status": "rejected",
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
-  "head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+  "rejection_id": "audit-rejection:solverfin-751-7b756949-20261029-001",
+  "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
-    "material_head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
-    "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
-    "issue_number": 724,
-    "pull_request_number": 744
+    "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+    "material_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+    "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+    "issue_number": 725,
+    "pull_request_number": 751
   },
   "external_report": {
-    "sha256": "7e504c48a7893b7a492038f03c46a3336862f1ea0cce64a43a2c6d856eb2088b",
-    "path": "evidence/issue-724-independent-audit-report.json"
+    "sha256": "d90eccac6800c2841751ff15178882c5d5da3a591974f0d327419201d2effe13",
+    "path": "https://github.com/crgasparoto-br/SolverFin/pull/751#pullrequestreview-5699219489"
   },
   "findings": [
     {
-      "id": "A-74401",
+      "id": "A-002",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
       "category": "inherited-foreign-handoff",
-      "summary": "Prior certificate targets #747 / PR #749 and must be rebuilt for #724 / PR #744 at exact SHA."
-    },
-    {
-      "id": "A-74402",
-      "disposition": "blocking",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "category": "mobile-first-fold-multi-currency",
-      "summary": "Multicurrency mobile stacked primary KPI cards hid next actions below first viewport; gated first-fold visibility absent."
+      "summary": "Prior .audit certificate is byte-identical to base and targets issue #724/PR #744, not issue #725/PR #751."
     }
   ],
-  "recommendations": [
-    {
-      "id": "REC-744-01",
-      "disposition": "recommendation",
-      "status": "open",
-      "actionable": true,
-      "remediation_mode": "targeted-remediation",
-      "summary": "Docs describe Chrome scenarios as pending despite evidence."
-    }
-  ],
-  "provenance_note": "Prior separate-context review findings are preserved in evidence/issue-724-independent-audit-report.json and identifiable SHA-256. No cryptographic signer or cross-session authentication claimed."
+  "recommendations": [],
+  "provenance_note": "Source is an independent COMMENTED PR review https://github.com/crgasparoto-br/SolverFin/pull/751#pullrequestreview-5699219489 on audited HEAD 7b7569493277a19b41eb1494b4abad9f90470342; review raw body sha256 d90eccac6800c2841751ff15178882c5d5da3a591974f0d327419201d2effe13. No cryptographic independent reviewer identity is claimed; current review rejects missing certification."
 }

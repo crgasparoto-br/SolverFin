@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "expected_subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 725,
+    "pull_request_number": 751,
+    "work_item_kind": "issue",
+    "work_item_number": 725,
+    "pull_request": 751,
+    "base_ref": "develop",
+    "head_ref": "feat/725-golden-budgets-cockpit"
+  },
+  "checked_paths": [
+    "/mnt/data/solverfin-751/product/.audit/entregar-issue/handoff-ready.json",
+    "/mnt/data/solverfin-751/product/.audit/entregar-issue/specification-snapshot.json"
+  ],
+  "base_origin": {
+    "checked": true,
+    "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+    "present_identity_artifacts": [
+      "handoff-ready.json",
+      "specification-snapshot.json"
+    ],
+    "inherited_paths": [
+      "handoff-ready.json",
+      "specification-snapshot.json"
+    ],
+    "all_present_identity_artifacts_inherited": true,
+    "comparison_mode": "git-exact-base-sha"
+  },
+  "status": "inherited-base-artifact",
+  "reuse_allowed": false,
+  "requires_fresh_handoff": true,
+  "foreign_target_detected": true,
+  "inherited_from_base": true,
+  "observed_subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 724,
+    "pull_request_number": 744,
+    "work_item_kind": "issue",
+    "work_item_number": 724,
+    "pull_request": 744,
+    "base_ref": "develop",
+    "head_ref": "feat/724-golden-dashboard-hierarchy-isolated"
+  },
+  "reasons": [
+    "subject.work_item_number differs: observed=724 expected=725",
+    "subject.issue_number differs: observed=724 expected=725",
+    "subject.pull_request_number differs: observed=744 expected=751",
+    "subject.pull_request differs: observed=744 expected=751",
+    "subject.head_ref differs: observed='feat/724-golden-dashboard-hierarchy-isolated' expected='feat/725-golden-budgets-cockpit'",
+    "snapshot.issue differs: observed=724 expected=725",
+    "foreign identity artifacts are byte-identical to the exact base SHA; treat them as inherited history, never as output of the current delivery"
+  ]
+}

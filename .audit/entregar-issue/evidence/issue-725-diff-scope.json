@@ -1,0 +1,13 @@
+{
+  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "changed_paths": [
+    "apps/web/src/dev-server/budgets-focus.ts",
+    "apps/web/src/dev-server/budgets-page.test.ts",
+    "apps/web/src/dev-server/budgets-page.ts",
+    "docs/API_BUDGETS_GOALS_ALERTS.md",
+    "docs/VISUAL_VALIDATION.md",
+    "scripts/statement-visual/issue-606-budgets-pilot.mjs"
+  ],
+  "scope": "No backend, finance domain, API or database mutation under issue #725."
+}

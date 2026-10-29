@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "controls": [
+    {
+      "id": "NC-725-BASE",
+      "plausible_wrong_implementation": "Issue 725 current delivery mistakenly inherits issue #724 certificate",
+      "procedure": "Run official delivery_target_binding.py on exact M and base B; compare blob identities",
+      "expected": "Classify inherited artifact as invalid for issue #725",
+      "observed": "Status inherited-base-artifact; source issue=724, PR=744; reuse_allowed=false",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-inherited-binding.json",
+      "evidence_sha256": "55a77a7a931a37287d3beedc1430f163800db2afce000fd38b1c1799bf0b0ea6"
+    },
+    {
+      "id": "NC-725-HIERARCHY",
+      "plausible_wrong_implementation": "Auxiliary inventory promoted ahead of the financial decision view",
+      "procedure": "Chrome pilot moves .budget-inventory ahead of .budget-results, checks hierarchyValid then restores DOM",
+      "expected": "Mutated order rejected; original hierarchy accepted",
+      "observed": "hierarchyRejected=true and hierarchyRestored=true in Chrome exact material report",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-CLIP",
+      "plausible_wrong_implementation": "Financial currency and value clipped by a narrow overflow-hidden cell",
+      "procedure": "Chrome pilot forces 1px money width and overflow-x:hidden, checks financialLabelsLegible then restores inline styles",
+      "expected": "Clipped value rejected; restored value readable",
+      "observed": "clippedValueRejected=true and clippedValueRestored=true in Chrome exact material report",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-MULTI",
+      "plausible_wrong_implementation": "BRL and USD accidentally added in a synthetic aggregate or selected cross-currency focus",
+      "procedure": "SSR budgets-page.test.ts verifies focus USD filter cannot show BRL and refuses fabricated realized values; Chrome checks BRL+USD separate and filter USD only",
+      "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
+      "observed": "CI budgets-page.test.js # pass 10; Chrome mixed.focused=[BRL,USD] and filtered.focused=[USD]",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-EMPTY",
+      "plausible_wrong_implementation": "Active filter is lost when no budget matches",
+      "procedure": "Chrome opens /orcamentos?currency=EUR&status=active at 320x740 and checks selection after SSR",
+      "expected": "Selected EUR and explicit no-results message persist",
+      "observed": "empty={currency:EUR,message:true,focusCount:0,documentFits:true} in Chrome report",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-PERSIST",
+      "plausible_wrong_implementation": "Create/edit forms show a toast without durable API persistence",
+      "procedure": "Chrome creates USD 1234.56 via POST, reloads SSR, PATCHes 2345.67, reloads and checks ID, row and amount",
+      "expected": "Re-read after navigation shows same ID and updated planned amount, not a duplicate",
+      "observed": "Chrome creation/editing persisted true; updated planned US$ 2.345,67 and same ID",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-FAIL",
+      "plausible_wrong_implementation": "Failed PATCH loses modal form and active filters or mutates persisted data",
+      "procedure": "Chrome submits invalid period end before start, verifies error and preserved form/URL, rereads API persisted amount",
+      "expected": "Error retained modal, value 2345,67, active URL and no persisted change",
+      "observed": "Chrome rejection.errorVisible=true, dialogOpen=true, retainedValue=2345,67, unchanged persisted API",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d"
+    },
+    {
+      "id": "NC-725-NOSCOPE",
+      "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue",
+      "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
+      "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
+      "observed": "Exact git diff 9265025a..7b756949 contains 6 files, all presentation/SSR/test/docs",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-diff-scope.json",
+      "evidence_sha256": "442733a9520cae2e2741e4c3ce6aea6b650742c7619c27759acdf289dde0b5d0"
+    },
+    {
+      "id": "NC-725-REGRESSION",
+      "plausible_wrong_implementation": "Original tests no longer execute after helper extraction",
+      "procedure": "Inspect GitHub CRITICAL job log reached tests and success, compare changed tests and retained tests",
+      "expected": "All 10 page tests reached and passed on material HEAD",
+      "observed": "GitHub CRITICAL job 123476422868 reports budgets-page.test.js # pass 10",
+      "status": "passed",
+      "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+      "evidence_path": "evidence/issue-725-budgets-page.test.ts.execution.txt",
+      "evidence_sha256": "d207bd433191bddea35e0e5053fe5162bbbe781f1aa24b83bd420e1cd92d9d73"
+    }
+  ]
+}

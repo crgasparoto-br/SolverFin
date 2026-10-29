@@ -1,81 +1,79 @@
 {
   "schema_version": 2,
-  "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-  "base_sha": "98cb31eef42406b09e6644067490b24bdd1bc3ba",
-  "creations": [],
-  "references": [],
+  "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "creations": [
+    {
+      "path": "apps/web/src/dev-server/budgets-focus.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n renderBudgetFocus and renderBudgetStatus under apps/web/src/dev-server",
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..7b7569493277a19b41eb1494b4abad9f90470342 -- apps/web/src/dev-server/budgets-page.ts"
+        ],
+        "scope": "Existing budget page and design system helpers reviewed before extracting presentation-only helpers.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.ts",
+            "reason_not_reused": "Extending an already 641-line page by the full financial focus would increase complexity; existing money/primitive helpers are reused by import."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Small 152-line presentation helper extracted from budgets page to keep page growth within allowance; uses existing view-model, renderMoney and renderDialogTrigger instead of duplicating calculations."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "renderBudgetFocus",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/budgets-focus.ts",
+        "line": 18
+      },
+      "verified_by": {
+        "command": "git grep -n renderBudgetFocus apps/web/src/dev-server",
+        "exit_code": 0
+      }
+    }
+  ],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/web/src/dev-server/shared-styles.test.ts",
+      "path": "apps/web/src/dev-server/budgets-page.test.ts",
       "operation": "modified",
-      "scenario": "Shared mobile shell grid and nonstretched navigation with 320/390 viewport states",
-      "requirement": "Issue #724 mobile navigation, Chrome negative controls, Golden Screen first fold and preserved currency isolation.",
+      "scenario": "Budget finance hierarchy, BRL/USD focus isolation, filter empty, recoverable error and mutation-free SSR",
+      "requirement": "Issue #725 SSR regression and negative multi-currency/no synthetic zero controls.",
       "search": {
         "queries": [
-          "git diff 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 -- apps/web/src/dev-server/shared-styles.test.ts",
-          "git grep -n \"navigationStretchProbe\" scripts/statement-visual"
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..7b7569493277a19b41eb1494b4abad9f90470342 -- apps/web/src/dev-server/budgets-page.test.ts",
+          "git grep -n budgets page issue 619 apps/web/src/dev-server/budgets-page.test.ts"
         ],
-        "scope": "Existing canonical regression suites extended; no redundant parallel test runner.",
+        "scope": "Existing budget page SSR test reused and extended rather than creating separate test harness.",
         "runner": "npm run test",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/shared-styles.test.ts",
-            "case": "Shared mobile shell grid and nonstretched navigation with 320/390 viewport states",
-            "oracle": "Test mutates/validates observable layout behavior, failing when shell navigation stretches or when negative controls bypassed.",
-            "comparison": "Preserve existing test suite and extend cases rather than copying component/DOM tests."
+            "path": "apps/web/src/dev-server/budgets-page.test.ts",
+            "case": "Ten SSR budget page scenarios including multi-currency filters and unavailable values",
+            "oracle": "HTML output and financial/API usage distinctions tested against deterministic fixtures that distinguish BRL/USD and null from zero.",
+            "comparison": "Existing test file extended with additional acceptance cases; no duplicate suite."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "Added discriminating negative assertion inside the existing test suite for the affected path.",
+      "justification": "The affected page already has canonical SSR tests; extend same suite to preserve former #619 cases.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+        "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
         "reached_tests": [
-          "apps/web/src/dev-server/shared-styles.test.ts"
+          "apps/web/src/dev-server/budgets-page.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-724-shared-styles.test.ts.execution.txt",
-        "evidence_sha256": "f845099799c73630a6cd6c99b8272577af036b87228ce1385ad6ec8578c759db"
-      }
-    },
-    {
-      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
-      "operation": "modified",
-      "scenario": "Dashboard controlled SSR Chrome evidence adapter detects navigation stretching, first-fold and broken negatives",
-      "requirement": "Issue #724 mobile navigation, Chrome negative controls, Golden Screen first fold and preserved currency isolation.",
-      "search": {
-        "queries": [
-          "git diff 98cb31eef42406b09e6644067490b24bdd1bc3ba..64f2011c828b65eda92c7807a0fd085374d5d2c8 -- scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
-          "git grep -n \"navigationStretchProbe\" scripts/statement-visual"
-        ],
-        "scope": "Existing canonical regression suites extended; no redundant parallel test runner.",
-        "runner": "node --test scripts/statement-visual/*.test.mjs",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
-            "case": "Dashboard controlled SSR Chrome evidence adapter detects navigation stretching, first-fold and broken negatives",
-            "oracle": "Test mutates/validates observable layout behavior, failing when shell navigation stretches or when negative controls bypassed.",
-            "comparison": "Preserve existing test suite and extend cases rather than copying component/DOM tests."
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Added discriminating negative assertion inside the existing test suite for the affected path.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "node --test scripts/statement-visual/*.test.mjs",
-        "exit_code": 0,
-        "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-        "reached_tests": [
-          "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-724-dashboard-724-behavior-evidence.test.mjs.execution.txt",
-        "evidence_sha256": "42e55b046bf96516fe979815dc7cb778b4c12fe3473852878ab022d53dab9b29"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budgets-page.test.ts.execution.txt",
+        "evidence_sha256": "d207bd433191bddea35e0e5053fe5162bbbe781f1aa24b83bd420e1cd92d9d73"
       }
     }
   ]
