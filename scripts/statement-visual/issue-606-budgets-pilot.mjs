@@ -91,7 +91,6 @@ try {
     });
   }
 
-
   // This fixture modifies only the disposable Chrome CI database, never production data.
   const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression());
   assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(fixture)}`);
@@ -155,7 +154,13 @@ try {
   })()`);
   assert.deepEqual(dialogs, { createOpen: true, editOpen: true });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
-  report.issue725Acceptance = { fixtureCurrency: fixture.currency, mixed, filtered, empty, dialogs };
+  report.issue725Acceptance = {
+    fixtureCurrency: fixture.currency,
+    mixed,
+    filtered,
+    empty,
+    dialogs,
+  };
 
   await writeFile(
     join(outputDir, "issue-606-budgets-pilot.json"),
