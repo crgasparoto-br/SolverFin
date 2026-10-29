@@ -1,7 +1,9 @@
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
-import { renderDialogTrigger, renderText } from "../design-system/primitives.js";
+import { renderText } from "../design-system/primitives.js";
+import { icon } from "./icons.js";
+import { renderBudgetActionMenu } from "./budgets-action-menu.js";
 import type { BudgetsPageViewModel, BudgetRowViewModel } from "./budgets-view-model.js";
 
 function budgetFocusPriority(row: BudgetRowViewModel): number {
@@ -52,26 +54,13 @@ function renderBudgetFocusItem(row: BudgetRowViewModel): string {
       ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
       : "";
   return `<article class="budget-focus-item">
-    <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div>${renderBudgetStatus(row)}</div>
+    <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div><div class="budget-focus-head-actions">${renderBudgetStatus(row)}${renderBudgetActionMenu(row, "focus")}</div></div>
     <dl class="budget-focus-values"><div><dt>Planejado</dt><dd>${planned}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(row.actualAmountMinor, row.currency)}</dd></div><div><dt>Disponível</dt><dd>${available}</dd></div></dl>
-    ${remaining}${overBudget}<div class="budget-focus-actions">${renderBudgetFocusAction(row)}</div>
+    ${remaining}${overBudget}
   </article>`;
 }
 
-function renderBudgetFocusAction(row: BudgetRowViewModel): string {
-  if (row.source === "uncategorized") {
-    return '<a class="button-link secondary-link" href="/lancamentos">Categorizar no Extrato</a>';
-  }
-  const dialogId = row.source === "budget" ? `edit-budget-dialog-${row.id}` : "new-budget-dialog";
-  const label = row.source === "budget" ? "Editar orçamento" : "Criar orçamento";
-  return renderDialogTrigger({
-    dialogId,
-    label,
-    variant: "secondary",
-  }).replace("<button ", `<button data-open-dialog="${renderText(dialogId)}" `);
-}
-
-export function renderBudgetStatus(row: BudgetRowViewModel): string {
+export function renderBudgetStatus(row: BudgetRowViewModel, compact = false): string {
   const status = row.status === "archived" ? "archived" : row.usageStatus;
   const labels: Record<string, string> = {
     archived: "Arquivado",
@@ -83,13 +72,21 @@ export function renderBudgetStatus(row: BudgetRowViewModel): string {
     uncategorized: "Sem categoria",
     unavailable: "Acompanhamento indisponível",
   };
-  const tone =
-    status === "exceeded" || status === "approaching"
-      ? "attention"
-      : status === "on_track"
-        ? "positive"
-        : "neutral";
-  return `<span class="budget-state budget-state--${tone}" data-budget-state="${renderText(status)}">${labels[status] ?? "Situação não identificada"}</span>`;
+  const glyphs = {
+    archived: "archive",
+    no_activity: "clock",
+    on_track: "check-circle",
+    approaching: "alert-triangle",
+    exceeded: "x-circle",
+    unbudgeted: "info",
+    uncategorized: "tag",
+    unavailable: "info",
+  } as const;
+  const glyph = glyphs[status as keyof typeof glyphs] ?? "info";
+  const label = labels[status] ?? "Situação não identificada";
+  const tone = status === "exceeded" || status === "approaching"
+    ? "attention" : status === "on_track" ? "positive" : "neutral";
+  return `<span role="img" class="budget-state budget-state--${tone}" data-budget-state="${renderText(status)}" title="${renderText(label)}" aria-label="${renderText(label)}">${icon(glyph, 16)}${compact ? "" : `<span class="budget-state-label">${renderText(label)}</span>`}</span>`;
 }
 
 export function renderBudgetInventory(viewModel: BudgetsPageViewModel): string {
@@ -134,9 +131,8 @@ export function renderBudgetFocusStyles(): string {
     .budget-focus-values .sf-money { display: inline-flex; flex-wrap: wrap; gap: 2px 4px; white-space: normal; }
     .budget-focus-remaining { color: var(--muted); font-size: .76rem; margin: 0; }
     .budget-focus-remaining .sf-money { color: var(--text); font-weight: 700; }
-    .budget-focus-actions { display: flex; justify-content: flex-start; }
-    .budget-focus-actions .sf-button { min-height: var(--sf-density-interactive-target-min); }
-    .budget-state { color: var(--sf-color-muted-text); display: inline-block; font-size: .73rem; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
+    .budget-state { align-items: center; color: var(--sf-color-muted-text); display: inline-flex; font-size: .73rem; font-weight: 750; gap: 5px; line-height: 1.35; overflow-wrap: anywhere; }
+    .budget-state svg { flex: none; }
     .budget-state--attention { color: var(--sf-color-danger); }
     .budget-state--positive { color: var(--sf-color-success); }
     .budget-inventory { align-items: baseline; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 9px 0 0; }
