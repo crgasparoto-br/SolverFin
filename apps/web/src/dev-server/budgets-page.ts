@@ -352,7 +352,7 @@ function renderBudgetTable(
       description:
         filters.currency || filters.status
           ? "Ajuste os filtros de moeda ou estado para consultar outro recorte."
-          : "Crie um orçamento para iniciar o acompanhamento.",
+          : "Crie um orçamento ou ajuste os filtros para acompanhar outra moeda ou estado.",
     })}</section>`;
   }
 
