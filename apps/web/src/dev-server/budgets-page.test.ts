@@ -165,7 +165,10 @@ describe("budgets page issue 619", () => {
     globalThis.fetch = baseFetch();
     const url = new URL("http://solverfin.test/orcamentos?currency=USD&status=active");
     const html = await renderBudgetsPage("token", url);
-    const focus = html.slice(html.indexOf('<section class="budget-focus"'), html.indexOf('<section class="budget-results"'));
+    const focus = html.slice(
+      html.indexOf('<section class="budget-focus"'),
+      html.indexOf('<section class="budget-results"'),
+    );
 
     assert.match(html, /<option value="USD" selected>/);
     assert.match(html, /<option value="active" selected>/);
@@ -198,7 +201,6 @@ describe("budgets page issue 619", () => {
     assert.match(html, /Não foi possível carregar os orçamentos/);
     assert.match(html, /href="\/orcamentos\?currency=USD&amp;status=active"/);
   });
-
 });
 
 function baseFetch() {

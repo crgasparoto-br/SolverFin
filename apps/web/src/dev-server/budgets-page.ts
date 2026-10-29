@@ -217,7 +217,9 @@ function renderBudgetFilters(
   currencies: readonly string[],
   filters: BudgetPresentationFilters,
 ): string {
-  const visibleCurrencies = Array.from(new Set([...currencies, ...(filters.currency ? [filters.currency] : [])])).sort();
+  const visibleCurrencies = Array.from(
+    new Set([...currencies, ...(filters.currency ? [filters.currency] : [])]),
+  ).sort();
   const currencyOptions = [
     '<option value="">Todas as moedas</option>',
     ...visibleCurrencies.map(
@@ -274,15 +276,18 @@ function renderBudgetFocus(rows: readonly BudgetRowViewModel[]): string {
 }
 
 function renderBudgetFocusItem(row: BudgetRowViewModel): string {
-  const planned = row.source === "budget"
-    ? renderBudgetMoney(row.plannedAmountMinor, row.currency)
-    : `<span class="budget-unbudgeted-plan">${row.source === "uncategorized" ? "Sem categoria" : "Sem orçamento"}</span>`;
-  const available = row.source === "budget"
-    ? renderBudgetMoney(row.availableAmountMinor, row.currency)
-    : '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
-  const overBudget = row.source === "budget" && row.overBudgetAmountMinor !== null && row.overBudgetAmountMinor > 0
-    ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
-    : "";
+  const planned =
+    row.source === "budget"
+      ? renderBudgetMoney(row.plannedAmountMinor, row.currency)
+      : `<span class="budget-unbudgeted-plan">${row.source === "uncategorized" ? "Sem categoria" : "Sem orçamento"}</span>`;
+  const available =
+    row.source === "budget"
+      ? renderBudgetMoney(row.availableAmountMinor, row.currency)
+      : '<span class="budget-unavailable">Não se aplica sem orçamento</span>';
+  const overBudget =
+    row.source === "budget" && row.overBudgetAmountMinor !== null && row.overBudgetAmountMinor > 0
+      ? `<p class="budget-over">Estouro previsto: ${renderBudgetMoney(row.overBudgetAmountMinor, row.currency)}</p>`
+      : "";
   return `<article class="budget-focus-item">
     <div class="budget-focus-item-header"><div class="budget-focus-item-context"><h3>${renderText(row.categoryName)}</h3><p class="budget-focus-meta">${renderText(formatDateOnly(row.periodStartOn))} a ${renderText(formatDateOnly(row.periodEndOn))} · ${row.currency ? `<strong class="budget-currency">${renderText(row.currency)}</strong>` : "Moeda indisponível"}</p></div>${renderBudgetStatus(row)}</div>
     <dl class="budget-focus-values"><div><dt>Planejado</dt><dd>${planned}</dd></div><div><dt>Realizado</dt><dd>${renderBudgetMoney(row.actualAmountMinor, row.currency)}</dd></div><div><dt>Disponível</dt><dd>${available}</dd></div></dl>
@@ -316,14 +321,18 @@ function renderBudgetStatus(row: BudgetRowViewModel): string {
     uncategorized: "Sem categoria",
     unavailable: "Acompanhamento indisponível",
   };
-  const tone = status === "exceeded" || status === "approaching"
-    ? "attention"
-    : status === "on_track" ? "positive" : "neutral";
+  const tone =
+    status === "exceeded" || status === "approaching"
+      ? "attention"
+      : status === "on_track"
+        ? "positive"
+        : "neutral";
   return `<span class="budget-state budget-state--${tone}" data-budget-state="${renderText(status)}">${labels[status] ?? "Situação não identificada"}</span>`;
 }
 
 function renderBudgetInventory(viewModel: BudgetsPageViewModel): string {
-  const visibleCurrencyCount = new Set(viewModel.rows.map((row) => row.currency).filter(Boolean)).size;
+  const visibleCurrencyCount = new Set(viewModel.rows.map((row) => row.currency).filter(Boolean))
+    .size;
   return `<section class="budget-inventory" aria-labelledby="budget-inventory-title">
     <h2 id="budget-inventory-title">Contagens auxiliares</h2>
     <dl><div><dt>Ativos</dt><dd>${viewModel.activeCount}</dd></div><div><dt>Sem orçamento</dt><dd>${viewModel.unbudgetedCount}</dd></div><div><dt>Sem categoria</dt><dd>${viewModel.uncategorizedCount}</dd></div><div><dt>Moedas no recorte</dt><dd>${visibleCurrencyCount}</dd></div></dl>
@@ -336,10 +345,14 @@ function renderBudgetTable(
 ): string {
   if (rows.length === 0) {
     return `<section class="budget-results panel">${renderEmptyState({
-      title: filters.currency || filters.status ? "Nenhum resultado com estes filtros." : "Nenhum item para acompanhar.",
-      description: filters.currency || filters.status
-        ? "Ajuste os filtros de moeda ou estado para consultar outro recorte."
-        : "Crie um orçamento para iniciar o acompanhamento.",
+      title:
+        filters.currency || filters.status
+          ? "Nenhum resultado com estes filtros."
+          : "Nenhum item para acompanhar.",
+      description:
+        filters.currency || filters.status
+          ? "Ajuste os filtros de moeda ou estado para consultar outro recorte."
+          : "Crie um orçamento para iniciar o acompanhamento.",
     })}</section>`;
   }
 
@@ -352,7 +365,8 @@ function renderBudgetTable(
         {
           id: "category",
           header: "Categoria",
-          renderCell: (row) => `<div class="budget-category"><strong>${renderText(row.categoryName)}</strong>${renderBudgetStatus(row)}</div>`,
+          renderCell: (row) =>
+            `<div class="budget-category"><strong>${renderText(row.categoryName)}</strong>${renderBudgetStatus(row)}</div>`,
         },
         {
           id: "period",

@@ -51,8 +51,16 @@ try {
       0,
       `Budgets has essential controls outside viewport at ${viewport.name}`,
     );
-    assert.equal(measurements.hierarchyValid, true, `Budget financial hierarchy differs at ${viewport.name}`);
-    assert.equal(measurements.decisionLabelsVisible, true, `Budget decision labels missing at ${viewport.name}`);
+    assert.equal(
+      measurements.hierarchyValid,
+      true,
+      `Budget financial hierarchy differs at ${viewport.name}`,
+    );
+    assert.equal(
+      measurements.decisionLabelsVisible,
+      true,
+      `Budget decision labels missing at ${viewport.name}`,
+    );
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     report.scenarios.push({
