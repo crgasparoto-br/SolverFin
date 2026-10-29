@@ -244,11 +244,14 @@ function renderBudgetFilters(
 
   return renderFilterBar({
     label: "Filtros dos orçamentos",
-    childrenHtml: `<form class="budget-filter-form" method="get" action="/orcamentos">
-      <label>Moeda<select name="currency">${currencyOptions}</select></label>
-      <label>Estado<select name="status">${statusOptions}</select></label>
-      <div class="budget-filter-actions"><button type="submit" class="sf-button sf-button-primary">Aplicar filtros</button><a class="button-link secondary-button" href="/orcamentos">Limpar</a></div>
-    </form><p class="budget-filter-context">Recorte atual: moeda <strong>${renderText(filters.currency ?? "todas, sem consolidação")}</strong> · estado <strong>${filters.status === "active" ? "ativos" : filters.status === "archived" ? "arquivados" : "todos"}</strong></p>`,
+    childrenHtml: `<details class="budget-filter-panel" data-budget-mobile-filters data-active-filters="${filters.currency || filters.status ? "true" : "false"}" open>
+      <summary class="budget-filter-toggle">Filtros de orçamentos${filters.currency || filters.status ? " (ativos)" : ""}</summary>
+      <form class="budget-filter-form" method="get" action="/orcamentos">
+        <label>Moeda<select name="currency">${currencyOptions}</select></label>
+        <label>Estado<select name="status">${statusOptions}</select></label>
+        <div class="budget-filter-actions"><button type="submit" class="sf-button sf-button-primary">Aplicar filtros</button><a class="button-link secondary-link" href="/orcamentos">Limpar</a></div>
+      </form>
+    </details><p class="budget-filter-context">Recorte atual: moeda <strong>${renderText(filters.currency ?? "todas, sem consolidação")}</strong> · estado <strong>${filters.status === "active" ? "ativos" : filters.status === "archived" ? "arquivados" : "todos"}</strong></p>`,
   });
 }
 
@@ -354,20 +357,19 @@ function renderBudgetActions(row: BudgetRowViewModel): string {
     return `<div class="budget-row-actions">${details}<span class="budget-unbudgeted-action">Crie um orçamento para definir um valor planejado.</span></div>`;
   }
   if (row.source === "uncategorized") {
-    return `<div class="budget-row-actions">${details}<a class="button-link secondary-button" href="/lancamentos">Abrir Extrato para categorizar</a></div>`;
+    return `<div class="budget-row-actions">${details}<a class="button-link secondary-link" href="/lancamentos">Abrir Extrato para categorizar</a></div>`;
   }
   const editDialogId = `edit-budget-dialog-${row.id}`;
   const editButton = renderDialogTrigger({
     dialogId: editDialogId,
     label: "Editar",
     variant: "secondary",
-    className: "secondary-button",
   }).replace("<button ", `<button data-open-dialog="${renderText(editDialogId)}" `);
-  const refreshButton = `<button type="button" class="secondary-button" data-api-action data-api-method="GET" data-api-path="/api/budgets/${renderText(row.id)}/usage" title="Atualizar acompanhamento">Atualizar</button>`;
+  const refreshButton = `<button type="button" class="sf-button sf-button-secondary" data-api-action data-api-method="GET" data-api-path="/api/budgets/${renderText(row.id)}/usage" title="Atualizar acompanhamento">Atualizar</button>`;
   const archiveButton =
     row.status === "archived"
       ? ""
-      : `<button type="button" class="danger-button" data-api-action data-api-method="POST" data-api-path="/api/budgets/${renderText(row.id)}/archive" data-api-confirm="Arquivar este orçamento?">Arquivar</button>`;
+      : `<button type="button" class="sf-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/budgets/${renderText(row.id)}/archive" data-api-confirm="Arquivar este orçamento?">Arquivar</button>`;
   return `<div class="budget-row-actions">${details}${refreshButton}${editButton}${archiveButton}</div>`;
 }
 
@@ -392,7 +394,7 @@ function renderNewBudgetDialog(categories: readonly CategoryRecord[]): string {
     bodyHtml: `<form id="new-budget-form" data-api-form data-api-path="/api/budgets" class="budget-edit-grid">
       ${renderBudgetFields(categories)}
       <div class="form-status" data-form-status aria-live="polite"></div>
-      <button type="submit" class="sf-button sf-button-primary">Criar orçamento</button>
+      ${renderBudgetFormActions("Criar orçamento")}
     </form>`,
   });
 }
@@ -408,9 +410,13 @@ function renderBudgetEditDialog(
     bodyHtml: `<form data-api-form data-api-method="PATCH" data-api-path="/api/budgets/${renderText(row.id)}" class="budget-edit-grid">
       ${renderBudgetFields(categories, row)}
       <div class="form-status" data-form-status aria-live="polite"></div>
-      <button type="submit" class="sf-button sf-button-primary">Salvar alterações</button>
+      ${renderBudgetFormActions("Salvar alterações")}
     </form>`,
   });
+}
+
+function renderBudgetFormActions(submitLabel: string): string {
+  return `<div class="budget-form-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary">${renderText(submitLabel)}</button></div>`;
 }
 
 function renderBudgetFields(
@@ -465,9 +471,11 @@ ${sharedDialogStyles()}
     .budgets-a1-page, [data-budgets-archetype="A1"] { display: grid; gap: 16px; min-width: 0; }
     .budgets-heading { display: contents; }
     .budgets-a1-page .sf-page-header { align-items: center; }
-    .budget-primary-action, .secondary-button, .danger-button { min-height: 40px; }
+    .budget-primary-action { min-height: var(--sf-density-interactive-target-min); }
     .budget-primary-action { white-space: nowrap; }
-    .budget-filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(150px, 220px) minmax(150px, 220px) 1fr; width: 100%; }
+    .budget-filter-panel { min-width: 0; width: 100%; }
+    .budget-filter-toggle { display: none; }
+    .budget-filter-form { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(150px, 220px) minmax(150px, 220px) 1fr; margin-top: 0; width: 100%; }
     .budget-filter-form label { display: grid; gap: 5px; }
     .budget-filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
     .budget-results { display: grid; gap: 12px; min-width: 0; }
@@ -504,11 +512,11 @@ ${renderBudgetFocusStyles()}
     .budget-composition ul { display: grid; gap: 6px; list-style: none; margin: 8px 0 0; padding: 0; }
     .budget-composition li { display: grid; gap: 2px; text-align: left; }
     .budget-composition li > span:last-child { font-weight: 750; }
-    .danger-button { background: var(--surface); border: 1px solid #fecaca; border-radius: var(--radius); color: var(--danger); font: inherit; font-weight: 650; padding: 0 12px; }
-    .secondary-button { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--text); font: inherit; font-weight: 650; padding: 0 12px; }
     .budget-edit-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .budget-edit-grid label { display: grid; gap: 5px; }
-    .budget-edit-grid .form-status, .budget-edit-grid button[type="submit"] { grid-column: 1 / -1; }
+    .budget-edit-grid .form-status, .budget-edit-grid .budget-form-actions { grid-column: 1 / -1; }
+    .budget-form-actions { display: flex; flex-wrap: wrap; gap: var(--sf-space-2); justify-content: flex-end; }
+    .budget-form-actions .sf-button { min-height: var(--sf-density-interactive-target-min); }
     .form-status.error { color: var(--danger); }
     .form-status.success { color: var(--success); }
     @media (max-width: 820px) {
@@ -520,12 +528,16 @@ ${renderBudgetFocusStyles()}
       .budget-filter-actions > * { flex: 1 1 160px; justify-content: center; }
     }
     @media (max-width: 560px) {
+      .budget-filter-toggle { align-items: center; color: var(--primary); cursor: pointer; display: list-item; font-size: var(--sf-font-size-sm); font-weight: var(--sf-font-weight-semibold); padding: 2px 0; }
+      .budget-filter-toggle:focus-visible { border-radius: var(--radius); outline: 2px solid var(--cyan); outline-offset: 3px; }
+      .budget-filter-panel[open] > .budget-filter-form { margin-top: var(--sf-space-3); }
       .budget-filter-form { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
       .budget-filter-form label, .budget-filter-form select { min-width: 0; width: 100%; }
       .budget-filter-actions { grid-column: 1 / -1; flex-wrap: nowrap; }
       .budget-filter-actions > * { flex: 1 1 0; min-width: 0; }
       .budget-edit-grid { grid-template-columns: 1fr; }
-      .budget-edit-grid .form-status, .budget-edit-grid button[type="submit"] { grid-column: auto; }
+      .budget-edit-grid .form-status, .budget-edit-grid .budget-form-actions { grid-column: auto; }
+      .budget-form-actions > * { flex: 1 1 0; }
       .budgets-a1-page .sf-page-header-description { font-size: .82rem; line-height: 1.3; }
       .budget-section-heading { align-items: start; flex-direction: column; }
       .budget-results .sf-table { display: block; min-width: 0; }
@@ -553,7 +565,6 @@ ${renderBudgetFocusStyles()}
       .budget-focus-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .budget-focus-values dd { font-size: .87rem; }
       .budget-focus-values .sf-money { column-gap: 2px; }
-      .budget-focus-values .sf-money-currency { font-size: .61rem; }
       .budget-focus-values > div:last-child { grid-column: 1 / -1; }
       .budget-focus-item { padding: 12px; }
       .budget-results .sf-table tbody { gap: 8px; }
@@ -568,6 +579,15 @@ function budgetRuntimeScript(): string {
   return `<script>(function(){
     if (globalThis.__solverFinBudgetsBound) return;
     globalThis.__solverFinBudgetsBound = true;
+    var filterPanel = document.querySelector('[data-budget-mobile-filters]');
+    if (filterPanel instanceof HTMLDetailsElement) {
+      var mobileFilters = window.matchMedia('(max-width: 560px)');
+      var syncFilterDisclosure = function() {
+        filterPanel.open = !mobileFilters.matches || filterPanel.dataset.activeFilters === 'true';
+      };
+      mobileFilters.addEventListener('change', syncFilterDisclosure);
+      syncFilterDisclosure();
+    }
     function statusFor(element) {
       var root = element.closest("form") || element.closest("td") || element.parentElement;
       var status = root && root.querySelector("[data-form-status]");

@@ -60,7 +60,7 @@ function renderBudgetFocusItem(row: BudgetRowViewModel): string {
 
 function renderBudgetFocusAction(row: BudgetRowViewModel): string {
   if (row.source === "uncategorized") {
-    return '<a class="button-link secondary-button" href="/lancamentos">Categorizar no Extrato</a>';
+    return '<a class="button-link secondary-link" href="/lancamentos">Categorizar no Extrato</a>';
   }
   const dialogId = row.source === "budget" ? `edit-budget-dialog-${row.id}` : "new-budget-dialog";
   const label = row.source === "budget" ? "Editar orçamento" : "Criar orçamento";
@@ -68,7 +68,6 @@ function renderBudgetFocusAction(row: BudgetRowViewModel): string {
     dialogId,
     label,
     variant: "secondary",
-    className: "secondary-button",
   }).replace("<button ", `<button data-open-dialog="${renderText(dialogId)}" `);
 }
 
@@ -110,6 +109,7 @@ export function renderBudgetMoney(
   return renderMoney({
     amountMinor,
     currency,
+    showCurrencyCode: false, // Explicit currency in the budget card header or table column.
     ...(amountMinor === null ? { unavailableLabel: "Indisponível" } : {}),
   });
 }
@@ -132,11 +132,10 @@ export function renderBudgetFocusStyles(): string {
     .budget-focus-values dt { color: var(--muted); font-size: .73rem; font-weight: 700; }
     .budget-focus-values dd { font-size: 1.04rem; font-variant-numeric: tabular-nums; font-weight: 800; margin: 3px 0 0; overflow-wrap: anywhere; }
     .budget-focus-values .sf-money { display: inline-flex; flex-wrap: wrap; gap: 2px 4px; white-space: normal; }
-    .budget-focus-values .sf-money-currency { font-size: .69rem; font-weight: 700; }
     .budget-focus-remaining { color: var(--muted); font-size: .76rem; margin: 0; }
     .budget-focus-remaining .sf-money { color: var(--text); font-weight: 700; }
     .budget-focus-actions { display: flex; justify-content: flex-start; }
-    .budget-focus-actions .secondary-button { min-height: 44px; }
+    .budget-focus-actions .sf-button { min-height: var(--sf-density-interactive-target-min); }
     .budget-state { color: var(--sf-color-muted-text); display: inline-block; font-size: .73rem; font-weight: 750; line-height: 1.35; overflow-wrap: anywhere; }
     .budget-state--attention { color: var(--sf-color-danger); }
     .budget-state--positive { color: var(--sf-color-success); }

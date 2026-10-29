@@ -9,6 +9,8 @@ export interface MoneyProps {
   currency: string;
   context?: MoneyDisplayContext;
   unavailableLabel?: string;
+  /** Omit the trailing ISO code only when the surrounding UI already identifies the currency. */
+  showCurrencyCode?: boolean;
 }
 
 const DEFAULT_UNAVAILABLE_LABEL = "Indisponível";
@@ -28,6 +30,11 @@ export function renderMoney(props: MoneyProps): string {
     throw new TypeError("Money requires amountMinor; use null for an unavailable value.");
   }
 
+  const codeLabel =
+    props.showCurrencyCode === false
+      ? ""
+      : ` <small class="sf-money-currency" aria-label="Moeda ${renderText(currency)}">${renderText(currency)}</small>`;
+
   const contextLabel =
     context === "converted"
       ? ' <small class="sf-money-context" aria-label="Valor convertido">Convertido</small>'
@@ -35,11 +42,11 @@ export function renderMoney(props: MoneyProps): string {
 
   if (props.amountMinor === null) {
     const label = props.unavailableLabel?.trim() || DEFAULT_UNAVAILABLE_LABEL;
-    return `<span class="sf-money sf-money-unavailable" data-currency="${renderText(currency)}" data-money-context="${context}" data-money-availability="unavailable"><span class="sf-money-value">${renderText(label)}</span> <small class="sf-money-currency" aria-label="Moeda ${renderText(currency)}">${renderText(currency)}</small>${contextLabel}</span>`;
+    return `<span class="sf-money sf-money-unavailable" data-currency="${renderText(currency)}" data-money-context="${context}" data-money-availability="unavailable"><span class="sf-money-value">${renderText(label)}</span>${codeLabel}${contextLabel}</span>`;
   }
 
   const formatted = formatMinorCurrency(props.amountMinor, { currency });
-  return `<span class="sf-money" data-currency="${renderText(currency)}" data-money-context="${context}" data-money-availability="available"><span class="sf-money-value">${renderText(formatted)}</span> <small class="sf-money-currency" aria-label="Moeda ${renderText(currency)}">${renderText(currency)}</small>${contextLabel}</span>`;
+  return `<span class="sf-money" data-currency="${renderText(currency)}" data-money-context="${context}" data-money-availability="available"><span class="sf-money-value">${renderText(formatted)}</span>${codeLabel}${contextLabel}</span>`;
 }
 
 function requireExplicitCurrency(currency: string): string {

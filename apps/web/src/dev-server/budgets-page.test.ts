@@ -182,6 +182,9 @@ describe("budgets page issue 619", () => {
     assert.match(html, /class="budget-focus-values"/);
     assert.match(html, /data-budget-state="on_track"/);
     assert.match(html, /name="currency"/);
+    assert.match(html, /data-budget-mobile-filters data-active-filters="false" open/);
+    assert.match(html, /summary class="budget-filter-toggle">Filtros de orçamentos/);
+    assert.match(html, /matchMedia\('\(max-width: 560px\)'\)/);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
     assert.match(html, /data-open-dialog="edit-budget-dialog-budget-brl"/);
@@ -190,6 +193,38 @@ describe("budgets page issue 619", () => {
     assert.ok(table.indexOf('data-column="available"') < table.indexOf('data-column="committed"'));
     assert.match(table, /Dentro do planejado/);
     assert.match(table, /data-column="projected"/);
+  });
+
+  it("uses one explicit currency label per budget context, never a trailing ISO code on amounts", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token");
+    const focusStart = html.indexOf('<section class="budget-focus"');
+    const detailStart = html.indexOf('<section class="budget-results panel"');
+    const auxiliaryStart = html.indexOf('<section class="budget-inventory"');
+    const focus = html.slice(focusStart, detailStart);
+    const detail = html.slice(detailStart, auxiliaryStart);
+
+    assert.match(focus, /class="budget-currency">BRL<\/strong>/);
+    assert.match(focus, /class="budget-currency">USD<\/strong>/);
+    assert.match(detail, /data-column="currency"/);
+    for (const body of [focus, detail]) {
+      assert.match(body, /data-currency="BRL"/);
+      assert.match(body, /data-currency="USD"/);
+      assert.doesNotMatch(body, /class="sf-money-currency"/);
+      assert.doesNotMatch(body, /<small[^>]*>BRL<\/small>|<small[^>]*>USD<\/small>/);
+    }
+    assert.match(focus, /R\$\s*1\.000,00/);
+    assert.match(focus, /US\$\s*200,00/);
+  });
+
+  it("keeps modal confirmation primary, cancel neutral and row actions on shared tokens", async () => {
+    globalThis.fetch = baseFetch();
+    const html = await renderBudgetsPage("token");
+    assert.equal((html.match(/class="budget-form-actions"/g) ?? []).length, 3);
+    assert.equal((html.match(/class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar<\/button>/g) ?? []).length, 3);
+    assert.match(html, /class="sf-button sf-button-primary">Salvar alterações<\/button>/);
+    assert.match(html, /class="sf-button danger-action" data-api-action/);
+    assert.doesNotMatch(html, /#fecaca|\.danger-button \{|\.secondary-button \{/);
   });
 
   it("preserves active currency and state filters, without mixing other currencies in the decision view", async () => {
@@ -204,6 +239,7 @@ describe("budgets page issue 619", () => {
     assert.match(html, /<option value="USD" selected>/);
     assert.match(html, /<option value="active" selected>/);
     assert.match(html, /Recorte atual: moeda <strong>USD<\/strong>/);
+    assert.match(html, /data-budget-mobile-filters data-active-filters="true" open/);
     assert.match(focus, /data-currency="USD"/);
     assert.doesNotMatch(focus, /data-currency="BRL"/);
     assert.equal((focus.match(/class="budget-focus-item"/g) ?? []).length, 1);

@@ -282,6 +282,21 @@ falha de edicao que preserva os campos e permite correcao e nova tentativa.
 As capturas e o JSON gerados pelo Chrome no HEAD definitivo devem ser
 inspecionados; sucesso do runner isolado nao aprova qualidade visual.
 
+Na rodada de refinamento da Golden Screen da PR #751, o piloto deve cobrir tambem
+1440x900, alem de 1366x768, 390x844 e 320x740. Como cada card e linha identifica
+sua moeda, `Money` preserva o simbolo (`R$`, `US$`) e `data-currency`, mas omite
+**somente na rota de Orcamentos** o codigo ISO repetido apos cada valor;
+nenhuma outra tela perde o seu codigo. O Chrome rejeita a introducao artificial
+de um sufixo redundante e aprova sua restauracao. Os filtros secundarios podem
+ser recolhidos no mobile sem filtro ativo; filtros aplicados e selecoes continuam
+visiveis e operaveis. Novo/Editar mantem Cancelar neutro (fechamento e foco no
+acionador) e Salvar como confirmacao primaria, usando os estilos/estados
+compartilhados. Os botoes de linha reutilizam tokens sem cores hex locais.
+Esse refinamento nao corrige retroativamente a ausencia de inspecao pessoal do
+Chrome antes da primeira edicao em 29/10/2026: a ressalva historica permanece.
+A homologacao de qualidade visual ainda exige observacao das novas capturas e
+parecer independente vinculados ao novo SHA material.
+
 ## Retirada de pos-processadores HTML
 
 `legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final. O registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` e exigir `behavior:legacy:<id>`; o adaptador comportamental somente emite essa assertion depois de validar o criterio discriminante observado e persistido pelo fluxo no SHA corrente.

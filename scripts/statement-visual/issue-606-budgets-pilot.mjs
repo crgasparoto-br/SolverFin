@@ -26,6 +26,7 @@ try {
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
 
   for (const viewport of [
+    { width: 1440, height: 900, name: "wide-desktop" },
     { width: 1366, height: 768, name: "desktop" },
     { width: 390, height: 844, name: "mobile" },
     { width: 320, height: 740, name: "compact-mobile" },
@@ -66,6 +67,14 @@ try {
       true,
       `Budget financial text is clipped at ${viewport.name}`,
     );
+    assert.equal(
+      measurements.trailingCurrencyCodesAbsent,
+      true,
+      `Budget repeats the explicit currency code after an amount at ${viewport.name}`,
+    );
+    if (viewport.width <= 560) {
+      assert.equal(measurements.mobileFilterCollapsed, true, "Unused mobile filters must be progressive");
+    }
     const screenshotName = `issue-606-budgets-${viewport.name}.png`;
     await screenshot(browser.cdp, join(outputDir, screenshotName));
     if (viewport.name === "desktop") {
@@ -75,6 +84,8 @@ try {
         hierarchyRestored: true,
         clippedValueRejected: true,
         clippedValueRestored: true,
+        trailingCodeRejected: true,
+        trailingCodeRestored: true,
       });
       report.negativeControls = controls;
     }
@@ -121,12 +132,14 @@ try {
     status: document.querySelector('select[name="status"]')?.value,
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
     documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    activeFiltersExpanded: document.querySelector('[data-budget-mobile-filters]')?.open,
   }))()`,
   );
   assert.equal(filtered.currency, "USD");
   assert.equal(filtered.status, "active");
   assert.ok(filtered.focused.includes("USD") && !filtered.focused.includes("BRL"));
   assert.equal(filtered.documentFits, true);
+  assert.equal(filtered.activeFiltersExpanded, true);
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-usd-mobile.png"));
 
   await setViewport(browser.cdp, 320, 740);
@@ -139,9 +152,12 @@ try {
     message: (document.querySelector('main')?.textContent ?? '').includes('Nenhum resultado com estes filtros'),
     focusCount: document.querySelectorAll('.budget-focus-item').length,
     documentFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+    activeFiltersExpanded: document.querySelector('[data-budget-mobile-filters]')?.open,
   }))()`,
   );
-  assert.deepEqual(empty, { currency: "EUR", message: true, focusCount: 0, documentFits: true });
+  assert.deepEqual(empty, {
+    currency: "EUR", message: true, focusCount: 0, documentFits: true, activeFiltersExpanded: true,
+  });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-filter-empty-compact.png"));
 
   await setViewport(browser.cdp, 1366, 768);
@@ -149,24 +165,101 @@ try {
   await sleep(350);
   const dialogs = await evaluate(
     browser.cdp,
-    `(() => {
+    `(async () => {
     const createTrigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
     createTrigger?.click();
     const create = document.querySelector('#new-budget-dialog');
     const createOpen = create?.open === true &&
       Boolean(create.querySelector('form[data-api-path="/api/budgets"]'));
-    create?.close();
+    const createCancel = create?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+    const neutral = createCancel && getComputedStyle(createCancel);
+    const surface = getComputedStyle(document.querySelector('.sf-filter-bar')).backgroundColor;
+    const neutralCancel = createCancel?.classList.contains('sf-button-secondary') &&
+      neutral?.backgroundColor === surface;
+    createCancel?.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const createCanceled = create?.open === false && document.activeElement === createTrigger;
     const editTrigger = document.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
     editTrigger?.click();
     const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
     const editOpen = edit?.open === true &&
       Boolean(edit.querySelector('form[data-api-method="PATCH"] input[name="currency"]'));
-    edit?.close();
-    return { createOpen, editOpen };
+    const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+    editCancel?.click();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    const editCanceled = edit?.open === false && document.activeElement === editTrigger;
+    return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
   })()`,
   );
-  assert.deepEqual(dialogs, { createOpen: true, editOpen: true });
+  assert.deepEqual(dialogs, {
+    createOpen: true, editOpen: true, neutralCancel: true, createCanceled: true, editCanceled: true,
+  });
   await screenshot(browser.cdp, join(outputDir, "issue-725-budgets-edit-desktop.png"));
+  const goldenDialogs = [];
+  for (const viewport of [
+    { width: 1366, height: 768, name: "desktop" },
+    { width: 390, height: 844, name: "mobile" },
+    { width: 320, height: 740, name: "compact-mobile" },
+  ]) {
+    await setViewport(browser.cdp, viewport.width, viewport.height);
+    await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
+    await sleep(200);
+    const geometry = await evaluate(browser.cdp, `(() => {
+      const trigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
+      trigger?.click();
+      const dialog = document.getElementById('new-budget-dialog');
+      const panel = dialog?.querySelector('.sf-dialog-panel');
+      const cancel = dialog?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+      const confirm = dialog?.querySelector('.budget-form-actions button[type="submit"]');
+      cancel?.scrollIntoView({ block: 'nearest' });
+      const rect = dialog?.getBoundingClientRect();
+      const viewportWidth = document.documentElement.clientWidth;
+      const expectedNeutral = getComputedStyle(document.querySelector('.sf-filter-bar')).backgroundColor;
+      const primary = getComputedStyle(document.querySelector('.budget-primary-action')).backgroundColor;
+      const cancelRect = cancel?.getBoundingClientRect();
+      return {
+        open: dialog?.open === true,
+        centered: rect && Math.abs(rect.left - (viewportWidth - rect.right)) <= 18,
+        contained: rect && rect.left >= -1 && rect.right <= viewportWidth + 2 && rect.top >= -1 && rect.bottom <= innerHeight + 2,
+        scrollablePanel: Boolean(panel && getComputedStyle(panel).overflowY !== 'hidden'),
+        cancelNeutral: Boolean(cancel && cancel.classList.contains('sf-button-secondary') && getComputedStyle(cancel).backgroundColor === expectedNeutral),
+        confirmPrimary: Boolean(confirm && confirm.classList.contains('sf-button-primary') && getComputedStyle(confirm).backgroundColor === primary),
+        cancelRect: cancelRect && { x: cancelRect.x, y: cancelRect.y, width: cancelRect.width, height: cancelRect.height },
+      };
+    })()`);
+    for (const check of ['open', 'centered', 'contained', 'scrollablePanel', 'cancelNeutral', 'confirmPrimary']) {
+      assert.equal(geometry[check], true, `Golden Screen modal ${check} failed at ${viewport.name}`);
+    }
+    assert.ok(geometry.cancelRect?.width >= 44 && geometry.cancelRect?.height >= 40);
+    await screenshot(browser.cdp, join(outputDir, `issue-725-budget-create-dialog-${viewport.name}.png`));
+    const { x, y, width, height } = geometry.cancelRect;
+    await browser.cdp.send('Input.dispatchMouseEvent', { type: 'mouseMoved', x: Math.round(x + width / 2), y: Math.round(y + height / 2) });
+    await sleep(100);
+    const modalStates = await evaluate(browser.cdp, `(async () => {
+      const dialog = document.getElementById('new-budget-dialog');
+      const trigger = document.querySelector('[data-sf-dialog-open="new-budget-dialog"]');
+      const cancel = dialog.querySelector('.budget-form-actions [data-sf-dialog-close]');
+      const probe = document.createElement('div');
+      probe.style.backgroundColor = 'var(--sf-color-neutral-control-hover)';
+      document.body.append(probe);
+      const expectedHover = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      const hoverNeutral = cancel.matches(':hover') && getComputedStyle(cancel).backgroundColor === expectedHover;
+      cancel.disabled = true;
+      const disabledReducedOpacity = Number(getComputedStyle(cancel).opacity) < 1;
+      cancel.disabled = false;
+      cancel.click();
+      await new Promise(resolve => setTimeout(resolve, 0));
+      return { hoverNeutral, disabledReducedOpacity, canceled: !dialog.open, focusRestored: document.activeElement === trigger };
+    })()`);
+    assert.deepEqual(modalStates, {
+      hoverNeutral: true, disabledReducedOpacity: true, canceled: true, focusRestored: true,
+    }, `Golden Screen modal state failed at ${viewport.name}`);
+    goldenDialogs.push({ viewport: `${viewport.width}x${viewport.height}`, geometry, modalStates });
+  }
+  report.goldenDialogs = goldenDialogs;
+  await setViewport(browser.cdp, 1366, 768);
+  await navigate(browser.cdp, `${baseUrl}/orcamentos?currency=USD&status=active`);
   // Exercise the actual form submit handlers and persisted data, not just dialog presence.
   const creation = await evaluate(
     browser.cdp,
@@ -327,6 +420,10 @@ function measurementExpression() {
     const hierarchyValid = Boolean(details && auxiliary && (details.compareDocumentPosition(auxiliary) & Node.DOCUMENT_POSITION_FOLLOWING) && (!focus || (focus.compareDocumentPosition(details) & Node.DOCUMENT_POSITION_FOLLOWING)));
     const decisionLabelsVisible = !focus || ['Planejado', 'Realizado', 'Disponível'].every((label) => Array.from(focus.querySelectorAll('dt')).some((term) => term.textContent?.trim() === label));
     const financialNodes = Array.from(document.querySelectorAll('main .sf-money, main .budget-currency'));
+    const moneyNodes = Array.from(document.querySelectorAll('.budget-focus .sf-money, .budget-results .sf-money'));
+    const trailingCurrencyCodesAbsent = moneyNodes.every(node =>
+      !node.querySelector('.sf-money-currency') && !/\s[A-Z]{3}$/.test(node.textContent?.trim() ?? ''));
+    const mobileFilterCollapsed = !document.querySelector('[data-budget-mobile-filters]')?.open;
     const financialLabelsLegible = financialNodes.every((node) => {
       const style = getComputedStyle(node);
       return !(['hidden', 'clip'].includes(style.overflowX) && node.scrollWidth > node.clientWidth + 1);
@@ -335,6 +432,8 @@ function measurementExpression() {
       hierarchyValid,
       decisionLabelsVisible,
       financialLabelsLegible,
+      trailingCurrencyCodesAbsent,
+      mobileFilterCollapsed,
       pathname: location.pathname,
       viewportWidth,
       documentFits: document.documentElement.scrollWidth <= viewportWidth + 1,
@@ -370,7 +469,15 @@ function negativeControlExpression() {
     if (originalStyle === null) money.removeAttribute('style');
     else money.setAttribute('style', originalStyle);
     const clippedValueRestored = probe().financialLabelsLegible === true;
-    return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored };
+    const bogusCode = document.createElement('small');
+    bogusCode.className = 'sf-money-currency';
+    bogusCode.textContent = money.dataset.currency;
+    money.append(bogusCode);
+    const trailingCodeRejected = probe().trailingCurrencyCodesAbsent === false;
+    bogusCode.remove();
+    const trailingCodeRestored = probe().trailingCurrencyCodesAbsent === true;
+    return { hierarchyRejected, hierarchyRestored, clippedValueRejected, clippedValueRestored,
+      trailingCodeRejected, trailingCodeRestored };
   })()`;
 }
 
