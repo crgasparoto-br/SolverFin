@@ -339,11 +339,26 @@ async function checkBudgetActionReadability(cdp, dialogId, viewport) {
     };
   })()`);
   assert.equal(result.dialogOpen, true, `Budget ${dialogId} closed at ${viewport.name}`);
-  assert.deepEqual(result.labels, ["Cancelar", dialogId === "new-budget-dialog" ? "Criar orçamento" : "Salvar alterações"]);
-  assert.equal(result.readable, true, `Budget ${dialogId} labels broken/clipped at ${viewport.name}: ${JSON.stringify(result.original)}`);
+  assert.deepEqual(result.labels, [
+    "Cancelar",
+    dialogId === "new-budget-dialog" ? "Criar orçamento" : "Salvar alterações",
+  ]);
+  assert.equal(
+    result.readable,
+    true,
+    `Budget ${dialogId} labels broken/clipped at ${viewport.name}: ${JSON.stringify(result.original)}`,
+  );
   if (viewport.width === 320) {
-    assert.equal(result.oldLayoutRejected, true, `Budget ${dialogId} old layout escaped at ${viewport.name}`);
-    assert.equal(result.restoredReadable, true, `Budget ${dialogId} layout not restored at ${viewport.name}`);
+    assert.equal(
+      result.oldLayoutRejected,
+      true,
+      `Budget ${dialogId} old layout escaped at ${viewport.name}`,
+    );
+    assert.equal(
+      result.restoredReadable,
+      true,
+      `Budget ${dialogId} layout not restored at ${viewport.name}`,
+    );
   }
   return result;
 }
