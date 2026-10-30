@@ -60,5 +60,4 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /AI_SUGGESTION_PAYLOAD_OBSOLETE/);
     assert.doesNotMatch(html, /data-api-path="[^"]+\/approve"/);
   });
-
 });

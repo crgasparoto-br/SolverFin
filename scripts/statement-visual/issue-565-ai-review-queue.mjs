@@ -59,9 +59,21 @@ try {
     );
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
     check(evidence.selectedEvidenceReady, `Selected evidence is not ready at ${width}px`, evidence);
-    check(evidence.decisionAfterEvidence, `Decision appears before evidence at ${width}px`, evidence);
-    check(evidence.detailActionsFitViewport, `Contextual decision overflows at ${width}px`, evidence);
-    check(evidence.secondaryBelowReview, `Import/secondary content precedes the review at ${width}px`, evidence);
+    check(
+      evidence.decisionAfterEvidence,
+      `Decision appears before evidence at ${width}px`,
+      evidence,
+    );
+    check(
+      evidence.detailActionsFitViewport,
+      `Contextual decision overflows at ${width}px`,
+      evidence,
+    );
+    check(
+      evidence.secondaryBelowReview,
+      `Import/secondary content precedes the review at ${width}px`,
+      evidence,
+    );
   }
 
   await setViewport(browser.cdp, 1366, 900);
@@ -73,8 +85,16 @@ try {
   check(keyboard.editControlFocused, "Editable control did not receive focus", keyboard);
   check(keyboard.editFocusRestored, "Closing edit did not restore focus", keyboard);
   evidenceNegative = await validateEvidenceNegativeControl(browser.cdp);
-  check(evidenceNegative.hiddenEvidenceBlockedDecision, "Hidden evidence did not block contextual decision", evidenceNegative);
-  check(evidenceNegative.evidenceRestored, "Evidence visibility was not restored after negative control", evidenceNegative);
+  check(
+    evidenceNegative.hiddenEvidenceBlockedDecision,
+    "Hidden evidence did not block contextual decision",
+    evidenceNegative,
+  );
+  check(
+    evidenceNegative.evidenceRestored,
+    "Evidence visibility was not restored after negative control",
+    evidenceNegative,
+  );
 
   urlState = await validateFilterUrl(browser.cdp);
   check(urlState.confidencePersisted, "Confidence filter was not persisted in URL", urlState);
@@ -232,14 +252,20 @@ async function inspectViewport(cdp, suggestionId, width, height) {
 }
 
 async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {
-  await evaluate(cdp, `document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]')?.click()`);
+  await evaluate(
+    cdp,
+    `document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]')?.click()`,
+  );
   const started = Date.now();
   while (Date.now() - started < timeout) {
-    const ready = await evaluate(cdp, `(() => {
+    const ready = await evaluate(
+      cdp,
+      `(() => {
       const row = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]');
       return row?.getAttribute('aria-pressed') === 'true' &&
         document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready';
-    })()`).catch(() => false);
+    })()`,
+    ).catch(() => false);
     if (ready) return;
     await sleep(120);
   }
@@ -247,7 +273,9 @@ async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {
 }
 
 async function validateEvidenceNegativeControl(cdp) {
-  return evaluate(cdp, `(() => {
+  return evaluate(
+    cdp,
+    `(() => {
     const evidence = document.querySelector('#inbox-review-selected [data-review-evidence="ready"]');
     const approve = document.querySelector('#inbox-review-selected [data-review-approve]');
     if (!evidence || !approve) return { hiddenEvidenceBlockedDecision: false, evidenceRestored: false };
@@ -263,7 +291,8 @@ async function validateEvidenceNegativeControl(cdp) {
       window.confirm = originalConfirm;
     }
     return { hiddenEvidenceBlockedDecision: confirms === 0, evidenceRestored: getComputedStyle(evidence).visibility !== 'hidden' };
-  })()`);
+  })()`,
+  );
 }
 
 async function validateKeyboardAndFocus(cdp, suggestionId) {

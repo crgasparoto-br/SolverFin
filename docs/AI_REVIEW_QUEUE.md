@@ -22,7 +22,6 @@ No primeiro bloco da rota `/inbox`, a lista compacta de sugestões e o detalhe d
 
 Mensagens recebidas, insights acionáveis e importações CSV/OFX continuam com seus fluxos próprios na região auxiliar **Outras entradas e histórico**, depois do cockpit de revisão, sem competir com a decisão principal. Registrar mensagem e importar extrato continuam disponíveis no agrupador **Adicionar entrada**. Os diálogos, a confirmação humana, o perfil ativo, a edição tipada, o tratamento de conflito e os contratos financeiros/API não foram modificados. A renderização inicial do servidor não disponibiliza aprovação/rejeição antes da hidratação da evidência.
 
-
 A área **Outras sugestões** carrega a fila completa e oferece filtros por:
 
 - `kind`;

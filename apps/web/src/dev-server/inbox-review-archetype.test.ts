@@ -96,10 +96,11 @@ describe("Inbox review archetype", () => {
   it("separates the review decision from secondary messages, insights and CSV/OFX imports", () => {
     const html = renderInboxReviewArchetype({
       actionsHtml: '<button data-open-dialog="csv-import-dialog">Importar extrato</button>',
-      suggestionsHtml: '<section><h2>Outras sugestões</h2><button data-review-select="fixture">Revisar</button></section>',
-      messagesHtml: '<section data-inbox-messages>Mensagens recebidas</section>',
-      insightsHtml: '<section data-inbox-insights>Insights financeiros</section>',
-      evidenceHtml: '<section data-inbox-review-evidence>Importações CSV/OFX</section>',
+      suggestionsHtml:
+        '<section><h2>Outras sugestões</h2><button data-review-select="fixture">Revisar</button></section>',
+      messagesHtml: "<section data-inbox-messages>Mensagens recebidas</section>",
+      insightsHtml: "<section data-inbox-insights>Insights financeiros</section>",
+      evidenceHtml: "<section data-inbox-review-evidence>Importações CSV/OFX</section>",
     });
     const queueAt = html.indexOf('id="inbox-review-queue"');
     const selectedAt = html.indexOf('id="inbox-review-selected"');
@@ -118,5 +119,4 @@ describe("Inbox review archetype", () => {
     assert.match(styles, /@media \(max-width: 900px\)/);
     assert.match(styles, /@media \(max-width: 600px\)/);
   });
-
 });
