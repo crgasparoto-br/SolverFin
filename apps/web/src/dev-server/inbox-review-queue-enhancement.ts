@@ -250,8 +250,56 @@ export function enhanceInboxReviewQueue(html: string): string {
               ? '<div class="review-warning"><strong>Conflitos</strong><ul>' + proposal.conflicts.map((item) => '<li>' + escapeHtml(item) + '</li>').join("") + '</ul></div>'
               : '<p class="muted">Nenhum conflito estrutural informado.</p>';
           } else if (payload.suggestionKind === "insight") {
-            body += '<h3>' + escapeHtml(proposal.title) + '</h3><p>' + escapeHtml(proposal.summary) + '</p>' +
-              '<p class="muted">Período: ' + escapeHtml(formatDate(proposal.periodStartOn)) + ' a ' + escapeHtml(formatDate(proposal.periodEndOn)) + '</p>';
+            const labels = {
+              receitas: "Receitas", despesas: "Despesas", saldo: "Saldo realizado",
+              despesas_periodo_anterior: "Despesas no período anterior",
+              variacao_despesas_percentual: "Variação das despesas", diferenca: "Diferença",
+              menor_saldo_projetado: "Menor saldo projetado", deficit_projetado: "Déficit projetado",
+              saldo_fim_horizonte: "Saldo no fim do horizonte", horizonte_dias: "Horizonte (dias)",
+              amostra: "Lançamentos considerados", variacao_percentual: "Variação percentual",
+              valor_atual: proposal.insightKind === "budget_exceeded" ? "Despesas realizadas" : "Gasto atual",
+              valor_anterior_ou_planejado: proposal.insightKind === "budget_exceeded" ? "Orçamento planejado" : "Gasto anterior"
+            };
+            const evidenceLines = Array.isArray(proposal.evidence) ? proposal.evidence.map((entry) => {
+              const key = String(entry.label || "");
+              const label = labels[key] || (key.startsWith("variacao_categoria:") ? "Variação em " + key.slice(18) : key.replaceAll("_", " "));
+              const value = entry.unit === "minor_currency" ? formatMoney(entry.value, entry.currency || proposal.currency) :
+                entry.unit === "percentage" ? String(entry.value) + "%" : String(entry.value);
+              return '<li>' + escapeHtml(label) + ': ' + escapeHtml(value) + '</li>';
+            }).join("") : "";
+            const limitations = Array.isArray(proposal.limitations) ? proposal.limitations.map((entry) =>
+              '<li>' + escapeHtml(entry) + '</li>').join("") : "";
+            body += '<h3>' + escapeHtml(proposal.title || "Insight financeiro") + '</h3><p>' + escapeHtml(proposal.summary || "") + '</p>' +
+              '<p class="muted">Período: ' + escapeHtml(formatDate(proposal.periodStartOn)) + ' a ' + escapeHtml(formatDate(proposal.periodEndOn)) + '</p>' +
+              '<p class="review-evidence-meta">Moeda: ' + escapeHtml(proposal.currency || proposal.filters?.currency || "BRL") + '</p>' +
+              (evidenceLines ? '<div data-insight-evidence="true"><strong>Evidências verificáveis</strong><ul>' + evidenceLines + '</ul></div>' : "") +
+              (limitations ? '<div data-insight-limitations="true"><strong>Limitações</strong><ul>' + limitations + '</ul></div>' : "");
+            const navigation = proposal.navigation;
+            if (navigation) {
+              const params = new URLSearchParams();
+              let path = "/lancamentos";
+              let label = "Abrir lançamentos";
+              if (navigation.view === "budgets") {
+                path = "/orcamentos";
+                label = "Abrir orçamentos";
+                if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
+              } else if (navigation.view === "cash_flow") {
+                path = "/relatorios";
+                label = "Ver projeção de caixa";
+                if (navigation.referenceDate && navigation.horizonDays) {
+                  params.set("view", "cash-flow");
+                  params.set("referenceDate", navigation.referenceDate);
+                  params.set("horizonDays", String(navigation.horizonDays));
+                }
+              } else {
+                const month = String(proposal.periodStartOn || "").slice(0, 7);
+                if (/^\d{4}-\d{2}$/.test(month)) params.set("month", month);
+                if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
+                if (navigation.merchantKey) params.set("merchantKey", navigation.merchantKey);
+              }
+              body += '<p><a data-insight-navigation="true" href="' + escapeHtml(path + (params.size ? "?" + params.toString() : "")) +
+                '">' + escapeHtml(label) + '</a></p>';
+            }
           }
           if (reasons) body += '<details><summary>Por que esta sugestão?</summary><ul>' + reasons + '</ul></details>';
           return body;
