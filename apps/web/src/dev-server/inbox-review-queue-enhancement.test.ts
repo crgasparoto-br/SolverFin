@@ -39,4 +39,26 @@ describe("Inbox unified AI review queue enhancement", () => {
     const twice = enhanceInboxReviewQueue(once);
     assert.equal(twice, once);
   });
+  it("shows decisions only inside selected evidence after fresh payload validation, blocking hidden and unavailable evidence", () => {
+    const html = enhanceInboxReviewQueue(BASE_HTML);
+    assert.match(html, /data-review-select/);
+    assert.match(html, /aria-controls="inbox-review-selected"/);
+    assert.match(html, /data-review-evidence="ready"/);
+    assert.match(html, /selected\.dataset\.reviewEvidenceState = "loading"/);
+    assert.match(html, /selected\.dataset\.reviewEvidenceState = "unavailable"/);
+    assert.match(html, /detailFor\(id, true\)/);
+    assert.match(html, /typeof detail\.payload\.fingerprint !== "string"/);
+    assert.match(html, /evidenceStyle\.visibility === "hidden"/);
+    assert.match(html, /evidenceRect\.width <= 0/);
+    assert.match(html, /evidence\.closest\('\[hidden\], \[aria-hidden="true"\]'\)/);
+    assert.match(html, /state\.selectedId !== id/);
+    assert.match(html, /data-review-evidence-retry/);
+    assert.match(html, /data-review-edit=/);
+    assert.match(html, /data-review-approve=/);
+    assert.match(html, /data-review-reject=/);
+    assert.match(html, /expectedFingerprint: detail\.payload\.fingerprint/);
+    assert.match(html, /AI_SUGGESTION_PAYLOAD_OBSOLETE/);
+    assert.doesNotMatch(html, /data-api-path="[^"]+\/approve"/);
+  });
+
 });
