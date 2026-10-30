@@ -262,7 +262,7 @@ export function enhanceInboxReviewQueue(html: string): string {
             };
             const evidenceLines = Array.isArray(proposal.evidence) ? proposal.evidence.map((entry) => {
               const key = String(entry.label || "");
-              const label = labels[key] || (key.startsWith("variacao_categoria:") ? "Variação em " + key.slice(18) : key.replaceAll("_", " "));
+              const label = labels[key] || (key.startsWith("variacao_categoria:") ? "Variação em " + key.slice("variacao_categoria:".length) : key.replaceAll("_", " "));
               const value = entry.unit === "minor_currency" ? formatMoney(entry.value, entry.currency || proposal.currency) :
                 entry.unit === "percentage" ? String(entry.value) + "%" : String(entry.value);
               return '<li>' + escapeHtml(label) + ': ' + escapeHtml(value) + '</li>';
@@ -293,7 +293,7 @@ export function enhanceInboxReviewQueue(html: string): string {
                 }
               } else {
                 const month = String(proposal.periodStartOn || "").slice(0, 7);
-                if (/^\d{4}-\d{2}$/.test(month)) params.set("month", month);
+                if (/^\\d{4}-\\d{2}$/.test(month)) params.set("month", month);
                 if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
                 if (navigation.merchantKey) params.set("merchantKey", navigation.merchantKey);
               }
