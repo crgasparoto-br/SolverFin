@@ -121,7 +121,7 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
 
   const actionsHtml = `
     <button type="button" class="secondary-button" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
-    <button type="button" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
+    <button type="button" class="secondary-button" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
   `;
   const financialInsightFallbackHtml = reviewQueue.ok
     ? renderFinancialInsightFallback(reviewQueue.data.financialInsights?.insufficientData ?? [])
@@ -136,7 +136,6 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     },
   );
   const suggestionsHtml = `
-    ${insightsHtml}
     <section class="panel list-panel inbox-review-group" aria-labelledby="inbox-review-suggestions-title">
       <div class="section-heading">
         <h2 id="inbox-review-suggestions-title">Outras sugestões</h2>
@@ -187,6 +186,7 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     suggestionsHtml,
     messagesHtml,
     evidenceHtml,
+    insightsHtml,
     statusHtml,
   });
 
@@ -370,11 +370,6 @@ function renderCsvLineEditDialog(): string {
 
 function renderReviewSuggestionRow(item: ReviewQueueItem): string {
   const confidence = `${Math.round(item.confidence * 100)}%`;
-  const reviewApiBase =
-    item.kind === "deduplication" || item.kind === "reconciliation"
-      ? "/api/review-suggestions"
-      : "/api/ai-review-queue";
-
   return `
     <article class="maintenance-item">
       <div class="maintenance-summary"><div>
@@ -382,10 +377,7 @@ function renderReviewSuggestionRow(item: ReviewQueueItem): string {
         <span>${escapeHtml(formatDateTime(item.createdAt))} - origem ${escapeHtml(formatOrigin(item.origin))} - confiança ${escapeHtml(confidence)}</span>
       </div></div>
       <div class="message-preview"><p><strong>${escapeHtml(item.maskedSummary)}</strong></p><p>${escapeHtml(item.explanation)}</p></div>
-      <div class="maintenance-actions" aria-label="Ações da sugestão ${escapeHtml(item.id)}">
-        <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/approve" data-api-confirm="Aprovar esta sugestão?">${icon("check", 13)} Aprovar</button>
-        <button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="${escapeHtml(reviewApiBase)}/${escapeHtml(item.id)}/reject" data-api-confirm="Rejeitar esta sugestão?">${icon("x", 13)} Rejeitar</button>
-      </div>
+      <p class="muted small-note">Decisão disponível apenas após consulta à evidência atual na fila de revisão.</p>
     </article>
   `;
 }
