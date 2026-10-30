@@ -165,6 +165,20 @@ async function installHarness(cdp, suggestionId) {
         const method = String(options?.method || input?.method || 'GET').toUpperCase();
         const mode = window.__issue565QueueMode;
         const item = window.__issue565BaselineReviewItem;
+        if (mode === 'kinds' && method === 'GET' && url.includes('/api/ai-review-queue/') && url.endsWith('/payload')) {
+          const itemId = url.split('/').at(-2) || '';
+          const index = Number(itemId.slice(-1)) - 1;
+          const kinds = ['transaction_extraction', 'categorization', 'deduplication', 'reconciliation', 'insight'];
+          if (index >= 0 && index < kinds.length) {
+            return responseFor({ payload: {
+              suggestionKind: kinds[index], fingerprint: 'synthetic-review-payload-' + index,
+              confidence: index === 1 ? 0.41 : 0.88,
+              target: { entityKind: 'transaction' },
+              proposal: { occurredOn: '2026-08-08', amountMinor: 2345, currency: 'BRL', description: 'Fixture de revisão',
+                periodStartOn: '2026-08-01', periodEndOn: '2026-08-31', title: 'Resumo fictício', summary: 'Evidência fictícia' }
+            } });
+          }
+        }
         if (url.includes('/api/ai-review-queue?status=all&includeLowConfidence=true')) {
           if (mode === 'loading') {
             await new Promise((resolve) => setTimeout(resolve, 600));
@@ -238,7 +252,7 @@ async function validateStates(cdp, suggestionId) {
       return {
         cardCount: cards.length,
         allKindsVisible: expected.every((label) => labels.includes(label)),
-        editOnlyOnSupportedKinds: cards.filter((card) => card.querySelector('[data-review-edit]')).length === 2,
+        editOnlyOnSupportedKinds: cards.filter((card) => ['transaction_extraction', 'categorization'].includes(card.dataset.reviewKind)).length === 2,
         lowConfidenceVisible: cards.some((card) =>
           card.querySelector('.review-risk')?.textContent?.includes('Baixa confiança')
         )
@@ -294,13 +308,14 @@ async function validateStates(cdp, suggestionId) {
   retry.recovered = retry.clicked && recovered;
 
   await setQueueMode(cdp, "baseline", 180);
+  await waitForCurrentEvidence(cdp);
   await evaluate(
     cdp,
     `(() => {
       window.__issue565QueueMode = 'conflict';
       window.confirm = () => true;
       const button = document.querySelector(
-        '[data-review-id="${escapeJs(suggestionId)}"] [data-review-approve]'
+        '#inbox-review-selected [data-review-approve]'
       );
       if (!button) throw new Error('Approval button not found for conflict state');
       button.click();
@@ -366,11 +381,23 @@ async function inspectQueueStatus(cdp, expectedText) {
   );
 }
 
+async function waitForCurrentEvidence(cdp, timeout = 4_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const ready = await evaluate(cdp,
+      `document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready'`
+    ).catch(() => false);
+    if (ready) return;
+    await sleep(100);
+  }
+  throw new Error("The review evidence did not become ready.");
+}
+
 async function inspectConflictState(cdp, suggestionId) {
   return evaluate(
     cdp,
     `(() => {
-      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
+      const card = document.getElementById('inbox-review-selected');
       const status = card?.querySelector('[data-review-row-status]');
       const button = card?.querySelector('[data-review-approve]');
       return {
