@@ -1,7 +1,7 @@
 name: Tarefa para implementacao por IA
 description: Issue estruturada para humanos e agentes de IA implementarem com seguranca
 title: "[AI TASK] "
-labels: ["ai-ready"]
+labels: ["ready-for-agent"]
 body:
   - type: markdown
     attributes:
