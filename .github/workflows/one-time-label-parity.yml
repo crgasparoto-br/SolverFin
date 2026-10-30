@@ -1,9 +1,9 @@
 name: One-time label parity for SolverFin
 
+# Completed action: https://github.com/crgasparoto-br/SolverFin/actions/runs/41129478119
+# Kept only in this temporary branch for auditability; no further automatic runs.
 on:
-  push:
-    branches:
-      - chore/sync-labels-controle-calorias-20261030
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      MODE: apply
+      MODE: dry-run
     steps:
       - name: Compare source and destination label catalogs
         shell: bash
