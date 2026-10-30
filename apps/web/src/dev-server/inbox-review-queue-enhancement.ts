@@ -27,7 +27,9 @@ export function enhanceInboxReviewQueue(html: string): string {
         const heading = section.querySelector(".section-heading");
         const dialog = document.getElementById("ai-review-dialog");
         const dialogBody = document.getElementById("ai-review-dialog-body");
-        const state = { items: [], accounts: [], categories: [], details: new Map(), trigger: null };
+        const selected = document.getElementById("inbox-review-selected");
+        let selectionGeneration = 0;
+        const state = { items: [], accounts: [], categories: [], details: new Map(), trigger: null, selectedId: null };
         const currentUrl = new URL(window.location.href);
 
         const filterBar = document.createElement("div");
@@ -169,27 +171,38 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (count) count.textContent = visible.length + " item(ns)";
           if (!rows) return;
           if (!visible.length) {
+            state.selectedId = null;
             rows.innerHTML = '<div class="empty-state"><strong>Nenhuma sugestão neste filtro.</strong><p class="muted">Altere os filtros ou atualize a fila.</p></div>';
+            renderSelected();
             return;
           }
+          if (!visible.some((item) => item.id === state.selectedId)) state.selectedId = visible[0].id;
           rows.innerHTML = visible.map((item) => {
+            const chosen = item.id === state.selectedId;
             const low = item.risk === "low_confidence" ? '<span class="review-risk">Baixa confiança</span>' : "";
-            const pending = item.status === "pending_review";
-            const edit = pending && (item.kind === "transaction_extraction" || item.kind === "categorization")
-              ? '<button type="button" class="secondary-button" data-review-edit="' + escapeHtml(item.id) + '">Editar</button>'
-              : "";
-            const decision = pending
-              ? '<button type="button" class="secondary-button" data-review-approve="' + escapeHtml(item.id) + '">Aprovar</button>' +
-                '<button type="button" class="secondary-button danger-action" data-review-reject="' + escapeHtml(item.id) + '">Rejeitar</button>'
-              : "";
-            return '<article class="maintenance-item review-card" data-review-id="' + escapeHtml(item.id) + '">' +
+            return '<article class="maintenance-item review-card' + (chosen ? ' selected' : '') + '" data-review-id="' + escapeHtml(item.id) + '" data-review-kind="' + escapeHtml(item.kind) + '">' +
               '<div class="maintenance-summary"><div><strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
               '<span>' + escapeHtml(formatStatus(item.status)) + ' · origem ' + escapeHtml(formatOrigin(item.origin)) + ' · confiança ' + escapeHtml(Math.round(Number(item.confidence) * 100)) + '%</span></div>' + low + '</div>' +
-              '<div class="message-preview"><p><strong>' + escapeHtml(item.maskedSummary) + '</strong></p><p>' + escapeHtml(item.explanation) + '</p></div>' +
-              '<div class="maintenance-actions"><button type="button" class="secondary-button" data-review-details="' + escapeHtml(item.id) + '">Ver detalhes</button>' + edit + decision + '<p class="form-status muted" data-review-row-status aria-live="polite"></p></div>' +
+              '<p class="review-card-summary">' + escapeHtml(item.maskedSummary) + '</p>' +
+              '<button type="button" class="secondary-button" data-review-select="' + escapeHtml(item.id) + '" aria-controls="inbox-review-selected" aria-pressed="' + chosen + '">' + (chosen ? "Em revisão" : "Revisar") + '</button>' +
               '</article>';
           }).join("");
           bindRows();
+          renderSelected();
+        }
+        function selectItem(id) {
+          if (!state.items.some((item) => item.id === id) || id === state.selectedId) return;
+          state.selectedId = id;
+          rows.querySelectorAll("[data-review-select]").forEach((button) => {
+            const chosen = button.dataset.reviewSelect === id;
+            button.setAttribute("aria-pressed", String(chosen));
+            button.textContent = chosen ? "Em revisão" : "Revisar";
+            button.closest(".review-card")?.classList.toggle("selected", chosen);
+          });
+          renderSelected();
+          if (window.matchMedia("(max-width: 900px)").matches) {
+            document.getElementById("inbox-review-detail-title")?.scrollIntoView({ block: "start", behavior: "auto" });
+          }
         }
         async function loadQueue() {
           queueStatus("Carregando sugestões...", "muted", false);
@@ -208,6 +221,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           } catch (error) {
             const unavailable = isTemporaryUnavailable(error);
             queueStatus(errorMessage(error), unavailable ? "unavailable" : "error", true);
+            invalidateSelection("A fila não pôde ser atualizada. Recarregue-a antes de tomar qualquer decisão.");
           }
         }
         async function detailFor(id, force) {
