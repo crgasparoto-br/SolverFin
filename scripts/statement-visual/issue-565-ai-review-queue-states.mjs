@@ -264,6 +264,16 @@ async function validateStates(cdp, suggestionId) {
       };
     })()`,
   );
+  const editableKinds = new Set(["transaction_extraction", "categorization"]);
+  const editObserved = [];
+  for (const kind of ["transaction_extraction", "categorization", "deduplication", "reconciliation", "insight"]) {
+    await evaluate(cdp, `document.querySelector('.review-card[data-review-kind="${kind}"] [data-review-select]')?.click()`);
+    await waitForCurrentEvidence(cdp);
+    const hasEdit = await evaluate(cdp, `Boolean(document.querySelector('#inbox-review-selected [data-review-edit]'))`);
+    editObserved.push({ kind, hasEdit });
+  }
+  kinds.editObserved = editObserved;
+  kinds.editOnlyOnSupportedKinds = editObserved.every(({ kind, hasEdit }) => editableKinds.has(kind) === hasEdit);
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-five-kinds.png"));
 
   await setQueueMode(cdp, "loading", 70);
