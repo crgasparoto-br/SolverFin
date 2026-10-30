@@ -276,7 +276,9 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
 
 /** A visible 44px button can still split a word across lines or clip it. */
 async function checkBudgetActionReadability(cdp, dialogId, viewport) {
-  const result = await evaluate(cdp, `(() => {
+  const result = await evaluate(
+    cdp,
+    `(() => {
     const dialog = document.getElementById(${JSON.stringify(dialogId)});
     const actions = dialog?.querySelector('.budget-form-actions');
     const buttons = Array.from(actions?.querySelectorAll('button') ?? []);
@@ -337,7 +339,8 @@ async function checkBudgetActionReadability(cdp, dialogId, viewport) {
       restoredReadable: measure().every((button) => button.readable),
       original,
     };
-  })()`);
+  })()`,
+  );
   assert.equal(result.dialogOpen, true, `Budget ${dialogId} closed at ${viewport.name}`);
   assert.deepEqual(result.labels, [
     "Cancelar",
