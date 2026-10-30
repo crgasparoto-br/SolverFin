@@ -440,14 +440,26 @@ export function enhanceInboxReviewQueue(html: string): string {
           });
         }
         async function decide(id, action, button) {
-          const card = button.closest("[data-review-id]");
-          const status = card?.querySelector("[data-review-row-status]");
+          const card = button.closest(".inbox-review-selected");
+          if (!card || card.dataset.reviewEvidenceState !== "ready" ||
+            !card.querySelector('[data-review-evidence="ready"]') || state.selectedId !== id) return;
+          const status = card.querySelector("[data-review-row-status]");
           if (action === "reject" && !window.confirm("Rejeitar esta sugestão?")) return;
           if (action === "approve" && !window.confirm("Aprovar esta sugestão e aplicar o efeito indicado?")) return;
           button.disabled = true;
           if (status) { status.className = "form-status muted"; status.textContent = "Validando versão atual..."; }
+          let detail;
           try {
-            const detail = await detailFor(id, true);
+            detail = await detailFor(id, true);
+            if (!detail?.payload || typeof detail.payload.fingerprint !== "string" || !detail.payload.fingerprint) {
+              throw new Error("Evidência atual incompleta.");
+            }
+          } catch (error) {
+            if (state.selectedId === id) invalidateSelection("Não foi possível validar a evidência atual. Decisão bloqueada. " + errorMessage(error));
+            return;
+          }
+          if (state.selectedId !== id || card.dataset.reviewEvidenceState !== "ready") return;
+          try {
             if (status) status.textContent = action === "approve" ? "Aplicando decisão..." : "Registrando rejeição...";
             await api("/api/ai-review-queue/" + encodeURIComponent(id) + "/" + action, {
               method: "POST",
@@ -467,10 +479,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           }
         }
         function bindRows() {
-          rows?.querySelectorAll("[data-review-details]").forEach((button) => button.addEventListener("click", () => openDetails(button.dataset.reviewDetails, button)));
-          rows?.querySelectorAll("[data-review-edit]").forEach((button) => button.addEventListener("click", () => openEdit(button.dataset.reviewEdit, button)));
-          rows?.querySelectorAll("[data-review-approve]").forEach((button) => button.addEventListener("click", () => decide(button.dataset.reviewApprove, "approve", button)));
-          rows?.querySelectorAll("[data-review-reject]").forEach((button) => button.addEventListener("click", () => decide(button.dataset.reviewReject, "reject", button)));
+          rows?.querySelectorAll("[data-review-select]").forEach((button) => button.addEventListener("click", () => selectItem(button.dataset.reviewSelect)));
         }
         [kindFilter, statusFilter, confidenceFilter].forEach((filter) => filter.addEventListener("change", () => { syncUrl(); render(); }));
         filterBar.querySelector("[data-review-refresh]").addEventListener("click", loadQueue);
