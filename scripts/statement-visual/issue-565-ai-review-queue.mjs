@@ -20,6 +20,7 @@ let fixture;
 let keyboard;
 let textResize;
 let urlState;
+let evidenceNegative;
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -31,10 +32,13 @@ try {
   const route = `/inbox?kind=transaction_extraction&status=pending_review&confidence=all`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await waitForReviewCard(browser.cdp, fixture.suggestionId);
+  await selectAndWaitForEvidence(browser.cdp, fixture.suggestionId);
 
   for (const [width, height] of [
+    [320, 740],
     [390, 844],
     [768, 1024],
+    [1366, 768],
     [1366, 900],
   ]) {
     await setViewport(browser.cdp, width, height);
@@ -54,6 +58,10 @@ try {
       evidence,
     );
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
+    check(evidence.selectedEvidenceReady, `Selected evidence is not ready at ${width}px`, evidence);
+    check(evidence.decisionAfterEvidence, `Decision appears before evidence at ${width}px`, evidence);
+    check(evidence.detailActionsFitViewport, `Contextual decision overflows at ${width}px`, evidence);
+    check(evidence.secondaryBelowReview, `Import/secondary content precedes the review at ${width}px`, evidence);
   }
 
   await setViewport(browser.cdp, 1366, 900);
@@ -64,6 +72,9 @@ try {
   check(keyboard.editOpenedByKeyboard, "Enter did not open review edit dialog", keyboard);
   check(keyboard.editControlFocused, "Editable control did not receive focus", keyboard);
   check(keyboard.editFocusRestored, "Closing edit did not restore focus", keyboard);
+  evidenceNegative = await validateEvidenceNegativeControl(browser.cdp);
+  check(evidenceNegative.hiddenEvidenceBlockedDecision, "Hidden evidence did not block contextual decision", evidenceNegative);
+  check(evidenceNegative.evidenceRestored, "Evidence visibility was not restored after negative control", evidenceNegative);
 
   urlState = await validateFilterUrl(browser.cdp);
   check(urlState.confidencePersisted, "Confidence filter was not persisted in URL", urlState);
@@ -100,6 +111,7 @@ const report = {
   keyboard,
   urlState,
   textResize,
+  evidenceNegative,
   fatalError,
   failures,
 };
@@ -186,6 +198,12 @@ async function inspectViewport(cdp, suggestionId, width, height) {
         return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
       };
       const buttons = card ? [...card.querySelectorAll('button')].filter(visible) : [];
+      const selected = document.getElementById('inbox-review-selected');
+      const evidence = selected?.querySelector('[data-review-evidence="ready"]');
+      const decision = selected?.querySelector('[data-review-approve]');
+      const decisionButtons = selected ? [...selected.querySelectorAll('.review-decision-actions button')].filter(visible) : [];
+      const reviewLayout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
+      const secondary = document.querySelector('.inbox-review-secondary');
       const filters = [...document.querySelectorAll('[data-review-filter]')].filter(visible);
       return {
         viewport: ${JSON.stringify(`${width}x${height}`)},
@@ -198,6 +216,10 @@ async function inspectViewport(cdp, suggestionId, width, height) {
         }),
         actionsMeetMinimum: buttons.length > 0 && buttons.every((button) => button.getBoundingClientRect().height >= 34),
         technicalIdHidden: !document.body.innerText.includes(${JSON.stringify(suggestionId)}),
+        selectedEvidenceReady: selected?.dataset.reviewEvidenceState === 'ready' && visible(evidence),
+        decisionAfterEvidence: Boolean(evidence && decision && (evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        detailActionsFitViewport: decisionButtons.length > 0 && decisionButtons.every((button) => { const rect = button.getBoundingClientRect(); return rect.left >= 0 && rect.right <= window.innerWidth && rect.height >= 34; }),
+        secondaryBelowReview: Boolean(reviewLayout && secondary) && secondary.getBoundingClientRect().top >= reviewLayout.getBoundingClientRect().bottom,
         buttonLabels: buttons.map((button) => (button.textContent || '').trim()),
         filterValues: filters.map((filter) => filter.value),
         cardRect: card ? (() => {
@@ -213,7 +235,7 @@ async function validateKeyboardAndFocus(cdp, suggestionId) {
   await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-details]');
+      const button = document.querySelector('#inbox-review-selected [data-review-details]');
       if (!button) throw new Error('Details button not found');
       button.dataset.issue565Trigger = 'details';
       button.focus();
@@ -240,7 +262,7 @@ async function validateKeyboardAndFocus(cdp, suggestionId) {
   await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-edit]');
+      const button = document.querySelector('#inbox-review-selected [data-review-edit]');
       if (!button) throw new Error('Edit button not found');
       button.dataset.issue565Trigger = 'edit';
       button.focus();
