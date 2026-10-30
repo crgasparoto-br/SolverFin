@@ -1,26 +1,159 @@
 {
   "schema_version": 2,
-  "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
   "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "creations": [
+    {
+      "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"budgets-action-menu\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-action-menu.ts"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.ts",
+            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-action-menu.ts cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract existing contextual menu behaviour with focus/keyboard handling instead of duplicating it for cards/table."
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-filters.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"budgets-filters\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-filters.ts"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.ts",
+            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-filters.ts cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separate SSR filter markup while reusing shared renderFilterBar and URL status parsing."
+    },
     {
       "path": "apps/web/src/dev-server/budgets-focus.ts",
       "kind": "file",
       "search": {
         "queries": [
-          "git grep -n renderBudgetFocus and renderBudgetStatus under apps/web/src/dev-server",
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..7b7569493277a19b41eb1494b4abad9f90470342 -- apps/web/src/dev-server/budgets-page.ts"
+          "git grep -n \"budgets-focus\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-focus.ts"
         ],
-        "scope": "Existing budget page and design system helpers reviewed before extracting presentation-only helpers.",
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extending an already 641-line page by the full financial focus would increase complexity; existing money/primitive helpers are reused by import."
+            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-focus.ts cohesion while continuing to import canonical helpers."
           }
         ]
       },
       "decision": "create",
-      "justification": "Small 152-line presentation helper extracted from budgets page to keep page growth within allowance; uses existing view-model, renderMoney and renderDialogTrigger instead of duplicating calculations."
+      "justification": "Extract first-fold financial hierarchy with existing money renderer; no new financial calculation."
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-form.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"budgets-form\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-form.ts"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.ts",
+            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-form.ts cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Share new/edit dialogs and locale money input instead of separate modal implementations."
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-table.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"budgets-table\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-table.ts"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.ts",
+            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-table.ts cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Consolidate category/currency display and expand older periods without aggregating amounts."
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-725-budget-golden-dialogs\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-golden-dialogs.mjs"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-golden-dialogs.mjs cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Reuse the existing Chrome budgets pilot to validate dialogs across desktop/mobile."
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-725-budget-measurements\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-measurements.mjs"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-measurements.mjs cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Factor viewport measurements shared with existing Chrome pilot, avoiding duplicated DOM probes."
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-menu-checks.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-725-budget-menu-checks\" -- apps/web/src/dev-server scripts/statement-visual",
+          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-menu-checks.mjs"
+        ],
+        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-menu-checks.mjs cohesion while continuing to import canonical helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Factor action menu keyboard and overlap checks from existing Chrome pilot."
     }
   ],
   "references": [
@@ -30,10 +163,62 @@
       "used_in": "apps/web/src/dev-server/budgets-page.ts",
       "defined_at": {
         "path": "apps/web/src/dev-server/budgets-focus.ts",
-        "line": 18
+        "line": 20
       },
       "verified_by": {
         "command": "git grep -n renderBudgetFocus apps/web/src/dev-server",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderBudgetFilters",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/budgets-filters.ts",
+        "line": 6
+      },
+      "verified_by": {
+        "command": "git grep -n renderBudgetFilters apps/web/src/dev-server",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderBudgetTable",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/budgets-table.ts",
+        "line": 8
+      },
+      "verified_by": {
+        "command": "git grep -n renderBudgetTable apps/web/src/dev-server",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderBudgetActionMenu",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/budgets-table.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+        "line": 5
+      },
+      "verified_by": {
+        "command": "git grep -n renderBudgetActionMenu apps/web/src/dev-server",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderNewBudgetDialog",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/budgets-form.ts",
+        "line": 12
+      },
+      "verified_by": {
+        "command": "git grep -n renderNewBudgetDialog apps/web/src/dev-server",
         "exit_code": 0
       }
     }
@@ -41,39 +226,147 @@
   "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/web/src/dev-server/budgets-page.test.ts",
+      "path": "apps/web/src/design-system/money.test.ts",
       "operation": "modified",
-      "scenario": "Budget finance hierarchy, BRL/USD focus isolation, filter empty, recoverable error and mutation-free SSR",
-      "requirement": "Issue #725 SSR regression and negative multi-currency/no synthetic zero controls.",
+      "scenario": "Shared financial money and maintenance API smoke regression",
+      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
       "search": {
         "queries": [
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..7b7569493277a19b41eb1494b4abad9f90470342 -- apps/web/src/dev-server/budgets-page.test.ts",
-          "git grep -n budgets page issue 619 apps/web/src/dev-server/budgets-page.test.ts"
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/design-system/money.test.ts",
+          "git grep -n \"test(\" apps/web/src/design-system/money.test.ts"
         ],
-        "scope": "Existing budget page SSR test reused and extended rather than creating separate test harness.",
+        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
         "runner": "npm run test",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/budgets-page.test.ts",
-            "case": "Ten SSR budget page scenarios including multi-currency filters and unavailable values",
-            "oracle": "HTML output and financial/API usage distinctions tested against deterministic fixtures that distinguish BRL/USD and null from zero.",
-            "comparison": "Existing test file extended with additional acceptance cases; no duplicate suite."
+            "path": "apps/web/src/design-system/money.test.ts",
+            "case": "Full existing suite apps/web/src/design-system/money.test.ts; 8 cases passed",
+            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
+            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
           }
         ]
       },
       "decision": "extend-existing",
-      "justification": "The affected page already has canonical SSR tests; extend same suite to preserve former #619 cases.",
+      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "reached_tests": [
+          "apps/web/src/design-system/money.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
+        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-page.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen budget UI/contract regression",
+      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
+      "search": {
+        "queries": [
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-page.test.ts",
+          "git grep -n \"test(\" apps/web/src/dev-server/budgets-page.test.ts"
+        ],
+        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-page.test.ts",
+            "case": "Full existing suite apps/web/src/dev-server/budgets-page.test.ts; 21 cases passed",
+            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
+            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
         "reached_tests": [
           "apps/web/src/dev-server/budgets-page.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budgets-page.test.ts.execution.txt",
-        "evidence_sha256": "d207bd433191bddea35e0e5053fe5162bbbe781f1aa24b83bd420e1cd92d9d73"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
+        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-view-model.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen budget UI/contract regression",
+      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
+      "search": {
+        "queries": [
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-view-model.test.ts",
+          "git grep -n \"test(\" apps/web/src/dev-server/budgets-view-model.test.ts"
+        ],
+        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/budgets-view-model.test.ts",
+            "case": "Full existing suite apps/web/src/dev-server/budgets-view-model.test.ts; 6 cases passed",
+            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
+            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "reached_tests": [
+          "apps/web/src/dev-server/budgets-view-model.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
+        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/maintenance-actions.test.ts",
+      "operation": "modified",
+      "scenario": "Shared financial money and maintenance API smoke regression",
+      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
+      "search": {
+        "queries": [
+          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/maintenance-actions.test.ts",
+          "git grep -n \"test(\" apps/web/src/dev-server/maintenance-actions.test.ts"
+        ],
+        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/maintenance-actions.test.ts",
+            "case": "Full existing suite apps/web/src/dev-server/maintenance-actions.test.ts; reached in full npm test",
+            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
+            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "reached_tests": [
+          "apps/web/src/dev-server/maintenance-actions.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
+        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
       }
     }
   ]

@@ -1,8 +1,29 @@
 {
-  "generatedAt": "2026-10-29T13:34:30.591Z",
-  "commit": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "generatedAt": "2026-10-29T22:01:39.918Z",
+  "commit": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
   "browser": "Google Chrome 156.0.8078.47",
   "scenarios": [
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "1440x900",
+      "screenshot": "issue-606-budgets-wide-desktop.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
+        "pathname": "/orcamentos",
+        "viewportWidth": 1440,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 1425
+      }
+    },
     {
       "route": "/orcamentos",
       "state": "normal",
@@ -12,6 +33,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
         "pathname": "/orcamentos",
         "viewportWidth": 1366,
         "documentFits": true,
@@ -30,6 +54,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
         "pathname": "/orcamentos",
         "viewportWidth": 390,
         "documentFits": true,
@@ -48,6 +75,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
         "pathname": "/orcamentos",
         "viewportWidth": 320,
         "documentFits": true,
@@ -62,16 +92,199 @@
     "hierarchyRejected": true,
     "hierarchyRestored": true,
     "clippedValueRejected": true,
-    "clippedValueRestored": true
+    "clippedValueRestored": true,
+    "brokenNumberRejected": true,
+    "brokenNumberRestored": true,
+    "trailingCodeRejected": true,
+    "trailingCodeRestored": true
   },
+  "menuLayering": {
+    "opened": true,
+    "upperZ": 3,
+    "lowerZ": 1,
+    "overlapsNextTrigger": true,
+    "menuAboveTrigger": true,
+    "negativeOccluded": true,
+    "contained": true
+  },
+  "categoryPrefill": {
+    "found": true,
+    "selected": true,
+    "reset": true
+  },
+  "selectedPeriod": {
+    "selected": "2028-04-01:2028-04-30",
+    "active": true,
+    "context": true
+  },
+  "goldenDialogs": [
+    {
+      "viewport": "1366x768",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 692.015625,
+          "y": 518.09375,
+          "width": 127.640625,
+          "height": 44
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "390x844",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 639.09375,
+          "width": 158.5,
+          "height": 44
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "320x740",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 576.59375,
+          "width": 123.5,
+          "height": 65
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    }
+  ],
   "issue725Acceptance": {
     "fixtureCurrency": "USD",
     "mixed": {
-      "rows": 12,
+      "rows": 11,
+      "historyCount": 1,
+      "uniqueCategories": true,
       "currencies": [
         "",
         "BRL",
-        "USD"
+        "USD",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR"
       ],
       "focused": [
         "BRL",
@@ -84,32 +297,37 @@
       "focused": [
         "USD"
       ],
-      "documentFits": true
+      "documentFits": true,
+      "activeFiltersExpanded": true
     },
     "empty": {
       "currency": "EUR",
       "message": true,
       "focusCount": 0,
-      "documentFits": true
+      "documentFits": true,
+      "activeFiltersExpanded": true
     },
     "dialogs": {
       "createOpen": true,
-      "editOpen": true
+      "editOpen": true,
+      "neutralCancel": true,
+      "createCanceled": true,
+      "editCanceled": true
     },
     "creation": {
-      "categoryId": "ef97d3ac-f9da-4e5f-8b31-8dd348f39143",
-      "id": "f391ace0-d96f-4878-a544-ff577cdebec6",
+      "categoryId": "1142adc7-c366-462b-876c-91cffd8f2c9e",
+      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
       "persisted": {
         "present": true,
         "currency": "USD",
-        "planned": "US$ 1.234,56 USD"
+        "planned": "US$ 1.234,56"
       }
     },
     "editing": {
-      "id": "f391ace0-d96f-4878-a544-ff577cdebec6",
+      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
       "persisted": {
         "present": true,
-        "planned": "US$ 2.345,67 USD",
+        "planned": "US$ 2.345,67",
         "currency": "USD"
       }
     },
@@ -117,7 +335,7 @@
       "errorVisible": true,
       "buttonEnabled": true,
       "dialogOpen": true,
-      "retainedValue": "2345,67",
+      "retainedValue": "2.345,67",
       "url": "?currency=USD&status=active"
     }
   }

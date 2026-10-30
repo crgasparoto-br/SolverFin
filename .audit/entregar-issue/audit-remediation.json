@@ -3,12 +3,12 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "candidate_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:solverfin-751-7b756949-20261029-001",
-    "audit_report_sha256": "b71fc44fdbba0a1e360aeaf20d095e668b1fd184689f6575fc9c6f2444fb5dce",
-    "audited_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342"
+    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
+    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
+    "audited_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
   },
   "items": [
     {
@@ -18,18 +18,19 @@
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/specification-snapshot.json",
         ".audit/entregar-issue/requirement-closure.json",
         ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/codebase-grounding.json",
+        ".audit/entregar-issue/code-growth.json",
         ".audit/entregar-issue/handoff-ready.json"
       ],
       "evidence": [
-        "Official delivery_target_binding.py against base 9265025a21c39528131f3319943d0125c5cf9538 classified inherited-base-artifact and reuse_allowed=false; new fresh issue #725 source/closure and exact head evidence reconstructed.",
-        "Exact budget-page/Chrome jobs remain green at unchanged material HEAD 7b7569493277a19b41eb1494b4abad9f90470342; no material modification or forced update."
+        "Old certificate at material HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 is rejected by official validate_handoff_certificate.py (negative witness evidence/issue-725-stale-certificate-negative.txt).",
+        "Current exact-source material from official GitHub Actions bundle run 40961594675; Chrome artifact 12936747808 with sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef; exact CI 40961594685 and Chrome 40961594720 succeeded.",
+        "New phase-reviewed OBL-012 binds exact passed pre-handoff tests to source issue and preserves separate independent review requirement."
       ],
       "validations": [
-        "Official Skill validate_specification_coverage.py and validate_standard_evidence.py on current source; exact GitHub CI https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637 and Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668.",
-        "Official build_handoff_certificate.py, validate_handoff_certificate.py, validate_terminal_handoff.py for result-only child; proofs must be run before publication."
+        "Official validators on exact HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683: check_code_growth.py, validate_specification_coverage.py, validate_standard_evidence.py, validate_codebase_grounding.py, validate_handoff_readiness.py, build_handoff_certificate.py, validate_handoff_certificate.py, and validate_terminal_handoff.py (to be executed before remote publication)."
       ]
     }
   ]

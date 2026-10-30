@@ -1,7 +1,7 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin-751/handoff-draft/specification-snapshot.json",
+    "path": ".audit/entregar-issue/specification-snapshot.json",
     "sha256": "01318656024d722128c8e2af91352f7dc35202d88708c7abe0de8b22f48003b1"
   },
   "primary_issue_source_id": "SRC-ISSUE",
@@ -163,7 +163,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Exact Chrome run 40882125668 artifact 12900314848 proves 1366×768, 390×844, 320×740, long list>=10, BRL/USD, filter empty, creation/editing/error, reversible negative controls. Screenshots internally inspected."
+      "rationale": "Exact Chrome run 40961594720 artifact 12936747808 proves 1366×768, 390×844, 320×740, long list>=10, BRL/USD, filter empty, creation/editing/error, reversible negative controls. Screenshots internally inspected. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
     },
     {
       "id": "OBL-009",
@@ -182,7 +182,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Financial decision precedes inventory, explicit money and status per currency, selected filter state and no-results message persisted across SSR."
+      "rationale": "Financial decision precedes inventory, explicit money and status per currency, selected filter state and no-results message persisted across SSR. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
     },
     {
       "id": "OBL-010",
@@ -202,7 +202,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Money values/status are sourced from budgets-view-model and validated API usage; null stays unavailable; no BRL/USD mix/sum and no synthetic zero. SSR tests covered mismatched usage."
+      "rationale": "Money values/status are sourced from budgets-view-model and validated API usage; null stays unavailable; no BRL/USD mix/sum and no synthetic zero. SSR tests covered mismatched usage. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
     },
     {
       "id": "OBL-011",
@@ -219,7 +219,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Chrome pilot deliberately moves auxiliary section ahead and clips currency/amount; both mutations rejected, both reversions restored; raw report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d."
+      "rationale": "Chrome pilot deliberately moves auxiliary section ahead and clips currency/amount; both mutations rejected, both reversions restored; raw report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
     },
     {
       "id": "OBL-012",
@@ -233,8 +233,18 @@
       "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "CI and Chrome exact material SHA are terminal green; independent approval must follow the new current-target certificate in a distinct review context and is not claimed by the implementer."
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE",
+        "decision_source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+        "target_issue": 725,
+        "parent_issue_must_remain_open": true,
+        "decision_locator": "parecer visual/técnico independente.",
+        "pre_handoff_coverage": {
+          "covered_text": "[ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e",
+          "rationale": "Current material HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 has exact GitHub CI 40961594685 with 21 budget page and 6 view model tests passed, plus Chrome 40961594720 including 3 requested viewports and CRUD persistence. Only the independent audit is deferred."
+        }
+      },
+      "rationale": "The issue itself requires independent review after exact-SHA CI/Chrome. Those pre-handoff gates are green, and issue #725 stays open until a separate reviewer approves the final certified material. This deferred phase is not represented as an approval."
     }
   ],
   "source_coverage": [
@@ -321,7 +331,7 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "Source comparison to docs/DESIGN_SYSTEM.md and docs/SCREEN_ARCHETYPES.md, plus changed docs/API_BUDGETS_GOALS_ALERTS.md and docs/VISUAL_VALIDATION.md on 7b7569493277a19b41eb1494b4abad9f90470342"
+      "Source comparison to docs/DESIGN_SYSTEM.md and docs/SCREEN_ARCHETYPES.md, plus changed docs/API_BUDGETS_GOALS_ALERTS.md and docs/VISUAL_VALIDATION.md on cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
     ]
   },
   "scope_reduction_review": {
@@ -368,8 +378,8 @@
     ],
     "evidence": [
       "12 candidate obligations rederived from exact GitHub issue #725 source; independent review obligation OBL-012 explicitly deferred, not producer-approved.",
-      "Git exact base 9265025a21c39528131f3319943d0125c5cf9538..7b7569493277a19b41eb1494b4abad9f90470342 6 presentation-only paths; no API/database or new financial derivation.",
-      "Repository CI 40882125637 critical tests 10/10 budget-page and full suite green; Chrome 40882125668 artifact 12900314848 with multi-currency, long list, 3 sizes, persistent CRUD and reversible negative controls.",
+      "Git exact base 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 6 presentation-only paths; no API/database or new financial derivation.",
+      "Repository CI 40961594685 critical tests 10/10 budget-page and full suite green; Chrome 40961594720 artifact 12936747808 with multi-currency, long list, 3 sizes, persistent CRUD and reversible negative controls.",
       "Historical Chrome baseline run 40811518620 predates PR creation and same Git blob; not represented as pre-edit inspection by current implementer."
     ],
     "rederived_without_pr_description": true,

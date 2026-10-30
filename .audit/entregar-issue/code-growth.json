@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
   "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "comparison_base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "policy": {
@@ -19,19 +19,64 @@
   },
   "files": [
     {
+      "path": "apps/web/src/design-system/money.ts",
+      "lines_before": 51,
+      "lines_after": 58
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+      "lines_before": null,
+      "lines_after": 143
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-filters.ts",
+      "lines_before": null,
+      "lines_after": 66
+    },
+    {
       "path": "apps/web/src/dev-server/budgets-focus.ts",
       "lines_before": null,
-      "lines_after": 152
+      "lines_after": 155
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-form.ts",
+      "lines_before": null,
+      "lines_after": 123
     },
     {
       "path": "apps/web/src/dev-server/budgets-page.ts",
       "lines_before": 641,
-      "lines_after": 652
+      "lines_after": 497
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-table.ts",
+      "lines_before": null,
+      "lines_after": 193
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-view-model.ts",
+      "lines_before": 331,
+      "lines_after": 371
     },
     {
       "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "lines_before": 102,
-      "lines_after": 437
+      "lines_after": 455
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
+      "lines_before": null,
+      "lines_after": 297
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",
+      "lines_before": null,
+      "lines_after": 95
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-menu-checks.mjs",
+      "lines_before": null,
+      "lines_after": 131
     }
   ],
   "blocking_files": []

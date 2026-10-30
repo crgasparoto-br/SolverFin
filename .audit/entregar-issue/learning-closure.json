@@ -3,15 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:solverfin-751-7b756949-20261029-001",
+    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
     "finding_ids": [
       "A-002"
     ],
-    "audit_report_sha256": "b71fc44fdbba0a1e360aeaf20d095e668b1fd184689f6575fc9c6f2444fb5dce"
+    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The independent review found a specific repeated application of existing inherited-base-artifact binding and terminal handoff gates; the official Skill already rejects foreign artifacts, so no new global rule is justified."
+    "reason": "The exact-head post-write refreeze guard and existing Skill already reject stale certificates; defect is a specific missed terminal refresh after additional feature commits. No new generic rule should be introduced."
   },
   "skill_changes": []
 }

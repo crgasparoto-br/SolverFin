@@ -1,28 +1,58 @@
 {
   "schema_version": 1,
-  "subject_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
-  "source": "GitHub Actions Statement visual validation, exact material SHA",
-  "run_id": 40882125668,
-  "artifact_id": 12900314848,
-  "artifact_name": "statement-visual-evidence-7b7569493277a19b41eb1494b4abad9f90470342",
+  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "source": "GitHub Actions Statement visual validation, exact material SHA and browser artifact",
+  "run_id": 40961594720,
+  "job_id": 123755619317,
+  "artifact_id": 12936747808,
+  "artifact_name": "statement-visual-evidence-cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
   "report_file": "issue-606-budgets-pilot.json",
-  "report_sha256": "47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d",
-  "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+  "report_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
+  "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40961594720",
   "screenshot_sha256": {
-    "issue-606-budgets-compact-mobile.png": "d6490f3eff30a79f79ab11114fbcda711e226982e27a28b12faf4a74f82c7764",
-    "issue-606-budgets-desktop.png": "2565466e43f7580fc0442031208081fdeaf06315be14451a27e36507db9f91e2",
-    "issue-606-budgets-empty-1366.png": "6a4f362e586fba6b4a2fa250754028b46001d3027f984e6525694ba62142caa4",
-    "issue-606-budgets-empty-390.png": "f32d3329514547531f534e270edc8003825a81f8a3ce79c9d229948c34943076",
-    "issue-606-budgets-mobile.png": "faa731697232cebc4e73e146b75343d84ccc74136f66049ee7cc42b3ec723a4b",
-    "issue-725-budgets-created-desktop.png": "42060fc3baafb7b2c877dd2d1cb1e0fd294c8f6c39be7a127d40be4d01b9900e",
-    "issue-725-budgets-edit-desktop.png": "1ab7530801e727facc02bf982b18179a215888a45280c2e4a05dc825f5aa9871",
-    "issue-725-budgets-edited-desktop.png": "1f45fbd6e539c587892bbea9e787af9f5e42c7b937b7b67e9e3a0945d868aee0",
-    "issue-725-budgets-error-retry-desktop.png": "7a3c6eeec2369d6030a11a86a12052b19c9b83fd5fc9c640599dd13f1429f0ea",
-    "issue-725-budgets-filter-empty-compact.png": "c89984e791e8a56d9197b436e0c5e91ac816918006d80e56298c6564504a34d7",
-    "issue-725-budgets-filter-usd-mobile.png": "2cd3daa15c58ea36184b603169d3b73efdf9a96f4758172c1184a10c2db3cff9",
-    "issue-725-budgets-two-currencies-desktop.png": "eb76d84d3dd018faf2d2aeb6b96b3e25942e7ac3d218b2e36849ec2372ad9281"
+    "issue-606-budgets-compact-mobile.png": "598129947e6ab61a429e7245f1f9c77b890923a893b0e05a2d537a9409b389a0",
+    "issue-606-budgets-desktop.png": "fb0792df442d4442f9f978aaa8dcfff5d7f352566dc9862a19a6da436f92232d",
+    "issue-606-budgets-empty-1366.png": "54a05ab5317ecbc36961a1bd2e812c7ee2af5193a47e24dd839578eb496d4de1",
+    "issue-606-budgets-empty-390.png": "8cf94325b60e3eaece0e9565bf971e1c098265ec9abaec1926e6bdc3e12e8276",
+    "issue-606-budgets-mobile.png": "30599ed5c1ba2f776a20f94133e67f41d60df0c2b05f095d7f8c9594376ca2ef",
+    "issue-606-budgets-wide-desktop.png": "601f12041952bfc087aa8d921824a07ec90ebfffec8e5a25fc894143921b454e",
+    "issue-725-budget-actions-compact-mobile.png": "ec8c22c8c6c0ea13544cf7cf7205cea550bca7acd9905cce3c35f8f654ee91e5",
+    "issue-725-budget-actions-desktop.png": "4b34ad2e4cbe287a827a9ff129c6b23c3647062154c966de7661b25a164875df",
+    "issue-725-budget-actions-mobile.png": "939bdb1a2cdfc1b1dd126f66b0acd7e6a65767f69921c8131ed9cfd8eb457b92",
+    "issue-725-budget-create-dialog-compact-mobile.png": "d8e2aa4209269930f4ff4dd4cfc851f2b70b558d99c72ab504d2cc5fffea994d",
+    "issue-725-budget-create-dialog-desktop.png": "3bbdad0b2029fd68438021fe71c6966c2a663de699c58aa889e7f6376ed9be01",
+    "issue-725-budget-create-dialog-mobile.png": "28ebd1cb2646f1b1ec0a30281ccffab1d77f77ebe2d6cc5069a1ce3df022bfe1",
+    "issue-725-budgets-created-desktop.png": "22cc5a87062d061714ce98811a9d45787cc60488be90d22d53cd7c31b288cd6e",
+    "issue-725-budgets-edited-desktop.png": "6994faf834256ac4c1a5345776a786bde13ba5cc9113db05fc49448ed17a5ccd",
+    "issue-725-budgets-error-retry-desktop.png": "b54144d9f89875fbedcbd19eb4b79af3d93a3ec94ec0725302e2641ddf2cd399",
+    "issue-725-budgets-filter-empty-compact.png": "b53159dfddd841044182324ad2c69164ea7fec4f267fcbdf54cf33d2c5f45423",
+    "issue-725-budgets-filter-usd-mobile.png": "4dab0c275605ad51c09fb81f0b1fd8c7a219ed4524227ccea5ed45ba58121c8e",
+    "issue-725-budgets-menu-layer-desktop.png": "de1f09d3afdbdec1c53c43c400eef1ab05a98381f433a3c70c944acd6ec3cf91",
+    "issue-725-budgets-period-selected-desktop.png": "da5ea2ba7fc732f9bc4e5f88a203d883eafcc932e598a6dfc0150504fc617990",
+    "issue-725-budgets-two-currencies-desktop.png": "b2b9a657704b63bb926c1cebb95c6e1d36ccf93133126b14e8ec268855bef8ea"
   },
   "observed_scenarios": [
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "1440x900",
+      "screenshot": "issue-606-budgets-wide-desktop.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
+        "pathname": "/orcamentos",
+        "viewportWidth": 1440,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 1425
+      }
+    },
     {
       "route": "/orcamentos",
       "state": "normal",
@@ -32,6 +62,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
         "pathname": "/orcamentos",
         "viewportWidth": 1366,
         "documentFits": true,
@@ -50,6 +83,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
         "pathname": "/orcamentos",
         "viewportWidth": 390,
         "documentFits": true,
@@ -68,6 +104,9 @@
         "hierarchyValid": true,
         "decisionLabelsVisible": true,
         "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
         "pathname": "/orcamentos",
         "viewportWidth": 320,
         "documentFits": true,
@@ -81,11 +120,22 @@
   "observed_acceptance": {
     "fixtureCurrency": "USD",
     "mixed": {
-      "rows": 12,
+      "rows": 11,
+      "historyCount": 1,
+      "uniqueCategories": true,
       "currencies": [
         "",
         "BRL",
-        "USD"
+        "USD",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR"
       ],
       "focused": [
         "BRL",
@@ -98,32 +148,37 @@
       "focused": [
         "USD"
       ],
-      "documentFits": true
+      "documentFits": true,
+      "activeFiltersExpanded": true
     },
     "empty": {
       "currency": "EUR",
       "message": true,
       "focusCount": 0,
-      "documentFits": true
+      "documentFits": true,
+      "activeFiltersExpanded": true
     },
     "dialogs": {
       "createOpen": true,
-      "editOpen": true
+      "editOpen": true,
+      "neutralCancel": true,
+      "createCanceled": true,
+      "editCanceled": true
     },
     "creation": {
-      "categoryId": "ef97d3ac-f9da-4e5f-8b31-8dd348f39143",
-      "id": "f391ace0-d96f-4878-a544-ff577cdebec6",
+      "categoryId": "1142adc7-c366-462b-876c-91cffd8f2c9e",
+      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
       "persisted": {
         "present": true,
         "currency": "USD",
-        "planned": "US$ 1.234,56 USD"
+        "planned": "US$ 1.234,56"
       }
     },
     "editing": {
-      "id": "f391ace0-d96f-4878-a544-ff577cdebec6",
+      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
       "persisted": {
         "present": true,
-        "planned": "US$ 2.345,67 USD",
+        "planned": "US$ 2.345,67",
         "currency": "USD"
       }
     },
@@ -131,7 +186,7 @@
       "errorVisible": true,
       "buttonEnabled": true,
       "dialogOpen": true,
-      "retainedValue": "2345,67",
+      "retainedValue": "2.345,67",
       "url": "?currency=USD&status=active"
     }
   },
@@ -139,8 +194,180 @@
     "hierarchyRejected": true,
     "hierarchyRestored": true,
     "clippedValueRejected": true,
-    "clippedValueRestored": true
+    "clippedValueRestored": true,
+    "brokenNumberRejected": true,
+    "brokenNumberRestored": true,
+    "trailingCodeRejected": true,
+    "trailingCodeRestored": true
   },
-  "inspection_scope": "Internal producer-side inspection; screenshots inspected for hierarchy, text, mobile 320px, currency labels; NOT an independent visual approval.",
-  "known_historical_limitation": "Authenticated Chrome before edits was not observed by implementer; prior run 40811518620 predates PR #751 and matches original budgets-page blob, but retrospective inspection is not equivalent to the procedural pre-edit gate."
+  "observed_menu_layering": {
+    "opened": true,
+    "upperZ": 3,
+    "lowerZ": 1,
+    "overlapsNextTrigger": true,
+    "menuAboveTrigger": true,
+    "negativeOccluded": true,
+    "contained": true
+  },
+  "observed_category_prefill": {
+    "found": true,
+    "selected": true,
+    "reset": true
+  },
+  "observed_selected_period": {
+    "selected": "2028-04-01:2028-04-30",
+    "active": true,
+    "context": true
+  },
+  "observed_golden_dialogs": [
+    {
+      "viewport": "1366x768",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 692.015625,
+          "y": 518.09375,
+          "width": 127.640625,
+          "height": 44
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "390x844",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 639.09375,
+          "width": 158.5,
+          "height": 44
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "320x740",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 576.59375,
+          "width": 123.5,
+          "height": 65
+        }
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    }
+  ],
+  "inspection_scope": "Producer verified artifact JSON, PNG file digests and source code in material checkout. Final independent visual inspection is still required.",
+  "known_historical_limitation": "The implementer did not inspect authenticated Chrome before original edits. Run 40811518620 predates PR 751 and matches the base blob; this remains a historical limitation rather than a claim of real pre-edit inspection."
 }

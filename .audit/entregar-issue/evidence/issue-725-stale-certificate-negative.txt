@@ -1,0 +1,5 @@
+VALIDATOR_EXIT_CODE: 2
+BLOCK: result-only child parent differs from certified material_head_sha
+BLOCK: result-only child validation requires candidate changed paths
+BLOCK: invalid deferred completion evidence: deferred obligation OBL-012 lacks verified parent-issue decision
+RECOVERY: post-write-refreeze
