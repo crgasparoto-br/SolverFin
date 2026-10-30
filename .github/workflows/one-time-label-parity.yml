@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 10
     env:
       GH_TOKEN: ${{ github.token }}
-      MODE: dry-run
+      MODE: apply
     steps:
       - name: Compare source and destination label catalogs
         shell: bash
@@ -90,11 +90,20 @@ jobs:
           change = [(target_by_key[label_key(label)], label) for label in desired
                     if label_key(label) in target_by_key and target_by_key[label_key(label)] != label]
           remove = [label for label in actual if label_key(label) not in source_by_key]
+          # Preserve existing "ai-ready" associations via a semantically matching rename.
+          rename_ai_ready = (
+              "ai-ready" in target_by_key
+              and "ready-for-agent" in source_by_key
+              and "ready-for-agent" not in target_by_key
+          )
+          if rename_ai_ready:
+              add = [label for label in add if label_key(label) != "ready-for-agent"]
+              remove = [label for label in remove if label_key(label) != "ai-ready"]
           occurrences = collections.Counter()
-          if remove:
-              for issue in paginate("/repos/" + target + "/issues?state=all"):
-                  for label in issue["labels"]:
-                      occurrences[label["name"].casefold()] += 1
+          issues = paginate("/repos/" + target + "/issues?state=all")
+          for issue in issues:
+              for label in issue["labels"]:
+                  occurrences[label["name"].casefold()] += 1
 
           report = {
               "mode": mode,
@@ -103,13 +112,36 @@ jobs:
               "source_count": len(desired),
               "target_before": len(actual),
               "create": add,
+              "rename": [{"before": target_by_key["ai-ready"],
+                          "after": source_by_key["ready-for-agent"],
+                          "issue_or_pr_uses": occurrences["ai-ready"]}] if rename_ai_ready else [],
               "update": [{"before": before, "after": after} for before, after in change],
               "remove": [{"label": label, "issue_or_pr_uses": occurrences[label_key(label)]}
                          for label in remove],
           }
           print("LABEL_SYNC_PLAN=" + json.dumps(report, ensure_ascii=False, sort_keys=True))
 
+          # Backup has both catalog definitions and each issue/PR's label assignments.
+          with open("labels-backup.json", "w", encoding="utf-8") as backup_file:
+              json.dump({
+                  "source": source, "target": target,
+                  "source_catalog": desired, "target_catalog_before": actual,
+                  "assignments_before": [
+                      {"number": issue["number"],
+                       "is_pr": bool(issue.get("pull_request")),
+                       "labels": [label["name"] for label in issue["labels"]]}
+                      for issue in issues
+                  ],
+                  "plan": report,
+              }, backup_file, ensure_ascii=False, indent=2)
+
           if mode == "apply":
+              if rename_ai_ready:
+                  new = source_by_key["ready-for-agent"]
+                  api("PATCH", "/repos/" + target + "/labels/" +
+                      urllib.parse.quote(target_by_key["ai-ready"]["name"], safe=""),
+                      {"new_name": new["name"], "color": new["color"],
+                       "description": new["description"]})
               for label in add:
                   api("POST", "/repos/" + target + "/labels", label)
               for old, new in change:
@@ -130,8 +162,17 @@ jobs:
                   output.write("## Label parity: " + mode + "\n")
                   output.write("Source: " + source + " (" + str(len(desired)) + " labels)\n\n")
                   output.write("Target before: " + str(len(actual)) + " labels\n\n")
-                  output.write("Create: " + str(len(add)) + "; update: " + str(len(change)) +
+                  output.write("Create: " + str(len(add)) + "; rename: " + str(int(rename_ai_ready)) +
+                               "; update: " + str(len(change)) +
                                "; remove: " + str(len(remove)) + "\n\n")
                   output.write("Exact verification: " +
                                ("passed" if mode == "apply" else "not applied (dry-run)") + "\n")
           PY
+      - name: Preserve original label catalog and assignments
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: solverfin-labels-backup-before-parity
+          path: labels-backup.json
+          if-no-files-found: error
+          retention-days: 90
