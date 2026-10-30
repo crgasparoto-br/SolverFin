@@ -1,0 +1,137 @@
+name: One-time label parity for SolverFin
+
+on:
+  push:
+    branches:
+      - chore/sync-labels-controle-calorias-20261030
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  mirror-labels:
+    if: github.repository == 'crgasparoto-br/SolverFin'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ github.token }}
+      MODE: dry-run
+    steps:
+      - name: Compare source and destination label catalogs
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import collections
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.parse
+          import urllib.request
+
+          source = "crgasparoto-br/controle_calorias"
+          target = "crgasparoto-br/SolverFin"
+          mode = os.environ["MODE"]
+          assert mode in ("dry-run", "apply")
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": "Bearer " + os.environ["GH_TOKEN"],
+              "X-GitHub-Api-Version": "2022-11-28",
+              "User-Agent": "solverfin-label-parity",
+          }
+
+          def api(method, path, payload=None):
+              body = None if payload is None else json.dumps(payload).encode("utf-8")
+              request = urllib.request.Request(
+                  "https://api.github.com" + path,
+                  headers=headers,
+                  method=method,
+                  data=body,
+              )
+              if body is not None:
+                  request.add_header("Content-Type", "application/json")
+              try:
+                  with urllib.request.urlopen(request, timeout=30) as response:
+                      raw = response.read()
+                      return json.loads(raw) if raw else None
+              except urllib.error.HTTPError as error:
+                  print("GitHub API error:", method, path, error.code, error.read().decode()[:500])
+                  raise
+
+          def paginate(path):
+              result = []
+              for page in range(1, 50):
+                  separator = "&" if "?" in path else "?"
+                  batch = api("GET", path + separator + "per_page=100&page=" + str(page))
+                  result.extend(batch)
+                  if len(batch) < 100:
+                      return result
+              raise RuntimeError("Pagination cap reached; refusing partial synchronization")
+
+          def label_key(label):
+              return label["name"].casefold()
+
+          def label_attributes(label):
+              return {
+                  "name": label["name"],
+                  "color": label["color"].lower(),
+                  "description": label.get("description") or "",
+              }
+
+          desired = [label_attributes(label) for label in paginate("/repos/" + source + "/labels")]
+          actual = [label_attributes(label) for label in paginate("/repos/" + target + "/labels")]
+          source_by_key = {label_key(label): label for label in desired}
+          target_by_key = {label_key(label): label for label in actual}
+          if len(source_by_key) != len(desired) or len(target_by_key) != len(actual):
+              raise RuntimeError("Duplicate case-folded label names; refusing ambiguous update")
+
+          add = [label for label in desired if label_key(label) not in target_by_key]
+          change = [(target_by_key[label_key(label)], label) for label in desired
+                    if label_key(label) in target_by_key and target_by_key[label_key(label)] != label]
+          remove = [label for label in actual if label_key(label) not in source_by_key]
+          occurrences = collections.Counter()
+          if remove:
+              for issue in paginate("/repos/" + target + "/issues?state=all"):
+                  for label in issue["labels"]:
+                      occurrences[label["name"].casefold()] += 1
+
+          report = {
+              "mode": mode,
+              "source": source,
+              "target": target,
+              "source_count": len(desired),
+              "target_before": len(actual),
+              "create": add,
+              "update": [{"before": before, "after": after} for before, after in change],
+              "remove": [{"label": label, "issue_or_pr_uses": occurrences[label_key(label)]}
+                         for label in remove],
+          }
+          print("LABEL_SYNC_PLAN=" + json.dumps(report, ensure_ascii=False, sort_keys=True))
+
+          if mode == "apply":
+              for label in add:
+                  api("POST", "/repos/" + target + "/labels", label)
+              for old, new in change:
+                  api("PATCH", "/repos/" + target + "/labels/" + urllib.parse.quote(old["name"], safe=""),
+                      {"new_name": new["name"], "color": new["color"], "description": new["description"]})
+              for label in remove:
+                  api("DELETE", "/repos/" + target + "/labels/" + urllib.parse.quote(label["name"], safe=""))
+              verified = [label_attributes(label) for label in paginate("/repos/" + target + "/labels")]
+              if sorted(verified, key=lambda v: v["name"]) != sorted(desired, key=lambda v: v["name"]):
+                  print("VERIFICATION FAILED", json.dumps(verified, ensure_ascii=False))
+                  sys.exit(1)
+              print("LABEL_SYNC_VERIFIED=true")
+          else:
+              print("DRY_RUN_COMPLETE=true")
+          summary = os.environ.get("GITHUB_STEP_SUMMARY")
+          if summary:
+              with open(summary, "a", encoding="utf8") as output:
+                  output.write("## Label parity: " + mode + "\n")
+                  output.write("Source: " + source + " (" + str(len(desired)) + " labels)\n\n")
+                  output.write("Target before: " + str(len(actual)) + " labels\n\n")
+                  output.write("Create: " + str(len(add)) + "; update: " + str(len(change)) +
+                               "; remove: " + str(len(remove)) + "\n\n")
+                  output.write("Exact verification: " +
+                               ("passed" if mode == "apply" else "not applied (dry-run)") + "\n")
+          PY
