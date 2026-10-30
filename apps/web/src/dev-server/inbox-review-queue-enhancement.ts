@@ -256,6 +256,65 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (reasons) body += '<details><summary>Por que esta sugestão?</summary><ul>' + reasons + '</ul></details>';
           return body;
         }
+        function invalidateSelection(message) {
+          selectionGeneration += 1;
+          if (!selected) return;
+          selected.dataset.reviewEvidenceState = "unavailable";
+          selected.innerHTML = '<div class="review-selected-error"><p class="error" role="alert">' + escapeHtml(message) + '</p>' +
+            '<button type="button" class="secondary-button" data-review-evidence-retry>Tentar novamente</button></div>';
+          selected.querySelector("[data-review-evidence-retry]")?.addEventListener("click", () => {
+            if (state.selectedId) renderSelected();
+            else loadQueue();
+          });
+        }
+        async function renderSelected() {
+          const generation = ++selectionGeneration;
+          if (!selected) return;
+          const id = state.selectedId;
+          const item = state.items.find((entry) => entry.id === id);
+          if (!id || !item) {
+            selected.dataset.reviewEvidenceState = "empty";
+            selected.innerHTML = '<p class="muted small-note" role="status">Nenhuma sugestão selecionada. A fila pode estar vazia ou filtrada.</p>';
+            return;
+          }
+          selected.dataset.reviewEvidenceState = "loading";
+          selected.innerHTML = '<p class="muted small-note" role="status">Consultando a origem e a evidência atual da sugestão...</p>';
+          try {
+            const detail = await detailFor(id, true);
+            if (generation !== selectionGeneration || state.selectedId !== id) return;
+            if (!detail?.payload || typeof detail.payload.fingerprint !== "string" || !detail.payload.fingerprint || !detail.payload.suggestionKind) {
+              throw new Error("A evidência atual não está completa. Não é possível decidir.");
+            }
+            const pending = item.status === "pending_review";
+            const editable = pending && (item.kind === "transaction_extraction" || item.kind === "categorization");
+            const buttons = '<button type="button" class="secondary-button" data-review-details="' + escapeHtml(id) + '">Ver detalhes</button>' +
+              (editable ? '<button type="button" class="secondary-button" data-review-edit="' + escapeHtml(id) + '" data-review-kind="' + escapeHtml(item.kind) + '">Editar</button>' : "") +
+              (pending ? '<button type="button" data-review-approve="' + escapeHtml(id) + '">Aprovar</button>' +
+                '<button type="button" class="secondary-button danger-action" data-review-reject="' + escapeHtml(id) + '">Rejeitar</button>' : "");
+            const confidence = Math.round(Number(item.confidence) * 100);
+            const risk = item.risk === "low_confidence" ? "Baixa confiança" : item.risk === "normal" ? "Regular" : item.risk === "high" ? "Elevado" : "Não informado";
+            selected.dataset.reviewEvidenceState = "ready";
+            selected.innerHTML = '<div class="review-selected-context">' +
+              '<strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
+              '<p class="review-evidence-meta">Estado: ' + escapeHtml(formatStatus(item.status)) +
+              ' · Origem: ' + escapeHtml(formatOrigin(item.origin)) +
+              ' · Confiança: ' + escapeHtml(confidence) + '% · Risco: ' + escapeHtml(risk) + '</p>' +
+              '<p>' + escapeHtml(item.maskedSummary) + '</p>' +
+              '<p class="muted small-note">' + escapeHtml(item.explanation) + '</p></div>' +
+              '<section data-review-evidence="ready" aria-label="Evidência verificada da sugestão">' +
+                '<h3>Origem e evidências da decisão</h3>' + detailHtml(detail) + '</section>' +
+              '<div class="review-decision-actions" aria-label="Ações da sugestão selecionada">' + buttons + '</div>' +
+              (pending ? '<p class="muted small-note">Confira as evidências acima. A confirmação será solicitada antes de qualquer efeito.</p>' : '<p class="muted small-note">Esta sugestão não está mais pendente e não admite nova decisão.</p>') +
+              '<p class="form-status muted" data-review-row-status aria-live="polite"></p>';
+            selected.querySelector("[data-review-details]")?.addEventListener("click", (event) => openDetails(id, event.currentTarget));
+            selected.querySelector("[data-review-edit]")?.addEventListener("click", (event) => openEdit(id, event.currentTarget));
+            selected.querySelector("[data-review-approve]")?.addEventListener("click", (event) => decide(id, "approve", event.currentTarget));
+            selected.querySelector("[data-review-reject]")?.addEventListener("click", (event) => decide(id, "reject", event.currentTarget));
+          } catch (error) {
+            if (generation !== selectionGeneration || state.selectedId !== id) return;
+            invalidateSelection("Evidência indisponível ou desatualizada. Decisão bloqueada. " + errorMessage(error));
+          }
+        }
         async function openDetails(id, trigger) {
           state.trigger = trigger;
           dialogBody.innerHTML = '<p class="muted" role="status">Carregando detalhes...</p>';
