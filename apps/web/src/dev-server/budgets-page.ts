@@ -367,6 +367,16 @@ ${renderBudgetActionMenuStyles()}
       .budget-results .sf-table td[data-column="planned"],
       .budget-results .sf-table td[data-column="realized"],
       .budget-results .sf-table td[data-column="available"] { font-size: 1rem; }
+    }
+    @media (max-width: 360px) {
+      .budget-form-actions { align-items: stretch; flex-direction: column; }
+      .budget-form-actions > .sf-button {
+        flex: 0 0 auto;
+        min-width: 0;
+        overflow-wrap: normal;
+        word-break: normal;
+        width: 100%;
+      }
     }`;
 }
 

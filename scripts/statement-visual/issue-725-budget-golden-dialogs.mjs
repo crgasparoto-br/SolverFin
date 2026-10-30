@@ -54,6 +54,7 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       );
     }
     assert.ok(geometry.cancelRect?.width >= 44 && geometry.cancelRect?.height >= 40);
+    const createActions = await checkBudgetActionReadability(cdp, "new-budget-dialog", viewport);
     const fieldStates = await evaluate(
       cdp,
       `(() => {
@@ -233,15 +234,118 @@ export async function checkBudgetGoldenDialogs(cdp, baseUrl, outputDir) {
       })()`,
     );
     assert.equal(escape, true, `Budget menu Escape/focus restoration failed at ${viewport.name}`);
+
+    const editDialogId = await evaluate(
+      cdp,
+      `(() => {
+        const menu = Array.from(document.querySelectorAll('.budget-focus [data-budget-action-menu]'))
+          .find((root) => root.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]'));
+        const trigger = menu?.querySelector('[data-budget-menu-trigger]');
+        trigger?.click();
+        const edit = menu?.querySelector('[data-sf-dialog-open^="edit-budget-dialog-"]');
+        edit?.click();
+        return edit?.getAttribute('data-sf-dialog-open') ?? null;
+      })()`,
+    );
+    assert.ok(editDialogId, `Budget edit dialog missing at ${viewport.name}`);
+    const editActions = await checkBudgetActionReadability(cdp, editDialogId, viewport);
+    await screenshot(cdp, join(outputDir, `issue-725-budget-edit-dialog-${viewport.name}.png`));
+    const editCanceled = await evaluate(
+      cdp,
+      `(() => {
+        const dialog = document.getElementById(${JSON.stringify(editDialogId)});
+        const cancel = dialog?.querySelector('.budget-form-actions [data-sf-dialog-close]');
+        cancel?.click();
+        return Boolean(dialog && !dialog.open);
+      })()`,
+    );
+    assert.equal(editCanceled, true, `Budget edit cancel failed at ${viewport.name}`);
+
     goldenDialogs.push({
       viewport: `${viewport.width}x${viewport.height}`,
       geometry,
+      createActions,
+      editActions,
       fieldStates,
       modalStates,
       menuEvidence,
     });
   }
   return goldenDialogs;
+}
+
+/** A visible 44px button can still split a word across lines or clip it. */
+async function checkBudgetActionReadability(cdp, dialogId, viewport) {
+  const result = await evaluate(cdp, `(() => {
+    const dialog = document.getElementById(${JSON.stringify(dialogId)});
+    const actions = dialog?.querySelector('.budget-form-actions');
+    const buttons = Array.from(actions?.querySelectorAll('button') ?? []);
+    buttons[0]?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    function measure() {
+      return buttons.map((button) => {
+        const bounds = button.getBoundingClientRect();
+        const walker = document.createTreeWalker(button, NodeFilter.SHOW_TEXT);
+        const words = [];
+        let node;
+        while ((node = walker.nextNode())) {
+          if (node.parentElement?.closest('svg')) continue;
+          for (const match of node.textContent.matchAll(/\\p{L}+/gu)) {
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const boxes = Array.from(range.getClientRects());
+            words.push({
+              word: match[0],
+              intact: boxes.length === 1 && boxes.every((rect) =>
+                rect.left >= bounds.left - 1 && rect.right <= bounds.right + 1 &&
+                rect.top >= bounds.top - 1 && rect.bottom <= bounds.bottom + 1),
+            });
+          }
+        }
+        return {
+          label: button.textContent.trim(),
+          readable: words.length > 0 && words.every((word) => word.intact) &&
+            button.scrollWidth <= button.clientWidth + 1 && bounds.width >= 44 &&
+            bounds.height >= 44 && bounds.left >= 0 && bounds.right <= innerWidth + 1 &&
+            bounds.top >= 0 && bounds.bottom <= innerHeight + 1,
+          words,
+        };
+      });
+    }
+    const original = measure();
+    let oldLayoutRejected = null;
+    if (${viewport.width === 320}) {
+      const savedActions = actions.style.cssText;
+      const savedButtons = buttons.map((button) => button.style.cssText);
+      actions.style.flexDirection = 'row';
+      actions.style.flexWrap = 'nowrap';
+      buttons.forEach((button) => {
+        button.style.flex = '1 1 0px';
+        button.style.width = 'auto';
+        button.style.minWidth = '0';
+        button.style.overflowWrap = 'anywhere';
+      });
+      oldLayoutRejected = measure().some((button) => !button.readable);
+      actions.style.cssText = savedActions;
+      buttons.forEach((button, index) => { button.style.cssText = savedButtons[index]; });
+    }
+    return {
+      dialogOpen: dialog?.open === true,
+      labels: original.map((button) => button.label),
+      readable: original.length === 2 && original.every((button) => button.readable),
+      oldLayoutRejected,
+      restoredReadable: measure().every((button) => button.readable),
+      original,
+    };
+  })()`);
+  assert.equal(result.dialogOpen, true, `Budget ${dialogId} closed at ${viewport.name}`);
+  assert.deepEqual(result.labels, ["Cancelar", dialogId === "new-budget-dialog" ? "Criar orçamento" : "Salvar alterações"]);
+  assert.equal(result.readable, true, `Budget ${dialogId} labels broken/clipped at ${viewport.name}: ${JSON.stringify(result.original)}`);
+  if (viewport.width === 320) {
+    assert.equal(result.oldLayoutRejected, true, `Budget ${dialogId} old layout escaped at ${viewport.name}`);
+    assert.equal(result.restoredReadable, true, `Budget ${dialogId} layout not restored at ${viewport.name}`);
+  }
+  return result;
 }
 
 export async function checkBudgetDialogCancellation(cdp) {

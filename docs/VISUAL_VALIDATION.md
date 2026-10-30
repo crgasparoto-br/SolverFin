@@ -426,6 +426,7 @@ No extrato, `details.account-remuneration-audit > summary` deve receber foco e a
 - Moeda usa o catálogo `accountCurrencies` existente (BRL, USD, EUR), com BRL preselecionado na criação e manutenção explícita de uma moeda legada na edição. Não existe digitação redundante do código nem conversão automática.
 - Valor planejado usa máscara pt-BR de centavos (`1.234,56`), prefixo monetário sincronizado com a escolha da moeda e verificação de formato seguro antes do POST/PATCH. O código ISO não se repete ao final do valor.
 - Novo e editar compartilham o diálogo e os controles neutros/primários da Golden Screen, com labels, foco, Escape, cancelamento, mensagens de erro e retorno de foco. Conferir em Chrome autenticado desktop 1366×768 e mobile 390×844/320×740, incluindo categoria não selecionada, BRL→USD→EUR, digitação, valor negativo rejeitado, reedição e persistência.
+- Nos dialogs de criar e editar, os rótulos dos botões Cancelar/Criar orçamento/Salvar alterações devem permanecer legíveis em 320×740: nenhuma palavra fragmentada, corte de texto ou perda do alvo mínimo de toque. O piloto Chrome deve rejeitar a antiga distribuição comprimida em duas colunas e aprovar o layout após restaurá-lo.
 
 ### PR #751 — Menu e iconografia Golden Screen de Orçamentos
 
