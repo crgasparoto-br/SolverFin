@@ -214,6 +214,7 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
           }
         }
         function inferredReviewKind(button, suggestionId) {
+          if (button.dataset.reviewKind === "categorization" || button.dataset.reviewKind === "transaction_extraction") return button.dataset.reviewKind;
           const known = reviewKinds.get(suggestionId);
           if (known) return known;
           const label = button.closest("[data-review-id]")?.querySelector(".maintenance-summary strong")?.textContent?.trim();
