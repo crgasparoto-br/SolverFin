@@ -16,6 +16,13 @@ Extrações novas usam `TransactionExtractionSuggestionPayloadV2`; V1 continua l
 
 ## Fila unificada na Inbox
 
+### Hierarquia de revisão — Golden Screen A6 (#726)
+
+No primeiro bloco da rota `/inbox`, a lista compacta de sugestões e o detalhe do item selecionado compõem uma sequência única: **fila → evidência atual → decisão**. A listagem apresenta tipo, estado, origem, confiança, risco e resumo mascarado; a seleção não aprova nem rejeita nada. A área de detalhe consulta novamente `GET /api/ai-review-queue/:suggestionId/payload` e mostra dados estruturados, motivos e, quando aplicável, evidências numéricas, limitações e navegação do insight. Apenas itens pendentes com payload e fingerprint válidos expõem os botões de decisão. Antes do POST, o fingerprint é relido e validado novamente. Evidência indisponível, oculta ou incompleta deixa o item sem ações de decisão; erro ou conflito mantém mensagem e nova tentativa.
+
+Mensagens recebidas, insights acionáveis e importações CSV/OFX continuam com seus fluxos próprios na região auxiliar **Outras entradas e histórico**, depois do cockpit de revisão, sem competir com a decisão principal. Registrar mensagem e importar extrato continuam disponíveis no agrupador **Adicionar entrada**. Os diálogos, a confirmação humana, o perfil ativo, a edição tipada, o tratamento de conflito e os contratos financeiros/API não foram modificados. A renderização inicial do servidor não disponibiliza aprovação/rejeição antes da hidratação da evidência.
+
+
 A área **Outras sugestões** carrega a fila completa e oferece filtros por:
 
 - `kind`;
@@ -46,7 +53,7 @@ Para `insight` V2, o bloco estruturado apresenta título, resumo, período, conf
 
 ## Fila acionável de insights (#621)
 
-A Inbox apresenta a seção **Insights financeiros** (`/inbox#financial-insights`) antes de “Outras sugestões”. Ela consome `GET /api/financial-insights` e é a mesma fonte lógica usada pelo Dashboard: deduplicação por equivalência, ordenação canônica `critical > warning > info` com desempate fixo por tipo e paginação progressiva (**Mostrar mais insights**, via `?insights=N`, de 10 em 10 até 100 itens por página renderizada).
+A Inbox apresenta a seção **Insights financeiros** (`/inbox#financial-insights`) em **Outras entradas e histórico**, depois do cockpit principal de revisão. Ela consome `GET /api/financial-insights` e é a mesma fonte lógica usada pelo Dashboard: deduplicação por equivalência, ordenação canônica `critical > warning > info` com desempate fixo por tipo e paginação progressiva (**Mostrar mais insights**, via `?insights=N`, de 10 em 10 até 100 itens por página renderizada).
 
 Cada item oferece:
 
