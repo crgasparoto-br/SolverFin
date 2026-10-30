@@ -21,6 +21,7 @@ export interface InboxReviewArchetypeProps {
   suggestionsHtml: string;
   messagesHtml: string;
   evidenceHtml: string;
+  insightsHtml?: string;
   statusHtml?: string;
 }
 
@@ -30,16 +31,19 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
     title: "Inbox",
     description:
       "Revise mensagens, sugestões e importações com evidência antes de confirmar qualquer efeito financeiro.",
-    actionsHtml: props.actionsHtml,
+    actionsHtml: "",
   });
   const filterBarHtml = renderFilterBar({
     label: "Navegação da triagem",
     childrenHtml: `
       <nav class="inbox-section-nav" aria-label="Seções da Inbox">
         <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
-        <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
+        <a class="secondary-button inbox-review-nav" href="#inbox-review-secondary">Outras entradas</a>
       </nav>
-      <span class="muted small-note" role="status">Decisões continuam explícitas e dependem da evidência atual.</span>
+      <details class="inbox-new-entry-actions">
+        <summary>Adicionar entrada</summary>
+        <div class="inbox-new-entry-menu">${props.actionsHtml}</div>
+      </details>
     `,
   });
   const reviewLayoutHtml = renderDetailLayout({
@@ -53,7 +57,6 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
           <p class="muted small-note">Origem, estado e confiança permanecem visíveis em cada item.</p>
         </div>
         ${props.suggestionsHtml}
-        ${props.messagesHtml}
       </section>
     `,
     detailHtml: `
@@ -63,16 +66,31 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
             <p class="eyebrow">Evidência e decisão</p>
             <h2 id="inbox-review-detail-title">Item em revisão</h2>
           </div>
-          <p class="muted small-note">Selecione um lote ou item e confirme somente depois de revisar a evidência.</p>
+          <p class="muted small-note">A decisão só é liberada após consultar a evidência atual do item selecionado.</p>
         </div>
         ${props.statusHtml ?? ""}
-        ${props.evidenceHtml}
+        <div id="inbox-review-selected" class="inbox-review-selected" data-review-evidence-state="empty" aria-live="polite">
+          <p class="muted small-note">Selecione uma sugestão na fila para consultar sua origem, confiança, evidência e decisão.</p>
+        </div>
       </section>
     `,
   });
+  const secondaryHtml = `
+    <section id="inbox-review-secondary" class="inbox-review-secondary" aria-labelledby="inbox-review-secondary-title">
+      <div class="inbox-review-secondary-heading">
+        <h2 id="inbox-review-secondary-title">Outras entradas e histórico</h2>
+        <p class="muted small-note">Mensagens, insights e importações CSV/OFX continuam disponíveis em fluxos separados.</p>
+      </div>
+      <div class="inbox-review-secondary-content">
+        ${props.messagesHtml}
+        ${props.insightsHtml ?? ""}
+        ${props.evidenceHtml}
+      </div>
+    </section>
+  `;
   const cockpitHtml = renderPageContainer({
     className: "inbox-review-cockpit",
-    childrenHtml: `${filterBarHtml}${reviewLayoutHtml}${inboxReviewRuntimeScript()}`,
+    childrenHtml: `${filterBarHtml}${reviewLayoutHtml}${secondaryHtml}${inboxReviewRuntimeScript()}`,
   });
 
   return `<div data-inbox-review-archetype="A6">${headerHtml}${cockpitHtml}</div>`;
