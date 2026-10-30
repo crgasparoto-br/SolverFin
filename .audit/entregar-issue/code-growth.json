@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
-  "base_sha": "98cb31eef42406b09e6644067490b24bdd1bc3ba",
-  "comparison_base_sha": "98cb31eef42406b09e6644067490b24bdd1bc3ba",
+  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "comparison_base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,29 +19,65 @@
   },
   "files": [
     {
-      "path": "apps/web/src/dev-server/shared-styles.ts",
-      "lines_before": 558,
-      "lines_after": 560
+      "path": "apps/web/src/design-system/money.ts",
+      "lines_before": 51,
+      "lines_after": 58
     },
     {
-      "path": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
-      "lines_before": 126,
-      "lines_after": 142
+      "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+      "lines_before": null,
+      "lines_after": 143
     },
     {
-      "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
-      "lines_before": 15,
-      "lines_after": 16
+      "path": "apps/web/src/dev-server/budgets-filters.ts",
+      "lines_before": null,
+      "lines_after": 66
     },
     {
-      "path": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
-      "lines_before": 134,
-      "lines_after": 167
+      "path": "apps/web/src/dev-server/budgets-focus.ts",
+      "lines_before": null,
+      "lines_after": 155
     },
     {
-      "path": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
-      "lines_before": 395,
-      "lines_after": 422
+      "path": "apps/web/src/dev-server/budgets-form.ts",
+      "lines_before": null,
+      "lines_after": 123
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-page.ts",
+      "lines_before": 641,
+      "lines_after": 507
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-table.ts",
+      "lines_before": null,
+      "lines_after": 193
+    },
+    {
+      "path": "apps/web/src/dev-server/budgets-view-model.ts",
+      "lines_before": 331,
+      "lines_after": 371
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "lines_before": 102,
+      "lines_after": 455
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
+      "lines_before": null,
+      "lines_after": 419,
+      "justification": "419-line cohesive Chrome dialog harness needed to exercise create/edit/keyboard/menu interactions across 1366, 390 and 320 px, including discriminating negative reflow and restoration. The fixture reuses its shared dialog assertion helper and a single CDP session; splitting it would fragment the same scenario. Source remains under the 500-line hard cap, and production SSR budgets-page.ts shrank relative to the base."
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",
+      "lines_before": null,
+      "lines_after": 95
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-menu-checks.mjs",
+      "lines_before": null,
+      "lines_after": 131
     }
   ],
   "blocking_files": []

@@ -254,6 +254,49 @@ Coberturas representativas atuais incluem:
 
 O objetivo nao e produzir screenshot de toda combinacao. A amostra deve mudar quando rota, estado, layout, interacao, audiencia ou perfil de dados representar risco diferente.
 
+### Issue #725 — Baseline historica autenticada e remediacao (29/10/2026)
+
+A captura **anterior a primeira edicao da PR #751** ja existia no run Chrome
+[40811518620](https://github.com/crgasparoto-br/SolverFin/actions/runs/40811518620)
+(PR #744, HEAD `5028326a422167f12da21c8573f2709e939f31cd`). O artefato
+`statement-visual-evidence-5028326a422167f12da21c8573f2709e939f31cd`
+inclui `issue-606-budgets-desktop.png` (1366x768),
+`issue-606-budgets-mobile.png` (390x844) e o JSON do piloto com
+`generatedAt=2026-10-29T03:27:03.314Z`. O blob de
+`apps/web/src/dev-server/budgets-page.ts` e
+`8a2a1b515e6677d9bbd6dca866e1234a4710aa44`, **identico** na PR #744 e
+na base original da PR #751 (`develop@9265025a21c39528131f3319943d0125c5cf9538`).
+A captura desktop documenta quatro cards de contagem acima do detalhe financeiro:
+`Ativos`, `Sem orcamento`, `Sem categoria` e `Moedas`, com valores de
+planejado/realizado abaixo da primeira leitura. O run precede a abertura da
+PR #751, em `2026-10-29T11:12:57Z`, mas a interpretacao retrospectiva
+**nao implica** que a equipe implementadora tenha realizado a inspecao
+previa exigida pela issue. Essa limitacao procedimental deve permanecer
+explicita na auditoria independente.
+
+O novo piloto `/orcamentos` exige 1366x768, 390x844 e 320x740, moedas
+BRL/USD separadas, lista longa, filtro sem resultado, ordem das secoes,
+controles negativos reversiveis para hierarquia e truncamento,
+**criacao e edicao por formulario real com releitura persistida**, alem de
+falha de edicao que preserva os campos e permite correcao e nova tentativa.
+As capturas e o JSON gerados pelo Chrome no HEAD definitivo devem ser
+inspecionados; sucesso do runner isolado nao aprova qualidade visual.
+
+Na rodada de refinamento da Golden Screen da PR #751, o piloto deve cobrir tambem
+1440x900, alem de 1366x768, 390x844 e 320x740. Como cada card e linha identifica
+sua moeda, `Money` preserva o simbolo (`R$`, `US$`) e `data-currency`, mas omite
+**somente na rota de Orcamentos** o codigo ISO repetido apos cada valor;
+nenhuma outra tela perde o seu codigo. O Chrome rejeita a introducao artificial
+de um sufixo redundante e aprova sua restauracao. Os filtros secundarios podem
+ser recolhidos no mobile sem filtro ativo; filtros aplicados e selecoes continuam
+visiveis e operaveis. Novo/Editar mantem Cancelar neutro (fechamento e foco no
+acionador) e Salvar como confirmacao primaria, usando os estilos/estados
+compartilhados. Os botoes de linha reutilizam tokens sem cores hex locais.
+Esse refinamento nao corrige retroativamente a ausencia de inspecao pessoal do
+Chrome antes da primeira edicao em 29/10/2026: a ressalva historica permanece.
+A homologacao de qualidade visual ainda exige observacao das novas capturas e
+parecer independente vinculados ao novo SHA material.
+
 ## Retirada de pos-processadores HTML
 
 `legacyProcessorBaselineIds` preserva os IDs que existiam no baseline da #604. `legacyProcessorRetirementCoverage` vincula cada responsabilidade legada a pelo menos um fluxo Chrome final. O registro desse fluxo precisa declarar o mesmo ID em `legacyProcessorIds` e exigir `behavior:legacy:<id>`; o adaptador comportamental somente emite essa assertion depois de validar o criterio discriminante observado e persistido pelo fluxo no SHA corrente.
@@ -376,3 +419,17 @@ Parcelas elegiveis apresentam `adjustedInstallmentAmount` sem liberar dados prot
 ### Issue #734 — foco na memória de cálculo CDI após menu de ações
 
 No extrato, `details.account-remuneration-audit > summary` deve receber foco e alternar com Enter tanto no desktop quanto no mobile. Quando o menu de ações da mesma linha está aberto, o fluxo de teclado fecha primeiro esse menu com **Escape**, verifica o seu fechamento e então move foco para a memória de cálculo. O controle negativo continua rejeitando resumo que não receba foco e Enter que não expanda/recolha. A evidência `issue-490-account-remuneration.json` só é considerada completa se o fluxo desktop/mobile terminar, incluindo o teste do menu de ações; uma falha no caso primário mantém o caso mobile dependente reprovado, sem mascaramento.
+
+### Issue #725 — Formulário de Novo/Editar orçamento (Golden Screen)
+
+- Categoria usa seleção obrigatória explícita com caminho hierárquico completo de despesas; criação não escolhe a primeira categoria implicitamente. Edição identifica categorias arquivadas já vinculadas, mas impede sua seleção para um novo orçamento.
+- Moeda usa o catálogo `accountCurrencies` existente (BRL, USD, EUR), com BRL preselecionado na criação e manutenção explícita de uma moeda legada na edição. Não existe digitação redundante do código nem conversão automática.
+- Valor planejado usa máscara pt-BR de centavos (`1.234,56`), prefixo monetário sincronizado com a escolha da moeda e verificação de formato seguro antes do POST/PATCH. O código ISO não se repete ao final do valor.
+- Novo e editar compartilham o diálogo e os controles neutros/primários da Golden Screen, com labels, foco, Escape, cancelamento, mensagens de erro e retorno de foco. Conferir em Chrome autenticado desktop 1366×768 e mobile 390×844/320×740, incluindo categoria não selecionada, BRL→USD→EUR, digitação, valor negativo rejeitado, reedição e persistência.
+- Nos dialogs de criar e editar, os rótulos dos botões Cancelar/Criar orçamento/Salvar alterações devem permanecer legíveis em 320×740: nenhuma palavra fragmentada, corte de texto ou perda do alvo mínimo de toque. O piloto Chrome deve rejeitar a antiga distribuição comprimida em duas colunas e aprovar o layout após restaurá-lo.
+
+### PR #751 — Menu e iconografia Golden Screen de Orçamentos
+
+Em `/orcamentos`, `Novo orçamento` é a única ação primária da página. Cards de foco e linhas detalhadas compartilham o mesmo menu de três pontos com ícones semânticos: Atualizar, Editar e Arquivar (somente ativos, com confirmação). Categorias sem orçamento abrem a criação; itens sem categoria seguem para o Extrato. A composição financeira permanece acessível em coluna própria, fora do menu de manutenção.
+
+O gate Chrome de 1366×768, 390×844 e 320×740 deve provar menu visível sem corte da tabela, navegação por setas, Escape e retorno de foco ao acionador após edição, além dos fluxos POST/PATCH, erro e moeda já existentes. Status usam ícones com rótulo acessível e tooltip; apresentação não recalcula valores nem mistura moedas.

@@ -32,6 +32,23 @@ describe("Money primitive", () => {
     );
   });
 
+  it("omits the duplicate currency code in a labeled financial context without changing the value", () => {
+    for (const currency of ["BRL", "USD", "EUR"]) {
+      for (const amountMinor of [12_345, 0, null]) {
+        const result = renderMoney({ amountMinor, currency, showCurrencyCode: false });
+        assert.match(result, new RegExp(`data-currency="${currency}"`));
+        assert.doesNotMatch(result, /sf-money-currency/);
+        assert.doesNotMatch(result, /<small[^>]*>BRL|<small[^>]*>USD|<small[^>]*>EUR/);
+        if (amountMinor !== null) {
+          assert.ok(result.includes(formatMinorCurrency(amountMinor, { currency })));
+        } else {
+          assert.match(result, /data-money-availability="unavailable"/);
+          assert.doesNotMatch(result, /0,00/);
+        }
+      }
+    }
+  });
+
   it("covers positive, negative, zero and the largest safe minor-unit value", () => {
     for (const amountMinor of [12_345, -12_345, 0, Number.MAX_SAFE_INTEGER]) {
       const markup = renderMoney({ amountMinor, currency: "BRL" });
