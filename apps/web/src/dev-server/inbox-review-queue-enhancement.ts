@@ -441,8 +441,14 @@ export function enhanceInboxReviewQueue(html: string): string {
         }
         async function decide(id, action, button) {
           const card = button.closest(".inbox-review-selected");
+          const evidence = card?.querySelector('[data-review-evidence="ready"]');
+          const evidenceStyle = evidence ? window.getComputedStyle(evidence) : null;
+          const evidenceRect = evidence?.getBoundingClientRect();
           if (!card || card.dataset.reviewEvidenceState !== "ready" ||
-            !card.querySelector('[data-review-evidence="ready"]') || state.selectedId !== id) return;
+            !evidence || !evidenceRect || evidenceRect.width <= 0 || evidenceRect.height <= 0 ||
+            evidenceStyle.display === "none" || evidenceStyle.visibility === "hidden" ||
+            evidenceStyle.opacity === "0" || evidence.closest('[hidden], [aria-hidden="true"]') ||
+            state.selectedId !== id) return;
           const status = card.querySelector("[data-review-row-status]");
           if (action === "reject" && !window.confirm("Rejeitar esta sugestão?")) return;
           if (action === "approve" && !window.confirm("Aprovar esta sugestão e aplicar o efeito indicado?")) return;
