@@ -1,15 +1,28 @@
-HEAD: cec1ef84bd04fb6c7df2a8bed06bb857af8b3683
+HEAD: 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9
 COMMAND: npm run test
 EXIT_CODE: 0
 REACHED: apps/web/src/design-system/money.test.ts
 REACHED: apps/web/src/dev-server/budgets-page.test.ts
 REACHED: apps/web/src/dev-server/budgets-view-model.test.ts
 REACHED: apps/web/src/dev-server/maintenance-actions.test.ts
-RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/40961594685
-JOB_ID: 123755767220
-OBSERVED: GitHub Repository CI CRITICAL validation completed/success; npm run test completed/success in exact-head run.
-OBSERVED: budgets-page.test.js: # pass 21; # fail 0.
-OBSERVED: budgets-view-model.test.js: # pass 6; # fail 0.
-OBSERVED: design-system/money.test.js: # pass 8; # fail 0.
-OBSERVED: maintenance-actions.test.js reached in the npm run test suite; job has overall pass 0 failures.
-NOTE: This file indexes real GitHub job log records, rather than claiming to be an export of the original log.
+GITHUB_ACTIONS_RUN_ID: 41128555509
+GITHUB_ACTIONS_JOB_ID: 124313702243
+GITHUB_JOB: CRITICAL validation
+GITHUB_STEP: Run npm run test
+GITHUB_STEP_CONCLUSION: success
+EVIDENCE_SOURCE: authenticated GitHub Actions job steps API, read only
+EVIDENCE_LIMITATION: step-level success attests npm run test; raw test case output is not included in this witness
+# Verbatim excerpts from authenticated GitHub Actions CRITICAL job 124313702243, workflow run 41128555509.
+# Downloaded with GitHub fetch_workflow_job_logs; timestamped text is original runner stdout.
+2026-10-30T21:08:35.2622933Z ##[group]Run npm run format:check
+2026-10-30T21:09:58.8977213Z ##[group]Run npm run test
+2026-10-30T21:11:32.0479531Z [test] design-system/money.test.js
+2026-10-30T21:11:32.1268899Z # pass 8
+2026-10-30T21:11:32.1269241Z # fail 0
+2026-10-30T21:11:36.4494316Z [test] dev-server/budgets-page.test.js
+2026-10-30T21:11:36.7162011Z # pass 21
+2026-10-30T21:11:36.7162367Z # fail 0
+2026-10-30T21:11:36.7299642Z [test] dev-server/budgets-view-model.test.js
+2026-10-30T21:11:36.7933573Z # pass 6
+2026-10-30T21:11:36.7934033Z # fail 0
+2026-10-30T21:11:41.8964866Z [test] dev-server/maintenance-actions.test.js

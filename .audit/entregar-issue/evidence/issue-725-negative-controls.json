@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "material_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "controls": [
     {
       "id": "NC-725-BASE",
@@ -9,7 +9,7 @@
       "expected": "Classify inherited artifact as invalid for issue #725",
       "observed": "Base certificate identifies issue #724/PR #744; current target certificate identifies issue #725 but certifies old material 7b7569493277a19b41eb1494b4abad9f90470342; official validate_handoff_certificate returned exit 2 with RECOVERY post-write-refreeze at current HEAD.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-inherited-binding.json",
       "evidence_sha256": "3e7d509177ee18373a5d857a3694598914172d848276e0b84e3daae199ca4900"
     },
@@ -20,9 +20,9 @@
       "expected": "Mutated order rejected; original hierarchy accepted",
       "observed": "Current Chrome hierarchyRejected=true and hierarchyRestored=true at exact HEAD.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-CLIP",
@@ -31,9 +31,9 @@
       "expected": "Clipped value rejected; restored value readable",
       "observed": "Current Chrome negativeControls clippedValueRejected/restored, brokenNumberRejected/restored, trailingCodeRejected/restored all true.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-MULTI",
@@ -42,9 +42,9 @@
       "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
       "observed": "GitHub CI budgets-page.test.js 21/21 passed; current Chrome focus BRL+USD separate and filtered USD only.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-EMPTY",
@@ -53,20 +53,20 @@
       "expected": "Selected EUR and explicit no-results message persist",
       "observed": "Current Chrome empty EUR filter explicit no-result text, active filters expanded, no synthetic focus cards.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-PERSIST",
       "plausible_wrong_implementation": "Create/edit forms show a toast without durable API persistence",
       "procedure": "Chrome creates USD 1234.56 via POST, reloads SSR, PATCHes 2345.67, reloads and checks ID, row and amount",
       "expected": "Re-read after navigation shows same ID and updated planned amount, not a duplicate",
-      "observed": "Current Chrome creation/editing persisted across reload with stable id, USD and formatted amounts.",
+      "observed": "Chrome #41128555517, artifact 13011839149: creation and editing persisted after reload for same ID in 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 report, no duplicate budget.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-FAIL",
@@ -75,42 +75,53 @@
       "expected": "Error retained modal, value 2345,67, active URL and no persisted change",
       "observed": "Current Chrome invalid write errorVisible=true, buttonEnabled=true, dialogOpen=true, retainedValue=2.345,67 and original filtered URL.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-chrome-exact-material.json",
-      "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef"
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     },
     {
       "id": "NC-725-NOSCOPE",
       "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue",
       "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
       "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
-      "observed": "Git diff base..HEAD has 36 paths and zero modified financial backend/database files.",
+      "observed": "Git diff base..6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 has 37 paths; no financial API, database or domain sources changed.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-diff-scope.json",
-      "evidence_sha256": "cfb8281725d6863ef0946ff1a1e32779beb04fc831e2b7618f3abc383b5a38d1"
+      "evidence_sha256": "a229328b5ebea05902c9b75af4b4291c6514cb246dd3bf5f5f98de9d1a70aae9"
     },
     {
       "id": "NC-725-REGRESSION",
       "plausible_wrong_implementation": "Original tests no longer execute after helper extraction",
       "procedure": "Inspect GitHub CRITICAL job log reached tests and success, compare changed tests and retained tests",
       "expected": "All 10 page tests reached and passed on material HEAD",
-      "observed": "GitHub Repository CI CRITICAL exact HEAD passes budgets-page 21, budgets-view-model 6, money 8, and full integration/build.",
+      "observed": "Exact GitHub Actions CRITICAL validation job 124313702243 on 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 ran npm run test to completion/success; all changed test files remain present in the trusted checkout.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-budget-ssr-execution.txt",
-      "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+      "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
     },
     {
       "id": "NC-725-POST-WRITE-REFREEZE",
       "plausible_wrong_implementation": "Reuse stale valid status and old material SHA after layout changes",
       "procedure": "Run official validate_handoff_certificate.py against previous published certificate with --head-sha cec1ef84 and current base/merge preview.",
       "expected": "Validator must reject old certificate and demand post-write-refreeze.",
-      "observed": "VALIDATOR_EXIT_CODE: 2 and RECOVERY: post-write-refreeze",
+      "observed": "Previous published cec1 certificate rejected for current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9, validator exit 2; evidence/issue-725-stale-certificate-negative.txt.",
       "status": "passed",
-      "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
       "evidence_path": "evidence/issue-725-stale-certificate-negative.txt",
-      "evidence_sha256": "45c842d0187404ef31b4f4325e1093b1f918ba3c7f42bcaaa7acc5b6c52b88f7"
+      "evidence_sha256": "0ee7d2c8357d6211a015ba4e6432c0e6f9ced229d8ec4e00ef426634b408c71e"
+    },
+    {
+      "id": "NC-725-MOBILE-DIALOG-REFLOW",
+      "plausible_wrong_implementation": "Compressed 320 px two-column Cancel/Create/Edit actions split words or clip labels while buttons remain tappable",
+      "procedure": "Chrome goldenDialogs at 1366/390/320: measure Range client rects and text bounds for each word, inject original cramped horizontal layout at 320, demand rejection, restore CSS and demand readable labels.",
+      "expected": "Both create and edit dialogs readable, old cramped version rejected at 320 px, restored version readable.",
+      "observed": "At material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9, Chrome report goldenDialogs[320x740].createActions and editActions both readable=true, oldLayoutRejected=true, restoredReadable=true.",
+      "status": "passed",
+      "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "evidence_path": "evidence/issue-725-chrome-exact-material.json",
+      "evidence_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66"
     }
   ]
 }

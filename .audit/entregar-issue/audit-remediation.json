@@ -3,7 +3,7 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "candidate_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "remediation_mode": "targeted-remediation",
   "source": {
     "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
@@ -18,19 +18,29 @@
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/standard-evidence.json",
-        ".audit/entregar-issue/codebase-grounding.json",
+        ".audit/entregar-issue/audit-remediation.json",
         ".audit/entregar-issue/code-growth.json",
-        ".audit/entregar-issue/handoff-ready.json"
+        ".audit/entregar-issue/codebase-grounding.json",
+        ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
+        ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
+        ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
+        ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
+        ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
+        ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/standard-evidence.json"
       ],
       "evidence": [
-        "Old certificate at material HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 is rejected by official validate_handoff_certificate.py (negative witness evidence/issue-725-stale-certificate-negative.txt).",
-        "Current exact-source material from official GitHub Actions bundle run 40961594675; Chrome artifact 12936747808 with sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef; exact CI 40961594685 and Chrome 40961594720 succeeded.",
-        "New phase-reviewed OBL-012 binds exact passed pre-handoff tests to source issue and preserves separate independent review requirement."
+        "Previous A-002 review authentic on cec1: audit-rejection:9a084674-d4ae-457a-8495-16f51b308391; original independent review remains immutable; GitHub published cec1 handoff stale after material changes.",
+        "Current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 contains dialog A-004 fix and formatting A-005 fix; CI 41128555509 CRITICAL exact SHA success; Chrome 41128555517 exact SHA success; authenticated material Git bundle 41128555529.",
+        "Chrome artifact 13011839149 report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66; negative cramped-layout measurement for both create/edit passed in 320 px, restoration passed.",
+        "Independent review of this new material and final child is not claimed or pre-approved."
       ],
       "validations": [
-        "Official validators on exact HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683: check_code_growth.py, validate_specification_coverage.py, validate_standard_evidence.py, validate_codebase_grounding.py, validate_handoff_readiness.py, build_handoff_certificate.py, validate_handoff_certificate.py, and validate_terminal_handoff.py (to be executed before remote publication)."
+        "Stale cec1 certificate rejected at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 by official validator with exit 2; negative witness evidence/issue-725-stale-certificate-negative.txt",
+        "Exact CI 41128555509 and Chrome 41128555517 completed/success on current material SHA 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9.",
+        "New standard evidence, requirement closure, codebase grounding, code growth and terminal certificate must independently pass official preflight before publication."
       ]
     }
   ]

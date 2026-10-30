@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "creations": [
     {
@@ -253,12 +253,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "reached_tests": [
           "apps/web/src/design-system/money.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
       }
     },
     {
@@ -289,12 +289,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "reached_tests": [
           "apps/web/src/dev-server/budgets-page.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
       }
     },
     {
@@ -325,12 +325,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "reached_tests": [
           "apps/web/src/dev-server/budgets-view-model.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
       }
     },
     {
@@ -361,12 +361,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "reached_tests": [
           "apps/web/src/dev-server/maintenance-actions.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "65dcdd8e6de4986cc1aa5e3b44874ec3c5716ce5e9cb7d56255b3be2aaa2246e"
+        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
       }
     }
   ]

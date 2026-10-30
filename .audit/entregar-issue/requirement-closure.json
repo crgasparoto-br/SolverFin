@@ -244,7 +244,7 @@
           "rationale": "Current material HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 has exact GitHub CI 40961594685 with 21 budget page and 6 view model tests passed, plus Chrome 40961594720 including 3 requested viewports and CRUD persistence. Only the independent audit is deferred."
         }
       },
-      "rationale": "The issue itself requires independent review after exact-SHA CI/Chrome. Those pre-handoff gates are green, and issue #725 stays open until a separate reviewer approves the final certified material. This deferred phase is not represented as an approval."
+      "rationale": "Current exact-material GitHub Actions CI 41128555509 and Chrome 41128555517 terminal success at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Chrome artifact 13011839149 exercises 1366/390/320 px and dialogs. Independent technical/visual review remains deferred; parent issue #725 remains open."
     }
   ],
   "source_coverage": [

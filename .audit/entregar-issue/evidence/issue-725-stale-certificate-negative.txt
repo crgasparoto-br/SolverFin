@@ -1,5 +1,9 @@
-VALIDATOR_EXIT_CODE: 2
+HEAD: 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9
+NEGATIVE_CONTROL: old certificate cec1 must be rejected on material 6fe1
+COMMAND: /opt/pyvenv/bin/python3 /mnt/data/solverfin-verify-artifacts/skill/entregar-issue/scripts/validate_handoff_certificate.py --certificate /mnt/data/solverfin-verify-artifacts/solverfin/.audit/entregar-issue/handoff-ready.json --artifacts-dir /mnt/data/solverfin-verify-artifacts/solverfin/.audit/entregar-issue --head-sha 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 --base-sha 9265025a21c39528131f3319943d0125c5cf9538 --merge-preview-sha 1512489ecd6269e3861ba3e8de55a82a12af155b --repository crgasparoto-br/SolverFin --issue-number 725 --work-item-kind issue --work-item-number 725 --pull-request-number 751 --base-ref develop --head-ref feat/725-golden-budgets-cockpit
+EXPECTED_EXIT: nonzero
+EXIT_CODE: 2
+OUTPUT:
 BLOCK: result-only child parent differs from certified material_head_sha
 BLOCK: result-only child validation requires candidate changed paths
-BLOCK: invalid deferred completion evidence: deferred obligation OBL-012 lacks verified parent-issue decision
 RECOVERY: post-write-refreeze

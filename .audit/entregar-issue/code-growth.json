@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "comparison_base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
   "policy": {
@@ -46,7 +46,7 @@
     {
       "path": "apps/web/src/dev-server/budgets-page.ts",
       "lines_before": 641,
-      "lines_after": 497
+      "lines_after": 507
     },
     {
       "path": "apps/web/src/dev-server/budgets-table.ts",
@@ -66,7 +66,8 @@
     {
       "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
       "lines_before": null,
-      "lines_after": 297
+      "lines_after": 419,
+      "justification": "419-line cohesive Chrome dialog harness needed to exercise create/edit/keyboard/menu interactions across 1366, 390 and 320 px, including discriminating negative reflow and restoration. The fixture reuses its shared dialog assertion helper and a single CDP session; splitting it would fragment the same scenario. Source remains under the 500-line hard cap, and production SSR budgets-page.ts shrank relative to the base."
     },
     {
       "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",

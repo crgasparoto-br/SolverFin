@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-29T22:01:39.918Z",
-  "commit": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "generatedAt": "2026-10-30T21:14:21.182Z",
+  "commit": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "browser": "Google Chrome 156.0.8078.47",
   "scenarios": [
     {
@@ -134,6 +134,78 @@
           "height": 44
         }
       },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
       "fieldStates": {
         "defaultBRL": true,
         "currencies": [
@@ -183,6 +255,78 @@
           "height": 44
         }
       },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
       "fieldStates": {
         "defaultBRL": true,
         "currencies": [
@@ -227,10 +371,82 @@
         "confirmPrimary": true,
         "cancelRect": {
           "x": 25,
-          "y": 576.59375,
-          "width": 123.5,
-          "height": 65
+          "y": 561.09375,
+          "width": 255,
+          "height": 44
         }
+      },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": true,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": true,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
       },
       "fieldStates": {
         "defaultBRL": true,
@@ -316,7 +532,7 @@
     },
     "creation": {
       "categoryId": "1142adc7-c366-462b-876c-91cffd8f2c9e",
-      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
+      "id": "a528b701-d10d-4dcb-a2a1-6a5cdbc4f5e9",
       "persisted": {
         "present": true,
         "currency": "USD",
@@ -324,7 +540,7 @@
       }
     },
     "editing": {
-      "id": "3a58cfdf-fa31-4186-a733-d52d9488ee27",
+      "id": "a528b701-d10d-4dcb-a2a1-6a5cdbc4f5e9",
       "persisted": {
         "present": true,
         "planned": "US$ 2.345,67",

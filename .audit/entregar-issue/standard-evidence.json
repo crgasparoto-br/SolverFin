@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
   "requirements": [
     {
       "requirement_id": "REQ-725-01",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-01; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -16,21 +16,21 @@
         "procedure": "Run official delivery_target_binding.py on exact M and base B; compare blob identities",
         "expected": "Classify inherited artifact as invalid for issue #725",
         "observed": "Base certificate identifies issue #724/PR #744; current target certificate identifies issue #725 but certifies old material 7b7569493277a19b41eb1494b4abad9f90470342; official validate_handoff_certificate returned exit 2 with RECOVERY post-write-refreeze at current HEAD.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-inherited-binding.json",
         "evidence_sha256": "3e7d509177ee18373a5d857a3694598914172d848276e0b84e3daae199ca4900",
         "plausible_wrong_implementation": "Issue 725 current delivery mistakenly inherits issue #724 certificate"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-02",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-02; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -39,21 +39,21 @@
         "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
         "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
         "observed": "Git diff base..HEAD has 36 paths and zero modified financial backend/database files.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
         "evidence_sha256": "cfb8281725d6863ef0946ff1a1e32779beb04fc831e2b7618f3abc383b5a38d1",
         "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-03",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-03; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -62,21 +62,21 @@
         "procedure": "Inspect Git name-only exact base..head and compare to issue scope",
         "expected": "No code under apps/api, data-model, Prisma or domain altered; only SSR view, visual script, docs",
         "observed": "Git diff base..HEAD has 36 paths and zero modified financial backend/database files.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
         "evidence_sha256": "cfb8281725d6863ef0946ff1a1e32779beb04fc831e2b7618f3abc383b5a38d1",
         "plausible_wrong_implementation": "API or financial model changes unexpectedly in presentation-only issue"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-04",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-04; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -85,21 +85,21 @@
         "procedure": "Chrome pilot moves .budget-inventory ahead of .budget-results, checks hierarchyValid then restores DOM",
         "expected": "Mutated order rejected; original hierarchy accepted",
         "observed": "Current Chrome hierarchyRejected=true and hierarchyRestored=true at exact HEAD.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Auxiliary inventory promoted ahead of the financial decision view"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-05",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-05; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -108,21 +108,21 @@
         "procedure": "Chrome pilot moves .budget-inventory ahead of .budget-results, checks hierarchyValid then restores DOM",
         "expected": "Mutated order rejected; original hierarchy accepted",
         "observed": "Current Chrome hierarchyRejected=true and hierarchyRestored=true at exact HEAD.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Auxiliary inventory promoted ahead of the financial decision view"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-06",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-06; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -131,22 +131,23 @@
         "procedure": "Chrome opens /orcamentos?currency=EUR&status=active at 320x740 and checks selection after SSR",
         "expected": "Selected EUR and explicit no-results message persist",
         "observed": "Current Chrome empty EUR filter explicit no-result text, active filters expanded, no synthetic focus cards.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Active filter is lost when no budget matches"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-07",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
-        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-07; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
+        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-07; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations.",
+        "Chrome 41128555517 at material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9, artifact 13011839149: both dialog types readable at 1366x768/390x844/320x740; compact negative control rejects cramped old 320px layout and accepts restoration."
       ],
       "primary_negative_control": {
         "id": "NC-725-PERSIST",
@@ -154,22 +155,24 @@
         "procedure": "Chrome creates USD 1234.56 via POST, reloads SSR, PATCHes 2345.67, reloads and checks ID, row and amount",
         "expected": "Re-read after navigation shows same ID and updated planned amount, not a duplicate",
         "observed": "Current Chrome creation/editing persisted across reload with stable id, USD and formatted amounts.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Create/edit forms show a toast without durable API persistence"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored.",
+        "Exact artifact issue-606-budgets-pilot.json sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, goldenDialogs create/edit actions true in all three viewports, oldLayoutRejected=true at 320x740."
       ]
     },
     {
       "requirement_id": "REQ-725-08",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
-        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-08; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
+        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-08; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations.",
+        "Chrome 41128555517 at material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9, artifact 13011839149: both dialog types readable at 1366x768/390x844/320x740; compact negative control rejects cramped old 320px layout and accepts restoration."
       ],
       "primary_negative_control": {
         "id": "NC-725-FAIL",
@@ -177,21 +180,22 @@
         "procedure": "Chrome submits invalid period end before start, verifies error and preserved form/URL, rereads API persisted amount",
         "expected": "Error retained modal, value 2345,67, active URL and no persisted change",
         "observed": "Current Chrome invalid write errorVisible=true, buttonEnabled=true, dialogOpen=true, retainedValue=2.345,67 and original filtered URL.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Failed PATCH loses modal form and active filters or mutates persisted data"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored.",
+        "Exact artifact issue-606-budgets-pilot.json sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, goldenDialogs create/edit actions true in all three viewports, oldLayoutRejected=true at 320x740."
       ]
     },
     {
       "requirement_id": "REQ-725-09",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-09; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -200,21 +204,21 @@
         "procedure": "SSR budgets-page.test.ts verifies focus USD filter cannot show BRL and refuses fabricated realized values; Chrome checks BRL+USD separate and filter USD only",
         "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
         "observed": "GitHub CI budgets-page.test.js 21/21 passed; current Chrome focus BRL+USD separate and filtered USD only.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "BRL and USD accidentally added in a synthetic aggregate or selected cross-currency focus"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-10",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
         "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-10; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
       ],
       "primary_negative_control": {
@@ -223,22 +227,23 @@
         "procedure": "SSR budgets-page.test.ts verifies focus USD filter cannot show BRL and refuses fabricated realized values; Chrome checks BRL+USD separate and filter USD only",
         "expected": "Different currencies remain separate and unknown usage is unavailable rather than zero",
         "observed": "GitHub CI budgets-page.test.js 21/21 passed; current Chrome focus BRL+USD separate and filtered USD only.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "BRL and USD accidentally added in a synthetic aggregate or selected cross-currency focus"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
       ]
     },
     {
       "requirement_id": "REQ-725-11",
       "positive_evidence": [
-        "GitHub Actions Repository CI 40961594685 (CRITICAL job 123755767220) completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
-        "Chrome Statement visual validation 40961594720 job 123755619317 completed/success at exact material cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; artifact 12936747808, original report sha256 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef, 4 normal viewports including all 3 mandatory widths.",
-        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-11; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations."
+        "GitHub Actions Repository CI 41128555509 (CRITICAL job 124313702243) completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; budgets-page tests 21/21 and budgets-view-model tests 6/6.",
+        "Chrome Statement visual validation 41128555517 job 123755619317 completed/success at exact material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9; artifact 13011839149, original report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, 4 normal viewports including all 3 mandatory widths.",
+        "Material exact-source HTML/JS modules and test suite reviewed for REQ-725-11; .audit/entregar-issue/evidence/issue-725-visual-provenance.json contains grounded case-by-case observations.",
+        "Chrome 41128555517 at material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9, artifact 13011839149: both dialog types readable at 1366x768/390x844/320x740; compact negative control rejects cramped old 320px layout and accepts restoration."
       ],
       "primary_negative_control": {
         "id": "NC-725-CLIP",
@@ -246,14 +251,15 @@
         "procedure": "Chrome pilot forces 1px money width and overflow-x:hidden, checks financialLabelsLegible then restores inline styles",
         "expected": "Clipped value rejected; restored value readable",
         "observed": "Current Chrome negativeControls clippedValueRejected/restored, brokenNumberRejected/restored, trailingCodeRejected/restored all true.",
-        "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
         "evidence_path": ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
         "evidence_sha256": "65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef",
         "plausible_wrong_implementation": "Financial currency and value clipped by a narrow overflow-hidden cell"
       },
       "regression_evidence": [
-        "GitHub CI 40961594685: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
-        "Chrome 40961594720: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored."
+        "GitHub CI 41128555509: budgets-page 21 passed; budgets-view-model 6 passed; money 8 passed; integration and build green.",
+        "Chrome 41128555517: 4 normal viewports plus 3 Golden dialogs, category-prefill and period active state, filter empty and error, persistent create/edit, forced DOM/value negative controls all restored.",
+        "Exact artifact issue-606-budgets-pilot.json sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66, goldenDialogs create/edit actions true in all three viewports, oldLayoutRejected=true at 320x740."
       ]
     }
   ]
