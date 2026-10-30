@@ -424,6 +424,7 @@ function inboxReviewRuntimeScript(): string {
         };
         const hydrateInsights = () => {
           document.querySelectorAll("[data-review-id]").forEach((card) => {
+            if (!card.querySelector(".maintenance-actions")) return;
             void hydrateInsightCard(card);
           });
         };
