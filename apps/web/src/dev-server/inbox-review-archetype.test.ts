@@ -93,4 +93,30 @@ describe("Inbox review archetype", () => {
     assert.equal(activeIds.includes("inbox-structured-payload"), false);
     assert.equal(activeIds.includes("inbox-list-layout"), false);
   });
+  it("separates the review decision from secondary messages, insights and CSV/OFX imports", () => {
+    const html = renderInboxReviewArchetype({
+      actionsHtml: '<button data-open-dialog="csv-import-dialog">Importar extrato</button>',
+      suggestionsHtml: '<section><h2>Outras sugestões</h2><button data-review-select="fixture">Revisar</button></section>',
+      messagesHtml: '<section data-inbox-messages>Mensagens recebidas</section>',
+      insightsHtml: '<section data-inbox-insights>Insights financeiros</section>',
+      evidenceHtml: '<section data-inbox-review-evidence>Importações CSV/OFX</section>',
+    });
+    const queueAt = html.indexOf('id="inbox-review-queue"');
+    const selectedAt = html.indexOf('id="inbox-review-selected"');
+    const secondaryAt = html.indexOf('id="inbox-review-secondary"');
+    assert.ok(queueAt >= 0 && queueAt < selectedAt && selectedAt < secondaryAt);
+    assert.ok(html.indexOf("data-inbox-messages") > secondaryAt);
+    assert.ok(html.indexOf("data-inbox-insights") > secondaryAt);
+    assert.ok(html.indexOf("data-inbox-review-evidence") > secondaryAt);
+    assert.match(html, /data-review-evidence-state="empty"/);
+    assert.match(html, /Adicionar entrada/);
+    assert.match(html, /aria-live="polite"/);
+    assert.doesNotMatch(html.slice(0, secondaryAt), /data-api-path="[^"]+\/(approve|reject)"/);
+    const styles = inboxReviewArchetypeStyles();
+    assert.match(styles, /\.inbox-review-detail \{ background: var\(--surface\)/);
+    assert.match(styles, /\.inbox-review-group \{ border: 0/);
+    assert.match(styles, /@media \(max-width: 900px\)/);
+    assert.match(styles, /@media \(max-width: 600px\)/);
+  });
+
 });
