@@ -501,6 +501,12 @@ export function enhanceInboxReviewQueue(html: string): string {
       .review-queue-status.success { color: var(--success, #166534); }
       .form-status.unavailable, .review-unavailable { color: #7a4a00; }
       .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
+       .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
+       .review-card.selected { background: var(--surface-soft); border-left-color: var(--primary); }
+       .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+       .review-card > [data-review-select] { justify-self: start; min-height: 44px; }
+       .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
+       .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
       .review-risk { background: #fff4d6; border: 1px solid #e7c66f; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; padding: 3px 7px; }
       .ai-review-dialog { width: min(720px, calc(100vw - 24px)); }
       .ai-review-dialog #ai-review-dialog-body { display: grid; gap: 12px; max-height: min(70vh, 680px); overflow: auto; }
