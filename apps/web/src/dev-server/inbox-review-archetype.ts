@@ -39,6 +39,7 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
       <nav class="inbox-section-nav" aria-label="Seções da Inbox">
         <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
         <a class="secondary-button inbox-review-nav" href="#inbox-review-secondary">Outras entradas</a>
+        <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
       </nav>
       <details class="inbox-new-entry-actions">
         <summary>Adicionar entrada</summary>
@@ -120,7 +121,7 @@ export function inboxReviewArchetypeStyles(): string {
   return `
     .inbox-review-cockpit { display: grid; gap: 16px; max-width: none; min-width: 0; padding: 0; }
     .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-    .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: 8px; min-width: 0; }
+    .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
     .inbox-review-nav { flex: 0 0 auto; text-decoration: none; }
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
     .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence, .inbox-review-secondary { min-width: 0; }
@@ -199,7 +200,7 @@ export function inboxReviewArchetypeStyles(): string {
       .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
       .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
       .inbox-section-nav { max-width: 100%; width: 100%; }
-      .inbox-review-nav { justify-content: center; min-width: 0; flex: 1 1 135px; }
+      .inbox-review-nav { justify-content: center; min-width: 190px; }
       .inbox-new-entry-actions { margin-left: 0; width: 100%; }
       .inbox-date-filter-controls { align-items: stretch; }
     }
@@ -394,6 +395,7 @@ function inboxReviewRuntimeScript(): string {
             insightNavigation(proposal) +
             '</div>';
         };
+        window.__solverfinInboxRenderInsight = renderInsight;
         const hydrateInsightCard = async (card) => {
           const suggestionId = card.dataset.reviewId || "";
           if (!suggestionId || card.dataset.a6PayloadState || card.querySelector('[data-ai-structured-payload="true"]')) return;

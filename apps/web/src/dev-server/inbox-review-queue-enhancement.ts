@@ -250,56 +250,10 @@ export function enhanceInboxReviewQueue(html: string): string {
               ? '<div class="review-warning"><strong>Conflitos</strong><ul>' + proposal.conflicts.map((item) => '<li>' + escapeHtml(item) + '</li>').join("") + '</ul></div>'
               : '<p class="muted">Nenhum conflito estrutural informado.</p>';
           } else if (payload.suggestionKind === "insight") {
-            const labels = {
-              receitas: "Receitas", despesas: "Despesas", saldo: "Saldo realizado",
-              despesas_periodo_anterior: "Despesas no período anterior",
-              variacao_despesas_percentual: "Variação das despesas", diferenca: "Diferença",
-              menor_saldo_projetado: "Menor saldo projetado", deficit_projetado: "Déficit projetado",
-              saldo_fim_horizonte: "Saldo no fim do horizonte", horizonte_dias: "Horizonte (dias)",
-              amostra: "Lançamentos considerados", variacao_percentual: "Variação percentual",
-              valor_atual: proposal.insightKind === "budget_exceeded" ? "Despesas realizadas" : "Gasto atual",
-              valor_anterior_ou_planejado: proposal.insightKind === "budget_exceeded" ? "Orçamento planejado" : "Gasto anterior"
-            };
-            const evidenceLines = Array.isArray(proposal.evidence) ? proposal.evidence.map((entry) => {
-              const key = String(entry.label || "");
-              const label = labels[key] || (key.startsWith("variacao_categoria:") ? "Variação em " + key.slice("variacao_categoria:".length) : key.replaceAll("_", " "));
-              const value = entry.unit === "minor_currency" ? formatMoney(entry.value, entry.currency || proposal.currency) :
-                entry.unit === "percentage" ? String(entry.value) + "%" : String(entry.value);
-              return '<li>' + escapeHtml(label) + ': ' + escapeHtml(value) + '</li>';
-            }).join("") : "";
-            const limitations = Array.isArray(proposal.limitations) ? proposal.limitations.map((entry) =>
-              '<li>' + escapeHtml(entry) + '</li>').join("") : "";
-            body += '<h3>' + escapeHtml(proposal.title || "Insight financeiro") + '</h3><p>' + escapeHtml(proposal.summary || "") + '</p>' +
-              '<p class="muted">Período: ' + escapeHtml(formatDate(proposal.periodStartOn)) + ' a ' + escapeHtml(formatDate(proposal.periodEndOn)) + '</p>' +
-              '<p class="review-evidence-meta">Moeda: ' + escapeHtml(proposal.currency || proposal.filters?.currency || "BRL") + '</p>' +
-              (evidenceLines ? '<div data-insight-evidence="true"><strong>Evidências verificáveis</strong><ul>' + evidenceLines + '</ul></div>' : "") +
-              (limitations ? '<div data-insight-limitations="true"><strong>Limitações</strong><ul>' + limitations + '</ul></div>' : "");
-            const navigation = proposal.navigation;
-            if (navigation) {
-              const params = new URLSearchParams();
-              let path = "/lancamentos";
-              let label = "Abrir lançamentos";
-              if (navigation.view === "budgets") {
-                path = "/orcamentos";
-                label = "Abrir orçamentos";
-                if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
-              } else if (navigation.view === "cash_flow") {
-                path = "/relatorios";
-                label = "Ver projeção de caixa";
-                if (navigation.referenceDate && navigation.horizonDays) {
-                  params.set("view", "cash-flow");
-                  params.set("referenceDate", navigation.referenceDate);
-                  params.set("horizonDays", String(navigation.horizonDays));
-                }
-              } else {
-                const month = String(proposal.periodStartOn || "").slice(0, 7);
-                if (/^\\d{4}-\\d{2}$/.test(month)) params.set("month", month);
-                if (navigation.categoryId) params.set("categoryId", navigation.categoryId);
-                if (navigation.merchantKey) params.set("merchantKey", navigation.merchantKey);
-              }
-              body += '<p><a data-insight-navigation="true" href="' + escapeHtml(path + (params.size ? "?" + params.toString() : "")) +
-                '">' + escapeHtml(label) + '</a></p>';
+            if (typeof window.__solverfinInboxRenderInsight !== "function") {
+              throw new Error("Evidência do insight indisponível para revisão.");
             }
+            body += window.__solverfinInboxRenderInsight(payload);
           }
           if (reasons) body += '<details><summary>Por que esta sugestão?</summary><ul>' + reasons + '</ul></details>';
           return body;
@@ -307,6 +261,8 @@ export function enhanceInboxReviewQueue(html: string): string {
         function invalidateSelection(message) {
           selectionGeneration += 1;
           if (!selected) return;
+          delete selected.dataset.reviewSelectedId;
+          delete selected.dataset.reviewFingerprint;
           selected.dataset.reviewEvidenceState = "unavailable";
           selected.innerHTML = '<div class="review-selected-error"><p class="error" role="alert">' + escapeHtml(message) + '</p>' +
             '<button type="button" class="secondary-button" data-review-evidence-retry>Tentar novamente</button></div>';
@@ -321,10 +277,14 @@ export function enhanceInboxReviewQueue(html: string): string {
           const id = state.selectedId;
           const item = state.items.find((entry) => entry.id === id);
           if (!id || !item) {
+            delete selected.dataset.reviewSelectedId;
+            delete selected.dataset.reviewFingerprint;
             selected.dataset.reviewEvidenceState = "empty";
             selected.innerHTML = '<p class="muted small-note" role="status">Nenhuma sugestão selecionada. A fila pode estar vazia ou filtrada.</p>';
             return;
           }
+          delete selected.dataset.reviewSelectedId;
+          delete selected.dataset.reviewFingerprint;
           selected.dataset.reviewEvidenceState = "loading";
           selected.innerHTML = '<p class="muted small-note" role="status">Consultando a origem e a evidência atual da sugestão...</p>';
           try {
@@ -341,6 +301,8 @@ export function enhanceInboxReviewQueue(html: string): string {
                 '<button type="button" class="secondary-button danger-action" data-review-reject="' + escapeHtml(id) + '">Rejeitar</button>' : "");
             const confidence = Math.round(Number(item.confidence) * 100);
             const risk = item.risk === "low_confidence" ? "Baixa confiança" : item.risk === "normal" ? "Regular" : item.risk === "high" ? "Elevado" : "Não informado";
+            selected.dataset.reviewSelectedId = id;
+            selected.dataset.reviewFingerprint = detail.payload.fingerprint;
             selected.dataset.reviewEvidenceState = "ready";
             selected.innerHTML = '<div class="review-selected-context">' +
               '<strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
@@ -349,7 +311,7 @@ export function enhanceInboxReviewQueue(html: string): string {
               ' · Confiança: ' + escapeHtml(confidence) + '% · Risco: ' + escapeHtml(risk) + '</p>' +
               '<p>' + escapeHtml(item.maskedSummary) + '</p>' +
               '<p class="muted small-note">' + escapeHtml(item.explanation) + '</p></div>' +
-              '<section data-review-evidence="ready" aria-label="Evidência verificada da sugestão">' +
+              '<section data-review-evidence="ready"' + (item.kind === "insight" ? ' data-ai-structured-payload="true"' : "") + ' aria-label="Evidência verificada da sugestão">' +
                 '<h3>Origem e evidências da decisão</h3>' + detailHtml(detail) + '</section>' +
               '<div class="review-decision-actions" aria-label="Ações da sugestão selecionada">' + buttons + '</div>' +
               (pending ? '<p class="muted small-note">Confira as evidências acima. A confirmação será solicitada antes de qualquer efeito.</p>' : '<p class="muted small-note">Esta sugestão não está mais pendente e não admite nova decisão.</p>') +
@@ -358,6 +320,7 @@ export function enhanceInboxReviewQueue(html: string): string {
             selected.querySelector("[data-review-edit]")?.addEventListener("click", (event) => openEdit(id, event.currentTarget));
             selected.querySelector("[data-review-approve]")?.addEventListener("click", (event) => decide(id, "approve", event.currentTarget));
             selected.querySelector("[data-review-reject]")?.addEventListener("click", (event) => decide(id, "reject", event.currentTarget));
+            window.dispatchEvent(new Event("solverfin:inbox-review-selected"));
           } catch (error) {
             if (generation !== selectionGeneration || state.selectedId !== id) return;
             invalidateSelection("Evidência indisponível ou desatualizada. Decisão bloqueada. " + errorMessage(error));

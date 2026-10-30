@@ -101,6 +101,14 @@ try {
   await navigate(browser.cdp, `${baseUrl}/inbox`);
   await waitFor(
     browser.cdp,
+    `Boolean(document.querySelector('[data-review-id="${fixtures.correctionSuggestionId}"] [data-review-select]'))`,
+  );
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-review-id="${fixtures.correctionSuggestionId}"] [data-review-select]')?.click()`,
+  );
+  await waitFor(
+    browser.cdp,
     `Array.from(document.querySelectorAll('[data-review-id]')).some((row) =>
        (row.textContent || '').includes('origem correção anterior')
      ) &&

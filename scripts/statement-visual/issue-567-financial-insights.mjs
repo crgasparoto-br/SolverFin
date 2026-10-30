@@ -205,7 +205,10 @@ async function waitForStructuredInsight(cdp, suggestionId, timeout = 12_000) {
       cdp,
       `(() => {
         const card = document.querySelector('[data-review-id="${suggestionId}"]');
-        return Boolean(card?.querySelector('[data-ai-structured-payload="true"]'));
+        const select = card?.querySelector("[data-review-select]");
+        if (select && select.getAttribute("aria-pressed") !== "true") select.click();
+        const detail = document.querySelector('#inbox-review-selected[data-review-selected-id="${suggestionId}"]');
+        return Boolean(detail?.querySelector('[data-ai-structured-payload="true"]'));
       })()`,
     ).catch(() => false);
     if (ready) return;
@@ -218,9 +221,9 @@ async function scrollInsightIntoView(cdp, suggestionId) {
   const scrolled = await evaluate(
     cdp,
     `(() => {
-      const card = document.querySelector('[data-review-id="${suggestionId}"]');
+      const card = document.querySelector('#inbox-review-selected[data-review-selected-id="${suggestionId}"]');
       if (!card) return false;
-      card.scrollIntoView({ block: 'center', inline: 'nearest' });
+      card.scrollIntoView({ block: 'start', inline: 'nearest' });
       return true;
     })()`,
   );
@@ -231,7 +234,7 @@ async function inspectInsight(cdp, suggestionId, width, height) {
   return evaluate(
     cdp,
     `(() => {
-      const card = document.querySelector('[data-review-id="${suggestionId}"]');
+      const card = document.querySelector('#inbox-review-selected[data-review-selected-id="${suggestionId}"]');
       const structured = card?.querySelector('[data-ai-structured-payload="true"]');
       const text = (card?.innerText || '');
       const navigation = card?.querySelector('[data-insight-navigation="true"]');
@@ -274,7 +277,7 @@ async function exerciseNavigation(cdp, suggestionId) {
   const linkHref = await evaluate(
     cdp,
     `(() => {
-      const card = document.querySelector('[data-review-id="${suggestionId}"]');
+      const card = document.querySelector('#inbox-review-selected[data-review-selected-id="${suggestionId}"]');
       const link = card?.querySelector('[data-insight-navigation="true"]');
       if (!link) throw new Error('Insight navigation link not found');
       const href = link.getAttribute('href');
