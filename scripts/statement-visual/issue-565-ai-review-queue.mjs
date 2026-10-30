@@ -231,6 +231,41 @@ async function inspectViewport(cdp, suggestionId, width, height) {
   );
 }
 
+async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {
+  await evaluate(cdp, `document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]')?.click()`);
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const ready = await evaluate(cdp, `(() => {
+      const row = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]');
+      return row?.getAttribute('aria-pressed') === 'true' &&
+        document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready';
+    })()`).catch(() => false);
+    if (ready) return;
+    await sleep(120);
+  }
+  throw new Error("Selected review evidence did not become available.");
+}
+
+async function validateEvidenceNegativeControl(cdp) {
+  return evaluate(cdp, `(() => {
+    const evidence = document.querySelector('#inbox-review-selected [data-review-evidence="ready"]');
+    const approve = document.querySelector('#inbox-review-selected [data-review-approve]');
+    if (!evidence || !approve) return { hiddenEvidenceBlockedDecision: false, evidenceRestored: false };
+    const initialVisibility = evidence.style.visibility;
+    const originalConfirm = window.confirm;
+    let confirms = 0;
+    try {
+      evidence.style.visibility = 'hidden';
+      window.confirm = () => { confirms += 1; return false; };
+      approve.click();
+    } finally {
+      evidence.style.visibility = initialVisibility;
+      window.confirm = originalConfirm;
+    }
+    return { hiddenEvidenceBlockedDecision: confirms === 0, evidenceRestored: getComputedStyle(evidence).visibility !== 'hidden' };
+  })()`);
+}
+
 async function validateKeyboardAndFocus(cdp, suggestionId) {
   await evaluate(
     cdp,
