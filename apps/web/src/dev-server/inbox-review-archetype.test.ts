@@ -61,7 +61,7 @@ describe("Inbox review archetype", () => {
     );
     assert.match(html, /event.key !== "Escape"/);
     assert.match(html, /entryTrigger\?\.focus\(\)/);
-    assert.match(html, /data-button-variant=\"neutral\" type=\"button\">Limpar/);
+    assert.match(html, /data-button-variant="neutral" type="button">Limpar/);
     assert.match(css, /--sf-color-neutral-control-hover/);
     assert.match(css, /--sf-shadow-focus/);
     assert.match(css, /--sf-density-interactive-target-min/);
