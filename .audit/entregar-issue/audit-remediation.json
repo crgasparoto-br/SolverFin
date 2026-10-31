@@ -7,7 +7,7 @@
     "audit_report_sha256": "e7e66a3e08a3b865fc8be41b1dcb2a5ed1fbd581e0fdf9a59e57059cdcaef7f5",
     "audited_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
   },
-  "candidate_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "candidate_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -26,11 +26,10 @@
         "scope of officially generated #726 certificate after publication"
       ],
       "validations": [
-        "official negative preflight: exit 2/inherited-base-artifact",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
       ],
-      "explanation": "Certificate inherited from issue #725 PR #751 is explicitly rejected by official preflight. New issue #726 exact-material certificate must be issued in result-only child; no inherited evidence accepted."
+      "explanation": "Old target handoff was stale after material changes. Prepare a new exact-head critical result-only child for issue #726, with 25 canonical obligations, before external audit."
     },
     {
       "source_kind": "finding",
@@ -48,8 +47,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "Chrome approve/reject A!=B each posts=0, A=A each posts=1 with exact reviewed fingerprint",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
       ],
       "explanation": "A reviewed fingerprint is bound to approval and rejection; changed B payload blocks POST until the user reviews again."
     },
@@ -69,8 +68,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "Chrome category correction hidden, changed-selection, changed-fingerprint all posts=0",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
       ],
       "explanation": "Legacy capture-phase submit interceptor removed and category correction follows selected-evidence guard, including races and changed selection."
     },
@@ -90,9 +89,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "Chrome hierarchy negative attackRejected=true/restored=true; SSR first-render tests",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
       ],
       "explanation": "Insufficient insight fallback and message/import sections moved after review cockpit and documented; negative promotion detected and restored."
     },
@@ -108,9 +106,8 @@
         "evidence/issue-726-browser-evidence.json"
       ],
       "validations": [
-        "historical GitHub authenticated Chrome run https://github.com/crgasparoto-br/SolverFin/actions/runs/41128555517",
-        "source blob equality develop@36cb... versus earlier 6fe1...",
-        "current visual retest https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
       ],
       "explanation": "Authenticated browser captured preexisting UI divergence before PR creation on identical Inbox source; prior implementation-time human inspection is not provable and is explicitly not claimed."
     }

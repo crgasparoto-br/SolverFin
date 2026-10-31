@@ -10,11 +10,11 @@
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE.txt",
       "locator": "https://github.com/crgasparoto-br/SolverFin/issues/726",
-      "sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+      "sha256": "297eab4b1caf15fc151333d324309e327a032fdc8b6e5e9d969f6cc7da68973e",
       "textual": true,
       "extract_source_id": null,
       "required": true,
-      "line_count": 25
+      "line_count": 48
     }
   ]
 }

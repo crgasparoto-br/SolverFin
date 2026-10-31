@@ -5,7 +5,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 726,
     "pull_request_number": 754,
-    "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2"
+    "material_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25"
   },
   "escapes": [
     {
@@ -64,9 +64,9 @@
           "dimension": "foreign-issue-number-725"
         }
       ],
-      "revalidated_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
       "latest_regression_evidence": {
-        "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
         "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
         "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
@@ -134,9 +134,9 @@
           "dimension": "approve-stale-no-post"
         }
       ],
-      "revalidated_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
       "latest_regression_evidence": {
-        "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
         "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
         "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
@@ -204,9 +204,9 @@
           "dimension": "hidden-evidence"
         }
       ],
-      "revalidated_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
       "latest_regression_evidence": {
-        "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
         "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
         "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
@@ -274,9 +274,9 @@
           "dimension": "secondary-before-review"
         }
       ],
-      "revalidated_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
       "latest_regression_evidence": {
-        "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
         "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
         "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
@@ -344,9 +344,9 @@
           "dimension": "capture-before-pr"
         }
       ],
-      "revalidated_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
       "latest_regression_evidence": {
-        "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
         "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
         "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "creations": [
     {
@@ -25,6 +25,52 @@
       },
       "decision": "create",
       "justification": "Extract browser controls from two existing overlong Chrome scripts into one 235-line helper, sharing the established CDP driver and preserving each original executable entry point."
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n \"validateReviewCardGridNegative\" scripts/statement-visual",
+          "git diff --name-status c273f132..5de15d06 -- scripts/statement-visual"
+        ],
+        "scope": "Reused issue-537-hover-states.mjs, existing CDP helpers and canonical Golden Screen token CSS; extracted one shared A6 negative helper instead of duplicating browser launcher.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-537-hover-states.mjs",
+            "reason_not_reused": "Legacy token hover tests target different routes and cannot inspect A6 selected item geometry."
+          },
+          {
+            "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+            "reason_not_reused": "Issue 726 functional controls already cover fingerprint and hierarchy; Golden A6 geometry/contrast needs separate reusable helper."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Add focused A6 grid-regression control using existing Chrome CDP driver and shared neutral token predicates, without introducing a duplicate browser stack."
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n \"validateReviewCardGridNegative\" scripts/statement-visual",
+          "git diff --name-status c273f132..5de15d06 -- scripts/statement-visual"
+        ],
+        "scope": "Reused issue-537-hover-states.mjs, existing CDP helpers and canonical Golden Screen token CSS; extracted one shared A6 negative helper instead of duplicating browser launcher.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-537-hover-states.mjs",
+            "reason_not_reused": "Legacy token hover tests target different routes and cannot inspect A6 selected item geometry."
+          },
+          {
+            "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+            "reason_not_reused": "Issue 726 functional controls already cover fingerprint and hierarchy; Golden A6 geometry/contrast needs separate reusable helper."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Add focused A6 grid-regression control using existing Chrome CDP driver and shared neutral token predicates, without introducing a duplicate browser stack."
     }
   ],
   "references": [
@@ -34,7 +80,7 @@
       "used_in": "scripts/statement-visual/issue-564-category-learning.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
-        "line": 5
+        "line": 3
       },
       "verified_by": {
         "command": "git grep -n validateCorrectionGuards -- scripts/statement-visual/issue-726-inbox-controls.mjs scripts/statement-visual/issue-564-category-learning.mjs",
@@ -47,7 +93,7 @@
       "used_in": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
-        "line": 94
+        "line": 92
       },
       "verified_by": {
         "command": "git grep -n validateFingerprintBinding -- scripts/statement-visual/issue-726-inbox-controls.mjs scripts/statement-visual/issue-565-ai-review-queue.mjs",
@@ -60,7 +106,7 @@
       "used_in": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "defined_at": {
         "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
-        "line": 261
+        "line": 266
       },
       "verified_by": {
         "command": "git grep -n reviewedEvidenceIsVisible -- apps/web/src/dev-server/inbox-review-queue-enhancement.ts apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
@@ -104,12 +150,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "reached_tests": [
           "apps/web/src/dev-server/category-learning-controller.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-ci-execution.txt",
-        "evidence_sha256": "21090fdd850d3e08a688fcdecb2033bf29f99f191e69cf8c4c51fbb89e66370d"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
       }
     },
     {
@@ -140,12 +186,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-ci-execution.txt",
-        "evidence_sha256": "21090fdd850d3e08a688fcdecb2033bf29f99f191e69cf8c4c51fbb89e66370d"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
       }
     },
     {
@@ -176,12 +222,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-ci-execution.txt",
-        "evidence_sha256": "21090fdd850d3e08a688fcdecb2033bf29f99f191e69cf8c4c51fbb89e66370d"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
       }
     },
     {
@@ -212,12 +258,84 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-ci-execution.txt",
-        "evidence_sha256": "21090fdd850d3e08a688fcdecb2033bf29f99f191e69cf8c4c51fbb89e66370d"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen A6 filtered queue hierarchy, neutral controls and accessible actions on the existing SSR route.",
+      "requirement": "REQ-726-12",
+      "search": {
+        "queries": [
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..5de15d062209741bb0ada8f837d45e2cc7973a25 -- apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+          "git grep -n inbox-interface-enhancement.test.ts -- apps/web/src/dev-server"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+            "case": "Existing SSR and interface test module for A6 and Golden Screen",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing module to keep coverage without a duplicate test runner.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-interface-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen A6 filtered queue hierarchy, neutral controls and accessible actions on the existing SSR route.",
+      "requirement": "REQ-726-12",
+      "search": {
+        "queries": [
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..5de15d062209741bb0ada8f837d45e2cc7973a25 -- apps/web/src/dev-server/inbox-review-archetype.test.ts",
+          "git grep -n inbox-review-archetype.test.ts -- apps/web/src/dev-server"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+            "case": "Existing SSR and interface test module for A6 and Golden Screen",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing module to keep coverage without a duplicate test runner.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-review-archetype.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
+        "evidence_sha256": "a4885ea42330547c101c6514faec649cf88f4b56223a3cf15b15b58d4bf54a3c"
       }
     }
   ]

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {

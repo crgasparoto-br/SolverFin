@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
   "families": [
     {
       "family": "authorization",
@@ -8,12 +8,15 @@
       "reason": "authorization is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
         "NEG-726-02-1",
-        "NEG-726-07-1"
+        "NEG-726-07-1",
+        "NEG-726-12-1",
+        "NEG-726-19-2",
+        "NEG-726-23-1"
       ],
       "dimensions": [
         {
           "surface": "financial-profile-scoping",
-          "reason": "Actual exact-head control against authorization:financial-profile-scoping, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 profile-kept-across-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-02-1"
           ],
@@ -21,9 +24,33 @@
         },
         {
           "surface": "review-evidence-permission",
-          "reason": "Actual exact-head control against authorization:review-evidence-permission, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 guard-in-all-enhancers using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-07-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-golden-precedence-authorization",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-12-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-state-evidence-guards",
+          "reason": "Observed exact-head A6 negative-inbox-state-evidence-guards using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-19-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-integration-preservation",
+          "reason": "Observed exact-head A6 negative-inbox-integration-preservation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-23-1"
           ],
           "status": "passed"
         }
@@ -40,7 +67,7 @@
       "dimensions": [
         {
           "surface": "human-action-and-no-implicit-effects",
-          "reason": "Actual exact-head control against concurrency-atomicity:human-action-and-no-implicit-effects, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 confirmation-before-decision using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-06-1"
           ],
@@ -59,7 +86,7 @@
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Actual exact-head control against documentation:canonical-claims, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 docs-match-a6-layout using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-04-2"
           ],
@@ -71,7 +98,7 @@
     {
       "family": "historical-immutability",
       "applicable": false,
-      "reason": "No source-derived obligation, risk surface or inherited current control requires historical-immutability for presentation-only Inbox redesign.",
+      "reason": "No application surface for historical-immutability in presentation-only work.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -81,14 +108,14 @@
       "applicable": true,
       "reason": "idempotency is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-726-10-1"
+        "NEG-726-19-1"
       ],
       "dimensions": [
         {
           "surface": "duplicate-processing",
-          "reason": "Actual exact-head control against idempotency:duplicate-processing, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 negative-duplicate-processing using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-726-10-1"
+            "NEG-726-19-1"
           ],
           "status": "passed"
         }
@@ -98,26 +125,137 @@
     {
       "family": "public-boundary",
       "applicable": false,
-      "reason": "No source-derived obligation, risk surface or inherited current control requires public-boundary for presentation-only Inbox redesign.",
+      "reason": "No application surface for public-boundary in presentation-only work.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
       "family": "reference-liveness",
-      "applicable": false,
+      "applicable": true,
       "reason": "No source-derived obligation, risk surface or inherited current control requires reference-liveness for presentation-only Inbox redesign.",
+      "control_ids": [
+        "NEG-726-12-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "inbox-golden-precedence-reference-liveness",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-12-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No application surface for rollback in presentation-only work.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
     },
     {
-      "family": "rollback",
-      "applicable": false,
-      "reason": "No source-derived obligation, risk surface or inherited current control requires rollback for presentation-only Inbox redesign.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "family": "semantic-effect",
+      "applicable": true,
+      "reason": "Canonical issue #726 obligation inferred this risk family and selected A6 controls cover its actual surface.",
+      "control_ids": [
+        "NEG-726-03-1",
+        "NEG-726-05-1",
+        "NEG-726-08-1",
+        "NEG-726-09-1",
+        "NEG-726-11-1",
+        "NEG-726-14-1",
+        "NEG-726-15-1",
+        "NEG-726-18-1",
+        "NEG-726-20-1",
+        "NEG-726-21-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "preserved-legacy-workflows",
+          "reason": "Observed exact-head A6 csv-ofx-and-messages-still-wired using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-03-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "selected-evidence-and-context",
+          "reason": "Observed exact-head A6 selection-renders-detail-after-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-05-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "responsive-and-state-completeness",
+          "reason": "Observed exact-head A6 browser-matrix-viewports using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-08-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "a11y-and-currency-metadata",
+          "reason": "Observed exact-head A6 keyboard-focus-and-currency using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-09-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "negative-restoration",
+          "reason": "Observed exact-head A6 hidden-evidence-and-secondary-attack using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-11-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-queue-evidence-decision-order",
+          "reason": "Observed exact-head A6 negative-inbox-queue-evidence-decision-order using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-14-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-neutral-interaction",
+          "reason": "Observed exact-head A6 negative-inbox-neutral-interaction using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-15-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-dialog-menu-focus",
+          "reason": "Observed exact-head A6 negative-inbox-dialog-menu-focus using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-18-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-responsive-containment",
+          "reason": "Observed exact-head A6 negative-inbox-responsive-containment using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-20-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-legacy-grid-mutation",
+          "reason": "Observed exact-head A6 negative-inbox-legacy-grid-mutation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-21-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "structural-contract",
@@ -126,13 +264,16 @@
       "control_ids": [
         "NEG-726-01-1",
         "NEG-726-01-2",
-        "NEG-726-02-2",
-        "NEG-726-04-1"
+        "NEG-726-17-1",
+        "NEG-726-04-1",
+        "NEG-726-12-3",
+        "NEG-726-13-1",
+        "NEG-726-16-1"
       ],
       "dimensions": [
         {
           "surface": "golden-source-ancestry",
-          "reason": "Actual exact-head control against structural-contract:golden-source-ancestry, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 golden-precedence-and-no-merge using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-01-1"
           ],
@@ -140,25 +281,49 @@
         },
         {
           "surface": "handoff-subject-identity",
-          "reason": "Actual exact-head control against structural-contract:handoff-subject-identity, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 foreign-issue-and-pr-subject using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-01-2"
           ],
           "status": "passed"
         },
         {
+          "surface": "relational-semantic-integrity",
+          "reason": "Observed exact-head A6 negative-relational-semantic-integrity using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-17-1"
+          ],
+          "status": "passed"
+        },
+        {
           "surface": "queue-detail-secondary-order",
-          "reason": "Actual exact-head control against structural-contract:queue-detail-secondary-order, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 primary-before-secondary using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-04-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "relational-semantic-integrity",
-          "reason": "Actual exact-head control against structural-contract:relational-semantic-integrity, corroborated with immutable browser or structural execution reports.",
+          "surface": "inbox-golden-precedence-structural-contract",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-726-02-2"
+            "NEG-726-12-3"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-shared-color-tokens",
+          "reason": "Observed exact-head A6 negative-inbox-shared-color-tokens using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-13-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-contextual-confirmation",
+          "reason": "Observed exact-head A6 negative-inbox-contextual-confirmation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-16-1"
           ],
           "status": "passed"
         }
@@ -175,7 +340,7 @@
       "dimensions": [
         {
           "surface": "pre-edit-baseline-identity",
-          "reason": "Actual exact-head control against temporal-consistency:pre-edit-baseline-identity, corroborated with immutable browser or structural execution reports.",
+          "reason": "Observed exact-head A6 historical-chrome-baseline using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
             "NEG-726-02-3"
           ],
@@ -187,7 +352,7 @@
     {
       "family": "temporal-destination",
       "applicable": false,
-      "reason": "No source-derived obligation, risk surface or inherited current control requires temporal-destination for presentation-only Inbox redesign.",
+      "reason": "No application surface for temporal-destination in presentation-only work.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"
@@ -195,7 +360,7 @@
     {
       "family": "tenant-isolation",
       "applicable": false,
-      "reason": "No source-derived obligation, risk surface or inherited current control requires tenant-isolation for presentation-only Inbox redesign.",
+      "reason": "No application surface for tenant-isolation in presentation-only work.",
       "control_ids": [],
       "dimensions": [],
       "status": "not-applicable"

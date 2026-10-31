@@ -1,0 +1,67 @@
+{
+  "generatedAt": "2026-10-31T10:21:35.504Z",
+  "commit": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "browser": "Google Chrome 156.0.8078.47",
+  "fixture": {
+    "suggestionId": "1682a330-5d5d-4077-a879-9ecd8ff03bda"
+  },
+  "evidence": {
+    "kinds": {
+      "cardCount": 5,
+      "allKindsVisible": true,
+      "editOnlyOnSupportedKinds": true,
+      "lowConfidenceVisible": true,
+      "editObserved": [
+        {
+          "kind": "transaction_extraction",
+          "hasEdit": true
+        },
+        {
+          "kind": "categorization",
+          "hasEdit": true
+        },
+        {
+          "kind": "deduplication",
+          "hasEdit": false
+        },
+        {
+          "kind": "reconciliation",
+          "hasEdit": false
+        },
+        {
+          "kind": "insight",
+          "hasEdit": false
+        }
+      ]
+    },
+    "loading": {
+      "visible": true,
+      "retryVisible": false
+    },
+    "empty": {
+      "visible": true
+    },
+    "missingEvidence": {
+      "blocked": true,
+      "recovered": true
+    },
+    "error": {
+      "visible": true,
+      "retryVisible": true
+    },
+    "unavailable": {
+      "visible": true,
+      "distinctFromError": true,
+      "retryVisible": true
+    },
+    "retry": {
+      "clicked": true,
+      "recovered": true
+    },
+    "conflict": {
+      "visible": true,
+      "actionReenabled": true
+    }
+  },
+  "failures": []
+}
