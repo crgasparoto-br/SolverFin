@@ -264,19 +264,13 @@ export function enhanceInboxReviewQueue(html: string): string {
           return body;
         }
         function reviewedEvidenceIsVisible(id) {
-          if (!selected || state.selectedId !== id ||
-            selected.dataset.reviewSelectedId !== id || selected.dataset.reviewEvidenceState !== "ready" ||
-            !selected.dataset.reviewFingerprint) return false;
-          const evidence = selected.querySelector('[data-review-evidence="ready"]');
-          if (!evidence || !evidence.isConnected || evidence.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
-          // Reject non-perceptible evidence at every ancestor, not only the evidence node.
+          if (!selected || state.selectedId !== id || selected.dataset.reviewSelectedId !== id || selected.dataset.reviewEvidenceState !== "ready" || !selected.dataset.reviewFingerprint) return false;
+          const evidence = selected.querySelector('[data-review-evidence="ready"]'); if (!evidence || !evidence.isConnected || evidence.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
           if (evidence.checkVisibility && !evidence.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
           for (let node = evidence; node; node = node.parentElement) {
-            const css = window.getComputedStyle(node);
-            const rect = node.getBoundingClientRect();
-            if (rect.width <= 0 || rect.height <= 0 || css.display === "none" ||
-              css.visibility !== "visible" || Number(css.opacity) <= 0.01 ||
-              css.contentVisibility === "hidden" || css.clipPath !== "none" ||
+            const css = window.getComputedStyle(node), rect = node.getBoundingClientRect();
+            if (rect.width <= 0 || rect.height <= 0 || css.display === "none" || css.visibility !== "visible" ||
+              Number(css.opacity) <= 0.01 || css.contentVisibility === "hidden" || css.clipPath !== "none" ||
               css.maskImage !== "none" || css.webkitMaskImage !== "none") return false;
           }
           return true;

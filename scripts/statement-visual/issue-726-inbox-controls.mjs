@@ -1,5 +1,57 @@
 import { evaluate } from "./cdp.mjs";
 
+// A-006: prove the A6 button is contained and hit-testable, then reintroduce the
+// legacy three-column grid to ensure the same geometry check detects the regression.
+export async function validateReviewCardGridNegative(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+    const card = document.querySelector('[data-review-id="${suggestionId}"]');
+    const button = card?.querySelector('[data-review-select]');
+    if (!card || !button) throw new Error('Review card or selection button missing');
+    button.scrollIntoView({ block: 'center', inline: 'nearest' });
+    const inspect = () => {
+      const outer = card.getBoundingClientRect();
+      const inner = button.getBoundingClientRect();
+      const target = document.elementFromPoint(inner.left + inner.width / 2, inner.top + inner.height / 2);
+      return {
+        cardWidth: Math.round(outer.width),
+        cardRight: Math.round(outer.right),
+        buttonLeft: Math.round(inner.left),
+        buttonRight: Math.round(inner.right),
+        gridColumns: getComputedStyle(card).gridTemplateColumns,
+        overflowPx: Math.max(0, card.scrollWidth - card.clientWidth),
+        contained: inner.width >= 44 && inner.height >= 44 && inner.left >= outer.left - 1 && inner.right <= outer.right + 1,
+        hitTarget: target === button || button.contains(target)
+      };
+    };
+    const baseline = inspect();
+    const previous = [card.style.getPropertyValue('grid-template-columns'), card.style.getPropertyPriority('grid-template-columns')];
+    const previousButton = [button.style.getPropertyValue('grid-column'), button.style.getPropertyPriority('grid-column')];
+    let attack;
+    try {
+      card.style.setProperty('grid-template-columns',
+        'minmax(150px, .65fr) minmax(240px, 1.8fr) minmax(140px, auto)', 'important');
+      button.style.setProperty('grid-column', 'auto', 'important');
+      attack = inspect();
+    } finally {
+      if (previous[0]) card.style.setProperty('grid-template-columns', previous[0], previous[1]);
+      else card.style.removeProperty('grid-template-columns');
+      if (previousButton[0]) button.style.setProperty('grid-column', previousButton[0], previousButton[1]);
+      else button.style.removeProperty('grid-column');
+    }
+    const restored = inspect();
+    return {
+      baseline,
+      attack,
+      restored,
+      attackRejected: attack.overflowPx > 0 || !attack.contained || !attack.hitTarget,
+      restorationPassed: restored.contained && restored.hitTarget && restored.overflowPx === 0
+    };
+  })()`,
+  );
+}
+
 export async function validateCorrectionGuards(cdp, suggestionId, submitCorrectionDialog, waitFor) {
   const report = [];
   for (const mode of ["hidden", "wrong-selection", "changed-fingerprint"]) {
