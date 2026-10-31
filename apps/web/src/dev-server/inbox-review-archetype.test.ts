@@ -65,6 +65,9 @@ describe("Inbox review archetype", () => {
     assert.match(css, /--sf-color-neutral-control-hover/);
     assert.match(css, /--sf-shadow-focus/);
     assert.match(css, /--sf-density-interactive-target-min/);
+    assert.match(css, /\.inbox-section-nav \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
+    assert.match(css, /\.inbox-review-nav \{[^}]*flex: 0 0 auto;[^}]*white-space: nowrap;/);
+    assert.match(css, /\[data-review-refresh\]:disabled \{[^}]*opacity: \.72;/);
     assert.doesNotMatch(css, /#(?:[0-9a-fA-F]{3}){1,2}\b/);
   });
 

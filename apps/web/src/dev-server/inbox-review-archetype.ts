@@ -122,8 +122,8 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-cockpit { display: grid; gap: 16px; max-width: none; min-width: 0; padding: 0; }
     .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
     /* A6 uses compact neutral section links, not a second row of primary actions. */
-    .inbox-review-cockpit .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: var(--sf-space-2); min-width: 0; overflow: visible; }
-    .inbox-review-nav { flex: 1 1 auto; min-width: 0; min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3); font-size: var(--sf-font-size-sm); line-height: var(--sf-line-height-compact); text-decoration: none; white-space: normal; }
+    .inbox-review-cockpit .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: var(--sf-space-2); min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; }
+    .inbox-review-nav { flex: 0 0 auto; min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3); font-size: var(--sf-font-size-sm); line-height: var(--sf-line-height-compact); text-decoration: none; white-space: nowrap; scroll-snap-align: start; }
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
     .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence, .inbox-review-secondary { min-width: 0; }
     .inbox-review-queue, .inbox-review-detail { align-content: start; display: grid; gap: 12px; }
@@ -144,6 +144,7 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-new-entry-actions > summary:hover,
     .inbox-new-entry-actions[open] > summary { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     .inbox-new-entry-actions > summary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); box-shadow: var(--sf-shadow-focus); outline: none; }
+    .inbox-review-cockpit [data-review-refresh]:disabled { opacity: .72; cursor: not-allowed; }
     .inbox-new-entry-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
     .inbox-new-entry-menu > button { min-height: var(--sf-density-interactive-target-min); }
     .inbox-review-selected { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
@@ -208,7 +209,7 @@ export function inboxReviewArchetypeStyles(): string {
       .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
       .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
       .inbox-review-cockpit .inbox-section-nav { max-width: 100%; width: 100%; }
-      .inbox-review-nav { flex: 1 1 calc(50% - var(--sf-space-2)); justify-content: center; }
+      .inbox-review-nav { justify-content: center; }
       .inbox-new-entry-actions { margin-left: 0; width: 100%; }
       .inbox-date-filter-controls { align-items: stretch; }
     }

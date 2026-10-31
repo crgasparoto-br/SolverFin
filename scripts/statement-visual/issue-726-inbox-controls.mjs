@@ -257,6 +257,10 @@ export async function validateGoldenInboxControls(cdp) {
         actualHeight: Math.round(rect.height),
         neutral: node.getAttribute('data-button-variant') === 'neutral' ||
           node.classList.contains('sf-button-secondary') || node.matches('.inbox-new-entry-trigger'),
+        hovered: node.matches(':hover'),
+        focusVisible: node.matches(':focus-visible'),
+        active: node.matches(':active'),
+        expanded: Boolean(node.closest('details')?.open),
       };
     };
     const colors = (color) => {
@@ -289,15 +293,27 @@ export async function validateGoldenInboxControls(cdp) {
     const selected = document.querySelector('.review-card.selected [data-review-select]');
     const refreshNode = document.querySelector('[data-review-refresh]');
     if (!row || !nav || !trigger || !refresh || !status || !selected || !refreshNode) return {complete:false};
+    const originallyDisabled = refreshNode.disabled;
     refreshNode.disabled = true;
-    const disabledOpacity = getComputedStyle(refreshNode).opacity;
-    refreshNode.disabled = false;
+    const disabledOpacity = Number(getComputedStyle(refreshNode).opacity);
+    const disabledCursor = getComputedStyle(refreshNode).cursor;
+    refreshNode.disabled = originallyDisabled;
+    const neutralTokensMatch = (item) => {
+      const normal = similar(item.background, token('surface')) &&
+        similar(item.color, token('primary')) &&
+        [token('border'), token('line')].some((border) => similar(item.border, border));
+      const interactive = (item.hovered || item.focusVisible || item.active || item.expanded) &&
+        similar(item.background, token('neutral-control-hover')) &&
+        similar(item.color, token('neutral-control-text-hover')) &&
+        similar(item.border, token('neutral-control-border-hover'));
+      return normal || interactive;
+    };
     return {
       complete: true, row, nav, trigger, refresh, status,
       selectedAriaPressed: selected.getAttribute('aria-pressed'),
-      tokenMatch: [row, nav, trigger, refresh].every((item) => similar(item.background, token('surface')) && similar(item.color, token('primary'))),
+      tokenMatch: [row, nav, trigger, refresh].every(neutralTokensMatch),
       contrast: [row, nav, trigger, refresh].map((item) => contrast(item.color, item.background)),
-      disabledOpacity: Number(disabledOpacity),
+      disabledOpacity, disabledCursor,
       ariaMenuLabel: document.querySelector('.inbox-new-entry-trigger')?.getAttribute('aria-label'),
       hasNeutralLinks: document.querySelectorAll('.inbox-section-nav a.sf-button-secondary').length === 3,
       financialDirectionColorFromTokens: document.querySelector('.review-risk') ?
