@@ -24,7 +24,7 @@ assert.match(enhanced, /detail\?\.payload\?\.fingerprint !== fingerprint/);
 assert.match(enhanced, /window\.__solverfinInboxReviewGuard/);
 assert.doesNotMatch(enhanced, /handleCorrectionSubmit|correctionSuggestionId/);
 assert.doesNotMatch(enhanced, /document\.addEventListener\("submit"/);
-assert.match(enhanced, /data-correct-and-approve/);
+assert.doesNotMatch(enhanced, /data-correct-and-approve/);
 assert.match(enhanced, /data-api-action/);
 assert.match(enhanced, /resolveCategorizationTargetKind/);
 assert.match(enhanced, /proposal\.targetTransactionId/);
