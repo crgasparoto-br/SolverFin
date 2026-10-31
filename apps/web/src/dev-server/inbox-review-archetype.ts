@@ -131,7 +131,7 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-group { border: 0; border-radius: 0; background: transparent; padding: 0; }
     .inbox-review-group + .inbox-review-group { margin-top: 2px; }
     .inbox-review-evidence { border: 0; border-radius: 0; background: transparent; padding: 0; }
-    .inbox-review-queue-heading, .inbox-review-detail-heading { align-items: start; display: flex; gap: 12px; justify-content: space-between; }
+    .inbox-review-queue-heading, .inbox-review-detail-heading { align-items: start; display: grid; gap: var(--sf-space-1); }
     .inbox-review-queue-heading > div, .inbox-review-detail-heading > div { display: grid; gap: 3px; }
     .inbox-review-detail { position: sticky; top: 12px; }
     .inbox-new-entry-actions { margin-left: auto; min-width: 0; }

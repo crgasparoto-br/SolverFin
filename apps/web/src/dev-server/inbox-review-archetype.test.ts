@@ -141,6 +141,10 @@ describe("Inbox review archetype", () => {
     assert.doesNotMatch(html.slice(0, secondaryAt), /data-api-path="[^"]+\/(approve|reject)"/);
     const styles = inboxReviewArchetypeStyles();
     assert.match(styles, /\.inbox-review-detail \{ background: var\(--surface\)/);
+    assert.match(
+      styles,
+      /\.inbox-review-queue-heading, \.inbox-review-detail-heading \{ align-items: start; display: grid/,
+    );
     assert.match(styles, /\.inbox-review-group \{ border: 0/);
     assert.match(styles, /@media \(max-width: 900px\)/);
     assert.match(styles, /@media \(max-width: 600px\)/);

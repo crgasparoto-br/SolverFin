@@ -554,7 +554,7 @@ export function enhanceInboxReviewQueue(html: string): string {
       }
       .review-card.selected { background: var(--sf-color-surface-soft); border-left-color: var(--sf-color-primary); }
       .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
-      .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: 44px; }
+      .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: var(--sf-density-interactive-target-min); }
       .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
        .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
       .review-risk { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-full); color: var(--sf-color-warning-text); font-size: var(--sf-font-size-xs); font-weight: var(--sf-font-weight-bold); padding: var(--sf-space-1) var(--sf-space-2); }
