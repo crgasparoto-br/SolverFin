@@ -84,7 +84,11 @@ try {
       goldenScreenControls.push({ viewport: `${width}x${height}`, ...result.golden });
       reviewCardGridNegatives.push({ viewport: `${width}x${height}`, ...result.negative });
       check(result.goldenPass, `Golden Screen controls diverge in ${width}px Inbox`, result.golden);
-      check(result.negativePass, `Legacy three-column grid escaped the review-card control at ${width}px`, result.negative);
+      check(
+        result.negativePass,
+        `Legacy three-column grid escaped the review-card control at ${width}px`,
+        result.negative,
+      );
     }
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
     check(evidence.selectedEvidenceReady, `Selected evidence is not ready at ${width}px`, evidence);
