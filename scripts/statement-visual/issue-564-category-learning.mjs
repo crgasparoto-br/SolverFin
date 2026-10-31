@@ -130,15 +130,29 @@ try {
   const learningCountBefore = await readLearningCount(browser.cdp);
   await setViewport(browser.cdp, 390, 844);
   await openCorrectionDialog(browser.cdp, fixtures.correctionSuggestionId, fixtures.categoryId);
-  const correctionGuards = await validateCorrectionGuards(browser.cdp, fixtures.correctionSuggestionId);
-  assert.ok(correctionGuards.every((item) => item.blocked && item.posts === 0),
-    `Category correction escaped evidence guard: ${JSON.stringify(correctionGuards)}`);
+  const correctionGuards = await validateCorrectionGuards(
+    browser.cdp,
+    fixtures.correctionSuggestionId,
+  );
+  assert.ok(
+    correctionGuards.every((item) => item.blocked && item.posts === 0),
+    `Category correction escaped evidence guard: ${JSON.stringify(correctionGuards)}`,
+  );
   await screenshot(browser.cdp, join(outputDir, "issue-726-category-correction-stale.png"));
-  await evaluate(browser.cdp, `document.querySelector('[data-category-correction-dialog]')?.close()`);
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-category-correction-dialog]')?.close()`,
+  );
   await waitFor(browser.cdp, `!document.querySelector('[data-category-correction-dialog]')`);
   await evaluate(browser.cdp, `document.querySelector('[data-review-evidence-retry]')?.click()`);
-  await waitFor(browser.cdp, `document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready'`);
-  await waitFor(browser.cdp, `Boolean(document.querySelector('[data-correct-and-approve="${fixtures.correctionSuggestionId}"]'))`);
+  await waitFor(
+    browser.cdp,
+    `document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready'`,
+  );
+  await waitFor(
+    browser.cdp,
+    `Boolean(document.querySelector('[data-correct-and-approve="${fixtures.correctionSuggestionId}"]'))`,
+  );
   await openCorrectionDialog(browser.cdp, fixtures.correctionSuggestionId, fixtures.categoryId);
   await installOneShotApprovalFailure(browser.cdp, fixtures.correctionSuggestionId);
   await submitCorrectionDialog(browser.cdp);
@@ -383,8 +397,10 @@ async function openCorrectionDialog(cdp, suggestionId, categoryId) {
 
 async function validateCorrectionGuards(cdp, suggestionId) {
   const report = [];
-  for (const mode of ['hidden', 'wrong-selection', 'changed-fingerprint']) {
-    const initial = await evaluate(cdp, `(() => {
+  for (const mode of ["hidden", "wrong-selection", "changed-fingerprint"]) {
+    const initial = await evaluate(
+      cdp,
+      `(() => {
       const originalFetch = window.fetch;
       const selected = document.getElementById('inbox-review-selected');
       const element = selected.querySelector('[data-review-evidence="ready"]');
@@ -411,18 +427,27 @@ async function validateCorrectionGuards(cdp, suggestionId) {
         return originalFetch(...args);
       };
       return { fingerprint: selected.dataset.reviewFingerprint, mode: ${JSON.stringify(mode)} };
-    })()`);
+    })()`,
+    );
     await submitCorrectionDialog(cdp);
-    await waitFor(cdp, `document.querySelector('[data-category-correction-dialog] .form-status')?.textContent?.includes('evidência') === true`);
-    const result = await evaluate(cdp, `(() => {
+    await waitFor(
+      cdp,
+      `document.querySelector('[data-category-correction-dialog] .form-status')?.textContent?.includes('evidência') === true`,
+    );
+    const result = await evaluate(
+      cdp,
+      `(() => {
       const selected = document.getElementById('inbox-review-selected');
       const element = selected.querySelector('[data-review-evidence="ready"]');
       const form = document.querySelector('[data-category-correction-dialog] form.edit-grid');
       return { posts: window.__issue726ApprovalPosts, blocked: Boolean(form && !form.querySelector('button[type="submit"]').disabled),
         reviewState: selected.dataset.reviewEvidenceState };
-    })()`);
+    })()`,
+    );
     report.push({ ...initial, ...result });
-    await evaluate(cdp, `(() => {
+    await evaluate(
+      cdp,
+      `(() => {
       const selected = document.getElementById('inbox-review-selected');
       const element = selected.querySelector('[data-review-evidence="ready"]');
       if (element) element.style.visibility = window.__issue726OriginalVisibility;
@@ -430,7 +455,8 @@ async function validateCorrectionGuards(cdp, suggestionId) {
       window.fetch = window.__issue726OriginalFetch;
       delete window.__issue726OriginalFetch;
       return true;
-    })()`);
+    })()`,
+    );
   }
   return report;
 }

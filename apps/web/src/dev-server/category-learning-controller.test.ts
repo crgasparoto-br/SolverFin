@@ -21,7 +21,7 @@ assertIncludes(script, "showModal", "focused correction dialog");
 assertIncludes(script, "solverfin:inbox-review-selected", "contextual selection update");
 assertIncludes(
   script,
-  'window.__solverfinInboxReviewGuard?.(item.id)',
+  "window.__solverfinInboxReviewGuard?.(item.id)",
   "block correction without visible evidence",
 );
 assertIncludes(

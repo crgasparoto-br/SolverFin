@@ -48,8 +48,15 @@ describe("Inbox category hierarchy first render", () => {
       assert.match(html, /Insights financeiros aguardando dados/);
       const secondary = html.indexOf('id="inbox-review-secondary"');
       const fallback = html.indexOf('data-financial-insight-fallback="true"');
-      assert.ok(secondary > 0 && fallback > secondary, "Insufficient insights must remain secondary to review");
-      assert.ok(!html.slice(html.indexOf('id="inbox-review-queue"'), secondary).includes('data-financial-insight-fallback="true"'));
+      assert.ok(
+        secondary > 0 && fallback > secondary,
+        "Insufficient insights must remain secondary to review",
+      );
+      assert.ok(
+        !html
+          .slice(html.indexOf('id="inbox-review-queue"'), secondary)
+          .includes('data-financial-insight-fallback="true"'),
+      );
     } finally {
       globalThis.fetch = originalFetch;
     }

@@ -100,13 +100,25 @@ try {
   );
 
   fingerprintChecks = await validateFingerprintBinding(browser.cdp);
-  check(fingerprintChecks.every((item) => item.ok), "A review decision was not bound to displayed evidence", fingerprintChecks);
+  check(
+    fingerprintChecks.every((item) => item.ok),
+    "A review decision was not bound to displayed evidence",
+    fingerprintChecks,
+  );
   hierarchyNegative = await validateHierarchyNegative(browser.cdp);
-  check(hierarchyNegative.baseline && hierarchyNegative.attackRejected && hierarchyNegative.restored,
-    "Moving imports above review was not detected by the visual order guard", hierarchyNegative);
+  check(
+    hierarchyNegative.baseline && hierarchyNegative.attackRejected && hierarchyNegative.restored,
+    "Moving imports above review was not detected by the visual order guard",
+    hierarchyNegative,
+  );
   longEvidence = await validateLongEvidence(browser.cdp);
-  check(longEvidence.every((item) => item.bodyFitsViewport && item.decisionFitsViewport && item.evidenceBeforeDecision),
-    "Long evidence displaces contextual decisions at narrow viewports", longEvidence);
+  check(
+    longEvidence.every(
+      (item) => item.bodyFitsViewport && item.decisionFitsViewport && item.evidenceBeforeDecision,
+    ),
+    "Long evidence displaces contextual decisions at narrow viewports",
+    longEvidence,
+  );
 
   urlState = await validateFilterUrl(browser.cdp);
   check(urlState.confidencePersisted, "Confidence filter was not persisted in URL", urlState);
@@ -311,7 +323,9 @@ async function validateEvidenceNegativeControl(cdp) {
 }
 
 async function validateFingerprintBinding(cdp) {
-  return evaluate(cdp, `(async () => {
+  return evaluate(
+    cdp,
+    `(async () => {
     const originalFetch = window.fetch;
     const originalConfirm = window.confirm;
     const selected = document.getElementById('inbox-review-selected');
@@ -373,11 +387,14 @@ async function validateFingerprintBinding(cdp) {
       window.fetch = originalFetch;
       window.confirm = originalConfirm;
     }
-  })()`);
+  })()`,
+  );
 }
 
 async function validateHierarchyNegative(cdp) {
-  return evaluate(cdp, `(() => {
+  return evaluate(
+    cdp,
+    `(() => {
     const layout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
     const secondary = document.querySelector('.inbox-review-secondary');
     const fallback = document.querySelector('[data-financial-insight-fallback="true"]');
@@ -394,14 +411,20 @@ async function validateHierarchyNegative(cdp) {
       if (nextSibling) originalParent.insertBefore(secondary, nextSibling);
       else originalParent.appendChild(secondary);
     }
-  })()`);
+  })()`,
+  );
 }
 
 async function validateLongEvidence(cdp) {
   const findings = [];
-  for (const [width, height] of [[320, 740], [390, 844]]) {
+  for (const [width, height] of [
+    [320, 740],
+    [390, 844],
+  ]) {
     await setViewport(cdp, width, height);
-    const inspected = await evaluate(cdp, `(() => {
+    const inspected = await evaluate(
+      cdp,
+      `(() => {
       const selected = document.getElementById('inbox-review-selected');
       const evidence = selected?.querySelector('[data-review-evidence="ready"]');
       const decision = selected?.querySelector('[data-review-approve]');
@@ -418,7 +441,8 @@ async function validateLongEvidence(cdp) {
           evidenceBeforeDecision: Boolean(evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)
         };
       } finally { paragraph.remove(); }
-    })()`);
+    })()`,
+    );
 
     findings.push({ width, height, ...inspected });
   }
