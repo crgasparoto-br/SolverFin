@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateCorrectionGuards } from "./issue-726-inbox-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -101,6 +102,14 @@ try {
   await navigate(browser.cdp, `${baseUrl}/inbox`);
   await waitFor(
     browser.cdp,
+    `Boolean(document.querySelector('[data-review-id="${fixtures.correctionSuggestionId}"] [data-review-select]'))`,
+  );
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-review-id="${fixtures.correctionSuggestionId}"] [data-review-select]')?.click()`,
+  );
+  await waitFor(
+    browser.cdp,
     `Array.from(document.querySelectorAll('[data-review-id]')).some((row) =>
        (row.textContent || '').includes('origem correção anterior')
      ) &&
@@ -121,6 +130,32 @@ try {
 
   const learningCountBefore = await readLearningCount(browser.cdp);
   await setViewport(browser.cdp, 390, 844);
+  await openCorrectionDialog(browser.cdp, fixtures.correctionSuggestionId, fixtures.categoryId);
+  const correctionGuards = await validateCorrectionGuards(
+    browser.cdp,
+    fixtures.correctionSuggestionId,
+    submitCorrectionDialog,
+    waitFor,
+  );
+  assert.ok(
+    correctionGuards.every((item) => item.blocked && item.posts === 0),
+    `Category correction escaped evidence guard: ${JSON.stringify(correctionGuards)}`,
+  );
+  await screenshot(browser.cdp, join(outputDir, "issue-726-category-correction-stale.png"));
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-category-correction-dialog]')?.close()`,
+  );
+  await waitFor(browser.cdp, `!document.querySelector('[data-category-correction-dialog]')`);
+  await evaluate(browser.cdp, `document.querySelector('[data-review-evidence-retry]')?.click()`);
+  await waitFor(
+    browser.cdp,
+    `document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready'`,
+  );
+  await waitFor(
+    browser.cdp,
+    `Boolean(document.querySelector('[data-correct-and-approve="${fixtures.correctionSuggestionId}"]'))`,
+  );
   await openCorrectionDialog(browser.cdp, fixtures.correctionSuggestionId, fixtures.categoryId);
   await installOneShotApprovalFailure(browser.cdp, fixtures.correctionSuggestionId);
   await submitCorrectionDialog(browser.cdp);
@@ -168,6 +203,7 @@ try {
     settingsAfter,
     settingsMobile,
     inboxOrigin,
+    correctionGuards,
     failedDialog,
     learningCountBefore,
     learningCountAfter,

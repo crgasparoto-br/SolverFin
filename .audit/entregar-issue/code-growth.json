@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
-  "comparison_base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+  "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,65 +19,39 @@
   },
   "files": [
     {
-      "path": "apps/web/src/design-system/money.ts",
-      "lines_before": 51,
-      "lines_after": 58
+      "path": "apps/web/src/dev-server/category-learning-controller.ts",
+      "lines_before": 361,
+      "lines_after": 365
     },
     {
-      "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+      "path": "apps/web/src/dev-server/inbox-page.ts",
+      "lines_before": 1192,
+      "lines_after": 1191
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "lines_before": 546,
+      "lines_after": 564
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+      "lines_before": 284,
+      "lines_after": 271
+    },
+    {
+      "path": "scripts/statement-visual/issue-564-category-learning.mjs",
+      "lines_before": 462,
+      "lines_after": 490
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "lines_before": 479,
+      "lines_after": 489
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
       "lines_before": null,
-      "lines_after": 143
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-filters.ts",
-      "lines_before": null,
-      "lines_after": 66
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-focus.ts",
-      "lines_before": null,
-      "lines_after": 155
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-form.ts",
-      "lines_before": null,
-      "lines_after": 123
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-page.ts",
-      "lines_before": 641,
-      "lines_after": 507
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-table.ts",
-      "lines_before": null,
-      "lines_after": 193
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-view-model.ts",
-      "lines_before": 331,
-      "lines_after": 371
-    },
-    {
-      "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-      "lines_before": 102,
-      "lines_after": 455
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
-      "lines_before": null,
-      "lines_after": 419,
-      "justification": "419-line cohesive Chrome dialog harness needed to exercise create/edit/keyboard/menu interactions across 1366, 390 and 320 px, including discriminating negative reflow and restoration. The fixture reuses its shared dialog assertion helper and a single CDP session; splitting it would fragment the same scenario. Source remains under the 500-line hard cap, and production SSR budgets-page.ts shrank relative to the base."
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",
-      "lines_before": null,
-      "lines_after": 95
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-menu-checks.mjs",
-      "lines_before": null,
-      "lines_after": 131
+      "lines_after": 234
     }
   ],
   "blocking_files": []

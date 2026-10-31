@@ -233,7 +233,9 @@ export function categoryLearningControllerScript(): string {
                 (category) => category.status === "active" && category.kind === transactionKind,
               );
               if (compatibleCategories.length === 0) continue;
-              const actions = row.querySelector(".maintenance-actions");
+              const selected = document.getElementById("inbox-review-selected");
+              if (selected?.dataset.reviewSelectedId !== item.id || selected.dataset.reviewEvidenceState !== "ready") continue;
+              const actions = selected.querySelector(".review-decision-actions");
               if (!actions || actions.querySelector("[data-correct-and-approve]")) continue;
 
               const button = document.createElement("button");
@@ -242,7 +244,10 @@ export function categoryLearningControllerScript(): string {
               button.dataset.correctAndApprove = item.id;
               button.title = "Escolher outra categoria e aprovar";
               button.innerHTML = correctIcon + " Corrigir e aprovar";
-              button.addEventListener("click", () => openCorrectionDialog(item, compatibleCategories));
+              button.addEventListener("click", () => {
+                if (!window.__solverfinInboxReviewGuard?.(item.id)) return;
+                openCorrectionDialog(item, compatibleCategories);
+              });
               actions.prepend(button);
             }
           } catch {
@@ -316,7 +321,21 @@ export function categoryLearningControllerScript(): string {
             submit.disabled = true;
             status.textContent = "Salvando correção...";
             try {
+              const evidence = document.getElementById("inbox-review-selected");
+              if (!window.__solverfinInboxReviewGuard?.(item.id)) {
+                throw new Error("A evidência desta sugestão não está mais visível. Atualize a revisão.");
+              }
+              const reviewedFingerprint = evidence.dataset.reviewFingerprint;
+              const fresh = await readJson("/api/ai-review-queue/" + encodeURIComponent(item.id) + "/payload");
+              const fingerprint = fresh?.payload?.fingerprint;
+              if (!window.__solverfinInboxReviewGuard?.(item.id) ||
+                evidence.dataset.reviewFingerprint !== reviewedFingerprint ||
+                typeof fingerprint !== "string" || !fingerprint || fingerprint !== reviewedFingerprint) {
+                window.__solverfinInboxInvalidateReview?.(item.id, "A evidência mudou. Consulte a nova versão antes de decidir.");
+                throw new Error("A evidência mudou. Atualize a revisão antes de decidir.");
+              }
               await postJson("/api/ai-review-queue/" + encodeURIComponent(item.id) + "/approve", {
+                expectedFingerprint: fingerprint,
                 payloadOverride: { categoryId: select.value },
               });
               dialog.close();
@@ -337,6 +356,9 @@ export function categoryLearningControllerScript(): string {
         void initSettingsLearning();
         void initInboxLearning();
         observeInboxReviewQueue();
+        window.addEventListener("solverfin:inbox-review-selected", () => {
+          void initInboxLearning();
+        });
       })();
     </script>
   `;

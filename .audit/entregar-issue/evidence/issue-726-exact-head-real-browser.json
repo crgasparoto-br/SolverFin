@@ -1,0 +1,174 @@
+{
+  "schema_version": 1,
+  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "runner": "GitHub-hosted Chrome authenticated demo profile",
+  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+  "workflow_run_id": 41191926382,
+  "workflow_status": "completed/success",
+  "artifact_id": 13040015465,
+  "artifact_name": "statement-visual-evidence-5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "artifact_digest": "sha256:f6019416d31308617f35c72b8eaffd133830bc91aaf54227a04bd299672abb16",
+  "raw_evidence": {
+    "queue": {
+      "path": "evidence/issue-726-chrome-queue-exact-head.json",
+      "sha256": "6aa97fc4b4e474359cc891a414db2d7011f36ddee47b0819d0c293becb1d1f49"
+    },
+    "states": {
+      "path": "evidence/issue-726-chrome-queue-states-exact-head.json",
+      "sha256": "de97f0baaa787b672e7dfc9ef55dd7f8883ecf2381e751cfa0e500d3cd6d4e35"
+    },
+    "correction": {
+      "path": "evidence/issue-726-chrome-category-correction-exact-head.json",
+      "sha256": "0fbf0c931b2d61c6aa612a4c3c666b61945e39c6a4f84cf1a4ca170d22098916"
+    }
+  },
+  "observations": {
+    "viewports": [
+      "320x740",
+      "390x844",
+      "768x1024",
+      "1024x768",
+      "1366x768",
+      "1440x900",
+      "1366x900"
+    ],
+    "all_cards_contained": true,
+    "all_without_horizontal_overflow": true,
+    "all_decision_after_evidence": true,
+    "all_secondary_below_review": true,
+    "fingerprint_race": [
+      {
+        "action": "approve",
+        "changed": true,
+        "posts": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "changed": false,
+        "posts": 1,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "changed": true,
+        "posts": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "changed": false,
+        "posts": 1,
+        "ok": true
+      }
+    ],
+    "grid_negatives": [
+      {
+        "viewport": "390x844",
+        "attack_overflow_px": 162,
+        "attack_rejected": true,
+        "restoration_passed": true
+      },
+      {
+        "viewport": "1366x768",
+        "attack_overflow_px": 72,
+        "attack_rejected": true,
+        "restoration_passed": true
+      }
+    ],
+    "contrast": [
+      {
+        "viewport": "390x844",
+        "rest_contrast": [
+          11.72,
+          11.72,
+          11.72,
+          11.72
+        ],
+        "disabled_contrast": 6.92,
+        "tokens_match": true,
+        "keyboard": {
+          "opened": true,
+          "closed": true,
+          "focusRestored": true
+        }
+      },
+      {
+        "viewport": "1366x768",
+        "rest_contrast": [
+          11.72,
+          11.72,
+          10.7,
+          11.72
+        ],
+        "disabled_contrast": 6.92,
+        "tokens_match": true,
+        "keyboard": {
+          "opened": true,
+          "closed": true,
+          "focusRestored": true
+        }
+      }
+    ],
+    "evidence_hidden_post_blocked": true,
+    "long_evidence": [
+      {
+        "width": 320,
+        "height": 740,
+        "screenshot": "issue-726-inbox-long-evidence-320x740.png",
+        "bodyFitsViewport": true,
+        "decisionFitsViewport": true,
+        "evidenceBeforeDecision": true
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "screenshot": "issue-726-inbox-long-evidence-390x844.png",
+        "bodyFitsViewport": true,
+        "decisionFitsViewport": true,
+        "evidenceBeforeDecision": true
+      }
+    ],
+    "text_200_percent": {
+      "rootFontSize": 32,
+      "cardVisible": true,
+      "actionsVisible": true,
+      "actionsContainedInCards": true,
+      "bodyFitsViewport": true,
+      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvw940i1Revisar"
+    },
+    "correction_guards": [
+      {
+        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "mode": "hidden",
+        "posts": 0,
+        "blocked": true,
+        "reviewState": "ready"
+      },
+      {
+        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "mode": "wrong-selection",
+        "posts": 0,
+        "blocked": true,
+        "reviewState": "ready"
+      },
+      {
+        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "mode": "changed-fingerprint",
+        "posts": 0,
+        "blocked": true,
+        "reviewState": "unavailable"
+      }
+    ],
+    "states_failures": [],
+    "evidence_long_images": [
+      "issue-726-inbox-long-evidence-320x740.png",
+      "issue-726-inbox-long-evidence-390x844.png"
+    ]
+  },
+  "coverage_limits": [
+    "The Chrome probes confirm rest, disabled and menu focus styles, but do not independently force hover/pressed/focus-visible for every neutral control or dialog selector.",
+    "The implementing context does not constitute independent human visual approval; separate review must inspect screenshots for final qualitative composition.",
+    "Chrome uses a controlled authenticated demo fixture, not real user bank messages."
+  ]
+}

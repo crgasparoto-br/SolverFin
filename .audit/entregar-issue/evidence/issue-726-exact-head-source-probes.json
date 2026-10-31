@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "source_paths": [
+    "apps/web/src/dev-server/inbox-review-archetype.ts",
+    "apps/web/src/dev-server/inbox-review-queue-enhancement.ts"
+  ],
+  "source_code_checks": {
+    "a6_layout": true,
+    "no_hardcoded_colors_in_archetype": true,
+    "css_card_column_fix": true,
+    "current_fingerprint_before_post": true,
+    "manual_confirmation": true,
+    "currency_metadata": false,
+    "secondary_below": true
+  },
+  "kind": "static-check",
+  "scope": "structural source only, not browser behavior",
+  "authentic_browser_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382"
+}

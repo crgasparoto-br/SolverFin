@@ -18,6 +18,17 @@ assertIncludes(
 );
 assertIncludes(script, "aria-live", "accessible async feedback");
 assertIncludes(script, "showModal", "focused correction dialog");
+assertIncludes(script, "solverfin:inbox-review-selected", "contextual selection update");
+assertIncludes(
+  script,
+  "window.__solverfinInboxReviewGuard?.(item.id)",
+  "block correction without visible evidence",
+);
+assertIncludes(
+  script,
+  "expectedFingerprint: fingerprint",
+  "compare current suggestion fingerprint",
+);
 
 function assertIncludes(value: string, expected: string, message: string): void {
   if (!value.includes(expected)) {

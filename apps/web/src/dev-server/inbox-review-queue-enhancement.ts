@@ -27,7 +27,9 @@ export function enhanceInboxReviewQueue(html: string): string {
         const heading = section.querySelector(".section-heading");
         const dialog = document.getElementById("ai-review-dialog");
         const dialogBody = document.getElementById("ai-review-dialog-body");
-        const state = { items: [], accounts: [], categories: [], details: new Map(), trigger: null };
+        const selected = document.getElementById("inbox-review-selected");
+        let selectionGeneration = 0;
+        const state = { items: [], accounts: [], categories: [], details: new Map(), trigger: null, selectedId: null };
         const currentUrl = new URL(window.location.href);
 
         const filterBar = document.createElement("div");
@@ -45,7 +47,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           '<label>Confiança<select data-review-filter="confidence">' +
             '<option value="all">Todas</option><option value="low">Baixa confiança</option>' +
             '<option value="normal">Normal</option></select></label>' +
-          '<button type="button" class="secondary-button" data-review-refresh title="Atualizar fila">Atualizar</button>';
+          '<button type="button" class="secondary-button" data-button-variant="neutral" data-review-refresh title="Atualizar fila">Atualizar</button>';
         heading?.insertAdjacentElement("afterend", filterBar);
 
         const kindFilter = filterBar.querySelector('[data-review-filter="kind"]');
@@ -93,7 +95,12 @@ export function enhanceInboxReviewQueue(html: string): string {
           return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
         }
         function formatMoney(minor, currency) {
-          return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency || "BRL" }).format(Number(minor || 0) / 100);
+          if (typeof currency !== "string" || !currency.trim()) return "Moeda indisponível";
+          try {
+            return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(Number(minor || 0) / 100);
+          } catch {
+            return "Moeda indisponível";
+          }
         }
         function categoryName(id) {
           if (!id) return "Sem categoria";
@@ -169,27 +176,38 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (count) count.textContent = visible.length + " item(ns)";
           if (!rows) return;
           if (!visible.length) {
+            state.selectedId = null;
             rows.innerHTML = '<div class="empty-state"><strong>Nenhuma sugestão neste filtro.</strong><p class="muted">Altere os filtros ou atualize a fila.</p></div>';
+            renderSelected();
             return;
           }
+          if (!visible.some((item) => item.id === state.selectedId)) state.selectedId = visible[0].id;
           rows.innerHTML = visible.map((item) => {
-            const low = item.risk === "low_confidence" ? '<span class="review-risk">Baixa confiança</span>' : "";
-            const pending = item.status === "pending_review";
-            const edit = pending && (item.kind === "transaction_extraction" || item.kind === "categorization")
-              ? '<button type="button" class="secondary-button" data-review-edit="' + escapeHtml(item.id) + '">Editar</button>'
-              : "";
-            const decision = pending
-              ? '<button type="button" class="secondary-button" data-review-approve="' + escapeHtml(item.id) + '">Aprovar</button>' +
-                '<button type="button" class="secondary-button danger-action" data-review-reject="' + escapeHtml(item.id) + '">Rejeitar</button>'
-              : "";
-            return '<article class="maintenance-item review-card" data-review-id="' + escapeHtml(item.id) + '">' +
+            const chosen = item.id === state.selectedId;
+            const low = item.risk === "low_confidence" ? '<span class="sf-badge review-risk" data-tone="attention">Baixa confiança</span>' : "";
+            return '<article class="maintenance-item review-card' + (chosen ? ' selected' : '') + '" data-review-id="' + escapeHtml(item.id) + '" data-review-kind="' + escapeHtml(item.kind) + '">' +
               '<div class="maintenance-summary"><div><strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
               '<span>' + escapeHtml(formatStatus(item.status)) + ' · origem ' + escapeHtml(formatOrigin(item.origin)) + ' · confiança ' + escapeHtml(Math.round(Number(item.confidence) * 100)) + '%</span></div>' + low + '</div>' +
-              '<div class="message-preview"><p><strong>' + escapeHtml(item.maskedSummary) + '</strong></p><p>' + escapeHtml(item.explanation) + '</p></div>' +
-              '<div class="maintenance-actions"><button type="button" class="secondary-button" data-review-details="' + escapeHtml(item.id) + '">Ver detalhes</button>' + edit + decision + '<p class="form-status muted" data-review-row-status aria-live="polite"></p></div>' +
+              '<p class="review-card-summary">' + escapeHtml(item.maskedSummary) + '</p>' +
+              '<button type="button" class="secondary-button" data-button-variant="neutral" data-review-select="' + escapeHtml(item.id) + '" aria-controls="inbox-review-selected" aria-pressed="' + chosen + '">' + (chosen ? "Em revisão" : "Revisar") + '</button>' +
               '</article>';
           }).join("");
           bindRows();
+          renderSelected();
+        }
+        function selectItem(id) {
+          if (!state.items.some((item) => item.id === id) || id === state.selectedId) return;
+          state.selectedId = id;
+          rows.querySelectorAll("[data-review-select]").forEach((button) => {
+            const chosen = button.dataset.reviewSelect === id;
+            button.setAttribute("aria-pressed", String(chosen));
+            button.textContent = chosen ? "Em revisão" : "Revisar";
+            button.closest(".review-card")?.classList.toggle("selected", chosen);
+          });
+          renderSelected();
+          if (window.matchMedia("(max-width: 900px)").matches) {
+            document.getElementById("inbox-review-detail-title")?.scrollIntoView({ block: "start", behavior: "auto" });
+          }
         }
         async function loadQueue() {
           queueStatus("Carregando sugestões...", "muted", false);
@@ -208,6 +226,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           } catch (error) {
             const unavailable = isTemporaryUnavailable(error);
             queueStatus(errorMessage(error), unavailable ? "unavailable" : "error", true);
+            invalidateSelection("A fila não pôde ser atualizada. Recarregue-a antes de tomar qualquer decisão.");
           }
         }
         async function detailFor(id, force) {
@@ -225,7 +244,7 @@ export function enhanceInboxReviewQueue(html: string): string {
             '<div><dt>Confiança</dt><dd>' + escapeHtml(Math.round(Number(payload.confidence || 0) * 100)) + '%</dd></div></dl>';
           if (payload.suggestionKind === "transaction_extraction") {
             body += '<dl class="review-detail-grid"><div><dt>Data</dt><dd>' + escapeHtml(formatDate(proposal.occurredOn)) + '</dd></div>' +
-              '<div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(proposal.amountMinor, proposal.currency)) + '</dd></div>' +
+              '<div><dt>Valor</dt><dd class="review-money-value">' + escapeHtml(formatMoney(proposal.amountMinor, proposal.currency)) + '</dd></div>' +
               '<div><dt>Conta</dt><dd>' + escapeHtml(accountName(proposal.accountId)) + '</dd></div>' +
               '<div><dt>Categoria</dt><dd>' + escapeHtml(categoryName(proposal.categoryId)) + '</dd></div></dl>' +
               '<p><strong>' + escapeHtml(proposal.description || "Sem descrição") + '</strong></p>';
@@ -236,11 +255,98 @@ export function enhanceInboxReviewQueue(html: string): string {
               ? '<div class="review-warning"><strong>Conflitos</strong><ul>' + proposal.conflicts.map((item) => '<li>' + escapeHtml(item) + '</li>').join("") + '</ul></div>'
               : '<p class="muted">Nenhum conflito estrutural informado.</p>';
           } else if (payload.suggestionKind === "insight") {
-            body += '<h3>' + escapeHtml(proposal.title) + '</h3><p>' + escapeHtml(proposal.summary) + '</p>' +
-              '<p class="muted">Período: ' + escapeHtml(formatDate(proposal.periodStartOn)) + ' a ' + escapeHtml(formatDate(proposal.periodEndOn)) + '</p>';
+            if (typeof window.__solverfinInboxRenderInsight !== "function") {
+              throw new Error("Evidência do insight indisponível para revisão.");
+            }
+            body += window.__solverfinInboxRenderInsight(payload);
           }
           if (reasons) body += '<details><summary>Por que esta sugestão?</summary><ul>' + reasons + '</ul></details>';
           return body;
+        }
+        function reviewedEvidenceIsVisible(id) {
+          if (!selected || state.selectedId !== id || selected.dataset.reviewSelectedId !== id || selected.dataset.reviewEvidenceState !== "ready" || !selected.dataset.reviewFingerprint) return false;
+          const evidence = selected.querySelector('[data-review-evidence="ready"]'); if (!evidence || !evidence.isConnected || evidence.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+          if (evidence.checkVisibility && !evidence.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false;
+          for (let node = evidence; node; node = node.parentElement) {
+            const css = window.getComputedStyle(node), rect = node.getBoundingClientRect();
+            if (rect.width <= 0 || rect.height <= 0 || css.display === "none" || css.visibility !== "visible" ||
+              Number(css.opacity) <= 0.01 || css.contentVisibility === "hidden" || css.clipPath !== "none" ||
+              css.maskImage !== "none" || css.webkitMaskImage !== "none") return false;
+          }
+          return true;
+        }
+        // The category-learning dialog shares the selected evidence guard, never owns an alternate approval path.
+        window.__solverfinInboxReviewGuard = reviewedEvidenceIsVisible;
+        window.__solverfinInboxInvalidateReview = (id, message) => {
+          if (state.selectedId === id) invalidateSelection(message);
+        };
+        function invalidateSelection(message) {
+          selectionGeneration += 1;
+          if (!selected) return;
+          delete selected.dataset.reviewSelectedId;
+          delete selected.dataset.reviewFingerprint;
+          selected.dataset.reviewEvidenceState = "unavailable";
+          selected.innerHTML = '<div class="review-selected-error"><p class="error" role="alert">' + escapeHtml(message) + '</p>' +
+            '<button type="button" class="secondary-button" data-review-evidence-retry>Tentar novamente</button></div>';
+          selected.querySelector("[data-review-evidence-retry]")?.addEventListener("click", () => {
+            if (state.selectedId) renderSelected();
+            else loadQueue();
+          });
+        }
+        async function renderSelected() {
+          const generation = ++selectionGeneration;
+          if (!selected) return;
+          const id = state.selectedId;
+          const item = state.items.find((entry) => entry.id === id);
+          if (!id || !item) {
+            delete selected.dataset.reviewSelectedId;
+            delete selected.dataset.reviewFingerprint;
+            selected.dataset.reviewEvidenceState = "empty";
+            selected.innerHTML = '<p class="muted small-note" role="status">Nenhuma sugestão selecionada. A fila pode estar vazia ou filtrada.</p>';
+            return;
+          }
+          delete selected.dataset.reviewSelectedId;
+          delete selected.dataset.reviewFingerprint;
+          selected.dataset.reviewEvidenceState = "loading";
+          selected.innerHTML = '<p class="muted small-note" role="status">Consultando a origem e a evidência atual da sugestão...</p>';
+          try {
+            const detail = await detailFor(id, true);
+            if (generation !== selectionGeneration || state.selectedId !== id) return;
+            if (!detail?.payload || typeof detail.payload.fingerprint !== "string" || !detail.payload.fingerprint || !detail.payload.suggestionKind) {
+              throw new Error("A evidência atual não está completa. Não é possível decidir.");
+            }
+            const pending = item.status === "pending_review";
+            const editable = pending && (item.kind === "transaction_extraction" || item.kind === "categorization");
+            const buttons = '<button type="button" class="secondary-button" data-review-details="' + escapeHtml(id) + '">Ver detalhes</button>' +
+              (editable ? '<button type="button" class="secondary-button" data-review-edit="' + escapeHtml(id) + '" data-review-kind="' + escapeHtml(item.kind) + '">Editar</button>' : "") +
+              (pending ? '<button type="button" data-review-approve="' + escapeHtml(id) + '">Aprovar</button>' +
+                '<button type="button" class="secondary-button danger-action" data-review-reject="' + escapeHtml(id) + '">Rejeitar</button>' : "");
+            const confidence = Math.round(Number(item.confidence) * 100);
+            const risk = item.risk === "low_confidence" ? "Baixa confiança" : item.risk === "normal" ? "Regular" : item.risk === "high" ? "Elevado" : "Não informado";
+            selected.dataset.reviewSelectedId = id;
+            selected.dataset.reviewFingerprint = detail.payload.fingerprint;
+            selected.dataset.reviewEvidenceState = "ready";
+            selected.innerHTML = '<div class="review-selected-context">' +
+              '<strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
+              '<p class="review-evidence-meta">Estado: ' + escapeHtml(formatStatus(item.status)) +
+              ' · Origem: ' + escapeHtml(formatOrigin(item.origin)) +
+              ' · Confiança: ' + escapeHtml(confidence) + '% · Risco: ' + escapeHtml(risk) + '</p>' +
+              '<p>' + escapeHtml(item.maskedSummary) + '</p>' +
+              '<p class="muted small-note">' + escapeHtml(item.explanation) + '</p></div>' +
+              '<section data-review-evidence="ready"' + (item.kind === "insight" ? ' data-ai-structured-payload="true"' : "") + ' aria-label="Evidência verificada da sugestão">' +
+                '<h3>Origem e evidências da decisão</h3>' + detailHtml(detail) + '</section>' +
+              '<div class="review-decision-actions" aria-label="Ações da sugestão selecionada">' + buttons + '</div>' +
+              (pending ? '<p class="muted small-note">Confira as evidências acima. A confirmação será solicitada antes de qualquer efeito.</p>' : '<p class="muted small-note">Esta sugestão não está mais pendente e não admite nova decisão.</p>') +
+              '<p class="form-status muted" data-review-row-status aria-live="polite"></p>';
+            selected.querySelector("[data-review-details]")?.addEventListener("click", (event) => openDetails(id, event.currentTarget));
+            selected.querySelector("[data-review-edit]")?.addEventListener("click", (event) => openEdit(id, event.currentTarget));
+            selected.querySelector("[data-review-approve]")?.addEventListener("click", (event) => decide(id, "approve", event.currentTarget));
+            selected.querySelector("[data-review-reject]")?.addEventListener("click", (event) => decide(id, "reject", event.currentTarget));
+            window.dispatchEvent(new Event("solverfin:inbox-review-selected"));
+          } catch (error) {
+            if (generation !== selectionGeneration || state.selectedId !== id) return;
+            invalidateSelection("Evidência indisponível ou desatualizada. Decisão bloqueada. " + errorMessage(error));
+          }
         }
         async function openDetails(id, trigger) {
           state.trigger = trigger;
@@ -367,19 +473,39 @@ export function enhanceInboxReviewQueue(html: string): string {
           });
         }
         async function decide(id, action, button) {
-          const card = button.closest("[data-review-id]");
-          const status = card?.querySelector("[data-review-row-status]");
+          const card = button.closest(".inbox-review-selected");
+          if (card !== selected || !reviewedEvidenceIsVisible(id)) return;
+          const reviewedFingerprint = selected.dataset.reviewFingerprint;
+          const reviewedGeneration = selectionGeneration;
+          const status = card.querySelector("[data-review-row-status]");
           if (action === "reject" && !window.confirm("Rejeitar esta sugestão?")) return;
           if (action === "approve" && !window.confirm("Aprovar esta sugestão e aplicar o efeito indicado?")) return;
           button.disabled = true;
           if (status) { status.className = "form-status muted"; status.textContent = "Validando versão atual..."; }
+          let detail;
           try {
-            const detail = await detailFor(id, true);
+            detail = await detailFor(id, true);
+            if (!detail?.payload || typeof detail.payload.fingerprint !== "string" || !detail.payload.fingerprint) {
+              throw new Error("Evidência atual incompleta.");
+            }
+          } catch (error) {
+            if (state.selectedId === id && selectionGeneration === reviewedGeneration) {
+              invalidateSelection("Não foi possível validar a evidência atual. Decisão bloqueada. " + errorMessage(error));
+            }
+            return;
+          }
+          if (selectionGeneration !== reviewedGeneration || !reviewedEvidenceIsVisible(id) ||
+            selected.dataset.reviewFingerprint !== reviewedFingerprint) return;
+          if (detail.payload.fingerprint !== reviewedFingerprint) {
+            invalidateSelection("A evidência mudou desde a revisão. Consulte a nova versão antes de confirmar.");
+            return;
+          }
+          try {
             if (status) status.textContent = action === "approve" ? "Aplicando decisão..." : "Registrando rejeição...";
             await api("/api/ai-review-queue/" + encodeURIComponent(id) + "/" + action, {
               method: "POST",
               headers: { "content-type": "application/json" },
-              body: JSON.stringify({ expectedFingerprint: detail.payload.fingerprint })
+              body: JSON.stringify({ expectedFingerprint: reviewedFingerprint })
             });
             await loadQueue();
             queueStatus(action === "approve" ? "Sugestão aprovada." : "Sugestão rejeitada.", "success", false);
@@ -394,10 +520,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           }
         }
         function bindRows() {
-          rows?.querySelectorAll("[data-review-details]").forEach((button) => button.addEventListener("click", () => openDetails(button.dataset.reviewDetails, button)));
-          rows?.querySelectorAll("[data-review-edit]").forEach((button) => button.addEventListener("click", () => openEdit(button.dataset.reviewEdit, button)));
-          rows?.querySelectorAll("[data-review-approve]").forEach((button) => button.addEventListener("click", () => decide(button.dataset.reviewApprove, "approve", button)));
-          rows?.querySelectorAll("[data-review-reject]").forEach((button) => button.addEventListener("click", () => decide(button.dataset.reviewReject, "reject", button)));
+          rows?.querySelectorAll("[data-review-select]").forEach((button) => button.addEventListener("click", () => selectItem(button.dataset.reviewSelect)));
         }
         [kindFilter, statusFilter, confidenceFilter].forEach((filter) => filter.addEventListener("change", () => { syncUrl(); render(); }));
         filterBar.querySelector("[data-review-refresh]").addEventListener("click", loadQueue);
@@ -411,24 +534,26 @@ export function enhanceInboxReviewQueue(html: string): string {
   enhanced = enhanced.replace(
     "</style>",
     `
-      .review-filter-bar { align-items: end; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
-      .review-filter-bar label { display: grid; font-size: 0.75rem; gap: 4px; min-width: 150px; }
+      .review-filter-bar { align-items: end; display: grid; gap: var(--sf-space-2); grid-template-columns: repeat(2, minmax(0, 1fr)); margin: var(--sf-space-2) 0 var(--sf-space-3); }
+      .review-filter-bar label { display: grid; font-size: var(--sf-font-size-xs); gap: var(--sf-space-1); min-width: 0; }
+      .review-filter-bar select, .review-filter-bar button { min-height: var(--sf-density-interactive-target-min); min-width: 0; width: 100%; }
       .review-queue-status { align-items: center; display: flex; flex-wrap: wrap; font-size: 0.8125rem; gap: 8px; margin: 0 0 10px; }
-      .review-queue-status.error { color: var(--danger, #9f1239); }
-      .review-queue-status.unavailable { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); color: #7a4a00; padding: 8px 10px; }
-      .review-queue-status.success { color: var(--success, #166534); }
-      .form-status.unavailable, .review-unavailable { color: #7a4a00; }
-      .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
-      .review-risk { background: #fff4d6; border: 1px solid #e7c66f; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; padding: 3px 7px; }
+      .review-queue-status.error { color: var(--sf-color-danger); }
+      .review-queue-status.unavailable { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-md); color: var(--sf-color-warning-text); padding: var(--sf-space-2) var(--sf-space-3); }
+      .review-queue-status.success { color: var(--sf-color-success); }
+      .form-status.unavailable, .review-unavailable { color: var(--sf-color-warning-text); }
+      .review-risk { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-full); color: var(--sf-color-warning-text); font-size: var(--sf-font-size-xs); font-weight: var(--sf-font-weight-bold); padding: var(--sf-space-1) var(--sf-space-2); }
       .ai-review-dialog { width: min(720px, calc(100vw - 24px)); }
       .ai-review-dialog #ai-review-dialog-body { display: grid; gap: 12px; max-height: min(70vh, 680px); overflow: auto; }
       .review-detail-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0; }
       .review-detail-grid div { background: var(--surface-soft); border-radius: var(--radius); padding: 8px; }
       .review-detail-grid dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
       .review-detail-grid dd { margin: 3px 0 0; overflow-wrap: anywhere; }
-      .review-warning { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); padding: 10px; }
+      .review-money-value { font-variant-numeric: tabular-nums; text-align: right; }
+      .review-warning { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-md); padding: var(--sf-space-2) var(--sf-space-3); }
       @media (max-width: 640px) {
-        .review-filter-bar > * { flex: 1 1 100%; min-width: 0; width: 100%; }
+        .review-filter-bar { grid-template-columns: 1fr; }
+        .review-filter-bar > * { min-width: 0; width: 100%; }
         .review-card .maintenance-summary { align-items: flex-start; flex-direction: column; }
         .ai-review-dialog { margin: 12px auto; max-height: calc(100vh - 24px); }
       }

@@ -1,222 +1,75 @@
 {
   "schema_version": 1,
-  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "authorization is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-01-1",
-        "NEG-06-1"
+        "NEG-726-02-1",
+        "NEG-726-07-1",
+        "NEG-726-12-1",
+        "NEG-726-19-2",
+        "NEG-726-23-1"
       ],
       "dimensions": [
         {
-          "surface": "category-scope-authorization",
-          "reason": "Category association must be authorized only when the category is active in the same organization/profile.",
+          "surface": "financial-profile-scoping",
+          "reason": "Observed exact-head A6 profile-kept-across-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-06-1"
+            "NEG-726-02-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "profile-rule-access",
-          "reason": "Rules must be available only through the authenticated profile context while both forms consume the same scoped API.",
+          "surface": "review-evidence-permission",
+          "reason": "Observed exact-head A6 guard-in-all-enhancers using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-01-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "tenant-isolation",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "NEG-06-2",
-        "HIST-749-12"
-      ],
-      "dimensions": [
-        {
-          "surface": "tenant-scope-isolation",
-          "reason": "Identical descriptions in different financial profiles must remain separate and foreign categories must be rejected.",
-          "control_ids": [
-            "NEG-06-2"
+            "NEG-726-07-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "issue714-tenantisolation",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "surface": "inbox-golden-precedence-authorization",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "HIST-749-12"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "public-boundary",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-05"
-      ],
-      "dimensions": [
-        {
-          "surface": "free-to-spend-contract",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-05"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "reference-liveness",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-06"
-      ],
-      "dimensions": [
-        {
-          "surface": "issue714-referenceliveness",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-06"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-consistency",
-      "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
-      "control_ids": [
-        "NEG-04-1",
-        "NEG-12-1"
-      ],
-      "dimensions": [
-        {
-          "surface": "exact-sha-premerge-order",
-          "reason": "Technical gates must bind to the material SHA and independent review must remain later than certification and earlier than merge.",
-          "control_ids": [
-            "NEG-12-1"
+            "NEG-726-12-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "persist-before-reset",
-          "reason": "The API confirmation must precede form reset and next-entry preparation.",
+          "surface": "inbox-state-evidence-guards",
+          "reason": "Observed exact-head A6 negative-inbox-state-evidence-guards using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-04-1"
+            "NEG-726-19-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-integration-preservation",
+          "reason": "Observed exact-head A6 negative-inbox-integration-preservation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-23-1"
           ],
           "status": "passed"
         }
       ],
       "status": "passed"
-    },
-    {
-      "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
     },
     {
       "family": "concurrency-atomicity",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "concurrency-atomicity is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-07-1",
-        "NEG-09-1"
+        "NEG-726-06-1"
       ],
       "dimensions": [
         {
-          "surface": "duplicate-processing",
-          "reason": "Reload after close must expose the committed transaction while retries cannot create a duplicate.",
+          "surface": "human-action-and-no-implicit-effects",
+          "reason": "Observed exact-head A6 confirmation-before-decision using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "NEG-07-1",
-            "NEG-09-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "rollback",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "structural-contract",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-08",
-        "HIST-749-09",
-        "HIST-749-10",
-        "HIST-749-11"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-source-consistency",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-08"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-identity",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-09"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-presence",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-10"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-subject",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-11"
+            "NEG-726-06-1"
           ],
           "status": "passed"
         }
@@ -226,39 +79,291 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "reason": "documentation is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-10-2",
-        "HIST-749-01",
-        "HIST-749-02"
+        "NEG-726-04-2"
       ],
       "dimensions": [
         {
-          "surface": "current-contract-docs",
-          "reason": "Current documentation must describe the same inactive-rule, idempotency and save-and-continue contracts exercised by code/tests.",
-          "control_ids": [
-            "NEG-10-2"
-          ],
-          "status": "passed"
-        },
-        {
           "surface": "canonical-claims",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "reason": "Observed exact-head A6 docs-match-a6-layout using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
           "control_ids": [
-            "HIST-749-01"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "canonical-claims",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-02"
+            "NEG-726-04-2"
           ],
           "status": "passed"
         }
       ],
       "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No application surface for historical-immutability in presentation-only work.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "idempotency is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-19-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Observed exact-head A6 negative-duplicate-processing using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-19-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No application surface for public-boundary in presentation-only work.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires reference-liveness for presentation-only Inbox redesign.",
+      "control_ids": [
+        "NEG-726-12-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "inbox-golden-precedence-reference-liveness",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-12-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No application surface for rollback in presentation-only work.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "semantic-effect",
+      "applicable": true,
+      "reason": "Canonical issue #726 obligation inferred this risk family and selected A6 controls cover its actual surface.",
+      "control_ids": [
+        "NEG-726-03-1",
+        "NEG-726-05-1",
+        "NEG-726-08-1",
+        "NEG-726-09-1",
+        "NEG-726-11-1",
+        "NEG-726-14-1",
+        "NEG-726-15-1",
+        "NEG-726-18-1",
+        "NEG-726-20-1",
+        "NEG-726-21-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "preserved-legacy-workflows",
+          "reason": "Observed exact-head A6 csv-ofx-and-messages-still-wired using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-03-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "selected-evidence-and-context",
+          "reason": "Observed exact-head A6 selection-renders-detail-after-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-05-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "responsive-and-state-completeness",
+          "reason": "Observed exact-head A6 browser-matrix-viewports using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-08-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "a11y-and-currency-metadata",
+          "reason": "Observed exact-head A6 keyboard-focus-and-currency using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-09-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "negative-restoration",
+          "reason": "Observed exact-head A6 hidden-evidence-and-secondary-attack using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-11-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-queue-evidence-decision-order",
+          "reason": "Observed exact-head A6 negative-inbox-queue-evidence-decision-order using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-14-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-neutral-interaction",
+          "reason": "Observed exact-head A6 negative-inbox-neutral-interaction using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-15-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-dialog-menu-focus",
+          "reason": "Observed exact-head A6 negative-inbox-dialog-menu-focus using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-18-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-responsive-containment",
+          "reason": "Observed exact-head A6 negative-inbox-responsive-containment using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-20-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-legacy-grid-mutation",
+          "reason": "Observed exact-head A6 negative-inbox-legacy-grid-mutation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-21-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "structural-contract is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-01-1",
+        "NEG-726-01-2",
+        "NEG-726-17-1",
+        "NEG-726-04-1",
+        "NEG-726-12-3",
+        "NEG-726-13-1",
+        "NEG-726-16-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "golden-source-ancestry",
+          "reason": "Observed exact-head A6 golden-precedence-and-no-merge using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-01-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-subject-identity",
+          "reason": "Observed exact-head A6 foreign-issue-and-pr-subject using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-01-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Observed exact-head A6 negative-relational-semantic-integrity using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-17-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "queue-detail-secondary-order",
+          "reason": "Observed exact-head A6 primary-before-secondary using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-04-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-golden-precedence-structural-contract",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-12-3"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-shared-color-tokens",
+          "reason": "Observed exact-head A6 negative-inbox-shared-color-tokens using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-13-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "inbox-contextual-confirmation",
+          "reason": "Observed exact-head A6 negative-inbox-contextual-confirmation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-16-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "temporal-consistency is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-02-3"
+      ],
+      "dimensions": [
+        {
+          "surface": "pre-edit-baseline-identity",
+          "reason": "Observed exact-head A6 historical-chrome-baseline using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382.",
+          "control_ids": [
+            "NEG-726-02-3"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No application surface for temporal-destination in presentation-only work.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No application surface for tenant-isolation in presentation-only work.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     }
   ],
   "material_families_missing_controls": []

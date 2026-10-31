@@ -2,15 +2,35 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
-    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
-    "audited_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
+    "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+    "audit_report_sha256": "e7e66a3e08a3b865fc8be41b1dcb2a5ed1fbd581e0fdf9a59e57059cdcaef7f5",
+    "audited_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
   },
+  "candidate_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "remediation_mode": "targeted-remediation",
   "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/requirement-attack-matrix.json"
+      ],
+      "evidence": [
+        "evidence/issue-726-inherited-handoff-negative.json",
+        "scope of officially generated #726 certificate after publication"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
+      ],
+      "explanation": "Old target handoff was stale after material changes. Prepare a new exact-head critical result-only child for issue #726, with 25 canonical obligations, before external audit."
+    },
     {
       "source_kind": "finding",
       "source_id": "A-002",
@@ -18,30 +38,80 @@
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/code-growth.json",
-        ".audit/entregar-issue/codebase-grounding.json",
-        ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
-        ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
-        ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
-        ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
-        ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/standard-evidence.json"
+        "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
+        "scripts/statement-visual/issue-726-inbox-controls.mjs"
       ],
       "evidence": [
-        "Previous A-002 review authentic on cec1: audit-rejection:9a084674-d4ae-457a-8495-16f51b308391; original independent review remains immutable; GitHub published cec1 handoff stale after material changes.",
-        "Current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 contains dialog A-004 fix and formatting A-005 fix; CI 41128555509 CRITICAL exact SHA success; Chrome 41128555517 exact SHA success; authenticated material Git bundle 41128555529.",
-        "Chrome artifact 13011839149 report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66; negative cramped-layout measurement for both create/edit passed in 320 px, restoration passed.",
-        "Independent review of this new material and final child is not claimed or pre-approved."
+        "evidence/issue-726-browser-evidence.json",
+        "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "Stale cec1 certificate rejected at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 by official validator with exit 2; negative witness evidence/issue-725-stale-certificate-negative.txt",
-        "Exact CI 41128555509 and Chrome 41128555517 completed/success on current material SHA 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9.",
-        "New standard evidence, requirement closure, codebase grounding, code growth and terminal certificate must independently pass official preflight before publication."
-      ]
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
+      ],
+      "explanation": "A reviewed fingerprint is bound to approval and rejection; changed B payload blocks POST until the user reviews again."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/category-learning-controller.ts",
+        "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+        "scripts/statement-visual/issue-564-category-learning.mjs"
+      ],
+      "evidence": [
+        "evidence/issue-726-browser-evidence.json",
+        "evidence/issue-726-static-probes.json"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
+      ],
+      "explanation": "Legacy capture-phase submit interceptor removed and category correction follows selected-evidence guard, including races and changed selection."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-004",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/inbox-page.ts",
+        "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+        "docs/AI_REVIEW_QUEUE.md"
+      ],
+      "evidence": [
+        "evidence/issue-726-browser-evidence.json",
+        "evidence/issue-726-static-probes.json"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
+      ],
+      "explanation": "Insufficient insight fallback and message/import sections moved after review cockpit and documented; negative promotion detected and restored."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [],
+      "evidence": [
+        "evidence/issue-726-pre-edit-baseline.json",
+        "evidence/issue-726-browser-evidence.json"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330"
+      ],
+      "explanation": "Authenticated browser captured preexisting UI divergence before PR creation on identical Inbox source; prior implementation-time human inspection is not provable and is explicitly not claimed."
     }
-  ]
+  ],
+  "status": "closed",
+  "honesty": "A-001 may be treated as final only after a target-specific certificate is built, published as result-only child and revalidated; the current material HEAD has only the inherited wrong-target certificate. A-005 is retrospective historical evidence, not a claim of prior implementer inspection."
 }

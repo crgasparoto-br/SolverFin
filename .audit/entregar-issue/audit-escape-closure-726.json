@@ -1,0 +1,362 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 726,
+    "pull_request_number": 754,
+    "material_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25"
+  },
+  "escapes": [
+    {
+      "escape_id": "AUD-726-A-001",
+      "status": "passed",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Reject foreign inherited handoff with official preflight; verified result-only #726-specific certificate is the required final release proof.",
+      "literal_case": {
+        "procedure": "Official target preflight rejects immutable base certificate for issue 725 and PR 751, exit 2.",
+        "expected": "Original failure is refuted using a discriminant negative control and current exact-head execution.",
+        "observed": "Official preflight logged inherited-base-artifact, reason handoff-not-produced, candidate target #726.",
+        "status": "passed",
+        "evidence": "evidence/issue-726-inherited-handoff-negative.json",
+        "evidence_sha256": "b83a5aa222d2a2dce142adbd8c6dc32cca26c77776ce08028489e27379329856"
+      },
+      "sibling_cases": [
+        {
+          "surface": "handoff-subject-identity",
+          "dimension": "foreign-issue-number-725",
+          "status": "passed",
+          "evidence": "evidence/issue-726-inherited-handoff-negative.json"
+        },
+        {
+          "surface": "handoff-subject-identity",
+          "dimension": "foreign-pull-number-751",
+          "status": "passed",
+          "evidence": "evidence/issue-726-inherited-handoff-negative.json"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Generate own exact issue #726 certificate and ensure terminal subject paths are validated before claiming release."
+      },
+      "detection_change": {
+        "evidence": "Authenticated negative official preflight and terminal result-only-child certification on final published SHA."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-subject-identity",
+          "dimension": "foreign-issue-and-pr-subject"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-subject-identity",
+          "dimension": "foreign-issue-number-725"
+        }
+      ],
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "latest_regression_evidence": {
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+      },
+      "revalidation": {
+        "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "evidence": "evidence/issue-726-inherited-handoff-negative.json",
+        "evidence_sha256": "b83a5aa222d2a2dce142adbd8c6dc32cca26c77776ce08028489e27379329856",
+        "scope": "Targeted issue #726 counterexample revalidated using exact-head inputs, without claiming an independent approval or modifying previous audit findings."
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-002",
+      "status": "passed",
+      "escape_class": "control-propagation-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+        "finding_ids": [
+          "A-002"
+        ]
+      },
+      "plausible_wrong_implementation": "Approve/reject on stale B fingerprint without comparing displayed A.",
+      "literal_case": {
+        "procedure": "Interpose changed payload B while preserving reviewed A in Chrome and check decision POST; verify same A case.",
+        "expected": "Original failure is refuted using a discriminant negative control and current exact-head execution.",
+        "observed": "Approve and reject stale both posts=0, normal unchanged both posts=1 with exact reviewed fingerprint.",
+        "status": "passed",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a"
+      },
+      "sibling_cases": [
+        {
+          "surface": "duplicate-processing",
+          "dimension": "approve-stale-no-post",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        },
+        {
+          "surface": "duplicate-processing",
+          "dimension": "reject-stale-no-post",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Require reviewedFingerprint === fresh payload fingerprint and unchanged selection generation before POST."
+      },
+      "detection_change": {
+        "evidence": "Chrome raced both verbs under changed and unchanged conditions; unit guard refuses unreviewed B."
+      },
+      "required_risk_families": [
+        "idempotency"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "idempotency",
+          "surface": "duplicate-processing",
+          "dimension": "fingerprint-race-and-no-post"
+        },
+        {
+          "risk_family": "idempotency",
+          "surface": "duplicate-processing",
+          "dimension": "approve-stale-no-post"
+        }
+      ],
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "latest_regression_evidence": {
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+      },
+      "revalidation": {
+        "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a",
+        "scope": "Targeted issue #726 counterexample revalidated using exact-head inputs, without claiming an independent approval or modifying previous audit findings."
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-003",
+      "status": "passed",
+      "escape_class": "legacy-variant-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+        "finding_ids": [
+          "A-003"
+        ]
+      },
+      "plausible_wrong_implementation": "Capture submit bypass of correction dialog guard.",
+      "literal_case": {
+        "procedure": "Hide evidence, mutate selectedId, and change payload fingerprint while submitting category correction.",
+        "expected": "Original failure is refuted using a discriminant negative control and current exact-head execution.",
+        "observed": "Three Chrome cases blocked and posts=0; correction dialog retains user data; normal learning flow passed.",
+        "status": "passed",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a"
+      },
+      "sibling_cases": [
+        {
+          "surface": "review-evidence-permission",
+          "dimension": "hidden-evidence",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        },
+        {
+          "surface": "review-evidence-permission",
+          "dimension": "wrong-selection",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Remove legacy capture-phase handler; share a single selected-evidence guard with learning and target enhancer."
+      },
+      "detection_change": {
+        "evidence": "Chrome category correction real DOM, successful normal learning and guarded negatives."
+      },
+      "required_risk_families": [
+        "authorization"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "authorization",
+          "surface": "review-evidence-permission",
+          "dimension": "guard-in-all-enhancers"
+        },
+        {
+          "risk_family": "authorization",
+          "surface": "review-evidence-permission",
+          "dimension": "hidden-evidence"
+        }
+      ],
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "latest_regression_evidence": {
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+      },
+      "revalidation": {
+        "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a",
+        "scope": "Targeted issue #726 counterexample revalidated using exact-head inputs, without claiming an independent approval or modifying previous audit findings."
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-004",
+      "status": "passed",
+      "escape_class": "other",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+        "finding_ids": [
+          "A-004"
+        ]
+      },
+      "plausible_wrong_implementation": "Insufficient insight alert crowds primary queue above evidence and decision.",
+      "literal_case": {
+        "procedure": "Move secondary DOM region above active review during Chrome test, observe negative then restore.",
+        "expected": "Original failure is refuted using a discriminant negative control and current exact-head execution.",
+        "observed": "Chrome hierarchy attackRejected=true/restored=true and baseline=true; SSR unit assertion verifies secondary grouping.",
+        "status": "passed",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a"
+      },
+      "sibling_cases": [
+        {
+          "surface": "queue-detail-secondary-order",
+          "dimension": "secondary-before-review",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        },
+        {
+          "surface": "queue-detail-secondary-order",
+          "dimension": "recovery-after-restore",
+          "status": "passed",
+          "evidence": "evidence/issue-726-browser-evidence.json"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Render insight fallback only as part of insightsHtml in secondary region."
+      },
+      "detection_change": {
+        "evidence": "Chrome secondary-promotion negative plus first-render SSR test and documentation update."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "queue-detail-secondary-order",
+          "dimension": "primary-before-secondary"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "queue-detail-secondary-order",
+          "dimension": "secondary-before-review"
+        }
+      ],
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "latest_regression_evidence": {
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+      },
+      "revalidation": {
+        "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "evidence": "evidence/issue-726-browser-evidence.json",
+        "evidence_sha256": "c214a2e50dc0b76db8e50f8451c38ab6d2e46236a256a3dfd30e881975085b3a",
+        "scope": "Targeted issue #726 counterexample revalidated using exact-head inputs, without claiming an independent approval or modifying previous audit findings."
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-005",
+      "status": "passed",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+        "finding_ids": [
+          "A-005"
+        ]
+      },
+      "plausible_wrong_implementation": "No authenticated visual proof before code edit could conceal absence of original A6 divergence.",
+      "literal_case": {
+        "procedure": "Inspect timestamped historical authenticated Chrome and compare original Inbox renderer Git blobs against develop base.",
+        "expected": "Original failure is refuted using a discriminant negative control and current exact-head execution.",
+        "observed": "Historic Chrome capture predates PR creation by 94 minutes with same Inbox source; retrospective inspection disclosed, without claiming original human pre-edit observation.",
+        "status": "passed",
+        "evidence": "evidence/issue-726-pre-edit-baseline.json",
+        "evidence_sha256": "754db40af591cac5a18e7671c45030146260c455a35a8f91d9818e91dd706885"
+      },
+      "sibling_cases": [
+        {
+          "surface": "pre-edit-baseline-identity",
+          "dimension": "capture-before-pr",
+          "status": "passed",
+          "evidence": "evidence/issue-726-pre-edit-baseline.json"
+        },
+        {
+          "surface": "pre-edit-baseline-identity",
+          "dimension": "same-inbox-blob",
+          "status": "passed",
+          "evidence": "evidence/issue-726-pre-edit-baseline.json"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Capture source identity and authenticated historical visual evidence to anchor the initial divergence."
+      },
+      "detection_change": {
+        "evidence": "Compare historical Git blob hashes, screenshot timestamp, and current exact-head Chrome result; disclose caveat to independent auditor."
+      },
+      "required_risk_families": [
+        "temporal-consistency"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "pre-edit-baseline-identity",
+          "dimension": "historical-chrome-baseline"
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "pre-edit-baseline-identity",
+          "dimension": "capture-before-pr"
+        }
+      ],
+      "revalidated_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "latest_regression_evidence": {
+        "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+      },
+      "revalidation": {
+        "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "evidence": "evidence/issue-726-pre-edit-baseline.json",
+        "evidence_sha256": "754db40af591cac5a18e7671c45030146260c455a35a8f91d9818e91dd706885",
+        "scope": "Targeted issue #726 counterexample revalidated using exact-head inputs, without claiming an independent approval or modifying previous audit findings."
+      }
+    }
+  ]
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+      "finding_ids": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+    }
+  ],
+  "controls": [
+    {
+      "id": "HIST-726-A-002",
+      "status": "passed",
+      "control_type": "procedure",
+      "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "evidence": "evidence/issue-726-exact-head-source-probes.json",
+      "evidence_sha256": "bcfcf288ee2fdcf5b198343f26fbecca25a1fc9dbf614a809241b8f1a0d528e9",
+      "attack_control_id": "NEG-726-10-1",
+      "risk_family": "idempotency",
+      "surface": "duplicate-processing",
+      "dimension": "fingerprint-race-and-no-post",
+      "procedure": "Browser raced GET payload B against displayed A in both approve and reject; expectedFingerprint remains reviewed A.",
+      "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
+      "observed": "No POST for changed payload B for either action; exactly one POST with A for stable review. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382; immutable previous record remains referenced only as history.",
+      "linked_prior_finding": "A-002",
+      "plausible_wrong_implementation": "The old path posted new B without comparing displayed A."
+    },
+    {
+      "id": "HIST-726-A-003",
+      "status": "passed",
+      "control_type": "procedure",
+      "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "evidence": "evidence/issue-726-exact-head-source-probes.json",
+      "evidence_sha256": "bcfcf288ee2fdcf5b198343f26fbecca25a1fc9dbf614a809241b8f1a0d528e9",
+      "attack_control_id": "NEG-726-07-1",
+      "risk_family": "authorization",
+      "surface": "review-evidence-permission",
+      "dimension": "guard-in-all-enhancers",
+      "procedure": "Chrome hid evidence, changed selection, then mutated fingerprint during correction dialog submission.",
+      "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
+      "observed": "All three correction variants blocked with zero approval POST; normal correction workflow continues. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382; immutable previous record remains referenced only as history.",
+      "linked_prior_finding": "A-003",
+      "plausible_wrong_implementation": "The old capturing submit listener bypassed category correction evidence validation."
+    },
+    {
+      "id": "HIST-726-A-004",
+      "status": "passed",
+      "control_type": "procedure",
+      "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "evidence": "evidence/issue-726-exact-head-source-probes.json",
+      "evidence_sha256": "bcfcf288ee2fdcf5b198343f26fbecca25a1fc9dbf614a809241b8f1a0d528e9",
+      "attack_control_id": "NEG-726-04-1",
+      "risk_family": "structural-contract",
+      "surface": "queue-detail-secondary-order",
+      "dimension": "primary-before-secondary",
+      "procedure": "Chrome moves secondary import/insights region above review, checks negative detection, then restores.",
+      "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
+      "observed": "Promotion rejected by geometric hierarchy control; restored order passes. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382; immutable previous record remains referenced only as history.",
+      "linked_prior_finding": "A-004",
+      "plausible_wrong_implementation": "The old inbox displayed insufficient insights before the main review hierarchy."
+    },
+    {
+      "id": "HIST-726-A-005",
+      "status": "passed",
+      "control_type": "procedure",
+      "head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "evidence": "evidence/issue-726-exact-head-source-probes.json",
+      "evidence_sha256": "bcfcf288ee2fdcf5b198343f26fbecca25a1fc9dbf614a809241b8f1a0d528e9",
+      "attack_control_id": "NEG-726-02-3",
+      "risk_family": "temporal-consistency",
+      "surface": "pre-edit-baseline-identity",
+      "dimension": "historical-chrome-baseline",
+      "procedure": "Verified historical authenticated screenshot creation time predates PR and compared exact bytes of Inbox source across old SHA and develop; inspect retrospectively and keep explicit caveat.",
+      "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
+      "observed": "Earlier screenshot captures competing header/import and insights; source bytes match develop at pre-edit time; no invented claim of prior human inspection. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382; immutable previous record remains referenced only as history.",
+      "linked_prior_finding": "A-005",
+      "plausible_wrong_implementation": "Original team did not inspect authenticated browser before editing; screenshot evidence could be from later or different renderer."
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": [],
+  "provenance": "Reconstruction against exact-head material execution from authenticated GitHub CI and Chrome; not an external independent approval. A-001 resolved only if final certificate is published and independently validated."
+}

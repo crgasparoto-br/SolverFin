@@ -4,6 +4,16 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import {
+  validateEvidenceNegativeControl,
+  validateFingerprintBinding,
+  validateHierarchyNegative,
+} from "./issue-726-inbox-controls.mjs";
+import {
+  inspectViewport,
+  validateGoldenReviewViewport,
+  validateLongEvidence,
+} from "./issue-726-golden-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -20,6 +30,12 @@ let fixture;
 let keyboard;
 let textResize;
 let urlState;
+let evidenceNegative;
+let fingerprintChecks;
+let hierarchyNegative;
+let longEvidence;
+const reviewCardGridNegatives = [];
+const goldenScreenControls = [];
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -31,10 +47,15 @@ try {
   const route = `/inbox?kind=transaction_extraction&status=pending_review&confidence=all`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await waitForReviewCard(browser.cdp, fixture.suggestionId);
+  await selectAndWaitForEvidence(browser.cdp, fixture.suggestionId);
 
   for (const [width, height] of [
+    [320, 740],
     [390, 844],
     [768, 1024],
+    [1024, 768],
+    [1366, 768],
+    [1440, 900],
     [1366, 900],
   ]) {
     await setViewport(browser.cdp, width, height);
@@ -49,11 +70,43 @@ try {
     check(evidence.bodyFitsViewport, `Review queue overflows horizontally at ${width}px`, evidence);
     check(evidence.actionsFitViewport, `Review action escapes viewport at ${width}px`, evidence);
     check(
+      evidence.actionsContainedInCards,
+      `Review button escapes its card at ${width}px`,
+      evidence,
+    );
+    check(
       evidence.actionsMeetMinimum,
       `Review action is smaller than 34px at ${width}px`,
       evidence,
     );
+    if ((width === 390 && height === 844) || (width === 1366 && height === 768)) {
+      const result = await validateGoldenReviewViewport(browser.cdp, fixture.suggestionId);
+      goldenScreenControls.push({ viewport: `${width}x${height}`, ...result.golden });
+      reviewCardGridNegatives.push({ viewport: `${width}x${height}`, ...result.negative });
+      check(result.goldenPass, `Golden Screen controls diverge in ${width}px Inbox`, result.golden);
+      check(
+        result.negativePass,
+        `Legacy three-column grid escaped the review-card control at ${width}px`,
+        result.negative,
+      );
+    }
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
+    check(evidence.selectedEvidenceReady, `Selected evidence is not ready at ${width}px`, evidence);
+    check(
+      evidence.decisionAfterEvidence,
+      `Decision appears before evidence at ${width}px`,
+      evidence,
+    );
+    check(
+      evidence.detailActionsFitViewport,
+      `Contextual decision overflows at ${width}px`,
+      evidence,
+    );
+    check(
+      evidence.secondaryBelowReview,
+      `Import/secondary content precedes the review at ${width}px`,
+      evidence,
+    );
   }
 
   await setViewport(browser.cdp, 1366, 900);
@@ -64,6 +117,38 @@ try {
   check(keyboard.editOpenedByKeyboard, "Enter did not open review edit dialog", keyboard);
   check(keyboard.editControlFocused, "Editable control did not receive focus", keyboard);
   check(keyboard.editFocusRestored, "Closing edit did not restore focus", keyboard);
+  evidenceNegative = await validateEvidenceNegativeControl(browser.cdp);
+  check(
+    evidenceNegative.hiddenEvidenceBlockedDecision,
+    "Hidden evidence did not block contextual decision",
+    evidenceNegative,
+  );
+  check(
+    evidenceNegative.evidenceRestored,
+    "Evidence visibility was not restored after negative control",
+    evidenceNegative,
+  );
+
+  fingerprintChecks = await validateFingerprintBinding(browser.cdp);
+  check(
+    fingerprintChecks.every((item) => item.ok),
+    "A review decision was not bound to displayed evidence",
+    fingerprintChecks,
+  );
+  hierarchyNegative = await validateHierarchyNegative(browser.cdp);
+  check(
+    hierarchyNegative.baseline && hierarchyNegative.attackRejected && hierarchyNegative.restored,
+    "Moving imports above review was not detected by the visual order guard",
+    hierarchyNegative,
+  );
+  longEvidence = await validateLongEvidence(browser.cdp, outputDir);
+  check(
+    longEvidence.every(
+      (item) => item.bodyFitsViewport && item.decisionFitsViewport && item.evidenceBeforeDecision,
+    ),
+    "Long evidence displaces contextual decisions at narrow viewports",
+    longEvidence,
+  );
 
   urlState = await validateFilterUrl(browser.cdp);
   check(urlState.confidencePersisted, "Confidence filter was not persisted in URL", urlState);
@@ -79,6 +164,11 @@ try {
   check(textResize.rootFontSize >= 31.5, "Root text size did not reach 200%", textResize);
   check(textResize.cardVisible, "Review card disappeared at 200% text size", textResize);
   check(textResize.actionsVisible, "Review actions disappeared at 200% text size", textResize);
+  check(
+    textResize.actionsContainedInCards,
+    "Review buttons overflow their cards at 200% text size",
+    textResize,
+  );
   check(textResize.bodyFitsViewport, "Review queue overflows at 200% text size", textResize);
 } catch (error) {
   fatalError = {
@@ -100,6 +190,12 @@ const report = {
   keyboard,
   urlState,
   textResize,
+  evidenceNegative,
+  fingerprintChecks,
+  hierarchyNegative,
+  longEvidence,
+  reviewCardGridNegatives,
+  goldenScreenControls,
   fatalError,
   failures,
 };
@@ -174,46 +270,32 @@ async function waitForReviewCard(cdp, suggestionId, timeout = 12_000) {
   throw new Error(`Timed out waiting for review card ${suggestionId}`);
 }
 
-async function inspectViewport(cdp, suggestionId, width, height) {
-  return evaluate(
+async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {
+  await evaluate(
     cdp,
-    `(() => {
-      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
-      const visible = (element) => {
-        if (!element) return false;
-        const rect = element.getBoundingClientRect();
-        const style = getComputedStyle(element);
-        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-      };
-      const buttons = card ? [...card.querySelectorAll('button')].filter(visible) : [];
-      const filters = [...document.querySelectorAll('[data-review-filter]')].filter(visible);
-      return {
-        viewport: ${JSON.stringify(`${width}x${height}`)},
-        cardVisible: visible(card),
-        filtersVisible: filters.length === 3,
-        bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-        actionsFitViewport: buttons.length > 0 && buttons.every((button) => {
-          const rect = button.getBoundingClientRect();
-          return rect.left >= 0 && rect.right <= window.innerWidth;
-        }),
-        actionsMeetMinimum: buttons.length > 0 && buttons.every((button) => button.getBoundingClientRect().height >= 34),
-        technicalIdHidden: !document.body.innerText.includes(${JSON.stringify(suggestionId)}),
-        buttonLabels: buttons.map((button) => (button.textContent || '').trim()),
-        filterValues: filters.map((filter) => filter.value),
-        cardRect: card ? (() => {
-          const rect = card.getBoundingClientRect();
-          return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), height: Math.round(rect.height) };
-        })() : null
-      };
-    })()`,
+    `document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]')?.click()`,
   );
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const ready = await evaluate(
+      cdp,
+      `(() => {
+      const row = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-select]');
+      return row?.getAttribute('aria-pressed') === 'true' &&
+        document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready';
+    })()`,
+    ).catch(() => false);
+    if (ready) return;
+    await sleep(120);
+  }
+  throw new Error("Selected review evidence did not become available.");
 }
 
 async function validateKeyboardAndFocus(cdp, suggestionId) {
   await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-details]');
+      const button = document.querySelector('#inbox-review-selected [data-review-details]');
       if (!button) throw new Error('Details button not found');
       button.dataset.issue565Trigger = 'details';
       button.focus();
@@ -240,7 +322,7 @@ async function validateKeyboardAndFocus(cdp, suggestionId) {
   await evaluate(
     cdp,
     `(() => {
-      const button = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"] [data-review-edit]');
+      const button = document.querySelector('#inbox-review-selected [data-review-edit]');
       if (!button) throw new Error('Edit button not found');
       button.dataset.issue565Trigger = 'edit';
       button.focus();
@@ -337,6 +419,12 @@ async function validateTextResize(cdp, suggestionId) {
         rootFontSize: parseFloat(getComputedStyle(document.documentElement).fontSize),
         cardVisible: visible(card),
         actionsVisible: buttons.length > 0 && buttons.every(visible),
+        actionsContainedInCards: buttons.length > 0 && buttons.every((button) => {
+          const row = button.closest('.review-card');
+          const rect = button.getBoundingClientRect();
+          const outer = row?.getBoundingClientRect();
+          return Boolean(outer) && rect.left >= outer.left - 1 && rect.right <= outer.right + 1;
+        }),
         bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
         cardText: (card?.textContent || '').trim().slice(0, 240)
       };

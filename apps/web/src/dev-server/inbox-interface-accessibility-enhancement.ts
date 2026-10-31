@@ -36,11 +36,13 @@ function inboxAccessibilityStyles(): string {
     .inbox-page .bulk-actions button {
       min-height: 34px !important;
     }
+    /* Golden Screen: keep disabled text readable at WCAG AA, using shared neutral tokens. */
     .inbox-page button:disabled,
     .inbox-page .button-link[aria-disabled="true"] {
-      background: #e2e8f0 !important;
-      border-color: #cbd5e1 !important;
-      color: #334155 !important;
+      background: var(--sf-color-neutral-control-hover) !important;
+      border-color: var(--sf-color-border) !important;
+      color: var(--sf-color-muted-text) !important;
+      cursor: not-allowed;
       opacity: 1 !important;
     }
     .inbox-page .import-layout {

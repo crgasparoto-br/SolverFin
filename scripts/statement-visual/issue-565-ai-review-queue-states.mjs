@@ -48,6 +48,16 @@ try {
   );
   check(evidence.loading.visible, "Loading state was not rendered", evidence.loading);
   check(evidence.empty.visible, "Empty state was not rendered", evidence.empty);
+  check(
+    evidence.missingEvidence.blocked,
+    "Approval remained possible without evidence",
+    evidence.missingEvidence,
+  );
+  check(
+    evidence.missingEvidence.recovered,
+    "Evidence retry did not restore contextual decisions",
+    evidence.missingEvidence,
+  );
   check(evidence.error.visible, "Generic error state was not rendered", evidence.error);
   check(evidence.error.retryVisible, "Generic error state does not expose retry", evidence.error);
   check(
@@ -165,6 +175,23 @@ async function installHarness(cdp, suggestionId) {
         const method = String(options?.method || input?.method || 'GET').toUpperCase();
         const mode = window.__issue565QueueMode;
         const item = window.__issue565BaselineReviewItem;
+        if (mode === 'evidence-failure' && method === 'GET' && url.includes('/api/ai-review-queue/') && url.endsWith('/payload')) {
+          return responseFor({ error: { code: 'AI_PROVIDER_UNAVAILABLE', message: 'Evidência indisponível' } }, 503);
+        }
+        if (mode === 'kinds' && method === 'GET' && url.includes('/api/ai-review-queue/') && url.endsWith('/payload')) {
+          const itemId = url.split('/').at(-2) || '';
+          const index = Number(itemId.slice(-1)) - 1;
+          const kinds = ['transaction_extraction', 'categorization', 'deduplication', 'reconciliation', 'insight'];
+          if (index >= 0 && index < kinds.length) {
+            return responseFor({ payload: {
+              suggestionKind: kinds[index], fingerprint: 'synthetic-review-payload-' + index,
+              confidence: index === 1 ? 0.41 : 0.88,
+              target: { entityKind: 'transaction' },
+              proposal: { occurredOn: '2026-08-08', amountMinor: 2345, currency: 'BRL', description: 'Fixture de revisão',
+                periodStartOn: '2026-08-01', periodEndOn: '2026-08-31', title: 'Resumo fictício', summary: 'Evidência fictícia' }
+            } });
+          }
+        }
         if (url.includes('/api/ai-review-queue?status=all&includeLowConfidence=true')) {
           if (mode === 'loading') {
             await new Promise((resolve) => setTimeout(resolve, 600));
@@ -238,12 +265,36 @@ async function validateStates(cdp, suggestionId) {
       return {
         cardCount: cards.length,
         allKindsVisible: expected.every((label) => labels.includes(label)),
-        editOnlyOnSupportedKinds: cards.filter((card) => card.querySelector('[data-review-edit]')).length === 2,
+        editOnlyOnSupportedKinds: cards.filter((card) => ['transaction_extraction', 'categorization'].includes(card.dataset.reviewKind)).length === 2,
         lowConfidenceVisible: cards.some((card) =>
           card.querySelector('.review-risk')?.textContent?.includes('Baixa confiança')
         )
       };
     })()`,
+  );
+  const editableKinds = new Set(["transaction_extraction", "categorization"]);
+  const editObserved = [];
+  for (const kind of [
+    "transaction_extraction",
+    "categorization",
+    "deduplication",
+    "reconciliation",
+    "insight",
+  ]) {
+    await evaluate(
+      cdp,
+      `document.querySelector('.review-card[data-review-kind="${kind}"] [data-review-select]')?.click()`,
+    );
+    await waitForCurrentEvidence(cdp);
+    const hasEdit = await evaluate(
+      cdp,
+      `Boolean(document.querySelector('#inbox-review-selected [data-review-edit]'))`,
+    );
+    editObserved.push({ kind, hasEdit });
+  }
+  kinds.editObserved = editObserved;
+  kinds.editOnlyOnSupportedKinds = editObserved.every(
+    ({ kind, hasEdit }) => editableKinds.has(kind) === hasEdit,
   );
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-five-kinds.png"));
 
@@ -255,6 +306,29 @@ async function validateStates(cdp, suggestionId) {
   await setQueueMode(cdp, "empty", 40);
   const empty = await waitForEmptyState(cdp);
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-empty.png"));
+
+  await setQueueMode(cdp, "evidence-failure", 180);
+  const blocked = await evaluate(
+    cdp,
+    `(() => {
+    const selected = document.getElementById("inbox-review-selected");
+    return selected?.dataset.reviewEvidenceState === "unavailable" &&
+      !selected.querySelector("[data-review-approve]") &&
+      !selected.querySelector("[data-review-reject]") &&
+      Boolean(selected.querySelector("[data-review-evidence-retry]"));
+  })()`,
+  );
+  await screenshot(cdp, join(outputDir, "issue-726-inbox-no-evidence.png"));
+  await evaluate(
+    cdp,
+    `(() => { window.__issue565QueueMode = "baseline"; document.querySelector("[data-review-evidence-retry]")?.click(); })()`,
+  );
+  await waitForCurrentEvidence(cdp);
+  const recoveredEvidence = await evaluate(
+    cdp,
+    `Boolean(document.querySelector("#inbox-review-selected [data-review-approve]"))`,
+  );
+  const missingEvidence = { blocked, recovered: recoveredEvidence };
 
   await setQueueMode(cdp, "error", 160);
   const error = await inspectQueueStatus(cdp, "Falha persistente de teste.");
@@ -294,13 +368,14 @@ async function validateStates(cdp, suggestionId) {
   retry.recovered = retry.clicked && recovered;
 
   await setQueueMode(cdp, "baseline", 180);
+  await waitForCurrentEvidence(cdp);
   await evaluate(
     cdp,
     `(() => {
       window.__issue565QueueMode = 'conflict';
       window.confirm = () => true;
       const button = document.querySelector(
-        '[data-review-id="${escapeJs(suggestionId)}"] [data-review-approve]'
+        '#inbox-review-selected [data-review-approve]'
       );
       if (!button) throw new Error('Approval button not found for conflict state');
       button.click();
@@ -310,7 +385,7 @@ async function validateStates(cdp, suggestionId) {
   const conflict = await waitForConflictState(cdp, suggestionId);
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-conflict.png"));
 
-  return { kinds, loading, empty, error, unavailable, retry, conflict };
+  return { kinds, loading, empty, missingEvidence, error, unavailable, retry, conflict };
 }
 
 async function setQueueMode(cdp, mode, waitMs) {
@@ -366,11 +441,24 @@ async function inspectQueueStatus(cdp, expectedText) {
   );
 }
 
+async function waitForCurrentEvidence(cdp, timeout = 4_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const ready = await evaluate(
+      cdp,
+      `document.getElementById('inbox-review-selected')?.dataset.reviewEvidenceState === 'ready'`,
+    ).catch(() => false);
+    if (ready) return;
+    await sleep(100);
+  }
+  throw new Error("The review evidence did not become ready.");
+}
+
 async function inspectConflictState(cdp, suggestionId) {
   return evaluate(
     cdp,
     `(() => {
-      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
+      const card = document.getElementById('inbox-review-selected');
       const status = card?.querySelector('[data-review-row-status]');
       const button = card?.querySelector('[data-review-approve]');
       return {

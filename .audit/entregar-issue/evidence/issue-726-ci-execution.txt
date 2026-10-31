@@ -1,0 +1,6 @@
+PR #754 / issue #726
+material HEAD 5de15d062209741bb0ada8f837d45e2cc7973a25
+Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330: completed/success, 2026-10-31T10:20:25Z
+Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382: completed/success, 2026-10-31T10:24:47Z
+Chrome artifact ID 13040015465, 75 registered coverage executions passed
+Review only: no independent visual opinion claimed

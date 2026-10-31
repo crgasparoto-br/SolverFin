@@ -1,0 +1,72 @@
+{
+  "commit": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "generatedAt": "2026-10-31T10:21:17.947Z",
+  "stage": "passed",
+  "fixtures": {
+    "suffix": "mvw93vwo",
+    "accountId": "44444444-4444-4444-8444-444444444445",
+    "categoryId": "66666666-6666-4666-8666-666666666603",
+    "ignoreEntryId": "a0680b11-8114-45d5-a733-5f92561aad84",
+    "revertEntryId": "36f9831a-41a4-4493-9935-4e0d3258f1a6",
+    "ignoreSuggestionId": "01adb88f-b6c6-4c46-b948-e538107d3f42",
+    "correctionSuggestionId": "8ea97b8e-2a38-4700-87b0-f7ae3d2e4f2f"
+  },
+  "settingsBefore": {
+    "panelVisible": true,
+    "ignoreVisible": true,
+    "revertVisible": true,
+    "ignoreStatus": "active",
+    "revertStatus": "active",
+    "activeButtonsForMutatedEntries": 4
+  },
+  "settingsAfter": {
+    "panelVisible": true,
+    "ignoreVisible": false,
+    "revertVisible": false,
+    "ignoreStatus": "ignored",
+    "revertStatus": "reverted",
+    "activeButtonsForMutatedEntries": 0
+  },
+  "settingsMobile": {
+    "width": 390,
+    "height": 844,
+    "noHorizontalOverflow": true
+  },
+  "inboxOrigin": {
+    "learningCategorizationId": "53927f75-90a2-4cc1-af77-89c8d0c8f1bc",
+    "learningOriginVisible": true,
+    "correctionButtonVisible": true
+  },
+  "correctionGuards": [
+    {
+      "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+      "mode": "hidden",
+      "posts": 0,
+      "blocked": true,
+      "reviewState": "ready"
+    },
+    {
+      "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+      "mode": "wrong-selection",
+      "posts": 0,
+      "blocked": true,
+      "reviewState": "ready"
+    },
+    {
+      "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+      "mode": "changed-fingerprint",
+      "posts": 0,
+      "blocked": true,
+      "reviewState": "unavailable"
+    }
+  ],
+  "failedDialog": {
+    "open": true,
+    "categoryPreserved": true,
+    "submitEnabled": true,
+    "statusLive": true,
+    "fitsViewport": true
+  },
+  "learningCountBefore": 3,
+  "learningCountAfter": 4
+}

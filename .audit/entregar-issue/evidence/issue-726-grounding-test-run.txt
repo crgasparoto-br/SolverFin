@@ -1,0 +1,12 @@
+HEAD: 5de15d062209741bb0ada8f837d45e2cc7973a25
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/category-learning-controller.test.ts
+REACHED: apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts
+REACHED: apps/web/src/dev-server/inbox-interface-enhancement.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-archetype.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926330
+JOB: 124510426114 CRITICAL validation (completed/success)
+SOURCE: job log contains matching [test] dev-server/<stem>.test.js lines for all six modules, 2026-10-31 10:18 UTC

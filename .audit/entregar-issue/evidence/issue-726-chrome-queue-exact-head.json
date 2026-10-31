@@ -1,0 +1,545 @@
+{
+  "generatedAt": "2026-10-31T10:21:28.823Z",
+  "commit": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "browser": "Google Chrome 156.0.8078.47",
+  "fixture": {
+    "suggestionId": "a7dd486c-2a4f-413b-a089-b0a65ac302d8",
+    "accountId": "44444444-4444-4444-8444-444444444445",
+    "description": "Linha 2 importada e pronta para revisao humana."
+  },
+  "captures": [
+    {
+      "viewport": "320x740",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 10,
+        "right": 295,
+        "width": 285,
+        "height": 175
+      },
+      "screenshot": "issue-565-ai-review-queue-320x740.png"
+    },
+    {
+      "viewport": "390x844",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 10,
+        "right": 365,
+        "width": 355,
+        "height": 138
+      },
+      "screenshot": "issue-565-ai-review-queue-390x844.png"
+    },
+    {
+      "viewport": "768x1024",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 232,
+        "right": 741,
+        "width": 509,
+        "height": 138
+      },
+      "screenshot": "issue-565-ai-review-queue-768x1024.png"
+    },
+    {
+      "viewport": "1024x768",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 234,
+        "right": 539,
+        "width": 305,
+        "height": 175
+      },
+      "screenshot": "issue-565-ai-review-queue-1024x768.png"
+    },
+    {
+      "viewport": "1366x768",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 234,
+        "right": 679,
+        "width": 445,
+        "height": 138
+      },
+      "screenshot": "issue-565-ai-review-queue-1366x768.png"
+    },
+    {
+      "viewport": "1440x900",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 234,
+        "right": 709,
+        "width": 475,
+        "height": 138
+      },
+      "screenshot": "issue-565-ai-review-queue-1440x900.png"
+    },
+    {
+      "viewport": "1366x900",
+      "cardVisible": true,
+      "filtersVisible": true,
+      "bodyFitsViewport": true,
+      "actionsFitViewport": true,
+      "actionsContainedInCards": true,
+      "actionsMeetMinimum": true,
+      "technicalIdHidden": true,
+      "selectedEvidenceReady": true,
+      "decisionAfterEvidence": true,
+      "detailActionsFitViewport": true,
+      "secondaryBelowReview": true,
+      "buttonLabels": [
+        "Em revisão"
+      ],
+      "filterValues": [
+        "transaction_extraction",
+        "pending_review",
+        "all"
+      ],
+      "cardRect": {
+        "left": 234,
+        "right": 679,
+        "width": 445,
+        "height": 138
+      },
+      "screenshot": "issue-565-ai-review-queue-1366x900.png"
+    }
+  ],
+  "keyboard": {
+    "detailsOpenedByKeyboard": true,
+    "detailsFocused": true,
+    "detailsFocusRestored": true,
+    "editOpenedByKeyboard": true,
+    "editControlFocused": true,
+    "editFocusRestored": true
+  },
+  "urlState": {
+    "before": "?kind=transaction_extraction&status=pending_review&confidence=all",
+    "after": "?kind=transaction_extraction&confidence=low",
+    "confidencePersisted": true,
+    "profilePreserved": true
+  },
+  "textResize": {
+    "rootFontSize": 32,
+    "cardVisible": true,
+    "actionsVisible": true,
+    "actionsContainedInCards": true,
+    "bodyFitsViewport": true,
+    "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvw940i1Revisar"
+  },
+  "evidenceNegative": {
+    "hiddenEvidenceBlockedDecision": true,
+    "evidenceRestored": true
+  },
+  "fingerprintChecks": [
+    {
+      "action": "approve",
+      "changed": true,
+      "posts": 0,
+      "original": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "settled": true,
+      "ok": true
+    },
+    {
+      "action": "approve",
+      "changed": false,
+      "posts": 1,
+      "original": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "expectedFingerprint": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "settled": true,
+      "ok": true
+    },
+    {
+      "action": "reject",
+      "changed": true,
+      "posts": 0,
+      "original": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "settled": true,
+      "ok": true
+    },
+    {
+      "action": "reject",
+      "changed": false,
+      "posts": 1,
+      "original": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "expectedFingerprint": "db-fp-v1-f59df4c636bd87b4030d1976bf7dcb989fedf50e93280f99ae397f9b7b3804b4",
+      "settled": true,
+      "ok": true
+    }
+  ],
+  "hierarchyNegative": {
+    "baseline": true,
+    "attackRejected": true,
+    "restored": true
+  },
+  "longEvidence": [
+    {
+      "width": 320,
+      "height": 740,
+      "screenshot": "issue-726-inbox-long-evidence-320x740.png",
+      "bodyFitsViewport": true,
+      "decisionFitsViewport": true,
+      "evidenceBeforeDecision": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "screenshot": "issue-726-inbox-long-evidence-390x844.png",
+      "bodyFitsViewport": true,
+      "decisionFitsViewport": true,
+      "evidenceBeforeDecision": true
+    }
+  ],
+  "reviewCardGridNegatives": [
+    {
+      "viewport": "390x844",
+      "baseline": {
+        "cardWidth": 355,
+        "cardRight": 365,
+        "buttonLeft": 12,
+        "buttonRight": 119,
+        "gridColumns": "353px",
+        "overflowPx": 0,
+        "contained": true,
+        "hitTarget": true
+      },
+      "attack": {
+        "cardWidth": 355,
+        "cardRight": 365,
+        "buttonLeft": 420,
+        "buttonRight": 527,
+        "gridColumns": "150px 240px 140px",
+        "overflowPx": 162,
+        "contained": false,
+        "hitTarget": false
+      },
+      "restored": {
+        "cardWidth": 355,
+        "cardRight": 365,
+        "buttonLeft": 12,
+        "buttonRight": 119,
+        "gridColumns": "353px",
+        "overflowPx": 0,
+        "contained": true,
+        "hitTarget": true
+      },
+      "attackRejected": true,
+      "restorationPassed": true
+    },
+    {
+      "viewport": "1366x768",
+      "baseline": {
+        "cardWidth": 445,
+        "cardRight": 679,
+        "buttonLeft": 236,
+        "buttonRight": 343,
+        "gridColumns": "442.844px",
+        "overflowPx": 0,
+        "contained": true,
+        "hitTarget": true
+      },
+      "attack": {
+        "cardWidth": 445,
+        "cardRight": 679,
+        "buttonLeft": 644,
+        "buttonRight": 751,
+        "gridColumns": "150px 240px 140px",
+        "overflowPx": 72,
+        "contained": false,
+        "hitTarget": true
+      },
+      "restored": {
+        "cardWidth": 445,
+        "cardRight": 679,
+        "buttonLeft": 236,
+        "buttonRight": 343,
+        "gridColumns": "442.844px",
+        "overflowPx": 0,
+        "contained": true,
+        "hitTarget": true
+      },
+      "attackRejected": true,
+      "restorationPassed": true
+    }
+  ],
+  "goldenScreenControls": [
+    {
+      "viewport": "390x844",
+      "complete": true,
+      "row": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "nav": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(203, 213, 225)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "trigger": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(203, 213, 225)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "refresh": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "status": {
+        "background": "rgb(238, 245, 248)",
+        "color": "rgb(15, 23, 42)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 138,
+        "neutral": false,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "selectedAriaPressed": "true",
+      "tokenMatch": true,
+      "contrast": [
+        11.72,
+        11.72,
+        11.72,
+        11.72
+      ],
+      "disabledOpacity": 1,
+      "disabledCursor": "not-allowed",
+      "disabledContrast": 6.92,
+      "disabledTokensMatch": true,
+      "ariaMenuLabel": "Adicionar entrada à Inbox",
+      "hasNeutralLinks": true,
+      "financialDirectionColorFromTokens": true,
+      "focusStyleDefined": true,
+      "menuKeyboard": {
+        "opened": true,
+        "closed": true,
+        "focusRestored": true
+      }
+    },
+    {
+      "viewport": "1366x768",
+      "complete": true,
+      "row": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "nav": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(203, 213, 225)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "trigger": {
+        "background": "rgb(241, 245, 249)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(165, 203, 214)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": true,
+        "active": false,
+        "expanded": false
+      },
+      "refresh": {
+        "background": "rgb(255, 255, 255)",
+        "color": "rgb(15, 61, 76)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 44,
+        "neutral": true,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "status": {
+        "background": "rgb(238, 245, 248)",
+        "color": "rgb(15, 23, 42)",
+        "border": "rgb(226, 232, 240)",
+        "minTouchHeight": true,
+        "actualHeight": 138,
+        "neutral": false,
+        "hovered": false,
+        "focusVisible": false,
+        "active": false,
+        "expanded": false
+      },
+      "selectedAriaPressed": "true",
+      "tokenMatch": true,
+      "contrast": [
+        11.72,
+        11.72,
+        10.7,
+        11.72
+      ],
+      "disabledOpacity": 1,
+      "disabledCursor": "not-allowed",
+      "disabledContrast": 6.92,
+      "disabledTokensMatch": true,
+      "ariaMenuLabel": "Adicionar entrada à Inbox",
+      "hasNeutralLinks": true,
+      "financialDirectionColorFromTokens": true,
+      "focusStyleDefined": true,
+      "menuKeyboard": {
+        "opened": true,
+        "closed": true,
+        "focusRestored": true
+      }
+    }
+  ],
+  "failures": []
+}
