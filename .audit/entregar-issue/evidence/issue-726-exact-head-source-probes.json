@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
-  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
   "source_paths": [
     "apps/web/src/dev-server/inbox-review-archetype.ts",
-    "apps/web/src/dev-server/inbox-review-queue-enhancement.ts"
+    "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+    "scripts/statement-visual/issue-726-golden-state-matrix.mjs"
   ],
   "source_code_checks": {
     "a6_layout": true,
@@ -11,10 +12,13 @@
     "css_card_column_fix": true,
     "current_fingerprint_before_post": true,
     "manual_confirmation": true,
-    "currency_metadata": false,
-    "secondary_below": true
+    "currency_metadata": true,
+    "secondary_below": true,
+    "visibility_guard_checks_ancestors": true,
+    "neutral_pressed_state_enforced": true,
+    "chromium_forced_pseudo_state_negative": true
   },
   "kind": "static-check",
   "scope": "structural source only, not browser behavior",
-  "authentic_browser_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382"
+  "authentic_browser_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301"
 }

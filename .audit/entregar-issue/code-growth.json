@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
@@ -24,19 +24,34 @@
       "lines_after": 365
     },
     {
+      "path": "apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts",
+      "lines_before": 242,
+      "lines_after": 244
+    },
+    {
       "path": "apps/web/src/dev-server/inbox-page.ts",
       "lines_before": 1192,
       "lines_after": 1191
     },
     {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "lines_before": 449,
+      "lines_after": 500
+    },
+    {
       "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "lines_before": 546,
-      "lines_after": 564
+      "lines_after": 566
     },
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
       "lines_before": 284,
-      "lines_after": 271
+      "lines_after": 276
+    },
+    {
+      "path": "scripts/statement-visual/inbox-interface-accessibility.mjs",
+      "lines_before": 500,
+      "lines_after": 500
     },
     {
       "path": "scripts/statement-visual/issue-564-category-learning.mjs",
@@ -46,12 +61,22 @@
     {
       "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
       "lines_before": 479,
-      "lines_after": 489
+      "lines_after": 481
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "lines_before": null,
+      "lines_after": 252
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+      "lines_before": null,
+      "lines_after": 191
     },
     {
       "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
       "lines_before": null,
-      "lines_after": 234
+      "lines_after": 286
     }
   ],
   "blocking_files": []

@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "material_head_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "material_head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "evidence": [
     {
       "evidence_id": "EV-726-RESPONSIVE",
       "kind": "quantitative",
       "path": "evidence/issue-726-exact-head-real-browser.json",
-      "sha256": "7c7364aece1913142b9b4f7b75350b4239fbe6328504b67507a346b8f56d35c7",
-      "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+      "sha256": "057f95edbfa2c7b432efdc09df5dd5410ca0c1bcfe8962727260861d158a25af",
+      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
       "freshness_policy": "exact-material-head",
-      "producer": "Authenticated Chrome visual validation run 41191926382, artifact 13040015465",
+      "producer": "Authenticated Chrome visual validation run 41203149301, artifact 13043971276, SHA256 d1ea4fb5d458b75981f0191417084ac3071c82ef080fc834ccb71b802d42e2bd",
       "status": "passed"
     }
   ]

@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
-  "subject_sha": "5de15d062209741bb0ada8f837d45e2cc7973a25",
+  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
   "runner": "GitHub-hosted Chrome authenticated demo profile",
-  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41191926382",
-  "workflow_run_id": 41191926382,
+  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
+  "workflow_run_id": 41203149301,
   "workflow_status": "completed/success",
-  "artifact_id": 13040015465,
-  "artifact_name": "statement-visual-evidence-5de15d062209741bb0ada8f837d45e2cc7973a25",
-  "artifact_digest": "sha256:f6019416d31308617f35c72b8eaffd133830bc91aaf54227a04bd299672abb16",
+  "artifact_id": 13043971276,
+  "artifact_name": "statement-visual-evidence-8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "artifact_digest": "sha256:d1ea4fb5d458b75981f0191417084ac3071c82ef080fc834ccb71b802d42e2bd",
   "raw_evidence": {
     "queue": {
       "path": "evidence/issue-726-chrome-queue-exact-head.json",
-      "sha256": "6aa97fc4b4e474359cc891a414db2d7011f36ddee47b0819d0c293becb1d1f49"
+      "sha256": "5d7f97a2556b1ccf7eb83523e25630ee1b495231a40a72b32afef651d9f9c0c6"
     },
     "states": {
       "path": "evidence/issue-726-chrome-queue-states-exact-head.json",
-      "sha256": "de97f0baaa787b672e7dfc9ef55dd7f8883ecf2381e751cfa0e500d3cd6d4e35"
+      "sha256": "68390cc918d7b5636de6b87a506811d2218eadd7c134afb5450532cb4d997a00"
     },
     "correction": {
       "path": "evidence/issue-726-chrome-category-correction-exact-head.json",
-      "sha256": "0fbf0c931b2d61c6aa612a4c3c666b61945e39c6a4f84cf1a4ca170d22098916"
+      "sha256": "30162bc8daac3f26298c9f420faa0c79024b99f6e151ea586e4f868b13fe7312"
     }
   },
   "observations": {
@@ -98,7 +98,7 @@
         "rest_contrast": [
           11.72,
           11.72,
-          10.7,
+          11.72,
           11.72
         ],
         "disabled_contrast": 6.92,
@@ -135,25 +135,25 @@
       "actionsVisible": true,
       "actionsContainedInCards": true,
       "bodyFitsViewport": true,
-      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvw940i1Revisar"
+      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvweto5pRevisar"
     },
     "correction_guards": [
       {
-        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
         "mode": "hidden",
         "posts": 0,
         "blocked": true,
         "reviewState": "ready"
       },
       {
-        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
         "mode": "wrong-selection",
         "posts": 0,
         "blocked": true,
         "reviewState": "ready"
       },
       {
-        "fingerprint": "sha256-7372429ce3b73780e5b3f5db68ea2b86231e11b30a5bf9294d3965f2185b8621",
+        "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
         "mode": "changed-fingerprint",
         "posts": 0,
         "blocked": true,
@@ -164,11 +164,129 @@
     "evidence_long_images": [
       "issue-726-inbox-long-evidence-320x740.png",
       "issue-726-inbox-long-evidence-390x844.png"
+    ],
+    "visibility_negative_matrix": [
+      {
+        "action": "approve",
+        "mode": "visible",
+        "posts": 1,
+        "confirmations": 1,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "hidden",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "opacity",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "clipped",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "ancestor-opacity",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "ancestor-clipped",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "approve",
+        "mode": "inert",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "visible",
+        "posts": 1,
+        "confirmations": 1,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "hidden",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "opacity",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "clipped",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "ancestor-opacity",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "ancestor-clipped",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      },
+      {
+        "action": "reject",
+        "mode": "inert",
+        "posts": 0,
+        "confirmations": 0,
+        "ok": true
+      }
+    ],
+    "hover_pressed_focus_state_matrix": [
+      {
+        "viewport": "390x844",
+        "sample_count": 33,
+        "expected": 33,
+        "passed": true,
+        "negative_pass": true,
+        "unselected_option": true
+      },
+      {
+        "viewport": "1366x768",
+        "sample_count": 33,
+        "expected": 33,
+        "passed": true,
+        "negative_pass": true,
+        "unselected_option": true
+      }
     ]
   },
   "coverage_limits": [
-    "The Chrome probes confirm rest, disabled and menu focus styles, but do not independently force hover/pressed/focus-visible for every neutral control or dialog selector.",
-    "The implementing context does not constitute independent human visual approval; separate review must inspect screenshots for final qualitative composition.",
-    "Chrome uses a controlled authenticated demo fixture, not real user bank messages."
+    "Automated Chrome covers all 7 recorded viewports and 33 forced CSS states per sampled desktop/mobile viewport; it does not substitute for the independent human visual composition verdict.",
+    "Current logged runs and raw evidence are tied to the exact material SHA; independent release approval on published result-only child remains deferred.",
+    "The prior historical pre-edit screenshot has retrospective provenance and does not prove the implementer visited Chrome before initial editing."
   ]
 }
