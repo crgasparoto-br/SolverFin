@@ -47,7 +47,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           '<label>Confiança<select data-review-filter="confidence">' +
             '<option value="all">Todas</option><option value="low">Baixa confiança</option>' +
             '<option value="normal">Normal</option></select></label>' +
-          '<button type="button" class="secondary-button" data-review-refresh title="Atualizar fila">Atualizar</button>';
+          '<button type="button" class="secondary-button" data-button-variant="neutral" data-review-refresh title="Atualizar fila">Atualizar</button>';
         heading?.insertAdjacentElement("afterend", filterBar);
 
         const kindFilter = filterBar.querySelector('[data-review-filter="kind"]');
@@ -95,7 +95,12 @@ export function enhanceInboxReviewQueue(html: string): string {
           return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
         }
         function formatMoney(minor, currency) {
-          return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency || "BRL" }).format(Number(minor || 0) / 100);
+          if (typeof currency !== "string" || !currency.trim()) return "Moeda indisponível";
+          try {
+            return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(Number(minor || 0) / 100);
+          } catch {
+            return "Moeda indisponível";
+          }
         }
         function categoryName(id) {
           if (!id) return "Sem categoria";
@@ -179,12 +184,12 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (!visible.some((item) => item.id === state.selectedId)) state.selectedId = visible[0].id;
           rows.innerHTML = visible.map((item) => {
             const chosen = item.id === state.selectedId;
-            const low = item.risk === "low_confidence" ? '<span class="review-risk">Baixa confiança</span>' : "";
+            const low = item.risk === "low_confidence" ? '<span class="sf-badge review-risk" data-tone="attention">Baixa confiança</span>' : "";
             return '<article class="maintenance-item review-card' + (chosen ? ' selected' : '') + '" data-review-id="' + escapeHtml(item.id) + '" data-review-kind="' + escapeHtml(item.kind) + '">' +
               '<div class="maintenance-summary"><div><strong>' + escapeHtml(formatKind(item.kind)) + '</strong>' +
               '<span>' + escapeHtml(formatStatus(item.status)) + ' · origem ' + escapeHtml(formatOrigin(item.origin)) + ' · confiança ' + escapeHtml(Math.round(Number(item.confidence) * 100)) + '%</span></div>' + low + '</div>' +
               '<p class="review-card-summary">' + escapeHtml(item.maskedSummary) + '</p>' +
-              '<button type="button" class="secondary-button" data-review-select="' + escapeHtml(item.id) + '" aria-controls="inbox-review-selected" aria-pressed="' + chosen + '">' + (chosen ? "Em revisão" : "Revisar") + '</button>' +
+              '<button type="button" class="secondary-button" data-button-variant="neutral" data-review-select="' + escapeHtml(item.id) + '" aria-controls="inbox-review-selected" aria-pressed="' + chosen + '">' + (chosen ? "Em revisão" : "Revisar") + '</button>' +
               '</article>';
           }).join("");
           bindRows();
@@ -239,7 +244,7 @@ export function enhanceInboxReviewQueue(html: string): string {
             '<div><dt>Confiança</dt><dd>' + escapeHtml(Math.round(Number(payload.confidence || 0) * 100)) + '%</dd></div></dl>';
           if (payload.suggestionKind === "transaction_extraction") {
             body += '<dl class="review-detail-grid"><div><dt>Data</dt><dd>' + escapeHtml(formatDate(proposal.occurredOn)) + '</dd></div>' +
-              '<div><dt>Valor</dt><dd>' + escapeHtml(formatMoney(proposal.amountMinor, proposal.currency)) + '</dd></div>' +
+              '<div><dt>Valor</dt><dd class="review-money-value">' + escapeHtml(formatMoney(proposal.amountMinor, proposal.currency)) + '</dd></div>' +
               '<div><dt>Conta</dt><dd>' + escapeHtml(accountName(proposal.accountId)) + '</dd></div>' +
               '<div><dt>Categoria</dt><dd>' + escapeHtml(categoryName(proposal.categoryId)) + '</dd></div></dl>' +
               '<p><strong>' + escapeHtml(proposal.description || "Sem descrição") + '</strong></p>';
@@ -528,30 +533,42 @@ export function enhanceInboxReviewQueue(html: string): string {
   enhanced = enhanced.replace(
     "</style>",
     `
-      .review-filter-bar { align-items: end; display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 12px; }
-      .review-filter-bar label { display: grid; font-size: 0.75rem; gap: 4px; min-width: 150px; }
+      .review-filter-bar { align-items: end; display: grid; gap: var(--sf-space-2); grid-template-columns: repeat(2, minmax(0, 1fr)); margin: var(--sf-space-2) 0 var(--sf-space-3); }
+      .review-filter-bar label { display: grid; font-size: var(--sf-font-size-xs); gap: var(--sf-space-1); min-width: 0; }
+      .review-filter-bar select, .review-filter-bar button { min-height: var(--sf-density-interactive-target-min); min-width: 0; width: 100%; }
       .review-queue-status { align-items: center; display: flex; flex-wrap: wrap; font-size: 0.8125rem; gap: 8px; margin: 0 0 10px; }
       .review-queue-status.error { color: var(--danger, #9f1239); }
       .review-queue-status.unavailable { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); color: #7a4a00; padding: 8px 10px; }
       .review-queue-status.success { color: var(--success, #166534); }
       .form-status.unavailable, .review-unavailable { color: #7a4a00; }
       .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
-       .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
-       .review-card.selected { background: var(--surface-soft); border-left-color: var(--primary); }
-       .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
-       .review-card > [data-review-select] { justify-self: start; min-height: 44px; }
-       .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
+      .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
+      /* A6 queue cards are narrower than the legacy Inbox maintenance grid. */
+      .inbox-page .inbox-review-queue .review-card {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .inbox-page .inbox-review-queue .review-card > *,
+      .inbox-page .inbox-review-queue .review-card .maintenance-summary > div {
+        min-width: 0;
+        overflow-wrap: anywhere;
+      }
+      .review-card.selected { background: var(--surface-soft); border-left-color: var(--primary); }
+      .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+      .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: 44px; }
+      .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
        .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
-      .review-risk { background: #fff4d6; border: 1px solid #e7c66f; border-radius: 999px; font-size: 0.6875rem; font-weight: 700; padding: 3px 7px; }
+      .review-risk { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-full); color: var(--sf-color-warning-text); font-size: var(--sf-font-size-xs); font-weight: var(--sf-font-weight-bold); padding: var(--sf-space-1) var(--sf-space-2); }
       .ai-review-dialog { width: min(720px, calc(100vw - 24px)); }
       .ai-review-dialog #ai-review-dialog-body { display: grid; gap: 12px; max-height: min(70vh, 680px); overflow: auto; }
       .review-detail-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); margin: 0; }
       .review-detail-grid div { background: var(--surface-soft); border-radius: var(--radius); padding: 8px; }
       .review-detail-grid dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
       .review-detail-grid dd { margin: 3px 0 0; overflow-wrap: anywhere; }
+      .review-money-value { font-variant-numeric: tabular-nums; text-align: right; }
       .review-warning { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); padding: 10px; }
       @media (max-width: 640px) {
-        .review-filter-bar > * { flex: 1 1 100%; min-width: 0; width: 100%; }
+        .review-filter-bar { grid-template-columns: 1fr; }
+        .review-filter-bar > * { min-width: 0; width: 100%; }
         .review-card .maintenance-summary { align-items: flex-start; flex-direction: column; }
         .ai-review-dialog { margin: 12px auto; max-height: calc(100vh - 24px); }
       }

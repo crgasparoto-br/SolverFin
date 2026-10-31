@@ -37,12 +37,12 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
     label: "Navegação da triagem",
     childrenHtml: `
       <nav class="inbox-section-nav" aria-label="Seções da Inbox">
-        <a class="secondary-button inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
-        <a class="secondary-button inbox-review-nav" href="#inbox-review-secondary">Outras entradas</a>
-        <a class="secondary-button inbox-review-nav" href="#csv-import-title">Evidência da importação</a>
+        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
+        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#inbox-review-secondary">Outras entradas</a>
+        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#csv-import-title">Importações</a>
       </nav>
       <details class="inbox-new-entry-actions">
-        <summary>Adicionar entrada</summary>
+        <summary class="inbox-new-entry-trigger sf-focus-ring" aria-label="Adicionar entrada à Inbox">Adicionar entrada</summary>
         <div class="inbox-new-entry-menu">${props.actionsHtml}</div>
       </details>
     `,
@@ -121,8 +121,9 @@ export function inboxReviewArchetypeStyles(): string {
   return `
     .inbox-review-cockpit { display: grid; gap: 16px; max-width: none; min-width: 0; padding: 0; }
     .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-    .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: 8px; min-width: 0; overflow-x: auto; scrollbar-width: thin; }
-    .inbox-review-nav { flex: 0 0 auto; text-decoration: none; }
+    /* A6 uses compact neutral section links, not a second row of primary actions. */
+    .inbox-review-cockpit .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: wrap; gap: var(--sf-space-2); min-width: 0; overflow: visible; }
+    .inbox-review-nav { flex: 1 1 auto; min-width: 0; min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3); font-size: var(--sf-font-size-sm); line-height: var(--sf-line-height-compact); text-decoration: none; white-space: normal; }
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
     .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence, .inbox-review-secondary { min-width: 0; }
     .inbox-review-queue, .inbox-review-detail { align-content: start; display: grid; gap: 12px; }
@@ -134,10 +135,17 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-queue-heading > div, .inbox-review-detail-heading > div { display: grid; gap: 3px; }
     .inbox-review-detail { position: sticky; top: 12px; }
     .inbox-new-entry-actions { margin-left: auto; min-width: 0; }
-    .inbox-new-entry-actions > summary { color: var(--primary); cursor: pointer; font-size: .8125rem; font-weight: 600; min-height: 44px; padding: 11px 8px; }
-    .inbox-new-entry-actions > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .inbox-new-entry-actions > summary {
+      align-items: center; background: var(--sf-color-surface); border: 1px solid var(--sf-color-border);
+      border-radius: var(--sf-radius-md); color: var(--sf-color-primary); cursor: pointer;
+      display: flex; font-size: var(--sf-font-size-sm); font-weight: var(--sf-font-weight-semibold);
+      min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3);
+    }
+    .inbox-new-entry-actions > summary:hover,
+    .inbox-new-entry-actions[open] > summary { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
+    .inbox-new-entry-actions > summary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); box-shadow: var(--sf-shadow-focus); outline: none; }
     .inbox-new-entry-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
-    .inbox-new-entry-menu > button { min-height: 44px; }
+    .inbox-new-entry-menu > button { min-height: var(--sf-density-interactive-target-min); }
     .inbox-review-selected { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
     .inbox-review-selected .review-selected-context { display: grid; gap: 6px; }
     .inbox-review-selected .review-selected-context p { margin: 0; overflow-wrap: anywhere; }
@@ -177,9 +185,9 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-evidence .candidate-card { align-items: center; gap: 8px; padding: 6px 8px; }
     .inbox-date-filter-controls { align-items: end; display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0; }
     .inbox-date-filter-controls label { display: grid; font-size: .72rem; gap: 2px; }
-    .inbox-date-filter-controls input { min-height: 34px; min-width: 132px; }
-    #apply-inbox-date-filters { min-height: 34px; min-width: 112px; }
-    #clear-inbox-date-filters { min-height: 34px; }
+    .inbox-date-filter-controls input { min-height: var(--sf-density-interactive-target-min); min-width: 132px; }
+    #apply-inbox-date-filters, #clear-inbox-date-filters { min-height: var(--sf-density-interactive-target-min); }
+    #apply-inbox-date-filters { min-width: 112px; }
     .structured-payload-preview { display: grid; gap: 6px; min-width: 0; }
     .structured-payload-preview ul { margin: 0; padding-left: 18px; }
     @media (max-width: 1120px) {
@@ -199,8 +207,8 @@ export function inboxReviewArchetypeStyles(): string {
       .inbox-review-detail { padding: 10px; }
       .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
       .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
-      .inbox-section-nav { max-width: 100%; width: 100%; }
-      .inbox-review-nav { justify-content: center; min-width: 190px; }
+      .inbox-review-cockpit .inbox-section-nav { max-width: 100%; width: 100%; }
+      .inbox-review-nav { flex: 1 1 calc(50% - var(--sf-space-2)); justify-content: center; }
       .inbox-new-entry-actions { margin-left: 0; width: 100%; }
       .inbox-date-filter-controls { align-items: stretch; }
     }
@@ -214,6 +222,20 @@ function inboxReviewRuntimeScript(): string {
   return String.raw`
     <script data-inbox-review-runtime="true">
       (() => {
+        const entryActions = document.querySelector(".inbox-new-entry-actions");
+        const entryTrigger = entryActions?.querySelector("summary");
+        entryActions?.addEventListener("keydown", (event) => {
+          if (event.key !== "Escape" || !entryActions.open) return;
+          event.preventDefault();
+          entryActions.open = false;
+          entryTrigger?.focus();
+        });
+        document.addEventListener("pointerdown", (event) => {
+          if (entryActions?.open && !entryActions.contains(event.target)) entryActions.open = false;
+        });
+        entryActions?.querySelectorAll("[data-open-dialog]").forEach((button) => {
+          button.addEventListener("click", () => { entryActions.open = false; });
+        });
         const profileId = new URLSearchParams(window.location.search).get("profileId");
         const withProfile = (path) => {
           if (!profileId) return path;
@@ -277,7 +299,7 @@ function inboxReviewRuntimeScript(): string {
               '<label>De <input id="inbox-date-start" type="date" aria-label="Data inicial das linhas" /></label>' +
               '<label>Até <input id="inbox-date-end" type="date" aria-label="Data final das linhas" /></label>' +
               '<button id="apply-inbox-date-filters" class="secondary-button" type="button">Aplicar período</button>' +
-              '<button id="clear-inbox-date-filters" class="button-link" type="button">Limpar</button>' +
+              '<button id="clear-inbox-date-filters" class="secondary-button" data-button-variant="neutral" type="button">Limpar</button>' +
               '<span id="inbox-visible-lines" class="muted small-note" role="status" aria-live="polite"></span>';
             const anchor = detail.querySelector(".compact-filters") || detail.querySelector(".bulk-actions");
             if (anchor) anchor.insertAdjacentElement("afterend", controls);
@@ -298,9 +320,10 @@ function inboxReviewRuntimeScript(): string {
         };
         const formatMinorCurrency = (amountMinor, currency) => {
           try {
-            return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency || "BRL" }).format(Number(amountMinor) / 100);
+            if (!currency) return "Moeda indisponível";
+            return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(Number(amountMinor) / 100);
           } catch {
-            return String(currency || "BRL") + " " + (Number(amountMinor) / 100).toFixed(2);
+            return currency ? String(currency) + " " + (Number(amountMinor) / 100).toFixed(2) : "Moeda indisponível";
           }
         };
         const evidenceLabel = (proposal, label) => {
@@ -369,12 +392,12 @@ function inboxReviewRuntimeScript(): string {
         };
         const renderInsight = (payload) => {
           const proposal = payload.proposal || {};
-          const filters = ['<li>Moeda: ' + escapeHtml(proposal.filters?.currency || proposal.currency || "BRL") + '</li>'];
+          const filters = ['<li>Moeda: ' + escapeHtml(proposal.filters?.currency || proposal.currency || "Moeda indisponível") + '</li>'];
           if (proposal.filters?.categoryId) filters.push("<li>Categoria: conforme o título deste insight.</li>");
           if (proposal.filters?.merchantKey) filters.push('<li>Estabelecimento analisado: ' + escapeHtml(proposal.filters.merchantKey) + '</li>');
           if (!proposal.filters?.categoryId && !proposal.filters?.merchantKey) filters.push("<li>Escopo: lançamentos realizados elegíveis do perfil no período.</li>");
           const evidence = Array.isArray(proposal.evidence)
-            ? proposal.evidence.map((item) => '<li>' + escapeHtml(evidenceLabel(proposal, String(item.label || ""))) + ': ' + escapeHtml(formatEvidence(item, proposal.currency || proposal.filters?.currency || "BRL")) + '</li>').join("")
+            ? proposal.evidence.map((item) => '<li>' + escapeHtml(evidenceLabel(proposal, String(item.label || ""))) + ': ' + escapeHtml(formatEvidence(item, proposal.currency || proposal.filters?.currency || "")) + '</li>').join("")
             : "";
           const limitations = Array.isArray(proposal.limitations)
             ? proposal.limitations.map((item) => '<li>' + escapeHtml(item) + '</li>').join("")

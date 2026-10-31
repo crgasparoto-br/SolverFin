@@ -42,6 +42,25 @@ describe("Inbox review archetype", () => {
     assert.match(html, /data-inbox-review-runtime="true"/);
   });
 
+  it("applies Golden Screen neutral navigation, accessible actions, modal menu states and touch targets", () => {
+    const html = renderInboxReviewArchetype({
+      actionsHtml: '<button type="button" data-open-dialog="csv-import-dialog">Importar</button>',
+      suggestionsHtml: "<section>Fila</section>",
+      messagesHtml: "<section>Mensagens</section>",
+      evidenceHtml: "<section>Importações</section>",
+    });
+    const css = inboxReviewArchetypeStyles();
+    assert.equal((html.match(/class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav"/g) ?? []).length, 3);
+    assert.match(html, /class="inbox-new-entry-trigger sf-focus-ring" aria-label="Adicionar entrada à Inbox"/);
+    assert.match(html, /event.key !== "Escape"/);
+    assert.match(html, /entryTrigger\?\.focus\(\)/);
+    assert.match(html, /data-button-variant=\"neutral\" type=\"button\">Limpar/);
+    assert.match(css, /--sf-color-neutral-control-hover/);
+    assert.match(css, /--sf-shadow-focus/);
+    assert.match(css, /--sf-density-interactive-target-min/);
+    assert.doesNotMatch(css, /#(?:[0-9a-fA-F]{3}){1,2}\b/);
+  });
+
   it("keeps the direct A6 composition intact while the legacy category adapter only enriches category behavior", () => {
     const html = renderInboxReviewArchetype({
       actionsHtml: "",

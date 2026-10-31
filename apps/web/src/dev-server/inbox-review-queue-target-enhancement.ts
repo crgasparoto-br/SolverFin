@@ -39,7 +39,12 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
           return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString("pt-BR", { timeZone: "UTC" });
         }
         function formatMoney(minor, currency) {
-          return new Intl.NumberFormat("pt-BR", { style: "currency", currency: currency || "BRL" }).format(Number(minor || 0) / 100);
+          if (typeof currency !== "string" || !currency.trim()) return "Moeda indisponível";
+          try {
+            return new Intl.NumberFormat("pt-BR", { style: "currency", currency }).format(Number(minor || 0) / 100);
+          } catch {
+            return "Moeda indisponível";
+          }
         }
         async function refreshReviewKinds() {
           const queue = await api("/api/ai-review-queue?status=all&includeLowConfidence=true");

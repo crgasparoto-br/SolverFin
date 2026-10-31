@@ -185,6 +185,140 @@ export async function validateHierarchyNegative(cdp) {
   );
 }
 
+// A-006: prove the A6 button is contained and hit-testable, then reintroduce the
+// legacy three-column grid to ensure the same geometry check detects the regression.
+export async function validateReviewCardGridNegative(cdp, suggestionId) {
+  return evaluate(
+    cdp,
+    `(() => {
+    const card = document.querySelector('[data-review-id="${suggestionId}"]');
+    const button = card?.querySelector('[data-review-select]');
+    if (!card || !button) throw new Error('Review card or selection button missing');
+    button.scrollIntoView({ block: 'center', inline: 'nearest' });
+    const inspect = () => {
+      const outer = card.getBoundingClientRect();
+      const inner = button.getBoundingClientRect();
+      const target = document.elementFromPoint(inner.left + inner.width / 2, inner.top + inner.height / 2);
+      return {
+        cardWidth: Math.round(outer.width),
+        cardRight: Math.round(outer.right),
+        buttonLeft: Math.round(inner.left),
+        buttonRight: Math.round(inner.right),
+        gridColumns: getComputedStyle(card).gridTemplateColumns,
+        overflowPx: Math.max(0, card.scrollWidth - card.clientWidth),
+        contained: inner.width >= 44 && inner.height >= 44 && inner.left >= outer.left - 1 && inner.right <= outer.right + 1,
+        hitTarget: target === button || button.contains(target)
+      };
+    };
+    const baseline = inspect();
+    const previous = [card.style.getPropertyValue('grid-template-columns'), card.style.getPropertyPriority('grid-template-columns')];
+    const previousButton = [button.style.getPropertyValue('grid-column'), button.style.getPropertyPriority('grid-column')];
+    let attack;
+    try {
+      card.style.setProperty('grid-template-columns',
+        'minmax(150px, .65fr) minmax(240px, 1.8fr) minmax(140px, auto)', 'important');
+      button.style.setProperty('grid-column', 'auto', 'important');
+      attack = inspect();
+    } finally {
+      if (previous[0]) card.style.setProperty('grid-template-columns', previous[0], previous[1]);
+      else card.style.removeProperty('grid-template-columns');
+      if (previousButton[0]) button.style.setProperty('grid-column', previousButton[0], previousButton[1]);
+      else button.style.removeProperty('grid-column');
+    }
+    const restored = inspect();
+    return {
+      baseline,
+      attack,
+      restored,
+      attackRejected: attack.overflowPx > 0 || !attack.contained || !attack.hitTarget,
+      restorationPassed: restored.contained && restored.hitTarget && restored.overflowPx === 0
+    };
+  })()`,
+  );
+}
+
+// Golden Screen: inspect actual CSS tokens, neutral controls, accessibility and menu keyboard behavior.
+export async function validateGoldenInboxControls(cdp) {
+  const rest = await evaluate(cdp, `(() => {
+    const root = getComputedStyle(document.documentElement);
+    const token = (name) => root.getPropertyValue('--sf-color-' + name).trim();
+    const style = (selector) => {
+      const node = document.querySelector(selector);
+      if (!node) return null;
+      const css = getComputedStyle(node);
+      const rect = node.getBoundingClientRect();
+      return {
+        background: css.backgroundColor,
+        color: css.color,
+        border: css.borderTopColor,
+        minTouchHeight: rect.height >= 44,
+        actualHeight: Math.round(rect.height),
+        neutral: node.getAttribute('data-button-variant') === 'neutral' ||
+          node.classList.contains('sf-button-secondary') || node.matches('.inbox-new-entry-trigger'),
+      };
+    };
+    const colors = (color) => {
+      const value = String(color || '').trim();
+      if (/^#[0-9a-fA-F]{6}$/.test(value)) {
+        return [1,3,5].map((position) => parseInt(value.slice(position, position + 2), 16));
+      }
+      return (value.match(/[0-9]+/g) || []).slice(0,3).map(Number);
+    };
+    const similar = (a,b) => {
+      const x = colors(a), y = colors(b);
+      return x.length === 3 && y.length === 3 && x.every((v,i) => v === y[i]);
+    };
+    const luminance = (color) => {
+      const rgb = colors(color).map((v) => {
+        const c = v / 255;
+        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return rgb.length === 3 ? (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) : 0;
+    };
+    const contrast = (a,b) => {
+      const x = luminance(a), y = luminance(b);
+      return Number(((Math.max(x,y) + 0.05)/(Math.min(x,y) + 0.05)).toFixed(2));
+    };
+    const row = style('.inbox-review-queue [data-review-select]');
+    const nav = style('.inbox-review-nav');
+    const trigger = style('.inbox-new-entry-trigger');
+    const refresh = style('[data-review-refresh]');
+    const status = style('.review-card.selected');
+    const selected = document.querySelector('.review-card.selected [data-review-select]');
+    const refreshNode = document.querySelector('[data-review-refresh]');
+    if (!row || !nav || !trigger || !refresh || !status || !selected || !refreshNode) return {complete:false};
+    refreshNode.disabled = true;
+    const disabledOpacity = getComputedStyle(refreshNode).opacity;
+    refreshNode.disabled = false;
+    return {
+      complete: true, row, nav, trigger, refresh, status,
+      selectedAriaPressed: selected.getAttribute('aria-pressed'),
+      tokenMatch: [row, nav, trigger, refresh].every((item) => similar(item.background, token('surface')) && similar(item.color, token('primary'))),
+      contrast: [row, nav, trigger, refresh].map((item) => contrast(item.color, item.background)),
+      disabledOpacity: Number(disabledOpacity),
+      ariaMenuLabel: document.querySelector('.inbox-new-entry-trigger')?.getAttribute('aria-label'),
+      hasNeutralLinks: document.querySelectorAll('.inbox-section-nav a.sf-button-secondary').length === 3,
+      financialDirectionColorFromTokens: document.querySelector('.review-risk') ?
+        similar(getComputedStyle(document.querySelector('.review-risk')).backgroundColor, token('warning-surface')) : true,
+      focusStyleDefined: Boolean([...document.styleSheets].some((sheet) => {
+        try { return [...sheet.cssRules].some((rule) => String(rule.cssText).includes('.inbox-new-entry-actions > summary:focus-visible')); }
+        catch { return false; }
+      })),
+    };
+  })()`);
+  const menuKeyboard = await evaluate(cdp, `(() => {
+    const details = document.querySelector('.inbox-new-entry-actions');
+    const summary = details?.querySelector('summary');
+    if (!details || !summary) return {opened:false, closed:false, focusRestored:false};
+    details.open = true;
+    summary.focus();
+    const opened = details.open;
+    details.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true, cancelable:true}));
+    return {opened, closed:!details.open, focusRestored: document.activeElement === summary};
+  })()`);
+  return { ...rest, menuKeyboard };
+}
+
 export async function validateLongEvidence(cdp, outputDir) {
   const findings = [];
   for (const [width, height] of [
