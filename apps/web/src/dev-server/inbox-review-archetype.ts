@@ -153,7 +153,8 @@ export function inboxReviewArchetypeStyles(): string {
     .ai-review-dialog :is(select, .secondary-button):active:not(:disabled) {
       background: var(--sf-color-neutral-control-active-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover);
     }
-    .inbox-review-cockpit .review-filter-bar select:disabled, .ai-review-dialog select:disabled {
+    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .review-card [data-review-select]):disabled,
+    .ai-review-dialog :is(select, .secondary-button):disabled {
       background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-border); color: var(--sf-color-muted-text); cursor: not-allowed; opacity: 1;
     }
     .ai-review-dialog select option:not(:checked) { background: var(--sf-color-surface); color: var(--sf-color-primary); }

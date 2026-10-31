@@ -68,7 +68,7 @@ describe("Inbox review archetype", () => {
       css,
       /\.ai-review-dialog :is\(select, \.secondary-button\):active:not\(:disabled\)/,
     );
-    assert.match(css, /\.inbox-review-cockpit \.review-filter-bar select:disabled/);
+    assert.match(css, /\.ai-review-dialog :is\(select, \.secondary-button\):disabled/);
     assert.match(css, /\.ai-review-dialog select option:not\(:checked\)/);
     assert.match(css, /--sf-shadow-focus/);
     assert.match(css, /--sf-density-interactive-target-min/);
