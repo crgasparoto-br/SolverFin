@@ -68,7 +68,10 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /typeof detail\.payload\.fingerprint !== "string"/);
     assert.match(html, /css\.visibility !== "visible"/);
     assert.match(html, /rect\.width <= 0/);
-    assert.match(html, /evidence\.checkVisibility\(\{ checkOpacity: true, checkVisibilityCSS: true \}\)/);
+    assert.match(
+      html,
+      /evidence\.checkVisibility\(\{ checkOpacity: true, checkVisibilityCSS: true \}\)/,
+    );
     assert.match(html, /node = node\.parentElement/);
     assert.match(html, /css\.clipPath !== "none"/);
     assert.match(html, /css\.maskImage !== "none"/);
