@@ -258,6 +258,22 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (reasons) body += '<details><summary>Por que esta sugestão?</summary><ul>' + reasons + '</ul></details>';
           return body;
         }
+        function reviewedEvidenceIsVisible(id) {
+          if (!selected || state.selectedId !== id ||
+            selected.dataset.reviewSelectedId !== id || selected.dataset.reviewEvidenceState !== "ready" ||
+            !selected.dataset.reviewFingerprint) return false;
+          const evidence = selected.querySelector('[data-review-evidence="ready"]');
+          if (!evidence || evidence.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+          const style = window.getComputedStyle(evidence);
+          const rect = evidence.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0 && style.display !== "none" &&
+            style.visibility !== "hidden" && style.opacity !== "0";
+        }
+        // The category-learning dialog shares the selected evidence guard, never owns an alternate approval path.
+        window.__solverfinInboxReviewGuard = reviewedEvidenceIsVisible;
+        window.__solverfinInboxInvalidateReview = (id, message) => {
+          if (state.selectedId === id) invalidateSelection(message);
+        };
         function invalidateSelection(message) {
           selectionGeneration += 1;
           if (!selected) return;
@@ -452,14 +468,9 @@ export function enhanceInboxReviewQueue(html: string): string {
         }
         async function decide(id, action, button) {
           const card = button.closest(".inbox-review-selected");
-          const evidence = card?.querySelector('[data-review-evidence="ready"]');
-          const evidenceStyle = evidence ? window.getComputedStyle(evidence) : null;
-          const evidenceRect = evidence?.getBoundingClientRect();
-          if (!card || card.dataset.reviewEvidenceState !== "ready" ||
-            !evidence || !evidenceRect || evidenceRect.width <= 0 || evidenceRect.height <= 0 ||
-            evidenceStyle.display === "none" || evidenceStyle.visibility === "hidden" ||
-            evidenceStyle.opacity === "0" || evidence.closest('[hidden], [aria-hidden="true"]') ||
-            state.selectedId !== id) return;
+          if (card !== selected || !reviewedEvidenceIsVisible(id)) return;
+          const reviewedFingerprint = selected.dataset.reviewFingerprint;
+          const reviewedGeneration = selectionGeneration;
           const status = card.querySelector("[data-review-row-status]");
           if (action === "reject" && !window.confirm("Rejeitar esta sugestão?")) return;
           if (action === "approve" && !window.confirm("Aprovar esta sugestão e aplicar o efeito indicado?")) return;
@@ -472,16 +483,23 @@ export function enhanceInboxReviewQueue(html: string): string {
               throw new Error("Evidência atual incompleta.");
             }
           } catch (error) {
-            if (state.selectedId === id) invalidateSelection("Não foi possível validar a evidência atual. Decisão bloqueada. " + errorMessage(error));
+            if (state.selectedId === id && selectionGeneration === reviewedGeneration) {
+              invalidateSelection("Não foi possível validar a evidência atual. Decisão bloqueada. " + errorMessage(error));
+            }
             return;
           }
-          if (state.selectedId !== id || card.dataset.reviewEvidenceState !== "ready") return;
+          if (selectionGeneration !== reviewedGeneration || !reviewedEvidenceIsVisible(id) ||
+            selected.dataset.reviewFingerprint !== reviewedFingerprint) return;
+          if (detail.payload.fingerprint !== reviewedFingerprint) {
+            invalidateSelection("A evidência mudou desde a revisão. Consulte a nova versão antes de confirmar.");
+            return;
+          }
           try {
             if (status) status.textContent = action === "approve" ? "Aplicando decisão..." : "Registrando rejeição...";
             await api("/api/ai-review-queue/" + encodeURIComponent(id) + "/" + action, {
               method: "POST",
               headers: { "content-type": "application/json" },
-              body: JSON.stringify({ expectedFingerprint: detail.payload.fingerprint })
+              body: JSON.stringify({ expectedFingerprint: reviewedFingerprint })
             });
             await loadQueue();
             queueStatus(action === "approve" ? "Sugestão aprovada." : "Sugestão rejeitada.", "success", false);

@@ -245,7 +245,7 @@ export function categoryLearningControllerScript(): string {
               button.title = "Escolher outra categoria e aprovar";
               button.innerHTML = correctIcon + " Corrigir e aprovar";
               button.addEventListener("click", () => {
-                if (selected.dataset.reviewSelectedId !== item.id || selected.dataset.reviewEvidenceState !== "ready") return;
+                if (!window.__solverfinInboxReviewGuard?.(item.id)) return;
                 openCorrectionDialog(item, compatibleCategories);
               });
               actions.prepend(button);
@@ -322,12 +322,16 @@ export function categoryLearningControllerScript(): string {
             status.textContent = "Salvando correção...";
             try {
               const evidence = document.getElementById("inbox-review-selected");
-              if (evidence?.dataset.reviewSelectedId !== item.id || evidence.dataset.reviewEvidenceState !== "ready") {
-                throw new Error("A evidência desta sugestão não está mais disponível. Atualize a revisão.");
+              if (!window.__solverfinInboxReviewGuard?.(item.id)) {
+                throw new Error("A evidência desta sugestão não está mais visível. Atualize a revisão.");
               }
+              const reviewedFingerprint = evidence.dataset.reviewFingerprint;
               const fresh = await readJson("/api/ai-review-queue/" + encodeURIComponent(item.id) + "/payload");
               const fingerprint = fresh?.payload?.fingerprint;
-              if (typeof fingerprint !== "string" || !fingerprint || fingerprint !== evidence.dataset.reviewFingerprint) {
+              if (!window.__solverfinInboxReviewGuard?.(item.id) ||
+                evidence.dataset.reviewFingerprint !== reviewedFingerprint ||
+                typeof fingerprint !== "string" || !fingerprint || fingerprint !== reviewedFingerprint) {
+                window.__solverfinInboxInvalidateReview?.(item.id, "A evidência mudou. Consulte a nova versão antes de decidir.");
                 throw new Error("A evidência mudou. Atualize a revisão antes de decidir.");
               }
               await postJson("/api/ai-review-queue/" + encodeURIComponent(item.id) + "/approve", {

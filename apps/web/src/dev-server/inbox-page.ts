@@ -141,7 +141,6 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
         <h2 id="inbox-review-suggestions-title">Outras sugestões</h2>
         <span>${suggestions.length} pendentes</span>
       </div>
-      ${financialInsightFallbackHtml}
       <div class="rows maintenance-rows">
         ${
           suggestions.map(renderReviewSuggestionRow).join("") ||
@@ -186,7 +185,7 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     suggestionsHtml,
     messagesHtml,
     evidenceHtml,
-    insightsHtml,
+    insightsHtml: `${insightsHtml}${financialInsightFallbackHtml}`,
     statusHtml,
   });
 
