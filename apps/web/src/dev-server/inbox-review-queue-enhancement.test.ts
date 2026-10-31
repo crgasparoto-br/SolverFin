@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
 import { enhanceInboxReviewQueue } from "./inbox-review-queue-enhancement.js";
+import { inboxReviewArchetypeStyles } from "./inbox-review-archetype.js";
 
 const BASE_HTML = `<!doctype html><html><head><style>.x{display:block}</style></head><body>
 <main><section class="panel list-panel"><div class="section-heading"><h2>Outras sugestões</h2><span>1 item(ns)</span></div><div class="rows"><article>legado</article></div></section></main>
@@ -34,10 +35,13 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /searchParams\.get\("profileId"\)/);
     // A6 cards must override the wider three-column .inbox-page .maintenance-item grid.
     assert.match(
-      html,
+      inboxReviewArchetypeStyles(),
       /\.inbox-page \.inbox-review-queue \.review-card \{\s*grid-template-columns: minmax\(0, 1fr\)/,
     );
-    assert.match(html, /\.review-card > \[data-review-select\] \{ grid-column: 1;/);
+    assert.match(
+      inboxReviewArchetypeStyles(),
+      /\.review-card > \[data-review-select\] \{ grid-column: 1;/,
+    );
     assert.match(html, /class="sf-badge review-risk" data-tone="attention"/);
     assert.match(html, /--sf-color-warning-surface/);
     assert.match(html, /data-button-variant="neutral" data-review-select/);

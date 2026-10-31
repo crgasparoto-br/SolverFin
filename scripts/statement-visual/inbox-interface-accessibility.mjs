@@ -58,7 +58,6 @@ async function validateInboxAccessibility(cdp) {
   await navigate(cdp, `${baseUrl}/login`);
   const login = await evaluate(cdp, loginExpression());
   assert.equal(login.ok, true, `Demo login failed: ${login.status} ${login.body}`);
-
   const fixtures = await createFixtures(cdp);
 
   await navigate(
@@ -288,18 +287,9 @@ async function inspectOperationalViewport(
       const rows = [...document.querySelectorAll('.import-row')];
       const checkboxes = [...document.querySelectorAll('.bulk-actions input[type="checkbox"], .import-row input[type="checkbox"]')].filter(visible);
       const buttons = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')].filter(visible);
-      const outOfViewportActions = buttons.flatMap((element) => {
-        const rect = element.getBoundingClientRect();
-        if (rect.left >= -1 && rect.right <= window.innerWidth + 1) return [];
-        const owner = element.closest('.import-row, .candidate-card, .review-card, .import-detail, .inbox-review-queue, .inbox-review-secondary');
-        const ownerRect = owner?.getBoundingClientRect();
-        return [{
-          label: (element.textContent || element.getAttribute('aria-label') || element.title || '').trim().slice(0, 100),
-          id: element.id || null, className: String(element.className || '').slice(0, 160),
-          left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width),
-          owner: owner ? { className: String(owner.className || '').slice(0, 120), left: Math.round(ownerRect.left), right: Math.round(ownerRect.right) } : null,
-        }];
-      });
+      const outOfViewportActions = buttons.filter((element) => { const rect = element.getBoundingClientRect(); return rect.left < 0 || rect.right > window.innerWidth; })
+        .map((element) => ({ label: (element.textContent || element.getAttribute('aria-label') || element.title || '').trim().slice(0, 100),
+          className: String(element.className || '').slice(0, 160), rect: rectSnapshot(element), owner: element.closest('.inbox-new-entry-actions, .import-row, .candidate-card, .review-card')?.className || null }));
       const operationalText = [...document.querySelectorAll('.row-summary dt, .row-heading .status-pill')].filter(visible);
       const batchItems = [...document.querySelectorAll('.import-batch-list .batch-item')].filter(visible);
       const batchItemRects = batchItems.map((item) => rectSnapshot(item));

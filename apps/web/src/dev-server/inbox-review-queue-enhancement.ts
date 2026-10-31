@@ -541,22 +541,6 @@ export function enhanceInboxReviewQueue(html: string): string {
       .review-queue-status.unavailable { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-md); color: var(--sf-color-warning-text); padding: var(--sf-space-2) var(--sf-space-3); }
       .review-queue-status.success { color: var(--sf-color-success); }
       .form-status.unavailable, .review-unavailable { color: var(--sf-color-warning-text); }
-      .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
-      .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
-      /* A6 queue cards are narrower than the legacy Inbox maintenance grid. */
-      .inbox-page .inbox-review-queue .review-card {
-        grid-template-columns: minmax(0, 1fr);
-      }
-      .inbox-page .inbox-review-queue .review-card > *,
-      .inbox-page .inbox-review-queue .review-card .maintenance-summary > div {
-        min-width: 0;
-        overflow-wrap: anywhere;
-      }
-      .review-card.selected { background: var(--sf-color-surface-soft); border-left-color: var(--sf-color-primary); }
-      .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
-      .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: var(--sf-density-interactive-target-min); }
-      .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
-       .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
       .review-risk { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-full); color: var(--sf-color-warning-text); font-size: var(--sf-font-size-xs); font-weight: var(--sf-font-weight-bold); padding: var(--sf-space-1) var(--sf-space-2); }
       .ai-review-dialog { width: min(720px, calc(100vw - 24px)); }
       .ai-review-dialog #ai-review-dialog-body { display: grid; gap: 12px; max-height: min(70vh, 680px); overflow: auto; }

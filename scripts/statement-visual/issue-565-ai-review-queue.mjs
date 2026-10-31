@@ -8,10 +8,12 @@ import {
   validateEvidenceNegativeControl,
   validateFingerprintBinding,
   validateHierarchyNegative,
-  validateLongEvidence,
-  validateReviewCardGridNegative,
-  validateGoldenInboxControls,
 } from "./issue-726-inbox-controls.mjs";
+import {
+  inspectViewport,
+  validateGoldenReviewViewport,
+  validateLongEvidence,
+} from "./issue-726-golden-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -78,39 +80,11 @@ try {
       evidence,
     );
     if ((width === 390 && height === 844) || (width === 1366 && height === 768)) {
-      const golden = await validateGoldenInboxControls(browser.cdp);
-      goldenScreenControls.push({ viewport: `${width}x${height}`, ...golden });
-      check(
-        golden.complete &&
-          golden.tokenMatch &&
-          golden.hasNeutralLinks &&
-          golden.financialDirectionColorFromTokens &&
-          golden.selectedAriaPressed === "true" &&
-          golden.disabledTokensMatch &&
-          golden.disabledContrast >= 4.5 &&
-          golden.disabledCursor === 'not-allowed' &&
-          golden.focusStyleDefined &&
-          golden.contrast.every((ratio) => ratio >= 4.5) &&
-          golden.row.minTouchHeight &&
-          golden.nav.minTouchHeight &&
-          golden.trigger.minTouchHeight &&
-          golden.refresh.minTouchHeight &&
-          golden.menuKeyboard.opened &&
-          golden.menuKeyboard.closed &&
-          golden.menuKeyboard.focusRestored,
-        `Golden Screen controls diverge in ${width}px Inbox`,
-        golden,
-      );
-      const negative = await validateReviewCardGridNegative(browser.cdp, fixture.suggestionId);
-      reviewCardGridNegatives.push({ viewport: `${width}x${height}`, ...negative });
-      check(
-        negative.baseline.contained &&
-          negative.baseline.hitTarget &&
-          negative.attackRejected &&
-          negative.restorationPassed,
-        `Legacy three-column grid escaped the review-card control at ${width}px`,
-        negative,
-      );
+      const result = await validateGoldenReviewViewport(browser.cdp, fixture.suggestionId);
+      goldenScreenControls.push({ viewport: `${width}x${height}`, ...result.golden });
+      reviewCardGridNegatives.push({ viewport: `${width}x${height}`, ...result.negative });
+      check(result.goldenPass, `Golden Screen controls diverge in ${width}px Inbox`, result.golden);
+      check(result.negativePass, `Legacy three-column grid escaped the review-card control at ${width}px`, result.negative);
     }
     check(evidence.technicalIdHidden, `Technical suggestion id is visible at ${width}px`, evidence);
     check(evidence.selectedEvidenceReady, `Selected evidence is not ready at ${width}px`, evidence);
@@ -290,61 +264,6 @@ async function waitForReviewCard(cdp, suggestionId, timeout = 12_000) {
     await sleep(120);
   }
   throw new Error(`Timed out waiting for review card ${suggestionId}`);
-}
-
-async function inspectViewport(cdp, suggestionId, width, height) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const card = document.querySelector('[data-review-id="${escapeJs(suggestionId)}"]');
-      const visible = (element) => {
-        if (!element) return false;
-        const rect = element.getBoundingClientRect();
-        const style = getComputedStyle(element);
-        return rect.width > 0 && rect.height > 0 && style.visibility !== 'hidden' && style.display !== 'none';
-      };
-      const buttons = card ? [...card.querySelectorAll('button')].filter(visible) : [];
-      const reviewCards = [...document.querySelectorAll('.inbox-review-queue .review-card')];
-      const actionsContainedInCards = reviewCards.length > 0 && reviewCards.every((row) => {
-        const rowRect = row.getBoundingClientRect();
-        return [...row.querySelectorAll('[data-review-select]')].every((action) => {
-          const actionRect = action.getBoundingClientRect();
-          return actionRect.width >= 44 && actionRect.height >= 44 &&
-            actionRect.left >= rowRect.left - 1 && actionRect.right <= rowRect.right + 1;
-        });
-      });
-      const selected = document.getElementById('inbox-review-selected');
-      const evidence = selected?.querySelector('[data-review-evidence="ready"]');
-      const decision = selected?.querySelector('[data-review-approve]');
-      const decisionButtons = selected ? [...selected.querySelectorAll('.review-decision-actions button')].filter(visible) : [];
-      const reviewLayout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
-      const secondary = document.querySelector('.inbox-review-secondary');
-      const filters = [...document.querySelectorAll('[data-review-filter]')].filter(visible);
-      return {
-        viewport: ${JSON.stringify(`${width}x${height}`)},
-        cardVisible: visible(card),
-        filtersVisible: filters.length === 3,
-        bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-        actionsFitViewport: buttons.length > 0 && buttons.every((button) => {
-          const rect = button.getBoundingClientRect();
-          return rect.left >= 0 && rect.right <= window.innerWidth;
-        }),
-        actionsContainedInCards,
-        actionsMeetMinimum: buttons.length > 0 && buttons.every((button) => button.getBoundingClientRect().height >= 34),
-        technicalIdHidden: !document.body.innerText.includes(${JSON.stringify(suggestionId)}),
-        selectedEvidenceReady: selected?.dataset.reviewEvidenceState === 'ready' && visible(evidence),
-        decisionAfterEvidence: Boolean(evidence && decision && (evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)),
-        detailActionsFitViewport: decisionButtons.length > 0 && decisionButtons.every((button) => { const rect = button.getBoundingClientRect(); return rect.left >= 0 && rect.right <= window.innerWidth && rect.height >= 34; }),
-        secondaryBelowReview: Boolean(reviewLayout && secondary) && secondary.getBoundingClientRect().top >= reviewLayout.getBoundingClientRect().bottom,
-        buttonLabels: buttons.map((button) => (button.textContent || '').trim()),
-        filterValues: filters.map((filter) => filter.value),
-        cardRect: card ? (() => {
-          const rect = card.getBoundingClientRect();
-          return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), height: Math.round(rect.height) };
-        })() : null
-      };
-    })()`,
-  );
 }
 
 async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {

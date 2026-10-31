@@ -159,6 +159,22 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-secondary-heading { align-items: start; display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; }
     .inbox-review-secondary-content { display: grid; gap: 20px; min-width: 0; }
     .inbox-review-secondary .inbox-review-group { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+    .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
+    .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
+    /* A6 queue cards are narrower than the legacy Inbox maintenance grid. */
+    .inbox-page .inbox-review-queue .review-card {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .inbox-page .inbox-review-queue .review-card > *,
+    .inbox-page .inbox-review-queue .review-card .maintenance-summary > div {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+    .review-card.selected { background: var(--sf-color-surface-soft); border-left-color: var(--sf-color-primary); }
+    .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
+    .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: var(--sf-density-interactive-target-min); }
+    .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
+     .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
     .inbox-review-evidence .import-workspace { gap: 10px; }
     .inbox-review-evidence .import-heading { align-items: center; }
     .inbox-review-evidence .import-layout { gap: 10px; grid-template-columns: minmax(205px, 250px) minmax(0, 1fr); }
