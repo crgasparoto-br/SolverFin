@@ -193,7 +193,9 @@ export async function validateLongEvidence(cdp, outputDir) {
   ]) {
     await setViewport(cdp, width, height);
     const filename = `issue-726-inbox-long-evidence-${width}x${height}.png`;
-    await evaluate(cdp, `(() => {
+    await evaluate(
+      cdp,
+      `(() => {
       const evidence = document.querySelector('#inbox-review-selected [data-review-evidence="ready"]');
       if (!evidence) throw new Error('Selected evidence is not available');
       const paragraph = document.createElement('p');
@@ -202,9 +204,12 @@ export async function validateLongEvidence(cdp, outputDir) {
         'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
       evidence.appendChild(paragraph);
       return true;
-    })()`);
+    })()`,
+    );
     try {
-      const inspected = await evaluate(cdp, `(() => {
+      const inspected = await evaluate(
+        cdp,
+        `(() => {
         const selected = document.getElementById('inbox-review-selected');
         const evidence = selected?.querySelector('[data-review-evidence="ready"]');
         const decision = selected?.querySelector('[data-review-approve]');
@@ -216,7 +221,8 @@ export async function validateLongEvidence(cdp, outputDir) {
           decisionFitsViewport: rect.left >= 0 && rect.right <= innerWidth && rect.height >= 34,
           evidenceBeforeDecision: Boolean(evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)
         };
-      })()`);
+      })()`,
+      );
       await screenshot(cdp, join(outputDir, filename));
       findings.push({ width, height, screenshot: filename, ...inspected });
     } finally {
@@ -226,4 +232,3 @@ export async function validateLongEvidence(cdp, outputDir) {
   await setViewport(cdp, 1366, 900);
   return findings;
 }
-
