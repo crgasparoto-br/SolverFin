@@ -86,7 +86,9 @@ try {
           golden.hasNeutralLinks &&
           golden.financialDirectionColorFromTokens &&
           golden.selectedAriaPressed === "true" &&
-          golden.disabledOpacity < 1 &&
+          golden.disabledTokensMatch &&
+          golden.disabledContrast >= 4.5 &&
+          golden.disabledCursor === 'not-allowed' &&
           golden.focusStyleDefined &&
           golden.contrast.every((ratio) => ratio >= 4.5) &&
           golden.row.minTouchHeight &&

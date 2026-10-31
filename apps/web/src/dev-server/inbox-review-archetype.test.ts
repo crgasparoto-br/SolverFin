@@ -67,7 +67,8 @@ describe("Inbox review archetype", () => {
     assert.match(css, /--sf-density-interactive-target-min/);
     assert.match(css, /\.inbox-section-nav \{[^}]*flex-wrap: nowrap;[^}]*overflow-x: auto;/);
     assert.match(css, /\.inbox-review-nav \{[^}]*flex: 0 0 auto;[^}]*white-space: nowrap;/);
-    assert.match(css, /\[data-review-refresh\]:disabled \{[^}]*opacity: \.72;/);
+    assert.match(css, /@media \(max-width: 900px\) \{[\s\S]*?\.inbox-review-cockpit \.sf-filter-bar \{ display: grid; grid-template-columns: minmax\(0, 1fr\); \}/);
+    assert.match(css, /\.inbox-new-entry-actions \{[^}]*width: min\(100%, 240px\)/);
     assert.doesNotMatch(css, /#(?:[0-9a-fA-F]{3}){1,2}\b/);
   });
 

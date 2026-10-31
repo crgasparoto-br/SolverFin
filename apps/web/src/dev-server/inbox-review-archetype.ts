@@ -144,7 +144,6 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-new-entry-actions > summary:hover,
     .inbox-new-entry-actions[open] > summary { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     .inbox-new-entry-actions > summary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); box-shadow: var(--sf-shadow-focus); outline: none; }
-    .inbox-review-cockpit [data-review-refresh]:disabled { opacity: .72; cursor: not-allowed; }
     .inbox-new-entry-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
     .inbox-new-entry-menu > button { min-height: var(--sf-density-interactive-target-min); }
     .inbox-review-selected { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
@@ -198,6 +197,11 @@ export function inboxReviewArchetypeStyles(): string {
     @media (max-width: 900px) {
       .inbox-review-cockpit .sf-detail-layout { grid-template-columns: 1fr; }
       .inbox-review-detail { position: static; }
+      .inbox-review-cockpit .sf-filter-bar { display: grid; grid-template-columns: minmax(0, 1fr); }
+      .inbox-review-cockpit .inbox-section-nav { width: 100%; }
+      .inbox-new-entry-actions { justify-self: start; margin-left: 0; max-width: 100%; width: min(100%, 240px); }
+      .inbox-new-entry-menu { max-width: 100%; }
+      .inbox-new-entry-menu > button { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
     }
     @media (max-width: 760px) {
       .inbox-review-evidence .row-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }

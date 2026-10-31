@@ -241,7 +241,7 @@ export async function validateReviewCardGridNegative(cdp, suggestionId) {
 export async function validateGoldenInboxControls(cdp) {
   const rest = await evaluate(
     cdp,
-    `(() => {
+    `(async () => {
     const root = getComputedStyle(document.documentElement);
     const token = (name) => root.getPropertyValue('--sf-color-' + name).trim();
     const style = (selector) => {
@@ -295,8 +295,15 @@ export async function validateGoldenInboxControls(cdp) {
     if (!row || !nav || !trigger || !refresh || !status || !selected || !refreshNode) return {complete:false};
     const originallyDisabled = refreshNode.disabled;
     refreshNode.disabled = true;
-    const disabledOpacity = Number(getComputedStyle(refreshNode).opacity);
-    const disabledCursor = getComputedStyle(refreshNode).cursor;
+    // Wait for the real CSS transition, rather than sampling its initial frame.
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    const disabledCss = getComputedStyle(refreshNode);
+    const disabledOpacity = Number(disabledCss.opacity);
+    const disabledCursor = disabledCss.cursor;
+    const disabledContrast = contrast(disabledCss.color, disabledCss.backgroundColor);
+    const disabledTokensMatch = similar(disabledCss.backgroundColor, token('neutral-control-hover')) &&
+      similar(disabledCss.color, token('muted-text')) &&
+      similar(disabledCss.borderTopColor, token('border')) && disabledOpacity === 1;
     refreshNode.disabled = originallyDisabled;
     const neutralTokensMatch = (item) => {
       const normal = similar(item.background, token('surface')) &&
@@ -313,7 +320,7 @@ export async function validateGoldenInboxControls(cdp) {
       selectedAriaPressed: selected.getAttribute('aria-pressed'),
       tokenMatch: [row, nav, trigger, refresh].every(neutralTokensMatch),
       contrast: [row, nav, trigger, refresh].map((item) => contrast(item.color, item.background)),
-      disabledOpacity, disabledCursor,
+      disabledOpacity, disabledCursor, disabledContrast, disabledTokensMatch,
       ariaMenuLabel: document.querySelector('.inbox-new-entry-trigger')?.getAttribute('aria-label'),
       hasNeutralLinks: document.querySelectorAll('.inbox-section-nav a.sf-button-secondary').length === 3,
       financialDirectionColorFromTokens: document.querySelector('.review-risk') ?
