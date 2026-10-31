@@ -537,10 +537,10 @@ export function enhanceInboxReviewQueue(html: string): string {
       .review-filter-bar label { display: grid; font-size: var(--sf-font-size-xs); gap: var(--sf-space-1); min-width: 0; }
       .review-filter-bar select, .review-filter-bar button { min-height: var(--sf-density-interactive-target-min); min-width: 0; width: 100%; }
       .review-queue-status { align-items: center; display: flex; flex-wrap: wrap; font-size: 0.8125rem; gap: 8px; margin: 0 0 10px; }
-      .review-queue-status.error { color: var(--danger, #9f1239); }
-      .review-queue-status.unavailable { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); color: #7a4a00; padding: 8px 10px; }
-      .review-queue-status.success { color: var(--success, #166534); }
-      .form-status.unavailable, .review-unavailable { color: #7a4a00; }
+      .review-queue-status.error { color: var(--sf-color-danger); }
+      .review-queue-status.unavailable { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-md); color: var(--sf-color-warning-text); padding: var(--sf-space-2) var(--sf-space-3); }
+      .review-queue-status.success { color: var(--sf-color-success); }
+      .form-status.unavailable, .review-unavailable { color: var(--sf-color-warning-text); }
       .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
       .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
       /* A6 queue cards are narrower than the legacy Inbox maintenance grid. */
@@ -552,7 +552,7 @@ export function enhanceInboxReviewQueue(html: string): string {
         min-width: 0;
         overflow-wrap: anywhere;
       }
-      .review-card.selected { background: var(--surface-soft); border-left-color: var(--primary); }
+      .review-card.selected { background: var(--sf-color-surface-soft); border-left-color: var(--sf-color-primary); }
       .review-card-summary { font-size: .8125rem; line-height: 1.45; margin: 0; overflow-wrap: anywhere; }
       .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: 44px; }
       .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
@@ -565,7 +565,7 @@ export function enhanceInboxReviewQueue(html: string): string {
       .review-detail-grid dt { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
       .review-detail-grid dd { margin: 3px 0 0; overflow-wrap: anywhere; }
       .review-money-value { font-variant-numeric: tabular-nums; text-align: right; }
-      .review-warning { background: #fff9e8; border: 1px solid #ead69b; border-radius: var(--radius); padding: 10px; }
+      .review-warning { background: var(--sf-color-warning-surface); border: 1px solid var(--sf-color-warning-border); border-radius: var(--sf-radius-md); padding: var(--sf-space-2) var(--sf-space-3); }
       @media (max-width: 640px) {
         .review-filter-bar { grid-template-columns: 1fr; }
         .review-filter-bar > * { min-width: 0; width: 100%; }

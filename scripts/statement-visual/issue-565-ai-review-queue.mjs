@@ -67,7 +67,11 @@ try {
     check(evidence.filtersVisible, `Review filters are not visible at ${width}px`, evidence);
     check(evidence.bodyFitsViewport, `Review queue overflows horizontally at ${width}px`, evidence);
     check(evidence.actionsFitViewport, `Review action escapes viewport at ${width}px`, evidence);
-    check(evidence.actionsContainedInCards, `Review button escapes its card at ${width}px`, evidence);
+    check(
+      evidence.actionsContainedInCards,
+      `Review button escapes its card at ${width}px`,
+      evidence,
+    );
     check(
       evidence.actionsMeetMinimum,
       `Review action is smaller than 34px at ${width}px`,
@@ -76,19 +80,32 @@ try {
     if ((width === 390 && height === 844) || (width === 1366 && height === 768)) {
       const golden = await validateGoldenInboxControls(browser.cdp);
       goldenScreenControls.push({ viewport: `${width}x${height}`, ...golden });
-      check(golden.complete && golden.tokenMatch && golden.hasNeutralLinks &&
-        golden.financialDirectionColorFromTokens && golden.selectedAriaPressed === 'true' &&
-        golden.disabledOpacity < 1 && golden.focusStyleDefined &&
-        golden.contrast.every((ratio) => ratio >= 4.5) &&
-        golden.row.minTouchHeight && golden.nav.minTouchHeight &&
-        golden.trigger.minTouchHeight && golden.refresh.minTouchHeight &&
-        golden.menuKeyboard.opened && golden.menuKeyboard.closed && golden.menuKeyboard.focusRestored,
-        `Golden Screen controls diverge in ${width}px Inbox`, golden);
+      check(
+        golden.complete &&
+          golden.tokenMatch &&
+          golden.hasNeutralLinks &&
+          golden.financialDirectionColorFromTokens &&
+          golden.selectedAriaPressed === "true" &&
+          golden.disabledOpacity < 1 &&
+          golden.focusStyleDefined &&
+          golden.contrast.every((ratio) => ratio >= 4.5) &&
+          golden.row.minTouchHeight &&
+          golden.nav.minTouchHeight &&
+          golden.trigger.minTouchHeight &&
+          golden.refresh.minTouchHeight &&
+          golden.menuKeyboard.opened &&
+          golden.menuKeyboard.closed &&
+          golden.menuKeyboard.focusRestored,
+        `Golden Screen controls diverge in ${width}px Inbox`,
+        golden,
+      );
       const negative = await validateReviewCardGridNegative(browser.cdp, fixture.suggestionId);
       reviewCardGridNegatives.push({ viewport: `${width}x${height}`, ...negative });
       check(
-        negative.baseline.contained && negative.baseline.hitTarget &&
-          negative.attackRejected && negative.restorationPassed,
+        negative.baseline.contained &&
+          negative.baseline.hitTarget &&
+          negative.attackRejected &&
+          negative.restorationPassed,
         `Legacy three-column grid escaped the review-card control at ${width}px`,
         negative,
       );
@@ -167,7 +184,11 @@ try {
   check(textResize.rootFontSize >= 31.5, "Root text size did not reach 200%", textResize);
   check(textResize.cardVisible, "Review card disappeared at 200% text size", textResize);
   check(textResize.actionsVisible, "Review actions disappeared at 200% text size", textResize);
-  check(textResize.actionsContainedInCards, "Review buttons overflow their cards at 200% text size", textResize);
+  check(
+    textResize.actionsContainedInCards,
+    "Review buttons overflow their cards at 200% text size",
+    textResize,
+  );
   check(textResize.bodyFitsViewport, "Review queue overflows at 200% text size", textResize);
 } catch (error) {
   fatalError = {

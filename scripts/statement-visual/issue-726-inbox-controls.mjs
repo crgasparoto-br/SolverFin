@@ -239,7 +239,9 @@ export async function validateReviewCardGridNegative(cdp, suggestionId) {
 
 // Golden Screen: inspect actual CSS tokens, neutral controls, accessibility and menu keyboard behavior.
 export async function validateGoldenInboxControls(cdp) {
-  const rest = await evaluate(cdp, `(() => {
+  const rest = await evaluate(
+    cdp,
+    `(() => {
     const root = getComputedStyle(document.documentElement);
     const token = (name) => root.getPropertyValue('--sf-color-' + name).trim();
     const style = (selector) => {
@@ -305,8 +307,11 @@ export async function validateGoldenInboxControls(cdp) {
         catch { return false; }
       })),
     };
-  })()`);
-  const menuKeyboard = await evaluate(cdp, `(() => {
+  })()`,
+  );
+  const menuKeyboard = await evaluate(
+    cdp,
+    `(() => {
     const details = document.querySelector('.inbox-new-entry-actions');
     const summary = details?.querySelector('summary');
     if (!details || !summary) return {opened:false, closed:false, focusRestored:false};
@@ -315,7 +320,8 @@ export async function validateGoldenInboxControls(cdp) {
     const opened = details.open;
     details.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true, cancelable:true}));
     return {opened, closed:!details.open, focusRestored: document.activeElement === summary};
-  })()`);
+  })()`,
+  );
   return { ...rest, menuKeyboard };
 }
 

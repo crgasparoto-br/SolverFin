@@ -33,7 +33,10 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /window\.history\.replaceState/);
     assert.match(html, /searchParams\.get\("profileId"\)/);
     // A6 cards must override the wider three-column .inbox-page .maintenance-item grid.
-    assert.match(html, /\.inbox-page \.inbox-review-queue \.review-card \{\s*grid-template-columns: minmax\(0, 1fr\)/);
+    assert.match(
+      html,
+      /\.inbox-page \.inbox-review-queue \.review-card \{\s*grid-template-columns: minmax\(0, 1fr\)/,
+    );
     assert.match(html, /\.review-card > \[data-review-select\] \{ grid-column: 1;/);
     assert.match(html, /class="sf-badge review-risk" data-tone="attention"/);
     assert.match(html, /--sf-color-warning-surface/);
@@ -42,6 +45,7 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /Moeda indisponível/);
     assert.doesNotMatch(html, /currency \|\| "BRL"/);
     assert.match(html, /class="review-money-value"/);
+    assert.doesNotMatch(html, /\b(?:background|border|color):\s*#[\da-fA-F]{3,8}\b/);
   });
 
   it("is idempotent when the same HTML is enhanced twice", () => {

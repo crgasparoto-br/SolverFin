@@ -50,8 +50,15 @@ describe("Inbox review archetype", () => {
       evidenceHtml: "<section>Importações</section>",
     });
     const css = inboxReviewArchetypeStyles();
-    assert.equal((html.match(/class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav"/g) ?? []).length, 3);
-    assert.match(html, /class="inbox-new-entry-trigger sf-focus-ring" aria-label="Adicionar entrada à Inbox"/);
+    assert.equal(
+      (html.match(/class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav"/g) ?? [])
+        .length,
+      3,
+    );
+    assert.match(
+      html,
+      /class="inbox-new-entry-trigger sf-focus-ring" aria-label="Adicionar entrada à Inbox"/,
+    );
     assert.match(html, /event.key !== "Escape"/);
     assert.match(html, /entryTrigger\?\.focus\(\)/);
     assert.match(html, /data-button-variant=\"neutral\" type=\"button\">Limpar/);
