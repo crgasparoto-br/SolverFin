@@ -1,0 +1,10 @@
+HEAD: 3e3d926bc9f0787a0029b470ef478b4c26ee56b2
+COMMAND: npm run test
+EXIT_CODE: 0
+GITHUB_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972
+TRUSTED_RUN_RESULT: completed/success
+REACHED: apps/web/src/dev-server/category-learning-controller.test.ts
+REACHED: apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts
+SCOPE: Node test runner reached every changed unit test; Chrome tests are audited separately by the visual workflow.

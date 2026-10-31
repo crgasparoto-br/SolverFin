@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": ".audit/entregar-issue/specification-snapshot.json",
-    "sha256": "01318656024d722128c8e2af91352f7dc35202d88708c7abe0de8b22f48003b1"
+    "path": "/mnt/data/audit726/handoff726/specification-snapshot.json",
+    "sha256": "d49106316d8854b31536bd075d3cb1d7c3923fc9b21b18111499a675d9d156ee"
   },
   "primary_issue_source_id": "SRC-ISSUE",
   "obligations": [
@@ -10,7 +10,7 @@
       "id": "OBL-001",
       "candidate_key": "ee4a84cebf07ab610137b7e034167e17e90193158c6c7d775cd20a9800469ba8",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 5,
       "source_text": "**Precedência:** consolidar evidência do marco técnico #714; aproveitar os componentes e verificações de #715–#718 quando aplicáveis. Não depender de merge automático.",
       "flags": [
@@ -19,18 +19,18 @@
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-01"
+        "REQ-726-01"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "develop exact-base ancestor verified; prior #714/Golden Screen conventions reused without automatic merge. Official target binding negative control rejected inherited #724 certificate."
+      "rationale": "Golden Screen #714 and prior #715-#718 conventions retained; exact develop ancestry and visual source references checked; no merge is executed by this delivery."
     },
     {
       "id": "OBL-002",
       "candidate_key": "c6e3a008bf5a16eaea3776a0e6a5155cbbf3a89a593e0149e5682db5577b3099",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 7,
       "source_text": "**Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.",
       "flags": [
@@ -40,194 +40,205 @@
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-02"
+        "REQ-726-02"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Diff strictly presentation/SSR/test/docs; historical run 40811518620 proves pre-existing divergence with same Git blob before PR, but does NOT prove operator personally inspected Chrome before editing; this procedurally unresolved fact remains visible for external acceptance."
+      "rationale": "This material delivery only changes presentation enhancers, Chrome tests and documentation. Earlier authenticated Chrome 41128555517 on unchanged Inbox source predates PR #754 by 94 minutes; recorded retrospectively without pretending to have inspected before writing. External auditor must judge temporal condition."
     },
     {
       "id": "OBL-003",
-      "candidate_key": "3e2ad371a3617c0697a22ed575f139c6088465cf2e69bbe8dd8b826451f2ebdd",
+      "candidate_key": "41317d3f8ab85964846ad700d9ccc9cc0cf5961c1ef13a68fa6f13a58efc36cc",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 10,
-      "source_text": "**Antecedentes:** #591, #613 e contrato atual `docs/API_BUDGETS_GOALS_ALERTS.md`. Não duplicar escopo funcional da #619.",
+      "source_text": "**Antecedentes:** #591, #614; preservar contratos de revisão/deduplicação/importação e os enhancers ainda conectados.",
       "flags": [
-        "negative",
-        "freshness"
+        "atomicity",
+        "review-surface"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-03"
+        "REQ-726-03"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Prior #591/#613/#619 budget contract preserved; no financial/API endpoints, authorization, model or money services modified; SSR uses existing models and components."
+      "rationale": "Handlers retain AI review queue, deduplication and reconciliation endpoints; OFX and CSV import flows stay present. Browser regression suites target earlier #591/#614 behaviors and profile scoping."
     },
     {
       "id": "OBL-004",
-      "candidate_key": "be4192385106bc9aa07c96239affa41ccbb34ece42d63d444873beaa39e6728c",
+      "candidate_key": "2f523ce3c7f120ca1bafb535ccebfc232e1c84790d499314f66e7e4305096254",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 13,
-      "source_text": "`apps/web/src/dev-server/budgets-page.ts` em `renderPageContainer` (~103–137) emite **quatro `renderMetricCard`** de contagem — Ativos, Sem orçamento, Sem categoria, Moedas — *antes* da tabela com valores financeiros planejado/realizado/comprometido/projetado (~282–320). Esses contadores podem competir visualmente com a decisão operacional; `budget-results.panel` e a barra de filtros completam a carga inicial. Comparar com hierarquia A1, preservando integralmente dados atuais.",
+      "source_text": "`apps/web/src/dev-server/inbox-page.ts` (~118–205) produz seções independentes `inbox-review-suggestions`, `inbox-review-messages`, `import-workspace` com classe `panel`, além de insights e dois acionadores de topo (registrar/importar). A fila, evidência e decisão ficam distribuídas entre regiões de mesmo nível estrutural em vez do fluxo dominante A6. Não presumir que todo painel seja excesso; validar no Chrome qual bloco quebra a prioridade de revisão.",
       "flags": [
         "exhaustive",
         "negative",
-        "temporal"
+        "review-surface",
+        "structural"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-04"
+        "REQ-726-04"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Original base emitted four count metrics before financial table; current SSR uses renderBudgetFocus ahead of detail and renderBudgetInventory afterwards, retaining the full table."
+      "rationale": "Historical authenticated Chrome #41128555517 displayed financial insight cards and imported statement controls competing in the first visual region; exact Inbox source blobs equal the immutable develop base. The current A6 cockpit separates evidence and decisions."
     },
     {
       "id": "OBL-005",
-      "candidate_key": "5776d1126f9a244d259d976342efc25eee7f883c813f06b7c291fa2961ea8b71",
+      "candidate_key": "958cead6fa784de0bbb4fe8cfc4234a3e18a4929660287e085a4ce1500aa8a7f",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 16,
-      "source_text": "Reorganizar primeira leitura para período, moeda, orçamento/execução/alerta e ação contextual; tornar contagens informativas secundárias, sem criar somas ou KPIs não existentes na API.",
+      "source_text": "Consolidar hierarquia visual de fila → item selecionado → evidência/origem/confiança → decisão, preservando separação lógica de insights, mensagens, importações CSV/OFX e estados concorrentes.",
       "flags": [
-        "negative",
-        "temporal",
-        "temporal-destination"
+        "review-surface"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-05"
+        "REQ-726-05"
       ],
       "inventory_ids": [],
-      "assertion_ids": [],
+      "assertion_ids": [
+        "OBS-005"
+      ],
       "scope_decision": null,
-      "rationale": "Focus shows period, explicit currency, planned/realized/available, API usageStatus, contextual edit/create/categorize; up to three distinct currencies, no aggregation."
+      "rationale": "renderInboxReviewArchetype keeps selected detail at the right of queue on desktop and after it on mobile, with secondary messages/insights/import below. Chrome 320,390,1366 viewports and injected long content are required."
     },
     {
       "id": "OBL-006",
-      "candidate_key": "c203348dc5ad7628345fe36e98defdb6b78d3851971d063b28d293e48f3b764d",
+      "candidate_key": "fd5b476caa07a4913eb9a18406a17d8451a29ee1a7343bbc691a442470ab8c16",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 17,
-      "source_text": "Ajustar densidade da tabela e filtros por moeda/estado, com estado ativo evidente e mesma operação SSR.",
-      "flags": [],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-725-06"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "SSR filters retain currency/status and filtered-empty state; table compact CSS; 390/320 Chrome measurements confirm no document overflow and visible controls."
-    },
-    {
-      "id": "OBL-007",
-      "candidate_key": "182f72454845d02f59abb2fd498814632e6120a29e5adb35109e55d97aa73d49",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
-      "source_line": 18,
-      "source_text": "Preservar orçamento sem categoria, `unbudgeted`, alertas, controle de permissão, modais de novo/editar e campos atuais da #613 e da #619 quando já existentes.",
-      "flags": [
-        "negative"
-      ],
-      "disposition": "covered",
-      "requirement_ids": [
-        "REQ-725-07"
-      ],
-      "inventory_ids": [],
-      "assertion_ids": [],
-      "scope_decision": null,
-      "rationale": "Preserves unbudgeted/uncategorized, unavailable usage warnings, full category table and details, create/edit dialogs; Chrome real POST/PATCH and rejected PATCH with API rereads passed."
-    },
-    {
-      "id": "OBL-008",
-      "candidate_key": "57959eef32a95d5981701f1f2a445084ec25bc38610a353534cf84d29d048f73",
-      "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
-      "source_line": 21,
-      "source_text": "[ ] Evidências Chrome no SHA 1366×768 / 390×844 / 320×740, dois códigos de moeda, lista longa, filtro sem resultado, erro, criação/edição.",
+      "source_text": "Reduzir concorrência das ações de cabeçalho e dar prioridade à ação contextual de revisar sem inventar confirmação automática.",
       "flags": [
         "negative",
+        "atomicity",
         "aftermath"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-08"
+        "REQ-726-06"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Exact Chrome run 40961594720 artifact 12936747808 proves 1366×768, 390×844, 320×740, long list>=10, BRL/USD, filter empty, creation/editing/error, reversible negative controls. Screenshots internally inspected. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
+      "rationale": "Two header actions were moved under Adicionar entrada; selecting a suggestion does not perform an automatic POST, and confirmation remains explicit for approve or reject."
     },
     {
-      "id": "OBL-009",
-      "candidate_key": "bc264f4f4d2fbae3c79c53e0676cf0374d1e1216bd14df73fce6c2a12e6c58bd",
+      "id": "OBL-007",
+      "candidate_key": "f5a893df551111cb86f799945ccdeafb7ffe7ad0bad1dab49854ee67bfeb0e83",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
-      "source_line": 22,
-      "source_text": "[ ] Valores planejado/realizado/remanescente e estado dominam contadores de catálogo; labels/status/moedas explícitos; filtros permanecem operáveis e persistentes.",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+      "source_line": 18,
+      "source_text": "Não remover enhancers sem substituir com testes equivalentes, nem enfraquecer estados de confiança/permissão/obsolescência.",
       "flags": [
+        "exhaustive",
+        "negative",
         "source-catalog"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-09"
+        "REQ-726-07"
       ],
-      "inventory_ids": [],
+      "inventory_ids": [
+        "INV-001"
+      ],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Financial decision precedes inventory, explicit money and status per currency, selected filter state and no-results message persisted across SSR. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
+      "rationale": "The existing queue, target, category-learning, OFX import and document import enhancers remain connected. The legacy correction intercept was removed because a guarded category-learning form owns the action; negative controls exercise stale fingerprint."
     },
     {
-      "id": "OBL-010",
-      "candidate_key": "e679bbf6fe2278b840e6ac0105db0628721db02514ef1a9eb9e6f4067148624b",
+      "id": "OBL-008",
+      "candidate_key": "d4d29f958853c61091f265341532d92c0414093636362622edfa3f35a8e3caf0",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
-      "source_line": 23,
-      "source_text": "[ ] Nenhum recálculo de status/saldo no renderer, nenhuma mistura BRL/USD, nem zeros sintéticos para dados ausentes.",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+      "source_line": 21,
+      "source_text": "[ ] Capturas Chrome 1366×768, 390×844, 320×740: pendentes, sem pendências, importação parcial/erro, evidência longa e decisão contextual.",
       "flags": [
-        "exhaustive",
         "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-10"
+        "REQ-726-08"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Money values/status are sourced from budgets-view-model and validated API usage; null stays unavailable; no BRL/USD mix/sum and no synthetic zero. SSR tests covered mismatched usage. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
+      "rationale": "CI Chrome executes 1366x768, 390x844 and 320x740, plus loading, empty, unavailable, partial import and error, contextual decision and long evidence; exact final run evidence must be referenced before certification."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "2399a303c9c8ec40ec6fe86401fa1549a12943909876253b00c499b7d18686c0",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+      "source_line": 22,
+      "source_text": "[ ] Prioridade visual é fila/evidência/decisão; origem, moeda, risco e status preservados e acessíveis; teclado/foco/zoom/reflow cobertos.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-726-09"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-009"
+      ],
+      "scope_decision": null,
+      "rationale": "Review queue shows source, status, confidence and risk; structured current evidence shows proposal currency, origin and identity; responsive Chrome checks inspect 320/390, focus and text resize."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "f0ffd1019b82d90b7bebd59418dda53e283a80078d7d3f0b58a5781556afb8c1",
+      "source_id": "SRC-ISSUE",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+      "source_line": 23,
+      "source_text": "[ ] Ausência/erro da evidência impede decisão dependente dela; manter idempotência, cancelamento e contratos de revisão humana.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-726-10"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-010"
+      ],
+      "scope_decision": null,
+      "rationale": "Review controls require visible evidence, matching selected identity and original fingerprint, re-fetch fresh payload before POST, retain backend optimistic guard, explicit confirmation and no effect on stale/error; import idempotency and cancellation unchanged."
     },
     {
       "id": "OBL-011",
-      "candidate_key": "7925cb8bb5ac9d0cc74d5eeff0acbca586563ddc4bdc3a0b19e36d4a99b733f8",
+      "candidate_key": "02bcb94addba17ebc32a9f61eb41502a85059c4bb67f08bb2ab04f81f8297c86",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 24,
-      "source_text": "[ ] Controles negativos: priorização artificial de contagens e truncamento de moeda/valores devem ser rejeitados; restauração passa.",
+      "source_text": "[ ] Controle negativo: ocultar evidência ou destacar importação acima da decisão pendente deve falhar; restauração passa.",
       "flags": [],
       "disposition": "covered",
       "requirement_ids": [
-        "REQ-725-11"
+        "REQ-726-11"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Chrome pilot deliberately moves auxiliary section ahead and clips currency/amount; both mutations rejected, both reversions restored; raw report sha256 47d7580f0a033d9e349cd2124d958f8f5bfdbd37f09321c29fb9f6b6ed89f15d. Latest material Chrome 40961594720 report 65d57a93c02d9a4607bc57bd79d7c47611709bf934d9e3cc8f07b88ec33826ef includes 1366x768, 390x844, 320x740, filtered/no-result, creation/editing/rejection and reversible negative controls."
+      "rationale": "Actual Chrome probes hide the evidence before action, simulate A-to-B fingerprint races and move the secondary section above the review before restoring; no POST is allowed on mismatch."
     },
     {
       "id": "OBL-012",
-      "candidate_key": "e81abbf854c657ca18a1f9cf7f9802b79cfce3018b752af5278701a860109803",
+      "candidate_key": "a878dba01d17974cf5ba69793873e5178f5bcf93d63c8ff9921b689ee298451f",
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "source_line": 25,
-      "source_text": "[ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e parecer visual/técnico independente.",
+      "source_text": "[ ] SSR/CI/Chrome exact-SHA e parecer visual/técnico independente com links.",
       "flags": [],
       "disposition": "deferred",
       "requirement_ids": [],
@@ -235,22 +246,22 @@
       "assertion_ids": [],
       "scope_decision": {
         "decision_source_id": "SRC-ISSUE",
-        "decision_source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
-        "target_issue": 725,
+        "decision_source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
+        "target_issue": 726,
         "parent_issue_must_remain_open": true,
-        "decision_locator": "parecer visual/técnico independente.",
+        "decision_locator": "parecer visual/técnico independente com links.",
         "pre_handoff_coverage": {
-          "covered_text": "[ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e",
-          "rationale": "Current material HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 has exact GitHub CI 40961594685 with 21 budget page and 6 view model tests passed, plus Chrome 40961594720 including 3 requested viewports and CRUD persistence. Only the independent audit is deferred."
+          "covered_text": "[ ] SSR/CI/Chrome exact-SHA e",
+          "rationale": "The deterministic CI and authenticated Chrome of the exact material SHA must finish before handoff; this text is limited to pre-handoff technical gates and does not claim any independent audit."
         }
       },
-      "rationale": "Current exact-material GitHub Actions CI 41128555509 and Chrome 41128555517 terminal success at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Chrome artifact 13011839149 exercises 1366/390/320 px and dialogs. Independent technical/visual review remains deferred; parent issue #725 remains open."
+      "rationale": "Material tests and Chrome exact-SHA must be terminal green first; the only deferred part is a separate independent audit, which the same implementation conversation cannot legitimately self-certify."
     }
   ],
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE",
-      "source_sha256": "1da971d8a782df7258bf93b8da084ea3c46abb6a149facf270600b15217c1583",
+      "source_sha256": "4ba1b1ef7621d3f5ae1ad9bfdf1846d539597036a0101d9edfdbbd3f0a92ecbc",
       "candidate_count": 12,
       "obligation_ids": [
         "OBL-001",
@@ -269,98 +280,292 @@
       "unmapped_candidate_keys": []
     }
   ],
-  "domain_inventories": [],
-  "observable_assertions": [],
+  "domain_inventories": [
+    {
+      "id": "INV-001",
+      "name": "Connected Inbox review and import enhancers",
+      "closed_world": true,
+      "producer_sources": [
+        "apps/web/src/dev-server/inbox-page.ts",
+        "apps/web/src/dev-server/inbox-ofx-import-enhancement.ts",
+        "apps/web/src/dev-server/shell.ts"
+      ],
+      "consumer_sources": [
+        "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+        "apps/web/src/dev-server/category-learning-controller.ts",
+        "apps/web/src/dev-server/inbox-category-hierarchy-enhancement.ts"
+      ],
+      "values": [
+        {
+          "value": "review-queue",
+          "producer_evidence": [
+            "inbox-ofx-import-enhancement.ts enhanceInboxReviewQueue"
+          ],
+          "consumer_evidence": [
+            "inbox-review-queue-enhancement.ts review queue detail/decision"
+          ],
+          "scenario_ids": [
+            "issue-565-ai-review-queue"
+          ]
+        },
+        {
+          "value": "review-target",
+          "producer_evidence": [
+            "inbox-ofx-import-enhancement.ts enhanceInboxReviewQueueTargets"
+          ],
+          "consumer_evidence": [
+            "inbox-review-queue-target-enhancement.ts authorized target context"
+          ],
+          "scenario_ids": [
+            "issue-565-ai-review-queue-states"
+          ]
+        },
+        {
+          "value": "category-learning",
+          "producer_evidence": [
+            "shell.ts categoryLearningControllerScript"
+          ],
+          "consumer_evidence": [
+            "category-learning-controller.ts submit/fingerprint owner"
+          ],
+          "scenario_ids": [
+            "issue-564-category-learning"
+          ]
+        },
+        {
+          "value": "OFX-import",
+          "producer_evidence": [
+            "inbox-page.ts enhanceInboxOfxImport"
+          ],
+          "consumer_evidence": [
+            "inbox-ofx-import-enhancement.ts preserve OFX controls"
+          ],
+          "scenario_ids": [
+            "issue-548-inbox-ofx-review"
+          ]
+        },
+        {
+          "value": "CSV-import",
+          "producer_evidence": [
+            "inbox-page.ts csvImportScript"
+          ],
+          "consumer_evidence": [
+            "inbox-page.ts renderCsvImportWorkspace"
+          ],
+          "scenario_ids": [
+            "issue-494-inbox-csv-review"
+          ]
+        },
+        {
+          "value": "document-import",
+          "producer_evidence": [
+            "inbox-ofx-import-enhancement.ts enhanceInboxDocumentImport"
+          ],
+          "consumer_evidence": [
+            "inbox-document-import-enhancement.ts file upload"
+          ],
+          "scenario_ids": [
+            "issue-565-ai-review-queue-states"
+          ]
+        },
+        {
+          "value": "category-hierarchy",
+          "producer_evidence": [
+            "inbox-page.ts enhanceInboxCategoryHierarchy"
+          ],
+          "consumer_evidence": [
+            "inbox-category-hierarchy-enhancement.ts taxonomy"
+          ],
+          "scenario_ids": [
+            "issue-514-inbox-category-hierarchy"
+          ]
+        }
+      ],
+      "unmapped_values": [],
+      "fallback_policy": "none",
+      "rationale": "Enumerated the linked first-render and postprocessors from actual inbound callers and consumer functions rather than assuming new review UI could remove them."
+    }
+  ],
+  "observable_assertions": [
+    {
+      "id": "OBS-005",
+      "description": "Queue precedes selected detail, current evidence and contextual human decision, with secondary content below.",
+      "requirement_ids": [
+        "REQ-726-05"
+      ],
+      "obligation_ids": [
+        "OBL-005"
+      ],
+      "evidence_ids": [
+        "issue-565-ai-review-queue"
+      ],
+      "scenario_ids": [
+        "issue-565-ai-review-queue"
+      ],
+      "negative_control_evidence": [
+        "issue-726-inbox-hierarchy-attack"
+      ]
+    },
+    {
+      "id": "OBS-009",
+      "description": "Origin, confidence, risk, status and currency remain readable under zoom and narrow layout.",
+      "requirement_ids": [
+        "REQ-726-09"
+      ],
+      "obligation_ids": [
+        "OBL-009"
+      ],
+      "evidence_ids": [
+        "issue-565-ai-review-queue"
+      ],
+      "scenario_ids": [
+        "issue-565-ai-review-queue"
+      ],
+      "negative_control_evidence": [
+        "issue-726-inbox-long-evidence"
+      ]
+    },
+    {
+      "id": "OBS-010",
+      "description": "Hidden, stale, missing evidence fails closed before approving, rejecting or correcting, preserving optimistic fingerprint.",
+      "requirement_ids": [
+        "REQ-726-10"
+      ],
+      "obligation_ids": [
+        "OBL-010"
+      ],
+      "evidence_ids": [
+        "issue-726-inbox-controls"
+      ],
+      "scenario_ids": [
+        "issue-726-inbox-controls"
+      ],
+      "negative_control_evidence": [
+        "issue-726-inbox-fingerprint-mismatch"
+      ]
+    }
+  ],
   "structural_invariant_closures": {
     "status": "passed",
-    "applicability_reason": "OBL-001 requires develop as source and no automatic merge; target-binding verified both exact ancestry and foreign certificate rejection.",
+    "applicability_reason": "Developer source hierarchy, import precedence and develop branch are contractual, therefore verified against historical Chrome and exact source identity.",
     "entries": [
       {
         "id": "SIC-001",
         "kind": "precedence",
         "requirement_ids": [
-          "REQ-725-01"
+          "REQ-726-01"
         ],
         "obligation_ids": [
           "OBL-001"
         ],
-        "plausible_wrong_implementation": "Reuse inherited #724/#744 foreign certificate to authorize issue #725.",
+        "plausible_wrong_implementation": "Reuse inherited issue #725 handoff or silently merge without original develop ref.",
         "canonical_path": "develop",
         "competing_paths": [
-          "main"
+          "main",
+          "stale issue #725 certificate"
         ],
         "evidence_ids": [
-          "NC-725-BASE"
+          "issue-726-pre-edit-baseline"
         ],
         "scenario_ids": [
-          "issue-725-inherited-base-artifact"
+          "review immutable develop ancestry"
         ],
         "negative_control_evidence": [
-          "evidence/issue-725-inherited-binding.json, official classifier exit 3, reuse_allowed=false"
+          "Inherited #725 certificate has identical blob on both base and material, not valid for #726"
+        ]
+      },
+      {
+        "id": "SIC-002",
+        "kind": "structural",
+        "requirement_ids": [
+          "REQ-726-04",
+          "REQ-726-05"
+        ],
+        "obligation_ids": [
+          "OBL-004",
+          "OBL-005"
+        ],
+        "plausible_wrong_implementation": "Leave insights and import before the current selected evidence and decision.",
+        "canonical_path": "inbox-review-archetype.ts queue -> selected evidence -> secondary",
+        "competing_paths": [
+          "historical two competing header buttons and equal-level import panel"
+        ],
+        "evidence_ids": [
+          "issue-726-pre-edit-baseline",
+          "issue-565-ai-review-queue"
+        ],
+        "scenario_ids": [
+          "issue-726-hierarchy-negative"
+        ],
+        "negative_control_evidence": [
+          "Chrome moves secondary before review, position assertion fails, restores original DOM"
         ]
       }
     ],
     "unresolved_invariants": []
   },
   "read_model_closures": {
-    "status": "not-applicable",
-    "applicability_reason": "Only read-only presentation composition changed; existing budget usage API and buildBudgetsPageViewModel remain unchanged; no historical pagination/read model contract was introduced.",
+    "status": "passed",
+    "applicability_reason": "Review origin/status and selected evidence payload are read models consumed across a queued selection and later decision.",
     "entries": [],
     "unconsumed_outputs": [],
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
-    "status": "not-applicable",
-    "applicability_reason": "No canonical data-source precedence or external resource changed; renderer receives identical budget view-model and follows API status; source harmonization not requested.",
+    "status": "passed",
+    "applicability_reason": "Queue GET and selected payload GET are distinct sources; selected fingerprint must bind POST at the exact reviewed revision.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Current API budget and visual validation docs reviewed with changed SSR; historical pre-edit Chrome limitation explicitly preserved.",
+    "applicability_reason": "docs/AI_REVIEW_QUEUE.md and Golden Screen source files were checked against SSR and enhancer API contract; no new finance/API contract was introduced.",
     "old_contract_terms": [
-      "count metrics first",
-      "dashboard before Golden Screen"
+      "insights first",
+      "import in selected detail",
+      "two independent header buttons"
     ],
     "new_contract_terms": [
-      "financial priority by currency",
-      "secondary inventory after table"
+      "queue -> selected evidence -> decision",
+      "other entries and imports are secondary",
+      "shared selected evidence fingerprint guard"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "Source comparison to docs/DESIGN_SYSTEM.md and docs/SCREEN_ARCHETYPES.md, plus changed docs/API_BUDGETS_GOALS_ALERTS.md and docs/VISUAL_VALIDATION.md on cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
+      "Searched docs/AI_REVIEW_QUEUE.md and docs/DESIGN_SYSTEM.md against inbox-page and all connected inbox enhancement modules in exact material checkout"
     ]
   },
   "scope_reduction_review": {
     "status": "passed",
     "matches": [
       {
-        "path": "issue #725",
+        "path": "issue #726",
         "line": 25,
-        "text": "[ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e parecer visual/técnico independente.",
+        "text": "[ ] SSR/CI/Chrome exact-SHA e parecer visual/técnico independente com links.",
         "disposition": "not-a-reduction",
         "decision_source_id": "SRC-ISSUE",
-        "rationale": "Issue expressly requires external visual/technical approval; it remains deferred and cannot be claimed by the implementer. Historical pre-edit process limitation is disclosed in OBL-002 and visual validation documentation."
+        "rationale": "Only future independent audit is deferred. Exact-SHA SSR, CI, Chrome, negative and responsive controls remain prerequisite gates. Original pre-edit procedural caveat is explicit and must be independently judged."
       }
     ]
   },
   "pass_c": {
     "status": "passed",
     "requirement_ids": [
-      "REQ-725-01",
-      "REQ-725-02",
-      "REQ-725-03",
-      "REQ-725-04",
-      "REQ-725-05",
-      "REQ-725-06",
-      "REQ-725-07",
-      "REQ-725-08",
-      "REQ-725-09",
-      "REQ-725-10",
-      "REQ-725-11"
+      "REQ-726-01",
+      "REQ-726-02",
+      "REQ-726-03",
+      "REQ-726-04",
+      "REQ-726-05",
+      "REQ-726-06",
+      "REQ-726-07",
+      "REQ-726-08",
+      "REQ-726-09",
+      "REQ-726-10",
+      "REQ-726-11"
     ],
     "obligation_ids": [
       "OBL-001",
@@ -377,10 +582,10 @@
       "OBL-012"
     ],
     "evidence": [
-      "12 candidate obligations rederived from exact GitHub issue #725 source; independent review obligation OBL-012 explicitly deferred, not producer-approved.",
-      "Git exact base 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 6 presentation-only paths; no API/database or new financial derivation.",
-      "Repository CI 40961594685 critical tests 10/10 budget-page and full suite green; Chrome 40961594720 artifact 12936747808 with multi-currency, long list, 3 sizes, persistent CRUD and reversible negative controls.",
-      "Historical Chrome baseline run 40811518620 predates PR creation and same Git blob; not represented as pre-edit inspection by current implementer."
+      "12 literal obligations rederived from original GitHub issue #726; all 12 preserved without dropping qualifiers.",
+      "Historical authenticated Chrome run #41128555517, artifact #13011839149 predates PR #754 creation and pre-edit Inbox source blobs equal immutable develop base.",
+      "Candidate code and connected enhancers inspected at current material head; no API/schema/financial data paths modified.",
+      "Independent technical and visual review intentionally deferred; implementation cannot self-approve exact head."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

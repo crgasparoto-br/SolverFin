@@ -1,222 +1,48 @@
 {
   "schema_version": 1,
-  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
   "families": [
     {
       "family": "authorization",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "authorization is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-01-1",
-        "NEG-06-1"
+        "NEG-726-02-1",
+        "NEG-726-07-1"
       ],
       "dimensions": [
         {
-          "surface": "category-scope-authorization",
-          "reason": "Category association must be authorized only when the category is active in the same organization/profile.",
+          "surface": "financial-profile-scoping",
+          "reason": "Actual exact-head control against authorization:financial-profile-scoping, corroborated with immutable browser or structural execution reports.",
           "control_ids": [
-            "NEG-06-1"
+            "NEG-726-02-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "profile-rule-access",
-          "reason": "Rules must be available only through the authenticated profile context while both forms consume the same scoped API.",
+          "surface": "review-evidence-permission",
+          "reason": "Actual exact-head control against authorization:review-evidence-permission, corroborated with immutable browser or structural execution reports.",
           "control_ids": [
-            "NEG-01-1"
+            "NEG-726-07-1"
           ],
           "status": "passed"
         }
       ],
       "status": "passed"
-    },
-    {
-      "family": "tenant-isolation",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "NEG-06-2",
-        "HIST-749-12"
-      ],
-      "dimensions": [
-        {
-          "surface": "tenant-scope-isolation",
-          "reason": "Identical descriptions in different financial profiles must remain separate and foreign categories must be rejected.",
-          "control_ids": [
-            "NEG-06-2"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "issue714-tenantisolation",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-12"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "public-boundary",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-05"
-      ],
-      "dimensions": [
-        {
-          "surface": "free-to-spend-contract",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-05"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "reference-liveness",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-06"
-      ],
-      "dimensions": [
-        {
-          "surface": "issue714-referenceliveness",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-06"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-consistency",
-      "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
-      "control_ids": [
-        "NEG-04-1",
-        "NEG-12-1"
-      ],
-      "dimensions": [
-        {
-          "surface": "exact-sha-premerge-order",
-          "reason": "Technical gates must bind to the material SHA and independent review must remain later than certification and earlier than merge.",
-          "control_ids": [
-            "NEG-12-1"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "persist-before-reset",
-          "reason": "The API confirmation must precede form reset and next-entry preparation.",
-          "control_ids": [
-            "NEG-04-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "temporal-destination",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
     },
     {
       "family": "concurrency-atomicity",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "idempotency",
       "applicable": true,
-      "reason": "Exact-head adversarial controls cover every declared material surface for this family on issue #747.",
+      "reason": "concurrency-atomicity is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-07-1",
-        "NEG-09-1"
+        "NEG-726-06-1"
       ],
       "dimensions": [
         {
-          "surface": "duplicate-processing",
-          "reason": "Reload after close must expose the committed transaction while retries cannot create a duplicate.",
+          "surface": "human-action-and-no-implicit-effects",
+          "reason": "Actual exact-head control against concurrency-atomicity:human-action-and-no-implicit-effects, corroborated with immutable browser or structural execution reports.",
           "control_ids": [
-            "NEG-07-1",
-            "NEG-09-1"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
-    },
-    {
-      "family": "rollback",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "historical-immutability",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
-    },
-    {
-      "family": "structural-contract",
-      "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
-      "control_ids": [
-        "HIST-749-08",
-        "HIST-749-09",
-        "HIST-749-10",
-        "HIST-749-11"
-      ],
-      "dimensions": [
-        {
-          "surface": "canonical-source-consistency",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-08"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-identity",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-09"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-presence",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-10"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "handoff-subject",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-11"
+            "NEG-726-06-1"
           ],
           "status": "passed"
         }
@@ -226,39 +52,153 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Exact-head inherited audit-escape revalidation observes applicable surfaces with negative controls, on top of the current issue contract.",
+      "reason": "documentation is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
       "control_ids": [
-        "NEG-10-2",
-        "HIST-749-01",
-        "HIST-749-02"
+        "NEG-726-04-2"
       ],
       "dimensions": [
         {
-          "surface": "current-contract-docs",
-          "reason": "Current documentation must describe the same inactive-rule, idempotency and save-and-continue contracts exercised by code/tests.",
-          "control_ids": [
-            "NEG-10-2"
-          ],
-          "status": "passed"
-        },
-        {
           "surface": "canonical-claims",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
+          "reason": "Actual exact-head control against documentation:canonical-claims, corroborated with immutable browser or structural execution reports.",
           "control_ids": [
-            "HIST-749-01"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "canonical-claims",
-          "reason": "Inherited historical audit-escape counterexample remains material and was revalidated with exact-head CI, Chrome or official preflight.",
-          "control_ids": [
-            "HIST-749-02"
+            "NEG-726-04-2"
           ],
           "status": "passed"
         }
       ],
       "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires historical-immutability for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "idempotency is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-10-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Actual exact-head control against idempotency:duplicate-processing, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-10-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires public-boundary for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires reference-liveness for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires rollback for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "structural-contract is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-01-1",
+        "NEG-726-01-2",
+        "NEG-726-02-2",
+        "NEG-726-04-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "golden-source-ancestry",
+          "reason": "Actual exact-head control against structural-contract:golden-source-ancestry, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-01-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-subject-identity",
+          "reason": "Actual exact-head control against structural-contract:handoff-subject-identity, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-01-2"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "queue-detail-secondary-order",
+          "reason": "Actual exact-head control against structural-contract:queue-detail-secondary-order, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-04-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Actual exact-head control against structural-contract:relational-semantic-integrity, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-02-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "temporal-consistency is required by issue #726 and has targeted positive/negative/regression evidence on immutable material head.",
+      "control_ids": [
+        "NEG-726-02-3"
+      ],
+      "dimensions": [
+        {
+          "surface": "pre-edit-baseline-identity",
+          "reason": "Actual exact-head control against temporal-consistency:pre-edit-baseline-identity, corroborated with immutable browser or structural execution reports.",
+          "control_ids": [
+            "NEG-726-02-3"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires temporal-destination for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No source-derived obligation, risk surface or inherited current control requires tenant-isolation for presentation-only Inbox redesign.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     }
   ],
   "material_families_missing_controls": []

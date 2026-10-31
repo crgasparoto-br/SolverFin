@@ -6,20 +6,20 @@
 
 **Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.
 
-**Rota / arquétipo:** `/orcamentos`, A1 Cockpit. **Prioridade:** P1 (planejamento de caixa).
-**Antecedentes:** #591, #613 e contrato atual `docs/API_BUDGETS_GOALS_ALERTS.md`. Não duplicar escopo funcional da #619.
+**Rota / arquétipo:** `/inbox`, A6 Revisão/inbox. **Prioridade:** P1 (revisão de decisões sensíveis).
+**Antecedentes:** #591, #614; preservar contratos de revisão/deduplicação/importação e os enhancers ainda conectados.
 
 ### Delta observável na fonte
-`apps/web/src/dev-server/budgets-page.ts` em `renderPageContainer` (~103–137) emite **quatro `renderMetricCard`** de contagem — Ativos, Sem orçamento, Sem categoria, Moedas — *antes* da tabela com valores financeiros planejado/realizado/comprometido/projetado (~282–320). Esses contadores podem competir visualmente com a decisão operacional; `budget-results.panel` e a barra de filtros completam a carga inicial. Comparar com hierarquia A1, preservando integralmente dados atuais.
+`apps/web/src/dev-server/inbox-page.ts` (~118–205) produz seções independentes `inbox-review-suggestions`, `inbox-review-messages`, `import-workspace` com classe `panel`, além de insights e dois acionadores de topo (registrar/importar). A fila, evidência e decisão ficam distribuídas entre regiões de mesmo nível estrutural em vez do fluxo dominante A6. Não presumir que todo painel seja excesso; validar no Chrome qual bloco quebra a prioridade de revisão.
 
 ### Escopo fechado
-- Reorganizar primeira leitura para período, moeda, orçamento/execução/alerta e ação contextual; tornar contagens informativas secundárias, sem criar somas ou KPIs não existentes na API.
-- Ajustar densidade da tabela e filtros por moeda/estado, com estado ativo evidente e mesma operação SSR.
-- Preservar orçamento sem categoria, `unbudgeted`, alertas, controle de permissão, modais de novo/editar e campos atuais da #613 e da #619 quando já existentes.
+- Consolidar hierarquia visual de fila → item selecionado → evidência/origem/confiança → decisão, preservando separação lógica de insights, mensagens, importações CSV/OFX e estados concorrentes.
+- Reduzir concorrência das ações de cabeçalho e dar prioridade à ação contextual de revisar sem inventar confirmação automática.
+- Não remover enhancers sem substituir com testes equivalentes, nem enfraquecer estados de confiança/permissão/obsolescência.
 
 ### Aceite / regressão
-- [ ] Evidências Chrome no SHA 1366×768 / 390×844 / 320×740, dois códigos de moeda, lista longa, filtro sem resultado, erro, criação/edição.
-- [ ] Valores planejado/realizado/remanescente e estado dominam contadores de catálogo; labels/status/moedas explícitos; filtros permanecem operáveis e persistentes.
-- [ ] Nenhum recálculo de status/saldo no renderer, nenhuma mistura BRL/USD, nem zeros sintéticos para dados ausentes.
-- [ ] Controles negativos: priorização artificial de contagens e truncamento de moeda/valores devem ser rejeitados; restauração passa.
-- [ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e parecer visual/técnico independente.
+- [ ] Capturas Chrome 1366×768, 390×844, 320×740: pendentes, sem pendências, importação parcial/erro, evidência longa e decisão contextual.
+- [ ] Prioridade visual é fila/evidência/decisão; origem, moeda, risco e status preservados e acessíveis; teclado/foco/zoom/reflow cobertos.
+- [ ] Ausência/erro da evidência impede decisão dependente dela; manter idempotência, cancelamento e contratos de revisão humana.
+- [ ] Controle negativo: ocultar evidência ou destacar importação acima da decisão pendente deve falhar; restauração passa.
+- [ ] SSR/CI/Chrome exact-SHA e parecer visual/técnico independente com links.

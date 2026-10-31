@@ -1,0 +1,512 @@
+{
+  "schema_version": 1,
+  "target": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 726,
+    "pull_request_number": 754,
+    "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2"
+  },
+  "source": {
+    "run_id": 41158602986,
+    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
+    "status": "completed",
+    "conclusion": "success",
+    "artifact_id": 13026396936,
+    "artifact_name": "statement-visual-evidence-3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+    "artifact_zip_sha256": "4c6b7937ce0e95f38e2bea9d09448b063ea28def7898dd17c5b09b9b34a7ee04",
+    "browser": "Google Chrome 156.0.8078.47"
+  },
+  "original_reports": {
+    "issue-565-ai-review-queue.json": {
+      "sha256": "39c91f82215e7aee0600018ec050d2711ee58c5c4f854d70c791081dbfb7cf14",
+      "data": {
+        "generatedAt": "2026-10-31T02:16:24.971Z",
+        "commit": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "browser": "Google Chrome 156.0.8078.47",
+        "fixture": {
+          "suggestionId": "eb1b7d67-9e71-4bdd-9e29-c79df878f4d1",
+          "accountId": "44444444-4444-4444-8444-444444444445",
+          "description": "Linha 2 importada e pronta para revisao humana."
+        },
+        "captures": [
+          {
+            "viewport": "320x740",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 10,
+              "right": 295,
+              "width": 285,
+              "height": 175
+            },
+            "screenshot": "issue-565-ai-review-queue-320x740.png"
+          },
+          {
+            "viewport": "390x844",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 10,
+              "right": 365,
+              "width": 355,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-390x844.png"
+          },
+          {
+            "viewport": "768x1024",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 232,
+              "right": 741,
+              "width": 509,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-768x1024.png"
+          },
+          {
+            "viewport": "1366x768",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 679,
+              "width": 445,
+              "height": 115
+            },
+            "screenshot": "issue-565-ai-review-queue-1366x768.png"
+          },
+          {
+            "viewport": "1366x900",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 679,
+              "width": 445,
+              "height": 115
+            },
+            "screenshot": "issue-565-ai-review-queue-1366x900.png"
+          }
+        ],
+        "keyboard": {
+          "detailsOpenedByKeyboard": true,
+          "detailsFocused": true,
+          "detailsFocusRestored": true,
+          "editOpenedByKeyboard": true,
+          "editControlFocused": true,
+          "editFocusRestored": true
+        },
+        "urlState": {
+          "before": "?kind=transaction_extraction&status=pending_review&confidence=all",
+          "after": "?kind=transaction_extraction&confidence=low",
+          "confidencePersisted": true,
+          "profilePreserved": true
+        },
+        "textResize": {
+          "rootFontSize": 32,
+          "cardVisible": true,
+          "actionsVisible": true,
+          "bodyFitsViewport": true,
+          "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvvrs8r8Revisar"
+        },
+        "evidenceNegative": {
+          "hiddenEvidenceBlockedDecision": true,
+          "evidenceRestored": true
+        },
+        "fingerprintChecks": [
+          {
+            "action": "approve",
+            "changed": true,
+            "posts": 0,
+            "original": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "approve",
+            "changed": false,
+            "posts": 1,
+            "original": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "expectedFingerprint": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "reject",
+            "changed": true,
+            "posts": 0,
+            "original": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "reject",
+            "changed": false,
+            "posts": 1,
+            "original": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "expectedFingerprint": "db-fp-v1-d5762da17d847edfd65963cdac593fdf7f59babab913e845aaf6dad207d38a9c",
+            "settled": true,
+            "ok": true
+          }
+        ],
+        "hierarchyNegative": {
+          "baseline": true,
+          "attackRejected": true,
+          "restored": true
+        },
+        "longEvidence": [
+          {
+            "width": 320,
+            "height": 740,
+            "screenshot": "issue-726-inbox-long-evidence-320x740.png",
+            "bodyFitsViewport": true,
+            "decisionFitsViewport": true,
+            "evidenceBeforeDecision": true
+          },
+          {
+            "width": 390,
+            "height": 844,
+            "screenshot": "issue-726-inbox-long-evidence-390x844.png",
+            "bodyFitsViewport": true,
+            "decisionFitsViewport": true,
+            "evidenceBeforeDecision": true
+          }
+        ],
+        "failures": []
+      }
+    },
+    "issue-565-ai-review-queue-states.json": {
+      "sha256": "b557ee3a17700813795dae55d41478418f9a672870ffec4583ec1f2802485714",
+      "data": {
+        "generatedAt": "2026-10-31T02:16:31.933Z",
+        "commit": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "browser": "Google Chrome 156.0.8078.47",
+        "fixture": {
+          "suggestionId": "73ef31c4-68ef-465b-9d99-543f2e7ea63c"
+        },
+        "evidence": {
+          "kinds": {
+            "cardCount": 5,
+            "allKindsVisible": true,
+            "editOnlyOnSupportedKinds": true,
+            "lowConfidenceVisible": true,
+            "editObserved": [
+              {
+                "kind": "transaction_extraction",
+                "hasEdit": true
+              },
+              {
+                "kind": "categorization",
+                "hasEdit": true
+              },
+              {
+                "kind": "deduplication",
+                "hasEdit": false
+              },
+              {
+                "kind": "reconciliation",
+                "hasEdit": false
+              },
+              {
+                "kind": "insight",
+                "hasEdit": false
+              }
+            ]
+          },
+          "loading": {
+            "visible": true,
+            "retryVisible": false
+          },
+          "empty": {
+            "visible": true
+          },
+          "missingEvidence": {
+            "blocked": true,
+            "recovered": true
+          },
+          "error": {
+            "visible": true,
+            "retryVisible": true
+          },
+          "unavailable": {
+            "visible": true,
+            "distinctFromError": true,
+            "retryVisible": true
+          },
+          "retry": {
+            "clicked": true,
+            "recovered": true
+          },
+          "conflict": {
+            "visible": true,
+            "actionReenabled": true
+          }
+        },
+        "failures": []
+      }
+    },
+    "issue-564-category-learning.json": {
+      "sha256": "76a939607fec1b719fb764504e2977074db145bf075a5f89c53ca7057bf803ec",
+      "data": {
+        "commit": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+        "generatedAt": "2026-10-31T02:16:15.192Z",
+        "stage": "passed",
+        "fixtures": {
+          "suffix": "mvvrs42y",
+          "accountId": "44444444-4444-4444-8444-444444444445",
+          "categoryId": "66666666-6666-4666-8666-666666666603",
+          "ignoreEntryId": "384d52b3-11e4-4133-83e3-ede4af71934b",
+          "revertEntryId": "ccad8819-4e0a-4a10-b45b-98f064b3d593",
+          "ignoreSuggestionId": "0d3025d8-8ceb-4c7d-9265-50892e94d0e9",
+          "correctionSuggestionId": "5fa71156-5e10-4346-9d93-00ca0706071e"
+        },
+        "settingsBefore": {
+          "panelVisible": true,
+          "ignoreVisible": true,
+          "revertVisible": true,
+          "ignoreStatus": "active",
+          "revertStatus": "active",
+          "activeButtonsForMutatedEntries": 4
+        },
+        "settingsAfter": {
+          "panelVisible": true,
+          "ignoreVisible": false,
+          "revertVisible": false,
+          "ignoreStatus": "ignored",
+          "revertStatus": "reverted",
+          "activeButtonsForMutatedEntries": 0
+        },
+        "settingsMobile": {
+          "width": 390,
+          "height": 844,
+          "noHorizontalOverflow": true
+        },
+        "inboxOrigin": {
+          "learningCategorizationId": "642ed893-a390-46ab-a902-f5e4c9796104",
+          "learningOriginVisible": true,
+          "correctionButtonVisible": true
+        },
+        "correctionGuards": [
+          {
+            "fingerprint": "sha256-63db497172c36014114223dacdba564d061db9839f23d2583c49f1e818235415",
+            "mode": "hidden",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "ready"
+          },
+          {
+            "fingerprint": "sha256-63db497172c36014114223dacdba564d061db9839f23d2583c49f1e818235415",
+            "mode": "wrong-selection",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "ready"
+          },
+          {
+            "fingerprint": "sha256-63db497172c36014114223dacdba564d061db9839f23d2583c49f1e818235415",
+            "mode": "changed-fingerprint",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "unavailable"
+          }
+        ],
+        "failedDialog": {
+          "open": true,
+          "categoryPreserved": true,
+          "submitEnabled": true,
+          "statusLive": true,
+          "fitsViewport": true
+        },
+        "learningCountBefore": 3,
+        "learningCountAfter": 4
+      }
+    }
+  },
+  "captures_verified": [
+    {
+      "filename": "issue-565-ai-review-queue-1366x768.png",
+      "size_pixels": [
+        1366,
+        768
+      ],
+      "sha256": "48a220f49b02f3f22e542c64d867490f20512892a42db6a2e81b26b071f0d5ad"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-1366x900.png",
+      "size_pixels": [
+        1366,
+        900
+      ],
+      "sha256": "f440d41c75b90415dc01771129081618764a7cdfc254f93c4d322106e0a5f942"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-320x740.png",
+      "size_pixels": [
+        320,
+        740
+      ],
+      "sha256": "c020fe8e1990297b42bfd2c75ccad05828acea09ad0862775adf1438f4e3f319"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-390x844.png",
+      "size_pixels": [
+        390,
+        844
+      ],
+      "sha256": "eb5c20d2c23b476cc8ac2fdcc141b188b6546351eb136503db6c6218bc42e3de"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-768x1024.png",
+      "size_pixels": [
+        768,
+        1024
+      ],
+      "sha256": "396fc0f9f879a2122a83fda389c77a8082ab26a9bb767cb87ed52a532008c7bb"
+    },
+    {
+      "filename": "issue-726-category-correction-stale.png",
+      "size_pixels": [
+        390,
+        844
+      ],
+      "sha256": "87d6c9a87b045329e19f395fac5d04731bad865ab7a1bbe0dbff9979e0d1fbd1"
+    },
+    {
+      "filename": "issue-726-inbox-long-evidence-320x740.png",
+      "size_pixels": [
+        320,
+        740
+      ],
+      "sha256": "bf1cb58701b11b5f572db3d3b89e49cc8b37fdbb7bef4e8cae13cad1ee93f037"
+    },
+    {
+      "filename": "issue-726-inbox-long-evidence-390x844.png",
+      "size_pixels": [
+        390,
+        844
+      ],
+      "sha256": "5acfa81c0b38dc96519e272600d9da447d1e8395da4ada7dc37d8949f2d980b9"
+    },
+    {
+      "filename": "issue-726-inbox-no-evidence.png",
+      "size_pixels": [
+        1366,
+        900
+      ],
+      "sha256": "fde71f6dd70c36b97fdb97f338535e1214b938e4b8932f73021c01994e400c96"
+    }
+  ],
+  "visual_gate": {
+    "sha256": "2502da79bddf2ee50206bbc614a362d0abe89a0cb893f94a0a86447ff01e21eb",
+    "registered_modules": 67,
+    "execution_units": 75,
+    "failures": 0
+  },
+  "validated_assertions": {
+    "fingerprint_stale_approve_no_post": true,
+    "fingerprint_stale_reject_no_post": true,
+    "fingerprint_current_approve_exact_post": true,
+    "fingerprint_current_reject_exact_post": true,
+    "category_hidden_no_post": true,
+    "category_selection_changed_no_post": true,
+    "category_stale_no_post": true,
+    "hierarchy_secondary_promoted_rejected": true,
+    "hierarchy_restored": true,
+    "evidence_hidden_blocked": true,
+    "evidence_restored": true,
+    "viewports": [
+      "320x740",
+      "390x844",
+      "768x1024",
+      "1366x768",
+      "1366x900"
+    ],
+    "mobile_long_content": [
+      320,
+      390
+    ],
+    "empty_error_retry_conflict": true
+  },
+  "honesty": "This report verifies raw artifact outcomes and hashes; it does not substitute for independent audit. Screenshots remain in original immutable GitHub Actions artifact, with per-file digests above."
+}

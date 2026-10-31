@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+  "source_audits": [
+    {
+      "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+      "finding_ids": [
+        "A-001",
+        "A-002",
+        "A-003",
+        "A-004",
+        "A-005"
+      ],
+      "report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+    }
+  ],
+  "controls": [],
+  "retired_controls": [],
+  "unresolved_controls": [],
+  "provenance": "Reconstructed from immutable prior independent report; no signed prior inherited control inventory exists; do not invent prior executed controls."
+}

@@ -3,31 +3,67 @@
   "contract_version": "2026-08-20.3",
   "status": "rejected",
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
-  "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+  "head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
-    "material_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
-    "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
-    "issue_number": 725,
-    "pull_request_number": 751
+    "head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+    "material_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+    "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+    "issue_number": 726,
+    "pull_request_number": 754
   },
   "external_report": {
-    "sha256": "ab90b0fbae69056a9e40fe096c735842ba175f4f17fba200f9a9ef40c1b87162",
-    "path": "https://github.com/crgasparoto-br/SolverFin/pull/751#pullrequestreview-5716188464"
+    "sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609",
+    "path": "prior-independent-audit/auditoria-issue-726.md"
   },
   "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "execution-state-gap",
+      "summary": "Previous base artifact belongs to issue #725 and cannot certify issue #726"
+    },
     {
       "id": "A-002",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "post-write-material-drift",
-      "summary": "Previous issue #725 result-only certificate remains tied to 7b756949, while 30 additional commits changed product/UX/test material ending at cec1ef84."
+      "category": "control-propagation-gap",
+      "summary": "Approval or rejection can POST fresh B fingerprint while human saw A"
+    },
+    {
+      "id": "A-003",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "legacy-variant-gap",
+      "summary": "Legacy capture-phase correction bypasses contextual guard"
+    },
+    {
+      "id": "A-004",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "other",
+      "summary": "Insufficient insight fallback rendered before main review queue"
+    },
+    {
+      "id": "A-005",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "execution-state-gap",
+      "summary": "Historical authenticated Chrome baseline was not inspected by original implementer before change"
     }
   ],
   "recommendations": [],
-  "provenance_note": "Source is COMMENTED independent PR review https://github.com/crgasparoto-br/SolverFin/pull/751#pullrequestreview-5716188464 on exact material SHA cec1ef84bd04fb6c7df2a8bed06bb857af8b3683; original review body sha256 ab90b0fbae69056a9e40fe096c735842ba175f4f17fba200f9a9ef40c1b87162. No cryptographically distinct reviewer is asserted."
+  "provenance_note": "Prior independent audit performed in a separate ChatGPT context and recorded as immutable report with SHA-256; not falsely represented as a signed external review or GitHub approval. Source bytes included in evidence for later verification."
 }
