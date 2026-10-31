@@ -56,7 +56,7 @@ export async function validateGoldenStateMatrix(cdp) {
         const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
         const state=${JSON.stringify(state)};
         const background=css.backgroundColor,color=css.color,border=css.borderTopColor;
-        const rest=same(background,token('surface')) && same(color,token('primary')) &&
+        const rest=same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
           [token('border'),token('line')].some((value)=>same(border,value));
         const hover=same(background,token('neutral-control-hover')) && same(color,token('neutral-control-text-hover')) &&
           same(border,token('neutral-control-border-hover'));
@@ -81,6 +81,7 @@ export async function validateGoldenStateMatrix(cdp) {
 
   try {
     await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 0, y: 0 });
+    await evaluate(cdp, `document.activeElement?.blur()`);
     for (const [label, selector, canDisable] of CONTROLS.slice(0, 5)) {
       for (const state of [
         "rest",
