@@ -66,8 +66,13 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /selected\.dataset\.reviewEvidenceState = "unavailable"/);
     assert.match(html, /detailFor\(id, true\)/);
     assert.match(html, /typeof detail\.payload\.fingerprint !== "string"/);
-    assert.match(html, /style\.visibility !== "hidden"/);
-    assert.match(html, /rect\.width > 0/);
+    assert.match(html, /css\.visibility !== "visible"/);
+    assert.match(html, /rect\.width <= 0/);
+    assert.match(html, /evidence\.checkVisibility\(\{ checkOpacity: true, checkVisibilityCSS: true \}\)/);
+    assert.match(html, /node = node\.parentElement/);
+    assert.match(html, /css\.clipPath !== "none"/);
+    assert.match(html, /css\.maskImage !== "none"/);
+    assert.match(html, /Number\(css\.opacity\) <= 0\.01/);
     assert.match(html, /evidence\.closest\('\[hidden\], \[aria-hidden="true"\], \[inert\]'\)/);
     assert.match(html, /state\.selectedId !== id/);
     assert.match(html, /data-review-evidence-retry/);

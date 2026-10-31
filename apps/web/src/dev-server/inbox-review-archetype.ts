@@ -144,6 +144,19 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-new-entry-actions > summary:hover,
     .inbox-new-entry-actions[open] > summary { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     .inbox-new-entry-actions > summary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); box-shadow: var(--sf-shadow-focus); outline: none; }
+    /* A6 neutral interactions use the same shared states in filters, queue and edit dialog. */
+    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .inbox-review-nav, .inbox-new-entry-trigger, .review-card [data-review-select]):is(:hover:not(:disabled), :focus-visible),
+    .ai-review-dialog :is(select, .secondary-button):is(:hover:not(:disabled), :focus-visible) {
+      background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover);
+    }
+    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .inbox-review-nav, .inbox-new-entry-trigger, .review-card [data-review-select]):active:not(:disabled),
+    .ai-review-dialog :is(select, .secondary-button):active:not(:disabled) {
+      background: var(--sf-color-neutral-control-active-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover);
+    }
+    .inbox-review-cockpit .review-filter-bar select:disabled, .ai-review-dialog select:disabled {
+      background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-border); color: var(--sf-color-muted-text); cursor: not-allowed; opacity: 1;
+    }
+    .ai-review-dialog select option:not(:checked) { background: var(--sf-color-surface); color: var(--sf-color-primary); }
     .inbox-new-entry-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
     .inbox-new-entry-menu > button { min-height: var(--sf-density-interactive-target-min); }
     .inbox-review-selected { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }

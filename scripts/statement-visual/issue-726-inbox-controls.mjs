@@ -69,22 +69,72 @@ export async function validateCorrectionGuards(cdp, suggestionId, submitCorrecti
 export async function validateEvidenceNegativeControl(cdp) {
   return evaluate(
     cdp,
-    `(() => {
-    const evidence = document.querySelector('#inbox-review-selected [data-review-evidence="ready"]');
-    const approve = document.querySelector('#inbox-review-selected [data-review-approve]');
-    if (!evidence || !approve) return { hiddenEvidenceBlockedDecision: false, evidenceRestored: false };
-    const initialVisibility = evidence.style.visibility;
-    const originalConfirm = window.confirm;
-    let confirms = 0;
-    try {
-      evidence.style.visibility = 'hidden';
-      window.confirm = () => { confirms += 1; return false; };
-      approve.click();
-    } finally {
-      evidence.style.visibility = initialVisibility;
-      window.confirm = originalConfirm;
+    `(async () => {
+    const selected = document.getElementById('inbox-review-selected');
+    const evidence = selected?.querySelector('[data-review-evidence="ready"]');
+    const ancestor = selected?.closest('.inbox-review-detail');
+    const approve = selected?.querySelector('[data-review-approve]');
+    const reject = selected?.querySelector('[data-review-reject]');
+    if (!evidence || !ancestor || !approve || !reject || !window.__solverfinInboxReviewGuard) {
+      return { hiddenEvidenceBlockedDecision: false, evidenceRestored: false, cases: [] };
     }
-    return { hiddenEvidenceBlockedDecision: confirms === 0, evidenceRestored: getComputedStyle(evidence).visibility !== 'hidden' };
+    const initialEvidence = evidence.style.cssText;
+    const initialAncestor = ancestor.style.cssText;
+    const originalConfirm = window.confirm;
+    const originalFetch = window.fetch;
+    const id = selected.dataset.reviewSelectedId;
+    const results = [];
+    try {
+      window.confirm = () => true;
+      for (const action of ['approve', 'reject']) {
+        for (const mode of ['visible', 'hidden', 'opacity', 'clipped', 'ancestor-opacity', 'ancestor-clipped', 'inert']) {
+          evidence.style.cssText = initialEvidence;
+          ancestor.style.cssText = initialAncestor;
+          if (mode === 'hidden') evidence.style.visibility = 'hidden';
+          if (mode === 'opacity') evidence.style.opacity = '0';
+          if (mode === 'clipped') evidence.style.clipPath = 'inset(100%)';
+          if (mode === 'ancestor-opacity') ancestor.style.opacity = '0';
+          if (mode === 'ancestor-clipped') ancestor.style.clipPath = 'inset(100%)';
+          if (mode === 'inert') ancestor.setAttribute('inert', '');
+          let posts = 0;
+          let expectedFingerprint;
+          let confirmations = 0;
+          window.confirm = () => { confirmations++; return true; };
+          window.fetch = async (input, options) => {
+            const url = typeof input === 'string' ? input : input?.url || String(input);
+            if (url.endsWith('/' + action) && url.includes('/api/ai-review-queue/') && options?.method === 'POST') {
+              posts++;
+              expectedFingerprint = JSON.parse(options.body).expectedFingerprint;
+              return new Response(JSON.stringify({error:{code:'AI_SUGGESTION_PAYLOAD_CONFLICT',message:'Synthetic conflict'}}), {
+                status:409, headers:{'content-type':'application/json'}
+              });
+            }
+            return originalFetch(input, options);
+          };
+          const guard = window.__solverfinInboxReviewGuard(id);
+          const button = action === 'approve' ? approve : reject;
+          button.disabled = false;
+          button.click();
+          await new Promise((resolve) => setTimeout(resolve, mode === 'visible' ? 200 : 50));
+          const shouldAllow = mode === 'visible';
+          results.push({ action, mode, guard, posts, confirmations, expectedFingerprint, ok:
+            shouldAllow ? guard && confirmations === 1 && posts === 1 && expectedFingerprint === selected.dataset.reviewFingerprint
+              : !guard && confirmations === 0 && posts === 0 });
+          ancestor.removeAttribute('inert');
+          window.fetch = originalFetch;
+        }
+      }
+    } finally {
+      evidence.style.cssText = initialEvidence;
+      ancestor.style.cssText = initialAncestor;
+      ancestor.removeAttribute('inert');
+      window.confirm = originalConfirm;
+      window.fetch = originalFetch;
+      approve.disabled = false;
+      reject.disabled = false;
+    }
+    return { cases: results, hiddenEvidenceBlockedDecision: results.every((item) => item.ok),
+      evidenceRestored: window.__solverfinInboxReviewGuard(id) === true };
   })()`,
   );
 }

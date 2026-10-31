@@ -1,6 +1,7 @@
 import { join } from "node:path";
 
 import { evaluate, screenshot, setViewport } from "./cdp.mjs";
+import { validateGoldenStateMatrix } from "./issue-726-golden-state-matrix.mjs";
 
 // A-006: prove the A6 button is contained and hit-testable, then reintroduce the
 // legacy three-column grid to ensure the same geometry check detects the regression.
@@ -130,7 +131,7 @@ export async function validateGoldenInboxControls(cdp) {
         similar(item.background, token('neutral-control-hover')) &&
         similar(item.color, token('neutral-control-text-hover')) &&
         similar(item.border, token('neutral-control-border-hover'));
-      return normal || interactive;
+      return item.hovered || item.focusVisible || item.active || item.expanded ? interactive : normal;
     };
     return {
       complete: true, row, nav, trigger, refresh, status,
@@ -270,9 +271,13 @@ export async function inspectViewport(cdp, suggestionId, width, height) {
 
 export async function validateGoldenReviewViewport(cdp, suggestionId) {
   const golden = await validateGoldenInboxControls(cdp);
+  const stateMatrix = await validateGoldenStateMatrix(cdp);
+  golden.stateMatrix = stateMatrix;
   const negative = await validateReviewCardGridNegative(cdp, suggestionId);
   const goldenPass =
     golden.complete &&
+    stateMatrix.complete &&
+    stateMatrix.negativePass &&
     golden.tokenMatch &&
     golden.hasNeutralLinks &&
     golden.financialDirectionColorFromTokens &&
