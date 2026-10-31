@@ -4,6 +4,12 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import {
+  validateEvidenceNegativeControl,
+  validateFingerprintBinding,
+  validateHierarchyNegative,
+  validateLongEvidence,
+} from "./issue-726-inbox-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -111,7 +117,7 @@ try {
     "Moving imports above review was not detected by the visual order guard",
     hierarchyNegative,
   );
-  longEvidence = await validateLongEvidence(browser.cdp);
+  longEvidence = await validateLongEvidence(browser.cdp, outputDir);
   check(
     longEvidence.every(
       (item) => item.bodyFitsViewport && item.decisionFitsViewport && item.evidenceBeforeDecision,
@@ -297,157 +303,6 @@ async function selectAndWaitForEvidence(cdp, suggestionId, timeout = 12_000) {
     await sleep(120);
   }
   throw new Error("Selected review evidence did not become available.");
-}
-
-async function validateEvidenceNegativeControl(cdp) {
-  return evaluate(
-    cdp,
-    `(() => {
-    const evidence = document.querySelector('#inbox-review-selected [data-review-evidence="ready"]');
-    const approve = document.querySelector('#inbox-review-selected [data-review-approve]');
-    if (!evidence || !approve) return { hiddenEvidenceBlockedDecision: false, evidenceRestored: false };
-    const initialVisibility = evidence.style.visibility;
-    const originalConfirm = window.confirm;
-    let confirms = 0;
-    try {
-      evidence.style.visibility = 'hidden';
-      window.confirm = () => { confirms += 1; return false; };
-      approve.click();
-    } finally {
-      evidence.style.visibility = initialVisibility;
-      window.confirm = originalConfirm;
-    }
-    return { hiddenEvidenceBlockedDecision: confirms === 0, evidenceRestored: getComputedStyle(evidence).visibility !== 'hidden' };
-  })()`,
-  );
-}
-
-async function validateFingerprintBinding(cdp) {
-  return evaluate(
-    cdp,
-    `(async () => {
-    const originalFetch = window.fetch;
-    const originalConfirm = window.confirm;
-    const selected = document.getElementById('inbox-review-selected');
-    const results = [];
-    const wait = async (test) => {
-      for (let i = 0; i < 100; i++) {
-        if (test()) return true;
-        await new Promise((resolve) => setTimeout(resolve, 40));
-      }
-      return false;
-    };
-    try {
-      for (const action of ['approve', 'reject']) {
-        for (const changed of [true, false]) {
-          const original = selected?.dataset.reviewFingerprint;
-          if (!original || selected.dataset.reviewEvidenceState !== 'ready') throw new Error('Missing initial reviewed fingerprint');
-          let posts = 0;
-          let expectedFingerprint;
-          window.confirm = () => true;
-          window.fetch = async (input, options) => {
-            const url = typeof input === 'string' ? input : input?.url || String(input);
-            const method = String(options?.method || input?.method || 'GET').toUpperCase();
-            if (method === 'GET' && url.includes('/api/ai-review-queue/') && url.endsWith('/payload') && changed) {
-              const response = await originalFetch(input, options);
-              const body = await response.json();
-              return new Response(JSON.stringify({ ...body, payload: { ...body.payload, fingerprint: 'changed-without-review-' + action } }), {
-                status: 200, headers: { 'content-type': 'application/json' }
-              });
-            }
-            if (method === 'POST' && url.endsWith('/' + action) && url.includes('/api/ai-review-queue/')) {
-              posts++;
-              expectedFingerprint = JSON.parse(options?.body || '{}').expectedFingerprint;
-              return new Response(JSON.stringify({ error: { code: 'AI_SUGGESTION_PAYLOAD_CONFLICT', message: 'Synthetic conflict; no mutation.' } }), {
-                status: 409, headers: { 'content-type': 'application/json' }
-              });
-            }
-            return originalFetch(input, options);
-          };
-          selected.querySelector('[data-review-' + action + ']')?.click();
-          const settled = await wait(() => changed
-            ? selected.dataset.reviewEvidenceState === 'unavailable'
-            : posts > 0 && selected.querySelector('[data-review-row-status]')?.textContent?.includes('mudou'));
-          const ok = changed
-            ? settled && posts === 0 && Boolean(selected.querySelector('[data-review-evidence-retry]'))
-            : settled && posts === 1 && expectedFingerprint === original;
-          results.push({ action, changed, posts, original, expectedFingerprint, settled, ok });
-          window.fetch = originalFetch;
-          window.confirm = originalConfirm;
-          if (changed) {
-            selected.querySelector('[data-review-evidence-retry]')?.click();
-            if (!await wait(() => selected.dataset.reviewEvidenceState === 'ready')) {
-              throw new Error('Evidence retry failed after blocking stale ' + action);
-            }
-          }
-        }
-      }
-      return results;
-    } finally {
-      window.fetch = originalFetch;
-      window.confirm = originalConfirm;
-    }
-  })()`,
-  );
-}
-
-async function validateHierarchyNegative(cdp) {
-  return evaluate(
-    cdp,
-    `(() => {
-    const layout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
-    const secondary = document.querySelector('.inbox-review-secondary');
-    const fallback = document.querySelector('[data-financial-insight-fallback="true"]');
-    if (!layout || !secondary) return { baseline: false, attackRejected: false, restored: false };
-    const below = () => secondary.getBoundingClientRect().top >= layout.getBoundingClientRect().bottom;
-    const baseline = below() && (!fallback || secondary.contains(fallback));
-    const originalParent = secondary.parentElement;
-    const nextSibling = secondary.nextSibling;
-    try {
-      layout.before(secondary);
-      const attackRejected = !below();
-      return { baseline, attackRejected, restored: true };
-    } finally {
-      if (nextSibling) originalParent.insertBefore(secondary, nextSibling);
-      else originalParent.appendChild(secondary);
-    }
-  })()`,
-  );
-}
-
-async function validateLongEvidence(cdp) {
-  const findings = [];
-  for (const [width, height] of [
-    [320, 740],
-    [390, 844],
-  ]) {
-    await setViewport(cdp, width, height);
-    const inspected = await evaluate(
-      cdp,
-      `(() => {
-      const selected = document.getElementById('inbox-review-selected');
-      const evidence = selected?.querySelector('[data-review-evidence="ready"]');
-      const decision = selected?.querySelector('[data-review-approve]');
-      if (!evidence || !decision) return { bodyFitsViewport: false, decisionFitsViewport: false, evidenceBeforeDecision: false };
-      const paragraph = document.createElement('p');
-      paragraph.textContent = 'Evidência extensa para revisão humana sem dados sensíveis. '.repeat(48) + 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx';
-      evidence.appendChild(paragraph);
-      try {
-        decision.scrollIntoView({ block: 'end' });
-        const rect = decision.getBoundingClientRect();
-        return {
-          bodyFitsViewport: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
-          decisionFitsViewport: rect.left >= 0 && rect.right <= innerWidth && rect.height >= 34,
-          evidenceBeforeDecision: Boolean(evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)
-        };
-      } finally { paragraph.remove(); }
-    })()`,
-    );
-
-    findings.push({ width, height, ...inspected });
-  }
-  await setViewport(cdp, 1366, 900);
-  return findings;
 }
 
 async function validateKeyboardAndFocus(cdp, suggestionId) {

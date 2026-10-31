@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateCorrectionGuards } from "./issue-726-inbox-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -133,6 +134,8 @@ try {
   const correctionGuards = await validateCorrectionGuards(
     browser.cdp,
     fixtures.correctionSuggestionId,
+    submitCorrectionDialog,
+    waitFor,
   );
   assert.ok(
     correctionGuards.every((item) => item.blocked && item.posts === 0),
@@ -393,72 +396,6 @@ async function openCorrectionDialog(cdp, suggestionId, categoryId) {
     })()`,
   );
   await waitFor(cdp, `document.querySelector('[data-category-correction-dialog]')?.open === true`);
-}
-
-async function validateCorrectionGuards(cdp, suggestionId) {
-  const report = [];
-  for (const mode of ["hidden", "wrong-selection", "changed-fingerprint"]) {
-    const initial = await evaluate(
-      cdp,
-      `(() => {
-      const originalFetch = window.fetch;
-      const selected = document.getElementById('inbox-review-selected');
-      const element = selected.querySelector('[data-review-evidence="ready"]');
-      if (!element) throw new Error('Review evidence not available for correction control');
-      window.__issue726OriginalFetch = originalFetch;
-      window.__issue726ApprovalPosts = 0;
-      window.__issue726OriginalVisibility = element.style.visibility;
-      window.__issue726OriginalReviewId = selected.dataset.reviewSelectedId;
-      if (${JSON.stringify(mode)} === 'hidden') element.style.visibility = 'hidden';
-      if (${JSON.stringify(mode)} === 'wrong-selection') selected.dataset.reviewSelectedId = 'another-selected-item';
-      window.fetch = async (...args) => {
-        const url = String(args[0] instanceof Request ? args[0].url : args[0]);
-        if (url.includes('/api/ai-review-queue/${suggestionId}/approve')) {
-          window.__issue726ApprovalPosts++;
-          return new Response(JSON.stringify({ error: { message: 'Synthetic approval should not be reached' } }), { status: 409 });
-        }
-        if (${JSON.stringify(mode)} === 'changed-fingerprint' && url.includes('/api/ai-review-queue/${suggestionId}/payload')) {
-          const response = await originalFetch(...args);
-          const body = await response.json();
-          return new Response(JSON.stringify({ ...body, payload: { ...body.payload, fingerprint: 'different-after-human-review' } }), {
-            status: 200, headers: { 'content-type': 'application/json' }
-          });
-        }
-        return originalFetch(...args);
-      };
-      return { fingerprint: selected.dataset.reviewFingerprint, mode: ${JSON.stringify(mode)} };
-    })()`,
-    );
-    await submitCorrectionDialog(cdp);
-    await waitFor(
-      cdp,
-      `document.querySelector('[data-category-correction-dialog] .form-status')?.textContent?.includes('evidência') === true`,
-    );
-    const result = await evaluate(
-      cdp,
-      `(() => {
-      const selected = document.getElementById('inbox-review-selected');
-      const element = selected.querySelector('[data-review-evidence="ready"]');
-      const form = document.querySelector('[data-category-correction-dialog] form.edit-grid');
-      return { posts: window.__issue726ApprovalPosts, blocked: Boolean(form && !form.querySelector('button[type="submit"]').disabled),
-        reviewState: selected.dataset.reviewEvidenceState };
-    })()`,
-    );
-    report.push({ ...initial, ...result });
-    await evaluate(
-      cdp,
-      `(() => {
-      const selected = document.getElementById('inbox-review-selected');
-      const element = selected.querySelector('[data-review-evidence="ready"]');
-      if (element) element.style.visibility = window.__issue726OriginalVisibility;
-      if (${JSON.stringify(mode)} === 'wrong-selection') selected.dataset.reviewSelectedId = window.__issue726OriginalReviewId;
-      window.fetch = window.__issue726OriginalFetch;
-      delete window.__issue726OriginalFetch;
-      return true;
-    })()`,
-    );
-  }
-  return report;
 }
 
 async function installOneShotApprovalFailure(cdp, suggestionId) {
