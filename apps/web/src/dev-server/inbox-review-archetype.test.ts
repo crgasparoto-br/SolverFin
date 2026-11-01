@@ -37,7 +37,7 @@ describe("Inbox review archetype", () => {
     assert.match(html, /<h2>Outras sugestões<\/h2>/);
     assert.match(
       inboxReviewArchetypeStyles(),
-      /\.inbox-review-queue #inbox-review-suggestions-title \{/,
+      /\.inbox-review-cockpit #inbox-review-suggestions-title \{/,
     );
     assert.match(inboxReviewArchetypeStyles(), /clip-path: inset\(50%\); height: 1px;/);
     assert.match(html, /data-inbox-review-evidence/);
