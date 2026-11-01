@@ -129,4 +129,3 @@ export async function validateEditEvidenceBinding(cdp) {
   })()`,
   );
 }
-
