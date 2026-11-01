@@ -128,6 +128,8 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence, .inbox-review-secondary { min-width: 0; }
     .inbox-review-queue, .inbox-review-detail { align-content: start; display: grid; gap: 12px; }
     .inbox-review-detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+    /* Keep the legacy heading available to assistive technology without competing with the A6 queue title. */
+    .inbox-review-cockpit #inbox-review-suggestions-title { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
     .inbox-review-group { border: 0; border-radius: 0; background: transparent; padding: 0; }
     .inbox-review-group + .inbox-review-group { margin-top: 2px; }
     .inbox-review-evidence { border: 0; border-radius: 0; background: transparent; padding: 0; }

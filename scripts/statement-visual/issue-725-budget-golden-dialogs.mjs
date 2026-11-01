@@ -394,9 +394,15 @@ export async function checkBudgetDialogCancellation(cdp) {
         neutral?.backgroundColor === surface;
       const createClosedEvent = await cancelAndWait(create, createCancel);
       const createCanceled = createClosedEvent && !create?.open && document.activeElement === createTrigger;
-      const editTrigger = document.querySelector('.budget-results [data-sf-dialog-open^="edit-budget-dialog-"]');
+      // History actions are rendered before the main action column, but remain hidden in details.
+      // Only the current table row action is a valid visible opener for keyboard focus restoration.
+      const editTrigger = document.querySelector('.budget-results td[data-column="actions"] [data-sf-dialog-open^="edit-budget-dialog-"]');
       const menuTrigger = editTrigger?.closest('[data-budget-action-menu]')?.querySelector('[data-budget-menu-trigger]');
-      menuTrigger?.click();
+      if (!editTrigger || !menuTrigger || editTrigger.closest('.budget-period-history')) {
+        throw new Error('Visible current-period budget edit action is missing');
+      }
+      menuTrigger.scrollIntoView({ block: 'center' });
+      menuTrigger.click();
       if (editTrigger?.closest('[data-budget-menu-popover]')?.hidden) throw new Error('Edit action is hidden');
       editTrigger?.click();
       const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));

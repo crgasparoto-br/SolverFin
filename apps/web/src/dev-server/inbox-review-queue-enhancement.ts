@@ -373,12 +373,29 @@ export function enhanceInboxReviewQueue(html: string): string {
             account.status === "active" && account.id !== exclude && (!currency || account.currency === currency)
           ).map((account) => '<option value="' + escapeHtml(account.id) + '" ' + (selected === account.id ? "selected" : "") + '>' + escapeHtml(account.name) + '</option>').join("");
         }
+        function requireReviewedEditEvidence(id, fingerprint, generation) {
+          if (generation === selectionGeneration && reviewedEvidenceIsVisible(id) &&
+            selected.dataset.reviewFingerprint === fingerprint) return;
+          if (generation === selectionGeneration && state.selectedId === id) {
+            invalidateSelection("A evidência mudou. Consulte a nova versão antes de editar.");
+          }
+          throw new Error("A evidência selecionada não está disponível ou mudou. Atualize a revisão antes de salvar.");
+        }
         async function openEdit(id, trigger) {
+          if (!reviewedEvidenceIsVisible(id)) return;
+          const reviewedFingerprint = selected.dataset.reviewFingerprint;
+          const reviewedGeneration = selectionGeneration;
           state.trigger = trigger;
           dialogBody.innerHTML = '<p class="muted" role="status">Carregando campos editáveis...</p>';
           dialog.showModal();
           try {
             const detail = await detailFor(id, true);
+            if (!dialog.open) return;
+            requireReviewedEditEvidence(id, reviewedFingerprint, reviewedGeneration);
+            if (detail?.payload?.fingerprint !== reviewedFingerprint) {
+              invalidateSelection("A evidência mudou. Consulte a nova versão antes de editar.");
+              throw new Error("A versão consultada não corresponde à evidência revisada.");
+            }
             const payload = detail.payload;
             const proposal = payload.proposal || {};
             if (payload.suggestionKind === "categorization") {
@@ -415,7 +432,7 @@ export function enhanceInboxReviewQueue(html: string): string {
             } else {
               throw new Error("Este tipo de sugestão não possui campos editáveis.");
             }
-            bindEditForm(detail);
+            bindEditForm(detail, { id, fingerprint: reviewedFingerprint, generation: reviewedGeneration });
             dialogBody.querySelector("input, select, button")?.focus();
           } catch (error) {
             const unavailable = isTemporaryUnavailable(error);
@@ -429,7 +446,7 @@ export function enhanceInboxReviewQueue(html: string): string {
           if (!Number.isFinite(amount) || amount <= 0) return undefined;
           return Math.round(amount * 100);
         }
-        function bindEditForm(detail) {
+        function bindEditForm(detail, reviewed) {
           const form = dialogBody.querySelector("[data-review-edit-form]");
           if (!form) return;
           form.addEventListener("submit", async (event) => {
@@ -440,6 +457,8 @@ export function enhanceInboxReviewQueue(html: string): string {
             status.className = "form-status muted";
             status.textContent = "Salvando edição...";
             try {
+              if (!dialog.open || !form.isConnected) throw new Error("A edição foi cancelada.");
+              requireReviewedEditEvidence(reviewed.id, reviewed.fingerprint, reviewed.generation);
               let payload;
               if (form.dataset.reviewKind === "categorization") {
                 payload = { proposedCategoryId: form.elements.proposedCategoryId.value };
@@ -456,10 +475,17 @@ export function enhanceInboxReviewQueue(html: string): string {
                   ...(form.elements.kind.value === "transfer" && form.elements.otherAccountId.value ? { otherAccountId: form.elements.otherAccountId.value } : {})
                 };
               }
-              await api("/api/ai-review-queue/" + encodeURIComponent(form.dataset.reviewId) + "/edit", {
+              const fresh = await detailFor(reviewed.id, true);
+              if (!dialog.open || !form.isConnected) throw new Error("A edição foi cancelada.");
+              requireReviewedEditEvidence(reviewed.id, reviewed.fingerprint, reviewed.generation);
+              if (fresh?.payload?.fingerprint !== reviewed.fingerprint) {
+                invalidateSelection("A evidência mudou. Consulte a nova versão antes de editar.");
+                throw new Error("A evidência foi atualizada. Revise novamente antes de salvar.");
+              }
+              await api("/api/ai-review-queue/" + encodeURIComponent(reviewed.id) + "/edit", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
-                body: JSON.stringify({ expectedFingerprint: detail.payload.fingerprint, payload })
+                body: JSON.stringify({ expectedFingerprint: reviewed.fingerprint, payload })
               });
               dialog.close();
               await loadQueue();

@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import {
+  validateEditEvidenceBinding,
   validateEvidenceNegativeControl,
   validateFingerprintBinding,
   validateHierarchyNegative,
@@ -31,6 +32,7 @@ let keyboard;
 let textResize;
 let urlState;
 let evidenceNegative;
+let editEvidenceBinding;
 let fingerprintChecks;
 let hierarchyNegative;
 let longEvidence;
@@ -135,6 +137,12 @@ try {
     "A review decision was not bound to displayed evidence",
     fingerprintChecks,
   );
+  editEvidenceBinding = await validateEditEvidenceBinding(browser.cdp);
+  check(
+    editEvidenceBinding.length === 9 && editEvidenceBinding.every((item) => item.passed),
+    "An edit was not bound to the visible selected evidence and its current fingerprint",
+    editEvidenceBinding,
+  );
   hierarchyNegative = await validateHierarchyNegative(browser.cdp);
   check(
     hierarchyNegative.baseline && hierarchyNegative.attackRejected && hierarchyNegative.restored,
@@ -192,6 +200,7 @@ const report = {
   textResize,
   evidenceNegative,
   fingerprintChecks,
+  editEvidenceBinding,
   hierarchyNegative,
   longEvidence,
   reviewCardGridNegatives,

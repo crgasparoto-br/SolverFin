@@ -5,6 +5,11 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import {
+  BUDGET_LONG_LIST_PERIODS,
+  assertBudgetLongList,
+  watchVisualFailures,
+} from "./issue-755-ci-determinism.mjs";
+import {
   measurementExpression,
   negativeControlExpression,
 } from "./issue-725-budget-measurements.mjs";
@@ -21,6 +26,7 @@ if (!chromePath) throw new Error("CHROME_BIN is required for issue 606 budgets p
 
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
+const diagnostics = watchVisualFailures(browser.cdp);
 const report = {
   generatedAt: new Date().toISOString(),
   commit: process.env.GITHUB_SHA ?? "local",
@@ -154,6 +160,7 @@ try {
     `(() => ({
     rows: document.querySelectorAll('.budget-results tbody tr').length,
     historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
+    periodLabels: Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong')).map((node) => node.textContent?.trim() ?? ""),
     uniqueCategories: (() => {
       const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
         [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
@@ -163,10 +170,7 @@ try {
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
   }))()`,
   );
-  assert.ok(
-    mixed.rows + mixed.historyCount >= 10,
-    "Budget long-list scenario must preserve ten or more period records",
-  );
+  assertBudgetLongList(fixture, mixed);
   assert.equal(
     mixed.uniqueCategories,
     true,
@@ -388,7 +392,11 @@ try {
     `${JSON.stringify(report, null, 2)}\n`,
   );
   console.log("Issue 606 budgets desktop and mobile baseline validation passed.");
+} catch (error) {
+  await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
+  throw error;
 } finally {
+  diagnostics.stop();
   await browser.close(outputDir);
 }
 
@@ -401,19 +409,32 @@ function budgetAcceptanceFixtureExpression() {
     const categories = (await categoriesResponse.json()).categories ?? [];
     const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
     if (!category?.id) return { ok: false, stage: 'expense-category' };
-    const response = await fetch('/api/budgets', {
-      method: 'POST',
-      credentials: 'same-origin',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        categoryId: category.id,
-        periodStartOn: '2028-04-01',
-        periodEndOn: '2028-04-30',
-        currency: 'USD',
-        plannedAmountMinor: 500000,
-      }),
-    });
-    return { ok: response.ok, status: response.status, currency: 'USD' };
+    const periodInputs = ${JSON.stringify(BUDGET_LONG_LIST_PERIODS)};
+    const ids = [];
+    for (const period of periodInputs) {
+      const response = await fetch('/api/budgets', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          categoryId: category.id,
+          periodStartOn: period.periodStartOn,
+          periodEndOn: period.periodEndOn,
+          currency: 'USD',
+          plannedAmountMinor: 500000,
+        }),
+      });
+      if (!response.ok) return {
+        ok: false, stage: 'create-budget', status: response.status,
+        periodStartOn: period.periodStartOn, createdCount: ids.length,
+      };
+      ids.push((await response.json()).budget.id);
+    }
+    const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
+    if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
+    const budgets = (await readback.json()).budgets ?? [];
+    const readbackCount = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD').length;
+    return { ok: readbackCount === ids.length, createdCount: ids.length, readbackCount, currency: 'USD' };
   })()`;
 }
 

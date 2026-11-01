@@ -52,6 +52,21 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.doesNotMatch(html, /\b(?:background|border|color):\s*#[\da-fA-F]{3,8}\b/);
   });
 
+  it("requires the same visible selected evidence when opening and submitting edits", () => {
+    const html = enhanceInboxReviewQueue(BASE_HTML);
+    assert.match(html, /if \(!reviewedEvidenceIsVisible\(id\)\) return;/);
+    assert.match(html, /function requireReviewedEditEvidence\(id, fingerprint, generation\)/);
+    assert.match(html, /reviewedEvidenceIsVisible\(id\)/);
+    assert.match(html, /selected\.dataset\.reviewFingerprint === fingerprint/);
+    assert.match(html, /generation === selectionGeneration/);
+    assert.match(html, /requireReviewedEditEvidence\(id, reviewedFingerprint, reviewedGeneration\)/);
+    assert.match(html, /requireReviewedEditEvidence\(reviewed\.id, reviewed\.fingerprint, reviewed\.generation\)/);
+    assert.match(html, /const fresh = await detailFor\(reviewed\.id, true\)/);
+    assert.match(html, /fresh\?\.payload\?\.fingerprint !== reviewed\.fingerprint/);
+    assert.match(html, /!dialog\.open \|\| !form\.isConnected/);
+    assert.match(html, /expectedFingerprint: reviewed\.fingerprint, payload/);
+  });
+
   it("is idempotent when the same HTML is enhanced twice", () => {
     const once = enhanceInboxReviewQueue(BASE_HTML);
     const twice = enhanceInboxReviewQueue(once);
