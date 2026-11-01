@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { assertAttachmentEditState, watchVisualFailures } from "./issue-755-ci-determinism.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -19,6 +20,7 @@ if (!route) {
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let evidence;
+const diagnostics = watchVisualFailures(browser.cdp);
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -30,7 +32,11 @@ try {
   else if (route === "/cartoes") evidence = await validateInvoiceJourney();
   else if (route === "/inbox") evidence = await validateImportBatchJourney();
   else throw new Error(`Unsupported attachment visual route: ${route}`);
+} catch (error) {
+  await diagnostics.save(outputDir, scenarioId, error);
+  throw error;
 } finally {
+  diagnostics.stop();
   await browser.close(outputDir);
 }
 
@@ -57,13 +63,48 @@ async function validateTransactionJourney() {
   const journeyRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-10`;
   await navigate(browser.cdp, `${baseUrl}${journeyRoute}`);
   await waitFor(`[data-edit="${fixture.transactionId}"]`);
-  await evaluate(
-    browser.cdp,
-    `document.querySelector('[data-edit="${fixture.transactionId}"]')?.click()`,
-  );
-  await waitFor(
-    `dialog[open] [data-attachment-workspace][data-entity-kind="transaction"][data-entity-id="${fixture.transactionId}"]`,
-  );
+  // Exercise the visible three-dot menu, rather than clicking a hidden action programmatically.
+  const menu = await evaluate(browser.cdp, `(() => {
+    const action = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const details = action?.closest('details.actions');
+    details?.querySelector('summary')?.click();
+    return { opened: details?.open === true, actionFound: Boolean(action) };
+  })()`);
+  assert.deepEqual(menu, { opened: true, actionFound: true });
+  await waitForExpression(`(() => {
+    const node = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const rect = node?.getBoundingClientRect();
+    if (!node || !rect || !rect.width || !rect.height) return false;
+    const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return target === node || node.contains(target);
+  })()`);
+  const action = await evaluate(browser.cdp, `(() => {
+    const node = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const rect = node?.getBoundingClientRect();
+    if (!node || !rect || !rect.width || !rect.height) return { visible: false, clicked: false };
+    const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    if (target !== node && !node.contains(target)) return { visible: false, clicked: false };
+    node.click();
+    return { visible: true, clicked: true };
+  })()`);
+  assert.deepEqual(action, { visible: true, clicked: true });
+  await waitFor(`dialog[open] [data-attachment-workspace][data-entity-kind="transaction"][data-entity-id="${fixture.transactionId}"]`);
+  const editState = await evaluate(browser.cdp, `(() => {
+    const dialog = document.querySelector('dialog[data-modal]');
+    const disclosure = dialog?.querySelector('[data-statement-attachments]');
+    if (dialog?.open && disclosure && !disclosure.open) disclosure.querySelector('summary')?.click();
+    const workspace = disclosure?.querySelector('[data-attachment-workspace][data-entity-kind="transaction"]');
+    const rect = workspace?.getBoundingClientRect();
+    return {
+      menuOpen: ${JSON.stringify(menu.opened)},
+      actionVisible: ${JSON.stringify(action.visible)},
+      dialogOpen: dialog?.open === true,
+      attachmentSectionOpen: disclosure?.open === true,
+      workspaceVisible: Boolean(rect?.width && rect?.height && workspace?.checkVisibility()),
+      entityId: workspace?.dataset.entityId ?? null,
+    };
+  })()`);
+  assertAttachmentEditState(editState, fixture.transactionId);
   return exerciseWorkspace({
     entityKind: "transaction",
     entityId: fixture.transactionId,
