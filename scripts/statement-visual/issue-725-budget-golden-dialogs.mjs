@@ -404,7 +404,25 @@ export async function checkBudgetDialogCancellation(cdp) {
         Boolean(edit.querySelector('form[data-api-method="PATCH"] select[name="currency"]'));
       const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
       const editClosedEvent = await cancelAndWait(edit, editCancel);
-      const editCanceled = editClosedEvent && !edit?.open && document.activeElement === menuTrigger;
+      // Native dialog closing and competing focus restorers may settle on a later frame.
+      // Never mark the test as passed without the exact menu trigger regaining focus.
+      let editFocusRestored = document.activeElement === menuTrigger;
+      for (let frame = 0; frame < 30 && !editFocusRestored; frame += 1) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        editFocusRestored = document.activeElement === menuTrigger;
+      }
+      const editCanceled = editClosedEvent && !edit?.open && editFocusRestored;
+      if (!editCanceled) {
+        throw new Error('Budget edit cancel/focus lifecycle failed: ' + JSON.stringify({
+          editClosedEvent,
+          dialogClosed: !edit?.open,
+          menuTriggerConnected: Boolean(menuTrigger?.isConnected),
+          focusRestored: editFocusRestored,
+          focusedTag: document.activeElement?.tagName,
+          focusedBudgetTrigger: Boolean(document.activeElement?.hasAttribute('data-budget-menu-trigger')),
+          focusedEditAction: Boolean(document.activeElement?.hasAttribute('data-sf-dialog-open')),
+        }));
+      }
       return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
     })()`,
   );
