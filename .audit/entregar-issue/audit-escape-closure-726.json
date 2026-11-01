@@ -5,7 +5,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 726,
     "pull_request_number": 754,
-    "material_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e"
+    "material_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2"
   },
   "escapes": [
     {
@@ -64,12 +64,12 @@
           "dimension": "foreign-issue-number-725"
         }
       ],
-      "revalidated_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "latest_regression_evidence": {
-        "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
-        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
         "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
@@ -134,12 +134,12 @@
           "dimension": "approve-stale-no-post"
         }
       ],
-      "revalidated_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "latest_regression_evidence": {
-        "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
-        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
         "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
@@ -204,12 +204,12 @@
           "dimension": "hidden-evidence"
         }
       ],
-      "revalidated_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "latest_regression_evidence": {
-        "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
-        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
         "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
@@ -274,12 +274,12 @@
           "dimension": "secondary-before-review"
         }
       ],
-      "revalidated_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "latest_regression_evidence": {
-        "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
-        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
         "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
@@ -344,12 +344,12 @@
           "dimension": "capture-before-pr"
         }
       ],
-      "revalidated_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "latest_regression_evidence": {
-        "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602972",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41158602986",
-        "validation_scope": "Critical Node/DB suite and 75 authenticated Chrome execution units; A-001 final publication still verified separately"
+        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
         "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",

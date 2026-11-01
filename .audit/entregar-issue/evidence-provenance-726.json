@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "material_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "material_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "evidence": [
     {
       "evidence_id": "EV-726-RESPONSIVE",
       "kind": "quantitative",
       "path": "evidence/issue-726-exact-head-real-browser.json",
-      "sha256": "6fdbc0f629f87758f06ecc96c4b3bd1368d3e4f840932e1cd6ae23b346241df6",
-      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "sha256": "4885f31b837aa24142b315f1df77183390921903ced73ced3b2fdf468cecf125",
+      "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
       "freshness_policy": "exact-material-head",
-      "producer": "Authenticated Chrome 75-scenario workflow 41307056727 exact material 072559705c66627ad91fdef3c63b3888b95e3e6e; see signed run and artifact metadata in evidence/issue-726-exact-head-real-browser.json.",
+      "producer": "Authenticated Chrome 75-scenario execution https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338; 0 failures and 11 typed edit variants, 10 blocked/no POST and one valid POST. Original raw hashes in evidence/issue-726-exact-head-real-browser.json; material 0374ab3de95900cf60d5439ebecc83ff764eb9b2.",
       "status": "passed"
     }
   ]

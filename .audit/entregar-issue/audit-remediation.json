@@ -7,7 +7,7 @@
     "audit_report_sha256": "e7e66a3e08a3b865fc8be41b1dcb2a5ed1fbd581e0fdf9a59e57059cdcaef7f5",
     "audited_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
   },
-  "candidate_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "candidate_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -22,14 +22,15 @@
         ".audit/entregar-issue/requirement-attack-matrix.json"
       ],
       "evidence": [
-        "evidence/issue-726-inherited-handoff-negative.json",
-        "result-only-child exact material 8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 published only after official terminal validation"
+        "evidence/issue-726-previous-audit-20261101.md",
+        "evidence/issue-726-ci-execution.txt",
+        "evidence/issue-726-exact-head-real-browser.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
       ],
-      "explanation": "Old target handoff was stale after material changes. Prepare a new exact-head critical result-only child for issue #726, with 25 canonical obligations, before external audit."
+      "explanation": "Previous handoff stale after 2 material commits; refreeze current exact material 0374ab3de95900cf60d5439ebecc83ff764eb9b2 and publish a validated result-only child with parent 0374ab3de95900cf60d5439ebecc83ff764eb9b2. Independent approval still required."
     },
     {
       "source_kind": "finding",
@@ -47,8 +48,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
       ],
       "explanation": "A reviewed fingerprint is bound to approval and rejection; changed B payload blocks POST until the user reviews again."
     },
@@ -68,8 +69,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
       ],
       "explanation": "Legacy capture-phase submit interceptor removed and category correction follows selected-evidence guard, including races and changed selection."
     },
@@ -89,8 +90,8 @@
         "evidence/issue-726-static-probes.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
       ],
       "explanation": "Insufficient insight fallback and message/import sections moved after review cockpit and documented; negative promotion detected and restored."
     },
@@ -106,12 +107,12 @@
         "evidence/issue-726-browser-evidence.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
       ],
       "explanation": "Authenticated browser captured preexisting UI divergence before PR creation on identical Inbox source; prior implementation-time human inspection is not provable and is explicitly not claimed."
     }
   ],
   "status": "closed",
-  "honesty": "A-001 exact-head critical certification will be final only after result-only publication and official terminal readback. A-005 historic pre-edit Chrome evidence remains retrospective and is not backdated to implementation-time inspection."
+  "honesty": "Latest independent audit of 0374ab3de95900cf60d5439ebecc83ff764eb9b2 (audit-rejection:b9b62392-f035-49d6-b6f3-e00cef0313a2) rejected stale transport only; new result-only child must be observed remotely and independently reviewed. Earlier rejection lineage retained."
 }

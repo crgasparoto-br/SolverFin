@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "audit_rejection_id": "audit-rejection:b9b62392-f035-49d6-b6f3-e00cef0313a2",
+  "audit_source_sha256": "915329fbcdf8065adde630a99cac0cb6242d25aaa7d90392dab5cb3cb5328d09",
+  "finding_ids": [
+    "A-001"
+  ],
+  "blocking_reason": "certified-handoff 0725597 no longer the direct parent of 0374ab3; post-write-refreeze required",
+  "remediation": "Exact material CI and Chrome green; new certificate to be issued with direct result-only child; independent visual/technical approval remains external.",
+  "terminal_certification_status": "not-yet-published",
+  "independent_audit_approved": false
+}

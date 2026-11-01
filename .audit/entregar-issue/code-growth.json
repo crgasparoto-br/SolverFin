@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
@@ -41,7 +41,7 @@
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "lines_before": 546,
-      "lines_after": 564
+      "lines_after": 566
     },
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
@@ -51,7 +51,7 @@
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
       "lines_before": 284,
-      "lines_after": 276
+      "lines_after": 302
     },
     {
       "path": "scripts/statement-visual/inbox-interface-accessibility.mjs",
@@ -62,6 +62,11 @@
       "path": "scripts/statement-visual/issue-564-category-learning.mjs",
       "lines_before": 462,
       "lines_after": 490
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue-states.mjs",
+      "lines_before": 521,
+      "lines_after": 528
     },
     {
       "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
@@ -97,6 +102,11 @@
       "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
       "lines_before": null,
       "lines_after": 286
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-typed-edit-controls.mjs",
+      "lines_before": null,
+      "lines_after": 148
     },
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",

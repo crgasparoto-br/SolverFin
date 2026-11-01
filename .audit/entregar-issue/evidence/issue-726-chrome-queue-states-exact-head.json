@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-01T12:40:50.782Z",
-  "commit": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "generatedAt": "2026-11-01T18:06:27.598Z",
+  "commit": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "browser": "Google Chrome 156.0.8078.47",
   "fixture": {
-    "suggestionId": "6a8863a9-b3e6-4a56-bb3b-dfb1b9485bf3"
+    "suggestionId": "423a4543-2b40-42e5-a5e4-022babe362b5"
   },
   "evidence": {
     "kinds": {
@@ -31,6 +31,95 @@
         {
           "kind": "insight",
           "hasEdit": false
+        }
+      ],
+      "typedEditEvidence": [
+        {
+          "mode": "open-stale",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "passed": true
+        },
+        {
+          "mode": "submit-stale",
+          "submitGets": 1,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-hidden",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-inert",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-wrong-selection",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-unavailable",
+          "submitGets": 1,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-canceled-before",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-canceled-during-get",
+          "submitGets": 1,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-detached",
+          "submitGets": 0,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-regenerated-selection",
+          "submitGets": 1,
+          "posts": 0,
+          "matched": false,
+          "invalidated": true,
+          "passed": true
+        },
+        {
+          "mode": "submit-matching",
+          "submitGets": 1,
+          "posts": 1,
+          "matched": true,
+          "invalidated": true,
+          "passed": true
         }
       ]
     },

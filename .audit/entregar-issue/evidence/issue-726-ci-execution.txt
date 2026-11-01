@@ -1,6 +1,7 @@
-Issue #726 PR #754 material 072559705c66627ad91fdef3c63b3888b95e3e6e
+Issue #726 PR #754 material 0374ab3de95900cf60d5439ebecc83ff764eb9b2
 Base develop 36cbfb7ee0a8aea2412073d113644bf2e1e683e5
-Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056780: completed/success (CRITICAL, merge preview, formatting, lint, typecheck, unit, integration, db deploy, build)
-Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727: completed/success; artifact 13083787988, digest sha256:e5ef09e8c59b0ab1855c495f44c8892aea021da67d73a60b2569fa4f03e2f61d; 75 scenarios including 9 binding controls
-Delivery audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056691: completed/success; trusted git bundle exact material
-This record is from authenticated GitHub API run metadata and actual Chrome artifact. Independent audit and result-only certificate not yet concluded.
+Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352: completed/success (CRITICAL validation, merge preview, formatting, lint, typecheck, 125 compiled test files, integration, build)
+Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338: completed/success; artifact 13094852898; 75 execution units, zero failures; typed edit 10 negative POST=0 and one positive POST=1.
+Delivery audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271318: completed/success; trusted Git bundle exact material and official skill bundle.
+GitHub refs/pull/754/merge material merge-preview SHA 1a474d482416a9fdff44599849b2d5da5f08fca3.
+No independent approval is claimed by the implementation.

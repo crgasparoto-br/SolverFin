@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
-  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "runner": "GitHub-hosted Chrome authenticated demo profile",
-  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727",
-  "workflow_run_id": 41307056727,
+  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+  "workflow_run_id": 41334271338,
   "workflow_status": "completed/success",
-  "artifact_id": 13083787988,
-  "artifact_name": "statement-visual-evidence-072559705c66627ad91fdef3c63b3888b95e3e6e",
-  "artifact_digest": "sha256:e5ef09e8c59b0ab1855c495f44c8892aea021da67d73a60b2569fa4f03e2f61d",
+  "artifact_id": 13094852898,
+  "artifact_name": "statement-visual-evidence-0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "artifact_digest": "local-download-zip-sha256:9a7e50fa46c8a1f344cde5bfa5287324df34ef5775451c43af0148e967f57136",
   "raw_evidence": {
     "queue": {
       "path": "evidence/issue-726-chrome-queue-exact-head.json",
-      "sha256": "419e9660f5e909b490875de1b60d388c3e22d32fa36bf9f9467f703842290f45"
+      "sha256": "211eb7492f551c2906a5ff4c69fd7755346e87b682c165640a082f65a16b00ed"
     },
     "states": {
       "path": "evidence/issue-726-chrome-queue-states-exact-head.json",
-      "sha256": "76c003f72ada36bac2132ec3aa70ed05eaa4ff691f5640c454826b334f39e231"
+      "sha256": "8a925fd690c20532152d6e0740a3311204c8de2bc9eda40a2b49e6e9385c041f"
     },
     "correction": {
       "path": "evidence/issue-726-chrome-category-correction-exact-head.json",
-      "sha256": "bb65e1f77c1f6386ff67f5d251e2eda98e682bd4985e5b609bcb7a5bf9ae472e"
+      "sha256": "3f1cf6478e4f21fd7153b1d5a9c41d2114ef188d6e5ec88a0b2da7d028dca86d"
     }
   },
   "observations": {
@@ -88,9 +88,12 @@
         "disabled_contrast": 6.92,
         "tokens_match": true,
         "keyboard": {
-          "opened": true,
-          "closed": true,
-          "focusRestored": true
+          "detailsOpenedByKeyboard": true,
+          "detailsFocused": true,
+          "detailsFocusRestored": true,
+          "editOpenedByKeyboard": true,
+          "editControlFocused": true,
+          "editFocusRestored": true
         }
       },
       {
@@ -104,9 +107,12 @@
         "disabled_contrast": 6.92,
         "tokens_match": true,
         "keyboard": {
-          "opened": true,
-          "closed": true,
-          "focusRestored": true
+          "detailsOpenedByKeyboard": true,
+          "detailsFocused": true,
+          "detailsFocusRestored": true,
+          "editOpenedByKeyboard": true,
+          "editControlFocused": true,
+          "editFocusRestored": true
         }
       }
     ],
@@ -135,62 +141,29 @@
       "actionsVisible": true,
       "actionsContainedInCards": true,
       "bodyFitsViewport": true,
-      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvxtijtnRevisar"
+      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvy556pvRevisar"
     },
     "correction_guards": [
       {
-        "mode": "open-hidden",
+        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "mode": "hidden",
         "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
+        "blocked": true,
+        "reviewState": "ready"
       },
       {
-        "mode": "open-stale",
+        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "mode": "wrong-selection",
         "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
+        "blocked": true,
+        "reviewState": "ready"
       },
       {
-        "mode": "submit-hidden",
+        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "mode": "changed-fingerprint",
         "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-inert",
-        "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-wrong-selection",
-        "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-stale",
-        "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-unavailable",
-        "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-canceled",
-        "posts": 0,
-        "fingerprintMatched": false,
-        "passed": true
-      },
-      {
-        "mode": "submit-matching",
-        "posts": 1,
-        "fingerprintMatched": true,
-        "passed": true
+        "blocked": true,
+        "reviewState": "unavailable"
       }
     ],
     "states_failures": [],
@@ -372,11 +345,105 @@
       "attackRejected": true,
       "restored": true
     },
-    "chrome_version": "Google Chrome 156.0.8078.47"
+    "chrome_version": "Google Chrome 156.0.8078.47",
+    "typed_edit_evidence": [
+      {
+        "mode": "open-stale",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "passed": true
+      },
+      {
+        "mode": "submit-stale",
+        "submitGets": 1,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-hidden",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-inert",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-wrong-selection",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-unavailable",
+        "submitGets": 1,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-canceled-before",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-canceled-during-get",
+        "submitGets": 1,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-detached",
+        "submitGets": 0,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-regenerated-selection",
+        "submitGets": 1,
+        "posts": 0,
+        "matched": false,
+        "invalidated": true,
+        "passed": true
+      },
+      {
+        "mode": "submit-matching",
+        "submitGets": 1,
+        "posts": 1,
+        "matched": true,
+        "invalidated": true,
+        "passed": true
+      }
+    ],
+    "typed_edit_negative_count": 10,
+    "typed_edit_valid_count": 1,
+    "chrome_scenarios": 75,
+    "chrome_failures": 0
   },
   "coverage_limits": [
     "Authenticated Chrome run validates current head and recorded behaviors but does not substitute independent human visual inspection.",
     "The certification and release audit remain separate operations; current material cannot carry independent approval from its implementing context.",
     "Historical pre-edit Chrome provenance is retrospective; no backdating of this evidence is claimed."
-  ]
+  ],
+  "artifact_hash_scope": "ZIP downloaded by authenticated GitHub connector; this is NOT an attestation of a GitHub API digest."
 }

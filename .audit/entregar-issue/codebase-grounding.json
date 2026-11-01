@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "creations": [
     {
@@ -78,7 +78,7 @@
       "search": {
         "queries": [
           "git grep -n \"inboxReviewQueueStyles\" -- apps/web/src scripts/statement-visual",
-          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- apps/web/src/dev-server/inbox-review-queue-styles.ts"
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- apps/web/src/dev-server/inbox-review-queue-styles.ts"
         ],
         "scope": "Existing local CSS was moved from the growing legacy HTML enhancer into a small dedicated style supplier; the shared design-system tokens remain the single source of colors.",
         "candidates": [
@@ -97,7 +97,7 @@
       "search": {
         "queries": [
           "git grep -n \"validateEditEvidenceBinding\" -- apps/web/src scripts/statement-visual",
-          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs"
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs"
         ],
         "scope": "New nine-case adversarial Chrome probe was extracted from a growing browser-control helper; reuses canonical CDP evaluate rather than duplicating browser setup.",
         "candidates": [
@@ -116,7 +116,7 @@
       "search": {
         "queries": [
           "git grep -n \"assertEditMenuVisible\" -- apps/web/src scripts/statement-visual",
-          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.mjs"
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- scripts/statement-visual/issue-755-ci-determinism.mjs"
         ],
         "scope": "Adopted PR 756 deterministic fixtures and predicate helpers to replace flaky dialog/period visual checks without reducing any of the 75 golden-screen scenarios.",
         "candidates": [
@@ -135,7 +135,7 @@
       "search": {
         "queries": [
           "git grep -n \"negative-fixtures\" -- apps/web/src scripts/statement-visual",
-          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
         "scope": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
         "candidates": [
@@ -147,6 +147,29 @@
       },
       "justification": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
       "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-typed-edit-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"typedEditEvidence\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- scripts/statement-visual"
+        ],
+        "scope": "Reviewed existing issue-726 edit-evidence negative controls and current A6 typed category edit flow. New consumer requires a distinct typed DOM dialog lifecycle attack with 11 modes.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+            "reason_not_reused": "Covers general editor; the category typed modal has an independent session/close interaction and needs its own specific adversarial routine."
+          },
+          {
+            "path": "scripts/statement-visual/issue-565-ai-review-queue-states.mjs",
+            "reason_not_reused": "Retain existing executable entrypoint and import the focused 11-case helper rather than duplicate the large suite."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "A new 148-line helper exercises the distinct typed categorization dialog and its session/close/readback race with fail-closed 0 POST controls, preserving the existing runner."
     }
   ],
   "references": [
@@ -250,14 +273,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/category-learning-controller.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -286,14 +309,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -322,14 +345,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -358,14 +381,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -394,14 +417,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-interface-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -430,14 +453,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-archetype.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     },
     {
@@ -448,7 +471,7 @@
       "search": {
         "queries": [
           "git grep -n \"issue-755-ci-determinism.test.mjs\" -- .",
-          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..0374ab3de95900cf60d5439ebecc83ff764eb9b2 -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
         "scope": "Existing test runners and assertions are preserved; new discriminant controls exercise the actual editing call boundary at the published material SHA.",
         "runner": "npm run test and Statement visual validation Chrome scenario 565",
@@ -466,14 +489,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "command": "Repository CI 41334271352 CRITICAL validation (125 compiled test files passed) and Statement visual 41334271338 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
         "reached_tests": [
           "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
-        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-037.txt",
+        "evidence_sha256": "bea406e585f199da5e317c6d5ad7e8a17ed2d5b773178e962bae8557342d6045"
       }
     }
   ]
