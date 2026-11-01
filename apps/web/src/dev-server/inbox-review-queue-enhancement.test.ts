@@ -110,3 +110,14 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.doesNotMatch(html, /data-api-path="[^"]+\/approve"/);
   });
 });
+
+describe("Typed review integration", () => {
+  it("shares the generation-scoped evidence guard with the general editor", () => {
+    const html = enhanceInboxReviewQueue(BASE_HTML);
+    assert.match(html, /window\.__solverfinInboxEditEvidence/);
+    assert.match(
+      html,
+      /requireReviewedEditEvidence\(reviewed\.id, reviewed\.fingerprint, reviewed\.generation\)/,
+    );
+  });
+});

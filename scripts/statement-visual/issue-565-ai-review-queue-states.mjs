@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateTypedCategorizationEdit } from "./issue-726-typed-edit-controls.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -297,6 +298,12 @@ async function validateStates(cdp, suggestionId) {
     ({ kind, hasEdit }) => editableKinds.has(kind) === hasEdit,
   );
   await screenshot(cdp, join(outputDir, "issue-565-ai-review-queue-five-kinds.png"));
+  kinds.typedEditEvidence = await validateTypedCategorizationEdit(cdp);
+  assert.equal(kinds.typedEditEvidence.length, 11, "All category edit attacks must run.");
+  assert.ok(
+    kinds.typedEditEvidence.every((caseResult) => caseResult.passed),
+    `Category edit guard failed: ${JSON.stringify(kinds.typedEditEvidence)}`,
+  );
 
   await setQueueMode(cdp, "loading", 70);
   const loading = await inspectQueueStatus(cdp, "Carregando sugestões...");

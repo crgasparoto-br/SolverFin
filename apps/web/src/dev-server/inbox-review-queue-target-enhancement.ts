@@ -12,6 +12,7 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
         if (!dialog || !dialogBody) return;
         const reviewKinds = new Map();
         let typedEditTrigger;
+        let typedEditSession = 0;
 
         function appendProfile(path) {
           const profileId = new URL(window.location.href).searchParams.get("profileId");
@@ -120,8 +121,17 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
           return undefined;
         }
         async function openTypedCategorizationEdit(suggestionId, trigger) {
-          if (!window.__solverfinInboxReviewGuard?.(suggestionId)) return;
-          const selectedFingerprint = document.getElementById("inbox-review-selected").dataset.reviewFingerprint;
+          const evidence = window.__solverfinInboxEditEvidence;
+          const reviewed = evidence?.capture(suggestionId);
+          if (!reviewed) return;
+          const session = ++typedEditSession;
+          const requireCurrent = (form) => {
+            if (session !== typedEditSession || !dialog.open ||
+              (form && (!form.isConnected || !dialogBody.contains(form)))) {
+              throw new Error("A edição foi cancelada.");
+            }
+            evidence.require(reviewed);
+          };
           typedEditTrigger = trigger;
           dialogBody.innerHTML = '<p class="muted" role="status">Carregando campos editáveis...</p>';
           dialog.showModal();
@@ -130,11 +140,13 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
               api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/payload"),
               api("/api/categories?status=all")
             ]);
-            if (!window.__solverfinInboxReviewGuard?.(suggestionId) ||
-              detail?.payload?.fingerprint !== selectedFingerprint) {
+            requireCurrent();
+            if (detail?.payload?.fingerprint !== reviewed.fingerprint) {
+              window.__solverfinInboxInvalidateReview?.(suggestionId, "A evidência mudou. Consulte a nova versão antes de editar.");
               throw new Error("Evidência desatualizada. Atualize a revisão antes de editar.");
             }
             const targetKind = await resolveCategorizationTargetKind(detail.payload);
+            requireCurrent();
             const proposal = detail.payload?.proposal || {};
             const candidates = (categoriesBody.categories || []).filter((category) =>
               category.status === "active" && (!targetKind || category.kind === targetKind)
@@ -150,25 +162,34 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
             const submit = form.querySelector('button[type="submit"]');
             form.addEventListener("submit", async (event) => {
               event.preventDefault();
+              if (submit.disabled) return;
               submit.disabled = true;
               status.className = "form-status muted";
-              status.textContent = "Salvando edição...";
+              status.textContent = "Validando versão atual...";
               try {
-                if (!window.__solverfinInboxReviewGuard?.(suggestionId) ||
-                  document.getElementById("inbox-review-selected").dataset.reviewFingerprint !== selectedFingerprint) {
-                  throw new Error("A evidência mudou. Atualize a revisão antes de salvar.");
+                requireCurrent(form);
+                const proposedCategoryId = form.elements.proposedCategoryId.value;
+                const fresh = await api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/payload");
+                requireCurrent(form);
+                if (fresh?.payload?.fingerprint !== reviewed.fingerprint) {
+                  window.__solverfinInboxInvalidateReview?.(suggestionId, "A evidência mudou. Consulte a nova versão antes de editar.");
+                  throw new Error("A evidência foi atualizada. Revise novamente antes de salvar.");
                 }
+                requireCurrent(form);
                 await api("/api/ai-review-queue/" + encodeURIComponent(suggestionId) + "/edit", {
                   method: "POST",
                   headers: { "content-type": "application/json" },
                   body: JSON.stringify({
-                    expectedFingerprint: detail.payload.fingerprint,
-                    payload: { proposedCategoryId: form.elements.proposedCategoryId.value }
+                    expectedFingerprint: reviewed.fingerprint,
+                    payload: { proposedCategoryId }
                   })
                 });
-                dialog.close();
-                window.location.reload();
+                if (session === typedEditSession && dialog.open) {
+                  dialog.close();
+                  window.location.reload();
+                }
               } catch (error) {
+                if (session !== typedEditSession || !dialog.open || !form.isConnected) return;
                 status.className = "form-status error";
                 status.textContent = error.message;
                 submit.disabled = false;
@@ -176,7 +197,9 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
             });
             form.elements.proposedCategoryId.focus();
           } catch (error) {
-            dialogBody.innerHTML = '<p class="error" role="alert">' + escapeHtml(error.message) + '</p>';
+            if (session === typedEditSession && dialog.open) {
+              dialogBody.innerHTML = '<p class="error" role="alert">' + escapeHtml(error.message) + '</p>';
+            }
           }
         }
         async function waitForEditForm(suggestionId, timeoutMs = 2000) {
@@ -256,6 +279,7 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
           void appendTargetSummary(suggestionId).catch(() => undefined);
         }, true);
         dialog.addEventListener("close", () => {
+          typedEditSession += 1;
           delete dialog.dataset.reviewTargetRequest;
           if (typedEditTrigger?.isConnected) typedEditTrigger.focus();
           typedEditTrigger = undefined;

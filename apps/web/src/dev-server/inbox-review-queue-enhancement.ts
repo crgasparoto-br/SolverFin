@@ -383,6 +383,8 @@ export function enhanceInboxReviewQueue(html: string): string {
           }
           throw new Error("A evidência selecionada não está disponível ou mudou. Atualize a revisão antes de salvar.");
         }
+        window.__solverfinInboxEditEvidence = Object.freeze({ capture: (id) => reviewedEvidenceIsVisible(id) ? Object.freeze({ id, fingerprint: selected.dataset.reviewFingerprint, generation: selectionGeneration }) : null,
+          require: (reviewed) => requireReviewedEditEvidence(reviewed.id, reviewed.fingerprint, reviewed.generation) });
         async function openEdit(id, trigger) {
           if (!reviewedEvidenceIsVisible(id)) return;
           const reviewedFingerprint = selected.dataset.reviewFingerprint;
