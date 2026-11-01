@@ -107,6 +107,10 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 14px; grid-template-columns: minmax(300px, .72fr) minmax(0, 1.28fr); }
     .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; }
     .inbox-review-queue, .inbox-review-detail { display: grid; gap: 12px; padding: 12px; }
+    /* Retain the heading for screen readers and the legacy queue adapter, not as a competing visual heading. */
+    .inbox-review-cockpit #inbox-review-suggestions-title {
+      clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px;
+    }
     .inbox-review-group { padding: 10px; }
     .inbox-review-group + .inbox-review-group { margin-top: 2px; }
     .inbox-review-evidence { padding: 10px; }

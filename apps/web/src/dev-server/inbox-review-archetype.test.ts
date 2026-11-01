@@ -33,6 +33,13 @@ describe("Inbox review archetype", () => {
     assert.match(html, /class="sf-detail-layout"/);
     assert.match(html, /class="inbox-section-nav"/);
     assert.match(html, /id="inbox-review-queue"/);
+    // The legacy queue adapter still finds its heading, while Golden Screen keeps one visible queue title.
+    assert.match(html, /<h2>Outras sugestões<\/h2>/);
+    assert.match(
+      inboxReviewArchetypeStyles(),
+      /\.inbox-review-cockpit #inbox-review-suggestions-title \{/,
+    );
+    assert.match(inboxReviewArchetypeStyles(), /clip-path: inset\(50%\); height: 1px;/);
     assert.match(html, /data-inbox-review-evidence/);
     assert.match(html, /Evidência e decisão/);
     assert.match(html, /Item em revisão/);
