@@ -394,9 +394,15 @@ export async function checkBudgetDialogCancellation(cdp) {
         neutral?.backgroundColor === surface;
       const createClosedEvent = await cancelAndWait(create, createCancel);
       const createCanceled = createClosedEvent && !create?.open && document.activeElement === createTrigger;
-      const editTrigger = document.querySelector('.budget-results [data-sf-dialog-open^="edit-budget-dialog-"]');
+      // History actions are rendered before the main action column, but remain hidden in details.
+      // Only the current table row action is a valid visible opener for keyboard focus restoration.
+      const editTrigger = document.querySelector('.budget-results td[data-column="actions"] [data-sf-dialog-open^="edit-budget-dialog-"]');
       const menuTrigger = editTrigger?.closest('[data-budget-action-menu]')?.querySelector('[data-budget-menu-trigger]');
-      menuTrigger?.click();
+      if (!editTrigger || !menuTrigger || editTrigger.closest('.budget-period-history')) {
+        throw new Error('Visible current-period budget edit action is missing');
+      }
+      menuTrigger.scrollIntoView({ block: 'center' });
+      menuTrigger.click();
       if (editTrigger?.closest('[data-budget-menu-popover]')?.hidden) throw new Error('Edit action is hidden');
       editTrigger?.click();
       const edit = editTrigger && document.getElementById(editTrigger.getAttribute('data-sf-dialog-open'));
@@ -404,25 +410,7 @@ export async function checkBudgetDialogCancellation(cdp) {
         Boolean(edit.querySelector('form[data-api-method="PATCH"] select[name="currency"]'));
       const editCancel = edit?.querySelector('.budget-form-actions [data-sf-dialog-close]');
       const editClosedEvent = await cancelAndWait(edit, editCancel);
-      // Native dialog closing and competing focus restorers may settle on a later frame.
-      // Never mark the test as passed without the exact menu trigger regaining focus.
-      let editFocusRestored = document.activeElement === menuTrigger;
-      for (let frame = 0; frame < 30 && !editFocusRestored; frame += 1) {
-        await new Promise((resolve) => requestAnimationFrame(resolve));
-        editFocusRestored = document.activeElement === menuTrigger;
-      }
-      const editCanceled = editClosedEvent && !edit?.open && editFocusRestored;
-      if (!editCanceled) {
-        throw new Error('Budget edit cancel/focus lifecycle failed: ' + JSON.stringify({
-          editClosedEvent,
-          dialogClosed: !edit?.open,
-          menuTriggerConnected: Boolean(menuTrigger?.isConnected),
-          focusRestored: editFocusRestored,
-          focusedTag: document.activeElement?.tagName,
-          focusedBudgetTrigger: Boolean(document.activeElement?.hasAttribute('data-budget-menu-trigger')),
-          focusedEditAction: Boolean(document.activeElement?.hasAttribute('data-sf-dialog-open')),
-        }));
-      }
+      const editCanceled = editClosedEvent && !edit?.open && document.activeElement === menuTrigger;
       return { createOpen, editOpen, neutralCancel, createCanceled, editCanceled };
     })()`,
   );
