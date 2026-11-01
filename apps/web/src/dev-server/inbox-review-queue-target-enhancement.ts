@@ -279,6 +279,8 @@ export function enhanceInboxReviewQueueTargets(html: string): string {
           void appendTargetSummary(suggestionId).catch(() => undefined);
         }, true);
         dialog.addEventListener("close", () => {
+          // A queued close event from a previous dialog must not cancel a freshly reopened edit.
+          if (dialog.open) return;
           typedEditSession += 1;
           delete dialog.dataset.reviewTargetRequest;
           if (typedEditTrigger?.isConnected) typedEditTrigger.focus();

@@ -28,6 +28,7 @@ assert.match(enhanced, /fresh\?\.payload\?\.fingerprint !== reviewed\.fingerprin
 assert.match(enhanced, /!dialog\.open/);
 assert.match(enhanced, /!form\.isConnected/);
 assert.match(enhanced, /typedEditSession/);
+assert.match(enhanced, /if \(dialog\.open\) return;/);
 assert.doesNotMatch(enhanced, /handleCorrectionSubmit|correctionSuggestionId/);
 assert.doesNotMatch(enhanced, /document\.addEventListener\("submit"/);
 assert.doesNotMatch(enhanced, /data-correct-and-approve/);
