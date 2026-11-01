@@ -121,7 +121,6 @@ export function inboxReviewArchetypeStyles(): string {
   return `
     .inbox-review-cockpit { display: grid; gap: 16px; max-width: none; min-width: 0; padding: 0; }
     .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-    /* A6 uses compact neutral section links, not a second row of primary actions. */
     .inbox-review-cockpit .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: var(--sf-space-2); min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; }
     .inbox-review-nav { flex: 0 0 auto; min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3); font-size: var(--sf-font-size-sm); line-height: var(--sf-line-height-compact); text-decoration: none; white-space: nowrap; scroll-snap-align: start; }
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
@@ -170,7 +169,6 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-secondary .inbox-review-group { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
     .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
     .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
-    /* A6 queue cards are narrower than the legacy Inbox maintenance grid. */
     .inbox-page .inbox-review-queue .review-card {
       grid-template-columns: minmax(0, 1fr);
     }

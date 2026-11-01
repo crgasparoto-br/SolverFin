@@ -59,8 +59,14 @@ describe("Inbox unified AI review queue enhancement", () => {
     assert.match(html, /reviewedEvidenceIsVisible\(id\)/);
     assert.match(html, /selected\.dataset\.reviewFingerprint === fingerprint/);
     assert.match(html, /generation === selectionGeneration/);
-    assert.match(html, /requireReviewedEditEvidence\(id, reviewedFingerprint, reviewedGeneration\)/);
-    assert.match(html, /requireReviewedEditEvidence\(reviewed\.id, reviewed\.fingerprint, reviewed\.generation\)/);
+    assert.match(
+      html,
+      /requireReviewedEditEvidence\(id, reviewedFingerprint, reviewedGeneration\)/,
+    );
+    assert.match(
+      html,
+      /requireReviewedEditEvidence\(reviewed\.id, reviewed\.fingerprint, reviewed\.generation\)/,
+    );
     assert.match(html, /const fresh = await detailFor\(reviewed\.id, true\)/);
     assert.match(html, /fresh\?\.payload\?\.fingerprint !== reviewed\.fingerprint/);
     assert.match(html, /!dialog\.open \|\| !form\.isConnected/);

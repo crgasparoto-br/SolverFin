@@ -1,3 +1,4 @@
+import { validateEditEvidenceBinding } from "./issue-726-edit-evidence-controls.mjs";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -5,7 +6,6 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import {
-  validateEditEvidenceBinding,
   validateEvidenceNegativeControl,
   validateFingerprintBinding,
   validateHierarchyNegative,
