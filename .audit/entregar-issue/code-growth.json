@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
@@ -41,7 +41,12 @@
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "lines_before": 546,
-      "lines_after": 566
+      "lines_after": 564
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+      "lines_before": null,
+      "lines_after": 31
     },
     {
       "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
@@ -61,7 +66,22 @@
     {
       "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
       "lines_before": 479,
-      "lines_after": 481
+      "lines_after": 490
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "lines_before": 455,
+      "lines_after": 476
+    },
+    {
+      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
+      "lines_before": 419,
+      "lines_after": 425
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+      "lines_before": null,
+      "lines_after": 131
     },
     {
       "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
@@ -77,6 +97,16 @@
       "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
       "lines_before": null,
       "lines_after": 286
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+      "lines_before": null,
+      "lines_after": 123
+    },
+    {
+      "path": "scripts/statement-visual/operational-attachments.mjs",
+      "lines_before": 345,
+      "lines_after": 386
     }
   ],
   "blocking_files": []

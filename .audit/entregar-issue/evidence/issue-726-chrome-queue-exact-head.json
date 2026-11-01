@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-10-31T13:01:41.767Z",
-  "commit": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "generatedAt": "2026-11-01T12:40:43.997Z",
+  "commit": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "browser": "Google Chrome 156.0.8078.47",
   "fixture": {
-    "suggestionId": "34cb0014-f321-4806-974e-2820b8ae293d",
+    "suggestionId": "4ef60a51-92a5-430b-a5eb-0b3d59337604",
     "accountId": "44444444-4444-4444-8444-444444444445",
     "description": "Linha 2 importada e pronta para revisao humana."
   },
@@ -232,7 +232,7 @@
     "actionsVisible": true,
     "actionsContainedInCards": true,
     "bodyFitsViewport": true,
-    "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvweto5pRevisar"
+    "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvxtijtnRevisar"
   },
   "evidenceNegative": {
     "cases": [
@@ -242,7 +242,7 @@
         "guard": true,
         "posts": 1,
         "confirmations": 1,
-        "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+        "expectedFingerprint": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
         "ok": true
       },
       {
@@ -299,7 +299,7 @@
         "guard": true,
         "posts": 1,
         "confirmations": 1,
-        "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+        "expectedFingerprint": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
         "ok": true
       },
       {
@@ -359,7 +359,7 @@
       "action": "approve",
       "changed": true,
       "posts": 0,
-      "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+      "original": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
       "settled": true,
       "ok": true
     },
@@ -367,8 +367,8 @@
       "action": "approve",
       "changed": false,
       "posts": 1,
-      "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
-      "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+      "original": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
+      "expectedFingerprint": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
       "settled": true,
       "ok": true
     },
@@ -376,7 +376,7 @@
       "action": "reject",
       "changed": true,
       "posts": 0,
-      "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+      "original": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
       "settled": true,
       "ok": true
     },
@@ -384,10 +384,66 @@
       "action": "reject",
       "changed": false,
       "posts": 1,
-      "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
-      "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+      "original": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
+      "expectedFingerprint": "db-fp-v1-d2c665e35b9c4980d294cda2be2998b87dec09ee6262975e5093d560c6e4c59c",
       "settled": true,
       "ok": true
+    }
+  ],
+  "editEvidenceBinding": [
+    {
+      "mode": "open-hidden",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "open-stale",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-hidden",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-inert",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-wrong-selection",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-stale",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-unavailable",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-canceled",
+      "posts": 0,
+      "fingerprintMatched": false,
+      "passed": true
+    },
+    {
+      "mode": "submit-matching",
+      "posts": 1,
+      "fingerprintMatched": true,
+      "passed": true
     }
   ],
   "hierarchyNegative": {

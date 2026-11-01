@@ -1,15 +1,15 @@
 {
-  "commit": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
-  "generatedAt": "2026-10-31T13:01:12.996Z",
+  "commit": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+  "generatedAt": "2026-11-01T12:40:14.943Z",
   "stage": "passed",
   "fixtures": {
-    "suffix": "mvwetjhl",
+    "suffix": "mvxtifff",
     "accountId": "44444444-4444-4444-8444-444444444445",
     "categoryId": "66666666-6666-4666-8666-666666666603",
-    "ignoreEntryId": "47690829-5b7f-4928-b813-27d00f96141a",
-    "revertEntryId": "e7bec401-0dec-416c-bd48-eb5205d3ba78",
-    "ignoreSuggestionId": "4aea1566-b13d-4467-976f-b5aac580c29d",
-    "correctionSuggestionId": "e6803682-436d-4a6b-9985-24f37c9fb9d3"
+    "ignoreEntryId": "e689ccf9-c90e-411b-9515-72a978b8998f",
+    "revertEntryId": "297019d9-a428-4dc5-82e4-6ccb5f13e5b1",
+    "ignoreSuggestionId": "189c3b3b-7fe6-4f99-b766-622809653278",
+    "correctionSuggestionId": "1c22720a-7173-4383-9a4e-535a87a083c0"
   },
   "settingsBefore": {
     "panelVisible": true,
@@ -33,27 +33,27 @@
     "noHorizontalOverflow": true
   },
   "inboxOrigin": {
-    "learningCategorizationId": "0f24d0a6-da44-4c58-8009-1a704c55ddcd",
+    "learningCategorizationId": "0e9e80ba-56c4-4977-b4b6-137f5f0542a9",
     "learningOriginVisible": true,
     "correctionButtonVisible": true
   },
   "correctionGuards": [
     {
-      "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+      "fingerprint": "sha256-3d657057510001661d4cadeb739a024830b7bad6937b25cf5ecc5e49ff095cb8",
       "mode": "hidden",
       "posts": 0,
       "blocked": true,
       "reviewState": "ready"
     },
     {
-      "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+      "fingerprint": "sha256-3d657057510001661d4cadeb739a024830b7bad6937b25cf5ecc5e49ff095cb8",
       "mode": "wrong-selection",
       "posts": 0,
       "blocked": true,
       "reviewState": "ready"
     },
     {
-      "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+      "fingerprint": "sha256-3d657057510001661d4cadeb739a024830b7bad6937b25cf5ecc5e49ff095cb8",
       "mode": "changed-fingerprint",
       "posts": 0,
       "blocked": true,

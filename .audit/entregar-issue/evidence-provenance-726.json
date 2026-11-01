@@ -1,16 +1,16 @@
 {
   "schema_version": 1,
-  "material_head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "material_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "evidence": [
     {
       "evidence_id": "EV-726-RESPONSIVE",
       "kind": "quantitative",
       "path": "evidence/issue-726-exact-head-real-browser.json",
-      "sha256": "057f95edbfa2c7b432efdc09df5dd5410ca0c1bcfe8962727260861d158a25af",
-      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+      "sha256": "6fdbc0f629f87758f06ecc96c4b3bd1368d3e4f840932e1cd6ae23b346241df6",
+      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
       "freshness_policy": "exact-material-head",
-      "producer": "Authenticated Chrome visual validation run 41203149301, artifact 13043971276, SHA256 d1ea4fb5d458b75981f0191417084ac3071c82ef080fc834ccb71b802d42e2bd",
+      "producer": "Authenticated Chrome 75-scenario workflow 41307056727 exact material 072559705c66627ad91fdef3c63b3888b95e3e6e; see signed run and artifact metadata in evidence/issue-726-exact-head-real-browser.json.",
       "status": "passed"
     }
   ]

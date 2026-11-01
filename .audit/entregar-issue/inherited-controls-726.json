@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
@@ -19,8 +19,8 @@
       "id": "HIST-726-A-002",
       "status": "passed",
       "control_type": "procedure",
-      "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
-      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+      "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
       "evidence": "evidence/issue-726-exact-head-source-probes.json",
       "evidence_sha256": "5e9141aaf4f925e331a97358a14028626a5b569eee98a527bc6e2e6b0411e438",
       "attack_control_id": "NEG-726-10-1",
@@ -29,7 +29,7 @@
       "dimension": "fingerprint-race-and-no-post",
       "procedure": "Browser raced GET payload B against displayed A in both approve and reject; expectedFingerprint remains reviewed A.",
       "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
-      "observed": "No POST for changed payload B for either action; exactly one POST with A for stable review. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301; immutable previous record remains referenced only as history.",
+      "observed": "No POST for changed payload B for either action; exactly one POST with A for stable review. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727; immutable previous record remains referenced only as history.",
       "linked_prior_finding": "A-002",
       "plausible_wrong_implementation": "The old path posted new B without comparing displayed A."
     },
@@ -37,8 +37,8 @@
       "id": "HIST-726-A-003",
       "status": "passed",
       "control_type": "procedure",
-      "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
-      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+      "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
       "evidence": "evidence/issue-726-exact-head-source-probes.json",
       "evidence_sha256": "5e9141aaf4f925e331a97358a14028626a5b569eee98a527bc6e2e6b0411e438",
       "attack_control_id": "NEG-726-07-1",
@@ -47,7 +47,7 @@
       "dimension": "guard-in-all-enhancers",
       "procedure": "Chrome hid evidence, changed selection, then mutated fingerprint during correction dialog submission.",
       "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
-      "observed": "All three correction variants blocked with zero approval POST; normal correction workflow continues. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301; immutable previous record remains referenced only as history.",
+      "observed": "All three correction variants blocked with zero approval POST; normal correction workflow continues. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727; immutable previous record remains referenced only as history.",
       "linked_prior_finding": "A-003",
       "plausible_wrong_implementation": "The old capturing submit listener bypassed category correction evidence validation."
     },
@@ -55,8 +55,8 @@
       "id": "HIST-726-A-004",
       "status": "passed",
       "control_type": "procedure",
-      "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
-      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+      "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
       "evidence": "evidence/issue-726-exact-head-source-probes.json",
       "evidence_sha256": "5e9141aaf4f925e331a97358a14028626a5b569eee98a527bc6e2e6b0411e438",
       "attack_control_id": "NEG-726-04-1",
@@ -65,7 +65,7 @@
       "dimension": "primary-before-secondary",
       "procedure": "Chrome moves secondary import/insights region above review, checks negative detection, then restores.",
       "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
-      "observed": "Promotion rejected by geometric hierarchy control; restored order passes. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301; immutable previous record remains referenced only as history.",
+      "observed": "Promotion rejected by geometric hierarchy control; restored order passes. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727; immutable previous record remains referenced only as history.",
       "linked_prior_finding": "A-004",
       "plausible_wrong_implementation": "The old inbox displayed insufficient insights before the main review hierarchy."
     },
@@ -73,8 +73,8 @@
       "id": "HIST-726-A-005",
       "status": "passed",
       "control_type": "procedure",
-      "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
-      "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+      "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+      "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
       "evidence": "evidence/issue-726-exact-head-source-probes.json",
       "evidence_sha256": "5e9141aaf4f925e331a97358a14028626a5b569eee98a527bc6e2e6b0411e438",
       "attack_control_id": "NEG-726-02-3",
@@ -83,7 +83,7 @@
       "dimension": "historical-chrome-baseline",
       "procedure": "Verified historical authenticated screenshot creation time predates PR and compared exact bytes of Inbox source across old SHA and develop; inspect retrospectively and keep explicit caveat.",
       "expected": "The originally rejected condition must be discriminated from a correct guarded implementation without inventing proof of historical execution.",
-      "observed": "Earlier screenshot captures competing header/import and insights; source bytes match develop at pre-edit time; no invented claim of prior human inspection. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301; immutable previous record remains referenced only as history.",
+      "observed": "Earlier screenshot captures competing header/import and insights; source bytes match develop at pre-edit time; no invented claim of prior human inspection. Current Chrome evidence: https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727; immutable previous record remains referenced only as history.",
       "linked_prior_finding": "A-005",
       "plausible_wrong_implementation": "Original team did not inspect authenticated browser before editing; screenshot evidence could be from later or different renderer."
     }

@@ -1,10 +1,12 @@
 {
   "schema_version": 1,
-  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "source_paths": [
     "apps/web/src/dev-server/inbox-review-archetype.ts",
     "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
-    "scripts/statement-visual/issue-726-golden-state-matrix.mjs"
+    "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+    "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+    "scripts/statement-visual/issue-726-edit-evidence-controls.mjs"
   ],
   "source_code_checks": {
     "a6_layout": true,
@@ -16,9 +18,13 @@
     "secondary_below": true,
     "visibility_guard_checks_ancestors": true,
     "neutral_pressed_state_enforced": true,
-    "chromium_forced_pseudo_state_negative": true
+    "chromium_forced_pseudo_state_negative": true,
+    "a010_edit_guard": true,
+    "a010_post_revalidation": true,
+    "a010_negative_tests": true,
+    "style_extraction_preserves_tokens": true
   },
   "kind": "static-check",
-  "scope": "structural source only, not browser behavior",
-  "authentic_browser_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301"
+  "scope": "Verified source assertions and Git tree only; Chrome observations belong to separate authenticated workflow 41307056727.",
+  "authentic_browser_run": "Pending: exact Chrome run 41307056727 (separate behavioral gate; static probes do not assert browser success)"
 }

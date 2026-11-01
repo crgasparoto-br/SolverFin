@@ -7,7 +7,7 @@
     "audit_report_sha256": "e7e66a3e08a3b865fc8be41b1dcb2a5ed1fbd581e0fdf9a59e57059cdcaef7f5",
     "audited_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
   },
-  "candidate_head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "candidate_head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "remediation_mode": "targeted-remediation",
   "items": [
     {

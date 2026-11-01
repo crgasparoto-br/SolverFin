@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "creations": [
     {
@@ -71,6 +71,82 @@
       },
       "decision": "create",
       "justification": "Add a narrowly scoped, directly imported Chrome CDP state matrix with negative/restoration controls while reusing the established CDP driver."
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"inboxReviewQueueStyles\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- apps/web/src/dev-server/inbox-review-queue-styles.ts"
+        ],
+        "scope": "Existing local CSS was moved from the growing legacy HTML enhancer into a small dedicated style supplier; the shared design-system tokens remain the single source of colors.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "Existing local CSS was moved from the growing legacy HTML enhancer into a small dedicated style supplier; the shared design-system tokens remain the single source of colors.",
+      "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"validateEditEvidenceBinding\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs"
+        ],
+        "scope": "New nine-case adversarial Chrome probe was extracted from a growing browser-control helper; reuses canonical CDP evaluate rather than duplicating browser setup.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "New nine-case adversarial Chrome probe was extracted from a growing browser-control helper; reuses canonical CDP evaluate rather than duplicating browser setup.",
+      "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"assertEditMenuVisible\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.mjs"
+        ],
+        "scope": "Adopted PR 756 deterministic fixtures and predicate helpers to replace flaky dialog/period visual checks without reducing any of the 75 golden-screen scenarios.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/operational-attachments.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "Adopted PR 756 deterministic fixtures and predicate helpers to replace flaky dialog/period visual checks without reducing any of the 75 golden-screen scenarios.",
+      "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"negative-fixtures\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+        ],
+        "scope": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
+      "decision": "create"
     }
   ],
   "references": [
@@ -106,10 +182,36 @@
       "used_in": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "defined_at": {
         "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
-        "line": 266
+        "line": 268
       },
       "verified_by": {
         "command": "git grep -n reviewedEvidenceIsVisible -- apps/web/src/dev-server/inbox-review-queue-enhancement.ts apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "inboxReviewQueueStyles",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+        "line": 2
+      },
+      "verified_by": {
+        "command": "git grep -n inboxReviewQueueStyles -- apps/web/src/dev-server/inbox-review-queue-styles.ts apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "validateEditEvidenceBinding",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+        "line": 5
+      },
+      "verified_by": {
+        "command": "git grep -n validateEditEvidenceBinding -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs scripts/statement-visual/issue-565-ai-review-queue.mjs",
         "exit_code": 0
       }
     }
@@ -148,14 +250,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/category-learning-controller.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     },
     {
@@ -184,14 +286,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     },
     {
@@ -220,14 +322,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     },
     {
@@ -256,14 +358,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     },
     {
@@ -292,14 +394,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-interface-enhancement.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     },
     {
@@ -328,14 +430,50 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
         "reached_tests": [
           "apps/web/src/dev-server/inbox-review-archetype.test.ts"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run.txt",
-        "evidence_sha256": "0d9021c015a6cfa7d2cd449d7145a6fdf82b5c447dcd2e2cb6913906fca1b486"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+      "operation": "added",
+      "scenario": "Negative checks ensure hidden or wrong edit trigger, only nine periods, and incomplete readback never count as success",
+      "requirement": "REQ-726-14",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-755-ci-determinism.test.mjs\" -- .",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..072559705c66627ad91fdef3c63b3888b95e3e6e -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+        ],
+        "scope": "Existing test runners and assertions are preserved; new discriminant controls exercise the actual editing call boundary at the published material SHA.",
+        "runner": "npm run test and Statement visual validation Chrome scenario 565",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+            "case": "Nine distinct selected-evidence edits plus deterministic fixture controls",
+            "oracle": "The real browser and unit oracle must fail for missing, stale, or wrong selected evidence before a protected edit POST.",
+            "comparison": "Extend existing runner and reuse canonical helper rather than duplicating visual workflow; verify matched and mismatched fingerprints."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Extend the already executed Chrome review scenario with a distinct negative edit-evidence matrix and preserve every previous check; the fixture determinism unit suite remains separate.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test (Repository CI 41307056780) and node --test scripts/statement-visual/*.test.mjs",
+        "exit_code": 0,
+        "subject_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
+        "reached_tests": [
+          "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-072.txt",
+        "evidence_sha256": "6c5e3dc7e4e411da375165b133b4e829aafa2921d78313ad54eed03e097646d9"
       }
     }
   ]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+  "head_sha": "072559705c66627ad91fdef3c63b3888b95e3e6e",
   "families": [
     {
       "family": "authorization",
@@ -16,7 +16,7 @@
       "dimensions": [
         {
           "surface": "financial-profile-scoping",
-          "reason": "Observed exact-head A6 profile-kept-across-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 profile-kept-across-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-02-1"
           ],
@@ -24,7 +24,7 @@
         },
         {
           "surface": "review-evidence-permission",
-          "reason": "Observed exact-head A6 guard-in-all-enhancers using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 guard-in-all-enhancers using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-07-1"
           ],
@@ -32,7 +32,7 @@
         },
         {
           "surface": "inbox-golden-precedence-authorization",
-          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-12-1"
           ],
@@ -40,7 +40,7 @@
         },
         {
           "surface": "inbox-state-evidence-guards",
-          "reason": "Observed exact-head A6 negative-inbox-state-evidence-guards using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-state-evidence-guards using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-19-2"
           ],
@@ -48,7 +48,7 @@
         },
         {
           "surface": "inbox-integration-preservation",
-          "reason": "Observed exact-head A6 negative-inbox-integration-preservation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-integration-preservation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-23-1"
           ],
@@ -67,7 +67,7 @@
       "dimensions": [
         {
           "surface": "human-action-and-no-implicit-effects",
-          "reason": "Observed exact-head A6 confirmation-before-decision using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 confirmation-before-decision using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-06-1"
           ],
@@ -86,7 +86,7 @@
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Observed exact-head A6 docs-match-a6-layout using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 docs-match-a6-layout using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-04-2"
           ],
@@ -113,7 +113,7 @@
       "dimensions": [
         {
           "surface": "duplicate-processing",
-          "reason": "Observed exact-head A6 negative-duplicate-processing using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-duplicate-processing using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-19-1"
           ],
@@ -140,7 +140,7 @@
       "dimensions": [
         {
           "surface": "inbox-golden-precedence-reference-liveness",
-          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-12-2"
           ],
@@ -176,7 +176,7 @@
       "dimensions": [
         {
           "surface": "preserved-legacy-workflows",
-          "reason": "Observed exact-head A6 csv-ofx-and-messages-still-wired using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 csv-ofx-and-messages-still-wired using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-03-1"
           ],
@@ -184,7 +184,7 @@
         },
         {
           "surface": "selected-evidence-and-context",
-          "reason": "Observed exact-head A6 selection-renders-detail-after-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 selection-renders-detail-after-queue using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-05-1"
           ],
@@ -192,7 +192,7 @@
         },
         {
           "surface": "responsive-and-state-completeness",
-          "reason": "Observed exact-head A6 browser-matrix-viewports using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 browser-matrix-viewports using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-08-1"
           ],
@@ -200,7 +200,7 @@
         },
         {
           "surface": "a11y-and-currency-metadata",
-          "reason": "Observed exact-head A6 keyboard-focus-and-currency using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 keyboard-focus-and-currency using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-09-1"
           ],
@@ -208,7 +208,7 @@
         },
         {
           "surface": "negative-restoration",
-          "reason": "Observed exact-head A6 hidden-evidence-and-secondary-attack using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 hidden-evidence-and-secondary-attack using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-11-1"
           ],
@@ -216,7 +216,7 @@
         },
         {
           "surface": "inbox-queue-evidence-decision-order",
-          "reason": "Observed exact-head A6 negative-inbox-queue-evidence-decision-order using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-queue-evidence-decision-order using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-14-1"
           ],
@@ -224,7 +224,7 @@
         },
         {
           "surface": "inbox-neutral-interaction",
-          "reason": "Observed exact-head A6 negative-inbox-neutral-interaction using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-neutral-interaction using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-15-1"
           ],
@@ -232,7 +232,7 @@
         },
         {
           "surface": "inbox-dialog-menu-focus",
-          "reason": "Observed exact-head A6 negative-inbox-dialog-menu-focus using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-dialog-menu-focus using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-18-1"
           ],
@@ -240,7 +240,7 @@
         },
         {
           "surface": "inbox-responsive-containment",
-          "reason": "Observed exact-head A6 negative-inbox-responsive-containment using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-responsive-containment using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-20-1"
           ],
@@ -248,7 +248,7 @@
         },
         {
           "surface": "inbox-legacy-grid-mutation",
-          "reason": "Observed exact-head A6 negative-inbox-legacy-grid-mutation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-legacy-grid-mutation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-21-1"
           ],
@@ -273,7 +273,7 @@
       "dimensions": [
         {
           "surface": "golden-source-ancestry",
-          "reason": "Observed exact-head A6 golden-precedence-and-no-merge using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 golden-precedence-and-no-merge using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-01-1"
           ],
@@ -281,7 +281,7 @@
         },
         {
           "surface": "handoff-subject-identity",
-          "reason": "Observed exact-head A6 foreign-issue-and-pr-subject using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 foreign-issue-and-pr-subject using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-01-2"
           ],
@@ -289,7 +289,7 @@
         },
         {
           "surface": "relational-semantic-integrity",
-          "reason": "Observed exact-head A6 negative-relational-semantic-integrity using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-relational-semantic-integrity using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-17-1"
           ],
@@ -297,7 +297,7 @@
         },
         {
           "surface": "queue-detail-secondary-order",
-          "reason": "Observed exact-head A6 primary-before-secondary using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 primary-before-secondary using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-04-1"
           ],
@@ -305,7 +305,7 @@
         },
         {
           "surface": "inbox-golden-precedence-structural-contract",
-          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-golden-precedence using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-12-3"
           ],
@@ -313,7 +313,7 @@
         },
         {
           "surface": "inbox-shared-color-tokens",
-          "reason": "Observed exact-head A6 negative-inbox-shared-color-tokens using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-shared-color-tokens using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-13-1"
           ],
@@ -321,7 +321,7 @@
         },
         {
           "surface": "inbox-contextual-confirmation",
-          "reason": "Observed exact-head A6 negative-inbox-contextual-confirmation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 negative-inbox-contextual-confirmation using evidence/issue-726-exact-head-real-browser.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-16-1"
           ],
@@ -340,7 +340,7 @@
       "dimensions": [
         {
           "surface": "pre-edit-baseline-identity",
-          "reason": "Observed exact-head A6 historical-chrome-baseline using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301.",
+          "reason": "Observed exact-head A6 historical-chrome-baseline using evidence/issue-726-exact-head-source-probes.json, https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727.",
           "control_ids": [
             "NEG-726-02-3"
           ],

@@ -1,12 +1,6 @@
-HEAD: 8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85
-REPOSITORY: crgasparoto-br/SolverFin
-CI_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149456
-CI_JOB: 124542923859 CRITICAL validation completed success
-CI_GATE: 124543888230 Repository CI gate completed success
-MERGE_PREVIEW: 124542842272 Merge preview compatibility completed success
-CHROME_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301
-CHROME_JOB: 124542812605 Chrome visual validation completed success
-CHROME_SCENARIOS: 75 passed; 0 failed; artifact 13043971276
-AUDIT_WORKSPACE: https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149396
-OBSERVED: 2026-10-31T13:05:02Z
-SOURCE: authenticated GitHub Actions check-runs and job logs, no tests re-executed locally
+Issue #726 PR #754 material 072559705c66627ad91fdef3c63b3888b95e3e6e
+Base develop 36cbfb7ee0a8aea2412073d113644bf2e1e683e5
+Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056780: completed/success (CRITICAL, merge preview, formatting, lint, typecheck, unit, integration, db deploy, build)
+Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056727: completed/success; artifact 13083787988, digest sha256:e5ef09e8c59b0ab1855c495f44c8892aea021da67d73a60b2569fa4f03e2f61d; 75 scenarios including 9 binding controls
+Delivery audit workspace https://github.com/crgasparoto-br/SolverFin/actions/runs/41307056691: completed/success; trusted git bundle exact material
+This record is from authenticated GitHub API run metadata and actual Chrome artifact. Independent audit and result-only certificate not yet concluded.
