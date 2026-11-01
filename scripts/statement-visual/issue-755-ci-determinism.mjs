@@ -35,13 +35,21 @@ export function assertBudgetLongList(fixture, rendered) {
 }
 
 export function assertAttachmentEditState(state, transactionId) {
-  assert.equal(state.menuOpen, true, `Transaction action menu is not open: ${JSON.stringify(state)}`);
+  assert.equal(
+    state.menuOpen,
+    true,
+    `Transaction action menu is not open: ${JSON.stringify(state)}`,
+  );
   assert.equal(
     state.actionVisible,
     true,
     `Transaction edit action is not visible: ${JSON.stringify(state)}`,
   );
-  assert.equal(state.dialogOpen, true, `Transaction edit dialog did not open: ${JSON.stringify(state)}`);
+  assert.equal(
+    state.dialogOpen,
+    true,
+    `Transaction edit dialog did not open: ${JSON.stringify(state)}`,
+  );
   assert.equal(
     state.attachmentSectionOpen,
     true,

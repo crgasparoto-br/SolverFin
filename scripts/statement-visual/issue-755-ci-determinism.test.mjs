@@ -17,10 +17,7 @@ const rendered = { rows: 1, historyCount: 9, periodLabels };
 
 test("budget long-list passes only when ten created periods survive API readback and SSR", () => {
   assert.doesNotThrow(() => assertBudgetLongList(fixture, rendered));
-  assert.throws(
-    () => assertBudgetLongList({ ...fixture, readbackCount: 9 }, rendered),
-    /9 !== 10/,
-  );
+  assert.throws(() => assertBudgetLongList({ ...fixture, readbackCount: 9 }, rendered), /9 !== 10/);
   assert.throws(
     () => assertBudgetLongList(fixture, { ...rendered, historyCount: 8 }),
     /ten or more period records/,
