@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { assertBrowserDiagnosticPrivacy } from "./issue-755-browser-diagnostics.mjs";
 import {
   assertAttachmentEditState,
   assertBrowserAttachmentNegativeControls,
@@ -120,7 +121,8 @@ async function validateTransactionJourney() {
   const negativeControls = await assertBrowserAttachmentNegativeControls(
     browser.cdp, fixture.transactionId, menu.opened, action.visible,
   );
-  return { ...lifecycle, negativeControls };
+  const diagnosticPrivacy = await assertBrowserDiagnosticPrivacy(browser.cdp);
+  return { ...lifecycle, negativeControls, diagnosticPrivacy };
 }
 
 // prettier-ignore

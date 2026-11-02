@@ -195,9 +195,37 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     errorText: "net::ERR_CONNECTION_RESET",
     canceled: false,
   });
+  emit("Network.requestWillBeSent", {
+    requestId: "request-adversarial",
+    request: { method: "PRIVATEACCOUNT", url: "https://localhost/api/budgets/private-id" },
+  });
+  emit("Network.responseReceived", {
+    requestId: "request-adversarial",
+    response: { status: 403, url: "https://localhost/api/budgets/private-id" },
+  });
+  emit("Network.loadingFailed", {
+    requestId: "request-adversarial",
+    errorText: "net::ERR_CONNECTION_RESET",
+    canceled: false,
+  });
+  emit("Network.responseReceived", {
+    requestId: "request-adversarial",
+    response: { status: "SECRET_STATUS", url: "https://localhost/api/budgets/private-id" },
+  });
+  emit("Network.loadingFailed", {
+    requestId: "request-adversarial",
+    errorText: "net::ERR_PRIVATEACCOUNT",
+    canceled: false,
+  });
   emit("Runtime.consoleAPICalled", { type: "error", args: [{ value: "PRIVATE FINANCIAL VALUE" }] });
   emit("Runtime.exceptionThrown", {
     exceptionDetails: { text: "PRIVATE ERROR PAYLOAD", lineNumber: 21 },
+  });
+  emit("Runtime.exceptionThrown", {
+    exceptionDetails: { exception: { className: "MariaAccountError" }, lineNumber: 22 },
+  });
+  emit("Runtime.exceptionThrown", {
+    exceptionDetails: { exception: { className: "TypeError" }, lineNumber: 23 },
   });
   const dir = await mkdtemp(join(tmpdir(), "issue-755-diagnostics-"));
   try {
@@ -213,6 +241,7 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     assert.equal(report.dom.budgetHistoryEntries, 9);
     assert.deepEqual(report.networkErrors, [
       { status: 503, method: "POST", endpoint: "/api/budgets/:id" },
+      { status: 403, method: "unknown", endpoint: "/api/budgets/:id" },
     ]);
     assert.deepEqual(report.transportFailures, [
       {
@@ -221,13 +250,33 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
         canceled: false,
         code: "net::ERR_CONNECTION_RESET",
       },
+      {
+        method: "unknown",
+        endpoint: "/api/budgets/:id",
+        canceled: false,
+        code: "net::ERR_CONNECTION_RESET",
+      },
+      {
+        method: "unknown",
+        endpoint: "/api/budgets/:id",
+        canceled: false,
+        code: "network-failure",
+      },
     ]);
     assert.deepEqual(report.consoleEvents, [{ type: "error" }]);
     assert.equal(report.browserErrors[0].lineNumber, 21);
+    assert.deepEqual(report.browserErrors[1], { className: "browser-exception", lineNumber: 22 });
+    assert.deepEqual(report.browserErrors[2], { className: "TypeError", lineNumber: 23 });
     assert.equal(report.error.message, "unclassified-test-failure");
-    for (const secret of ["PRIVATE", "SECRET", "private@example.com", "123456", "private-id"]) {
+    for (const secret of ["PRIVATE", "SECRET", "MariaAccountError", "private@example.com", "123456", "private-id"]) {
       assert.equal(output.includes(secret), false, `Diagnostics exposed ${secret}`);
     }
+    diagnostics.setFixtureState({ stage: "MariaAccount", createdCount: 100000, readbackCount: 9 });
+    await diagnostics.save(dir, "untrusted-fixture", new Error("Synthetic R$ 12,34"));
+    const unsafeState = await readFile(join(dir, "issue-755-untrusted-fixture-failure.json"), "utf8");
+    assert.equal(JSON.parse(unsafeState).fixtureState.stage, "unknown");
+    assert.equal(JSON.parse(unsafeState).fixtureState.createdCount, null);
+    assert.equal(unsafeState.includes("MariaAccount"), false);
     // Both decimal formats bypassed the former four-digit redactor. Never persist free-form text.
     for (const message of [
       "Budget amount R$ 12,34 and USD 56.78 on account Maria",
