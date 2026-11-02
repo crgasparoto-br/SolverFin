@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+  "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
   "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "comparison_base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "policy": {
@@ -34,6 +34,11 @@
       "lines_after": 425
     },
     {
+      "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+      "lines_before": null,
+      "lines_after": 84
+    },
+    {
       "path": "scripts/statement-visual/issue-755-budget-list.mjs",
       "lines_before": null,
       "lines_after": 142
@@ -41,12 +46,13 @@
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
       "lines_before": null,
-      "lines_after": 259
+      "lines_after": 313,
+      "justification": "At 313 lines this existing issue-local diagnostic module remains below the 500-line hard cap. Explicit allowlists for browser exception classes, HTTP methods, transport codes and fixture stages close A-007 without duplicating CDP watchers in a second module; splitting this small cohesive serializer would create additional indirection."
     },
     {
       "path": "scripts/statement-visual/operational-attachments.mjs",
       "lines_before": 345,
-      "lines_after": 395
+      "lines_after": 397
     }
   ],
   "blocking_files": []

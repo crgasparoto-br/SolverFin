@@ -3,33 +3,35 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+  "candidate_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:2d877402-971a-4906-b0e4-f4f13cde773c",
-    "audit_report_sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5",
-    "audited_head_sha": "b86730805450cd96fd1a7fd0a687bb0488b17e8a"
+    "rejection_id": "audit-rejection:50e1f167-0d18-4a96-a859-eb5d5a824245",
+    "audit_report_sha256": "6e643defecf835b7460964ac7272dea39e77566f2a54ba3a2b4bf56002f94224",
+    "audited_head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-006",
+      "source_id": "A-007",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/audit-escape-closure-755.json"
+        "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+        "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+        "scripts/statement-visual/operational-attachments.mjs"
       ],
       "evidence": [
-        "Exact Git B..M yields 15 changed paths: seven scripts/statement-visual and eight .audit/entregar-issue historical paths; the canonical certificate builder now receives all 15, without altering M.",
-        "Original auditor report sha256 6ff70b70192ec83da12e86bbd792b967082096f9b92247af98ab60b9cdd14136 and previous handoff b86730805450cd96fd1a7fd0a687bb0488b17e8a are preserved, as are original A-004/A-005 remediation files and escape lineage.",
-        "Pre-publication terminal and independent preflight must use B..M observed path list, not a seven-path candidate-controlled subset."
+        "Real Chromium Runtime.exceptionThrown with MariaAccountError is mapped to browser-exception; persisted JSON includes neither class nor synthetic amount R$ 12,34.",
+        "Adversarial Network.requestWillBeSent method PRIVATEACCOUNT injected through live CdpClient dispatcher is mapped to unknown and never emitted verbatim in the persisted JSON.",
+        "Focused Node test also rejects forged net::ERR_PRIVATEACCOUNT, SECRET_STATUS HTTP status and unsafe fixture stage, preserving valid TypeError/POST/503 categories.",
+        "All 75 original Chrome scenario fingerprints were retained without skipping coverage or changing product/API/database."
       ],
       "validations": [
-        "Git B..M independently reproduces the exact 15-path set and 13-commit cumulative delta.",
-        "Official canonical build_handoff_certificate.py and validation replay with full path list; candidate hash and sibling result-only scope are revalidated before publication."
+        "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs passes all three tests at exact material M3.",
+        "node --test scripts/statement-visual/*.test.mjs passes all 122 tests; Chrome negative helper executed on real Chromium and checks serialized JSON."
       ]
     }
   ]

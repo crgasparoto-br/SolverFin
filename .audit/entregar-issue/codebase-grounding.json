@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+  "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
   "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "creations": [
     {
@@ -9,7 +9,7 @@
       "search": {
         "queries": [
           "git grep -n \"watchVisualFailures\" -- scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 -- scripts/statement-visual"
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
         ],
         "scope": "Reused existing CDP event hooks/evaluate plus issue-606 budget pilot and visible transaction modal instead of a second Chrome protocol client.",
         "candidates": [
@@ -32,7 +32,7 @@
       "search": {
         "queries": [
           "git grep -n \"assertBudgetLongList\" -- scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 -- scripts/statement-visual"
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
         ],
         "scope": "Checked existing budget DOM reader in issue-606-budgets-pilot.mjs and budget assertion in issue-755-ci-determinism.mjs before extracting without behavioral change.",
         "candidates": [
@@ -48,6 +48,29 @@
       },
       "decision": "create",
       "justification": "Single reusable category-bound budget oracle and browser DOM reader/mutation, extracted without dropping any negative or visual coverage."
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n 'watchVisualFailures|Runtime.exceptionThrown|Network.requestWillBeSent' scripts/statement-visual",
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
+        ],
+        "scope": "Reviewed current CDP helper, watcher, operational attachments and focused unit tests for existing Chrome-negative controls.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+            "reason_not_reused": "Node mock test alone cannot verify real Chromium Runtime.exceptionThrown on the serialized JSON."
+          },
+          {
+            "path": "scripts/statement-visual/operational-attachments.mjs",
+            "reason_not_reused": "Reuse its existing Chrome journey, but isolate 74-line targeted probe to preserve module cohesion and testability."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Real Chromium Runtime exception control and synthetic Network event control use existing CdpClient and existing watcher; invoked by existing attachments journey, no new visual scenario."
     }
   ],
   "references": [
@@ -57,7 +80,7 @@
       "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 147
+        "line": 196
       },
       "verified_by": {
         "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
@@ -102,6 +125,19 @@
         "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
         "exit_code": 0
       }
+    },
+    {
+      "symbol": "assertBrowserDiagnosticPrivacy",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/operational-attachments.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+        "line": 12
+      },
+      "verified_by": {
+        "command": "node --check scripts/statement-visual/operational-attachments.mjs",
+        "exit_code": 0
+      }
     }
   ],
   "replacements": [],
@@ -109,7 +145,7 @@
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
       "operation": "added",
-      "scenario": "Negative cases for 9-period API readback, missing category-specific history, wrong category, duplicate rows, missing period, absent/hidden/wrong-entity modal, monetary redaction and restoration.",
+      "scenario": "Existing negative test expanded for arbitrary CDP method, class, transport code, malformed status and fixture stage, together with real Chromium/browser negative control.",
       "requirement": "REQ-755-06 / REQ-755-07 / REQ-755-04",
       "search": {
         "queries": [
@@ -134,12 +170,12 @@
         "status": "passed",
         "command": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
         "exit_code": 0,
-        "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+        "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
         "reached_tests": [
           "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
-        "evidence_sha256": "8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97"
+        "evidence_sha256": "92ecf4c194e4dd62293d1945f853051a5f0da8fd30413d8060a26b365a8bfff3"
       }
     }
   ]

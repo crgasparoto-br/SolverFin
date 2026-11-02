@@ -3,32 +3,32 @@
   "contract_version": "2026-08-20.3",
   "status": "rejected",
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:2d877402-971a-4906-b0e4-f4f13cde773c",
-  "head_sha": "b86730805450cd96fd1a7fd0a687bb0488b17e8a",
+  "rejection_id": "audit-rejection:50e1f167-0d18-4a96-a859-eb5d5a824245",
+  "head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533",
   "trusted_anchor_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "b86730805450cd96fd1a7fd0a687bb0488b17e8a",
+    "head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533",
     "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
-    "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+    "base_sha": "06409277b5ad2f5e7af1e26c743986ab1a6e32c3",
     "issue_number": 755,
     "pull_request_number": 756
   },
   "external_report": {
-    "sha256": "6ff70b70192ec83da12e86bbd792b967082096f9b92247af98ab60b9cdd14136",
-    "path": ".audit/entregar-issue/evidence/independent-audit-756-A006.md"
+    "sha256": "f0d0627d5d3b1eead32aad979b11dceb3edac762499a4804ce3d30ee3821f9bc",
+    "path": ".audit/entregar-issue/evidence/independent-audit-756-A007.md"
   },
   "findings": [
     {
-      "id": "A-006",
+      "id": "A-007",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "handoff-scope-integrity",
-      "summary": "The handoff scope listed seven Chrome source paths while B..M changed fifteen paths including eight historical .audit artifacts."
+      "category": "cdp-diagnostic-privacy",
+      "summary": "Arbitrary Chrome exception class name and request.method were persisted to failure JSON without strict categorization."
     }
   ],
   "recommendations": [],
-  "provenance_note": "Independent audit report from separate prior conversation turn, preserved as received. No external signature is asserted. The remediated material M remains unchanged; only a sibling result-only handoff may be substituted."
+  "provenance_note": "Independent review posted as PR #756 review 5740571831 on 2026-11-02T17:26:38Z. Local report preserved from the previous independent auditor; no third-party cryptographic signature is asserted."
 }

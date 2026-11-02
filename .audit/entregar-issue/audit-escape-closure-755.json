@@ -4,7 +4,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 755,
     "pull_request_number": 756,
-    "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+    "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2"
   },
   "escapes": [
     {
@@ -12,7 +12,7 @@
         "repository": "crgasparoto-br/SolverFin",
         "issue_number": 755,
         "pull_request_number": 756,
-        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "escape_id": "ESC-755-A-004-DIAGNOSTIC",
       "escape_class": "diagnostic-financial-payload-leak",
@@ -24,9 +24,9 @@
       },
       "plausible_wrong_implementation": "Filter only four-digit numbers; leave monetary decimals and account descriptions in error JSON.",
       "literal_case": {
-        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 0cec2270e8d6d12cc58816c959490f4d070f92a2",
         "status": "passed",
-        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "sibling_cases": [
         {
@@ -65,12 +65,12 @@
       ],
       "prevention_change": {
         "skill_or_code": "scripts/statement-visual/issue-755-ci-determinism.mjs: message-class allowlist, no free-form serialization",
-        "evidence": "Exact material 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 contains fail-closed implementation and tests."
+        "evidence": "Exact material 0cec2270e8d6d12cc58816c959490f4d070f92a2 contains fail-closed implementation and tests."
       },
       "detection_change": {
         "skill_or_gate": "scripts/statement-visual/issue-755-ci-determinism.test.mjs: privacy injection",
         "control_id": "ESC-755-A-004-DIAGNOSTIC",
-        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "trigger_terms": [
         "Chrome visual fixture",
@@ -80,7 +80,7 @@
       "required_risk_families": [
         "privacy"
       ],
-      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "revalidated_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
       "status": "passed"
     },
     {
@@ -88,7 +88,7 @@
         "repository": "crgasparoto-br/SolverFin",
         "issue_number": 755,
         "pull_request_number": 756,
-        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "escape_id": "ESC-755-A-005-HISTORY",
       "escape_class": "budget-oracle-unbound-category",
@@ -100,9 +100,9 @@
       },
       "plausible_wrong_implementation": "Count unrelated budget rows and global labels as if they were nine historical entries from one category.",
       "literal_case": {
-        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 0cec2270e8d6d12cc58816c959490f4d070f92a2",
         "status": "passed",
-        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "sibling_cases": [
         {
@@ -141,12 +141,12 @@
       ],
       "prevention_change": {
         "skill_or_code": "scripts/statement-visual/issue-755-budget-list.mjs: binds newest ID and same-category history",
-        "evidence": "Exact material 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 contains fail-closed implementation and tests."
+        "evidence": "Exact material 0cec2270e8d6d12cc58816c959490f4d070f92a2 contains fail-closed implementation and tests."
       },
       "detection_change": {
         "skill_or_gate": "scripts/statement-visual/issue-606-budgets-pilot.mjs: real DOM mutation and restoration",
         "control_id": "ESC-755-A-005-HISTORY",
-        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "trigger_terms": [
         "Chrome visual fixture",
@@ -156,7 +156,7 @@
       "required_risk_families": [
         "integrity"
       ],
-      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "revalidated_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
       "status": "passed"
     },
     {
@@ -164,7 +164,7 @@
         "repository": "crgasparoto-br/SolverFin",
         "issue_number": 755,
         "pull_request_number": 756,
-        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2"
       },
       "escape_id": "ESC-755-A-006-SCOPE",
       "escape_class": "handoff-certified-scope-incomplete",
@@ -178,7 +178,7 @@
       "literal_case": {
         "procedure": "Compare git diff --name-only B M to certificate issue_changed_paths; run official check_delivery_preflight.py with independently observed paths.",
         "status": "passed",
-        "observed": "Prior seven-path certificate was BLOCK; replacement bound to all fifteen historical paths and revalidated on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+        "observed": "Prior seven-path certificate was BLOCK; certificate for current material covers complete Git B..M path inventory including historical .audit paths; this is a prior resolved issue verified by remote history."
       },
       "sibling_cases": [
         {
@@ -209,8 +209,8 @@
         }
       ],
       "prevention_change": {
-        "skill_or_code": "Official build_handoff_certificate.py invoked with the independent B..M Git path inventory (15 paths)",
-        "evidence": "Certificate scope generated with all 15 paths, matching exact Git B..M including intermediate .audit."
+        "skill_or_code": "Official build_handoff_certificate.py invoked with the independent B..M Git path inventory (27 paths)",
+        "evidence": "Certificate scope generated with all 27 paths, matching exact Git B..M including intermediate .audit."
       },
       "detection_change": {
         "skill_or_gate": "Official check_delivery_preflight.py and validate_terminal_handoff.py on prospective sibling result-only H",
@@ -225,7 +225,95 @@
       "required_risk_families": [
         "integrity"
       ],
-      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "revalidated_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
+      "status": "passed"
+    },
+    {
+      "subject": {
+        "repository": "crgasparoto-br/SolverFin",
+        "issue_number": 755,
+        "pull_request_number": 756,
+        "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2"
+      },
+      "escape_id": "ESC-755-A-007-CDP-PRIVACY",
+      "escape_class": "untrusted-cdp-metadata-leaks-through-shape-based-whitelist",
+      "source_audit": {
+        "head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533",
+        "rejection_id": "audit-rejection:50e1f167-0d18-4a96-a859-eb5d5a824245",
+        "finding_id": "A-007",
+        "audit_report_sha256": "6e643defecf835b7460964ac7272dea39e77566f2a54ba3a2b4bf56002f94224"
+      },
+      "plausible_wrong_implementation": "Redact free-form Error.message but trust browser exception className matching /Error$/ and copy HTTP method or generic net::ERR_* strings into JSON unchanged.",
+      "literal_case": {
+        "procedure": "In Chromium trigger class MariaAccountError and save failure artifact to disk, asserting browserErrors[].className=browser-exception and no marker/amount survives.",
+        "status": "passed",
+        "observed": "Real Chromium plus CdpClient persisted JSON redacts synthetic exception class and R$ 12,34, tested at M3."
+      },
+      "sibling_cases": [
+        {
+          "id": "arbitrary-http-method",
+          "surface": "cdp-network",
+          "dimension": "PRIVATEACCOUNT request.method",
+          "status": "passed",
+          "evidence": "Synthetic Network event injected into real Chromium CDP dispatcher yields method=unknown in serialized failure JSON."
+        },
+        {
+          "id": "untrusted-transport-code",
+          "surface": "cdp-transport",
+          "dimension": "net::ERR_PRIVATEACCOUNT",
+          "status": "passed",
+          "evidence": "Node focused negative case maps unknown transport error to network-failure."
+        },
+        {
+          "id": "malformed-status-and-fixture",
+          "surface": "cdp-and-fixture",
+          "dimension": "SECRET_STATUS and MariaAccount",
+          "status": "passed",
+          "evidence": "Node focused negative controls discard malformed HTTP status and mask unknown fixture stage/count."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "privacy",
+          "surface": "cdp-runtime-exception",
+          "dimension": "arbitrary-class-name"
+        },
+        {
+          "risk_family": "privacy",
+          "surface": "cdp-network",
+          "dimension": "arbitrary-method"
+        },
+        {
+          "risk_family": "privacy",
+          "surface": "cdp-network",
+          "dimension": "arbitrary-transport-code-or-status"
+        },
+        {
+          "risk_family": "privacy",
+          "surface": "fixture-diagnostics",
+          "dimension": "unexpected-stage-or-count"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/statement-visual/issue-755-ci-determinism.mjs strict allowlists for class, verb, net code, stage; numeric status/count bounds",
+        "evidence": "Exact material M3 source only writes allowed categories and safe counts."
+      },
+      "detection_change": {
+        "skill_or_gate": "scripts/statement-visual/issue-755-ci-determinism.test.mjs plus issue-755-browser-diagnostics.mjs Chrome scenario",
+        "control_id": "ESC-755-A-007-CDP-PRIVACY",
+        "evidence": "Focused Node 3/3, real Chromium CDP persisted JSON negative tests and complete 75-scenario Chrome gate (subject to exact M3 CI evidence)."
+      },
+      "trigger_terms": [
+        "CDP exceptionThrown",
+        "browser failure JSON",
+        "Network.requestWillBeSent",
+        "visual diagnostics",
+        "sensitive metadata"
+      ],
+      "required_risk_families": [
+        "privacy"
+      ],
+      "revalidated_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
       "status": "passed"
     }
   ]
