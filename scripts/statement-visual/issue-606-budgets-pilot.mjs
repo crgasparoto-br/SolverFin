@@ -181,15 +181,16 @@ try {
     browser.cdp,
     `(() => {
     const labels = () => Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong'));
-    const month = labels().find((node) => node.textContent?.includes('01/03/2034'));
-    if (!month) throw new Error('Real budget history has no March period to mutate');
-    const original = month.textContent;
+    const months = labels().filter((node) => node.textContent?.includes('01/03/2034'));
+    if (!months.length) throw new Error('Real budget history has no March period to mutate');
+    const originals = months.map((node) => node.textContent);
     let omitted;
     try {
-      month.textContent = 'omitted-in-negative-control';
+      for (const node of months) node.textContent = 'omitted-in-negative-control';
       omitted = labels().map((node) => node.textContent?.trim() ?? '');
+      if (omitted.some((text) => text.includes('01/03/2034'))) throw new Error('March still present after negative-control mutation');
     } finally {
-      month.textContent = original;
+      months.forEach((node, index) => { node.textContent = originals[index]; });
     }
     return { omitted, restored: labels().map((node) => node.textContent?.trim() ?? '') };
   })()`,
