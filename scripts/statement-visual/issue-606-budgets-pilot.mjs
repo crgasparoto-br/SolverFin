@@ -3,7 +3,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
-import { loginExpression } from "./fixtures.mjs";
+import { budgetAcceptanceFixtureExpression, loginExpression } from "./fixtures.mjs";
 import {
   BUDGET_LONG_LIST_PERIODS,
   assertBudgetLongList,
@@ -150,7 +150,10 @@ try {
 
   // Disposable Chrome CI DB only: prove that nine real API/DOM periods fail before creating ten.
   diagnostics.setFixtureState({ stage: "creating-nine" });
-  const nineFixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression(0, 9));
+  const nineFixture = await evaluate(
+    browser.cdp,
+    budgetAcceptanceFixtureExpression(BUDGET_LONG_LIST_PERIODS, 0, 9),
+  );
   diagnostics.setFixtureState({ stage: "nine-period-readback", ...nineFixture });
   assert.equal(nineFixture.ok, true, "Nine-period budget fixture must persist successfully");
   assert.equal(nineFixture.createdCount, 9);
@@ -165,7 +168,7 @@ try {
   diagnostics.setFixtureState({ stage: "creating-tenth", ...nineFixture });
   const fixture = await evaluate(
     browser.cdp,
-    budgetAcceptanceFixtureExpression(9, 10, nineFixture.ids),
+    budgetAcceptanceFixtureExpression(BUDGET_LONG_LIST_PERIODS, 9, 10, nineFixture.ids),
   );
   diagnostics.setFixtureState({ stage: "ten-period-readback", ...fixture });
   assert.equal(fixture.ok, true, "Ten-period budget fixture must persist successfully");
@@ -453,48 +456,6 @@ function budgetRenderedStateExpression() {
     currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
     focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
   }))()`;
-}
-
-// prettier-ignore
-function budgetAcceptanceFixtureExpression(startIndex, endIndex, previousIds = []) {
-  const inputs = BUDGET_LONG_LIST_PERIODS.slice(startIndex, endIndex);
-  return `(async () => {
-    const categoriesResponse = await fetch('/api/categories?status=all', { credentials: 'same-origin' });
-    if (!categoriesResponse.ok) return { ok: false, stage: 'categories', status: categoriesResponse.status };
-    const categories = (await categoriesResponse.json()).categories ?? [];
-    const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
-    if (!category?.id) return { ok: false, stage: 'expense-category' };
-    const periodInputs = ${JSON.stringify(inputs)};
-    const ids = ${JSON.stringify(previousIds)};
-    for (const period of periodInputs) {
-      const response = await fetch('/api/budgets', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          categoryId: category.id,
-          periodStartOn: period.periodStartOn,
-          periodEndOn: period.periodEndOn,
-          currency: 'USD',
-          plannedAmountMinor: 500000,
-        }),
-      });
-      if (!response.ok) return {
-        ok: false, stage: 'create-budget', status: response.status,
-        createdCount: ids.length,
-      };
-      ids.push((await response.json()).budget.id);
-    }
-    const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
-    if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
-    const budgets = (await readback.json()).budgets ?? [];
-    const matched = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD');
-    const expectedMonths = ${JSON.stringify(BUDGET_LONG_LIST_PERIODS)}.slice(0, ids.length).map((item) => item.periodStartOn);
-    const readbackCount = matched.length;
-    const periodReadback = expectedMonths.every((start) => matched.some((item) => item.periodStartOn === start));
-    return { ok: readbackCount === ids.length && periodReadback, stage: 'readback',
-      createdCount: ids.length, readbackCount, currency: 'USD', ids };
-  })()`;
 }
 
 async function readBudget(cdp, id) {
