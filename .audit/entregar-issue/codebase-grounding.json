@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+  "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
   "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "creations": [
     {
@@ -9,7 +9,7 @@
       "search": {
         "queries": [
           "git grep -n \"watchVisualFailures\" -- scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..b027adad59be5367038f0942a5f339ca8a89b2c7 -- scripts/statement-visual"
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 -- scripts/statement-visual"
         ],
         "scope": "Reused existing CDP event hooks/evaluate plus issue-606 budget pilot and visible transaction modal instead of a second Chrome protocol client.",
         "candidates": [
@@ -25,6 +25,29 @@
       },
       "decision": "create",
       "justification": "Small issue-specific, dependency-free collection of deterministic negative oracles and bounded redacted browser failure diagnostics; reused CDP core."
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-budget-list.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"assertBudgetLongList\" -- scripts/statement-visual",
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 -- scripts/statement-visual"
+        ],
+        "scope": "Checked existing budget DOM reader in issue-606-budgets-pilot.mjs and budget assertion in issue-755-ci-determinism.mjs before extracting without behavioral change.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+            "reason_not_reused": "The pilot exceeded CODE-GROWTH-001 hard 500-line threshold; move reusable DOM readback and mutation into an isolated module."
+          },
+          {
+            "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+            "reason_not_reused": "Diagnostic and attachment-specific CDP watcher stays separate, reducing new file below 300-line soft cap."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Single reusable category-bound budget oracle and browser DOM reader/mutation, extracted without dropping any negative or visual coverage."
     }
   ],
   "references": [
@@ -34,7 +57,7 @@
       "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 171
+        "line": 147
       },
       "verified_by": {
         "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
@@ -46,8 +69,8 @@
       "kind": "local",
       "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
-        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 19
+        "path": "scripts/statement-visual/issue-755-budget-list.mjs",
+        "line": 15
       },
       "verified_by": {
         "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
@@ -73,7 +96,7 @@
       "used_in": "scripts/statement-visual/operational-attachments.mjs",
       "defined_at": {
         "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 72
+        "line": 39
       },
       "verified_by": {
         "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
@@ -86,7 +109,7 @@
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
       "operation": "added",
-      "scenario": "Negative cases for 9-period readback, missing/hidden/wrong-entity modal and leak-safe diagnostic evidence",
+      "scenario": "Negative cases for 9-period API readback, missing category-specific history, wrong category, duplicate rows, missing period, absent/hidden/wrong-entity modal, monetary redaction and restoration.",
       "requirement": "REQ-755-06 / REQ-755-07 / REQ-755-04",
       "search": {
         "queries": [
@@ -105,18 +128,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "New negative controls are not in the older Golden Screen tests; preserve every previous visual scenario and add focused tests.",
+      "justification": "Extends the original 3-test focused suite without weakening older negative controls or reducing the 75 Chrome scenarios.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
         "exit_code": 0,
-        "subject_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+        "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
         "reached_tests": [
           "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
-        "evidence_sha256": "197a1bcdd706c26d68c4b6deb3ef8c08d88546e04738e342e6775a50ec49d1ee"
+        "evidence_sha256": "8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97"
       }
     }
   ]

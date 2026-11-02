@@ -1,31 +1,33 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+  "head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
   "requirements": [
     {
       "requirement_id": "REQ-755-04",
       "positive_evidence": [
-        "scripts/statement-visual/issue-755-ci-determinism.mjs watchVisualFailures collects bounded fixtureState, DOM, console, Runtime and network exception summaries",
-        "node --test focused diagnostics case proves redaction of secrets and exact error context"
+        "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9: watchVisualFailures classifies failures by an allowlist; no raw exception messages persisted, including R$ 12,34, USD 56.78, small decimals, email or account names.",
+        "Focused Node Chrome diagnostics injection confirms bounded DOM/fixture/HTTP/exception status, no payloads or amounts.",
+        "Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297"
       ],
       "primary_negative_control": {
         "id": "NC-755-DIAGNOSTIC",
         "status": "passed",
         "procedure": "Run focused test injecting sensitive error, HTTP, exception, console and fixture 9 state; inspect JSON output.",
         "expected": "No full URL, ID, financial payload, email, request body, or console arguments appear.",
-        "observed": "node --test diagnostics subtest PASSED; output retains only safe endpoint, error type, HTTP status and counts."
+        "observed": "Actual filesystem JSON rejected leaking R$ 12,34, USD 56.78, -0,01, 1.000,00, 9,99, CPF and private names; 3/3 tests PASS."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-04."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     },
     {
       "requirement_id": "REQ-755-05",
       "positive_evidence": [
         "scripts/statement-visual/operational-attachments.mjs opens the actual summary and verifies edit action hit-test, open dialog and matching workspace",
-        "Chrome attachment lifecycle scenario on the exact candidate SHA"
+        "Chrome attachment lifecycle scenario on the exact candidate SHA",
+        "Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297"
       ],
       "primary_negative_control": {
         "id": "NC-755-MODAL",
@@ -35,51 +37,56 @@
         "observed": "Real Chromium DOM control and focused Node validations rejected missing/hidden/wrong ID and restored."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-05."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     },
     {
       "requirement_id": "REQ-755-06",
       "positive_evidence": [
-        "scripts/statement-visual/fixtures.mjs budgetAcceptanceFixtureExpression POSTs nine then tenth synthetic budgets and reads back IDs",
-        "scripts/statement-visual/issue-606-budgets-pilot.mjs confirms all ten months and labels in the rendered DOM"
+        "Synthetic API fixture creates 9 and then 10 distinct IDs with categoryId/currency and exact month-interval readback.",
+        "DOM invariant binds current newest ID to exactly one category row, exact category name/currency and 9 nested historical months.",
+        "Real Chromium CDP runner checks missing March, mismatched category, removed history, duplicate row and restoration.",
+        "Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297"
       ],
       "primary_negative_control": {
         "id": "NC-755-NINE",
         "status": "passed",
         "procedure": "POST exactly nine budget months to disposable CI API, read back nine and render DOM, run assertBudgetLongList.",
         "expected": "Nine periods rejected, tenth POST plus readback and DOM month labels accepted.",
-        "observed": "Exact-head Chrome budget scenario invokes assert.throws for nine and passes for restored ten."
+        "observed": "Real Chromium synthetic CDP DOM and focused Node tests: four adversarial DOM mutations rejected, restoration passed."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-06."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     },
     {
       "requirement_id": "REQ-755-07",
       "positive_evidence": [
-        "Chrome DOM negative controls remove/hide dialog or swap entity ID and enforce strict assert.throws before restoration",
-        "budget Chrome scenario executes first nine persisted API periods and requires long-list oracle to throw; restored tenth passes"
+        "Synthetic API fixture creates 9 and then 10 distinct IDs with categoryId/currency and exact month-interval readback.",
+        "DOM invariant binds current newest ID to exactly one category row, exact category name/currency and 9 nested historical months.",
+        "Real Chromium CDP runner checks missing March, mismatched category, removed history, duplicate row and restoration.",
+        "Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297"
       ],
       "primary_negative_control": {
         "id": "NC-755-RESTORE",
         "status": "passed",
         "procedure": "Mutate real DOM of open dialog and one budget month label, then restore state and compare strict assertions.",
         "expected": "Mutated state fails, same unmodified DOM passes; no oracle relaxation.",
-        "observed": "Issue-specific real DOM negative and restored-state checks ran in Chrome/Node."
+        "observed": "Real Chromium synthetic CDP DOM and focused Node tests: four adversarial DOM mutations rejected, restoration passed."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-07."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     },
     {
       "requirement_id": "REQ-755-08",
       "positive_evidence": [
         "node scripts/validate-statement-visual-coverage.mjs retains 67 registered modules, 75 execution units and fingerprints",
-        "GitHub Actions exact SHA Chrome visual workflow exercises both attachments and budgets"
+        "GitHub Actions exact SHA Chrome visual workflow exercises both attachments and budgets",
+        "Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297"
       ],
       "primary_negative_control": {
         "id": "NC-755-COVERAGE",
@@ -89,26 +96,26 @@
         "observed": "node scripts/validate-statement-visual-coverage.mjs PASS preserved all 75 units and 75 fingerprints."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-08."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     },
     {
       "requirement_id": "REQ-755-09",
       "positive_evidence": [
-        "git compare 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..b027adad59be5367038f0942a5f339ca8a89b2c7 confirms only Chrome harness paths; PR #756 targets develop",
-        "GitHub Actions workflows are native and the PR remains draft without merge"
+        "Git diff 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 changes only scripts/statement-visual; branch targets develop; no product/DB/API/migrations or PR #754 changes.",
+        "CI executes via GitHub Actions; no VPS dependency."
       ],
       "primary_negative_control": {
         "id": "NC-755-SCOPE",
         "status": "passed",
         "procedure": "Compare base SHA to PR head and inspect changed paths for product, API, migration or workflow edits.",
         "expected": "PR target other than develop or changes outside harness are rejected.",
-        "observed": "Exact Git diff proves only six scripts/statement-visual paths and develop base."
+        "observed": "Exact Git diff 36cbfb7..4150fb35 proves exactly seven scripts/statement-visual paths and develop base; no product/API/db files."
       },
       "regression_evidence": [
-        "Focused Node 3 tests pass and complete visual coverage contract returns 75 units, candidate b027adad59be5367038f0942a5f339ca8a89b2c7",
-        "Old 74/75 flaky Chrome run #41253627370 is historical; new exact-sha run is required before closing REQ-755-09."
+        "node --test issue-755-ci-determinism.test.mjs: 3/3 passed, exact candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9, raw evidence issue-755-focused-test-execution.txt sha256 8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297; Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
       ]
     }
   ]

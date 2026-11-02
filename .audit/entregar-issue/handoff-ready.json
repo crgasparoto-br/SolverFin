@@ -8,13 +8,13 @@
     "remaining_issue_ids": [],
     "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-11-02T00:34:44.067266+00:00",
+  "created_at": "2026-11-02T12:11:50.397002+00:00",
   "identity": {
-    "head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
-    "material_head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
-    "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
-    "merge_preview_sha": "c639618c1ef2691b1301c0cb6c489255de94f004",
-    "material_merge_preview_sha": "c639618c1ef2691b1301c0cb6c489255de94f004"
+    "head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+    "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+    "base_sha": "06409277b5ad2f5e7af1e26c743986ab1a6e32c3",
+    "merge_preview_sha": null,
+    "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -29,20 +29,8 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
-    "material_head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+    "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
     "issue_changed_paths": [
-      "scripts/statement-visual/fixtures.mjs",
-      "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-      "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
-      "scripts/statement-visual/issue-755-ci-determinism.mjs",
-      "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
-      "scripts/statement-visual/operational-attachments.mjs"
-    ],
-    "issue_delta_sha256": "8dc5553b77134b45f0ea9857df58cc56418609e3f39f6315c0e395c566b25c95"
-  },
-  "certificate_commit_policy": {
-    "mode": "result-only-child",
-    "allowed_paths": [
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
       ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
@@ -50,12 +38,43 @@
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
+      ".audit/entregar-issue/standard-evidence.json",
+      "scripts/statement-visual/fixtures.mjs",
+      "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
+      "scripts/statement-visual/issue-755-budget-list.mjs",
+      "scripts/statement-visual/issue-755-ci-determinism.mjs",
+      "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+      "scripts/statement-visual/operational-attachments.mjs"
+    ],
+    "issue_delta_sha256": "6089393f54d6701a7007a6e5ea5e4280769f0f10c59f627b9a0a902a7bb612b1"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/audit-escape-closure-755.json",
+      ".audit/entregar-issue/audit-remediation.json",
+      ".audit/entregar-issue/audit-source-result.json",
+      ".audit/entregar-issue/code-growth.json",
+      ".audit/entregar-issue/codebase-grounding.json",
+      ".audit/entregar-issue/evidence/audit-remediation-755-A004-A005.json",
+      ".audit/entregar-issue/evidence/audit-source-result-755-A004-A005.json",
+      ".audit/entregar-issue/evidence/independent-audit-756-A006.md",
+      ".audit/entregar-issue/evidence/independent-audit-756-original.md",
+      ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
+      ".audit/entregar-issue/evidence/issue-755-previous-target-escape-baseline.json",
+      ".audit/entregar-issue/evidence/issue-755-remediation-lineage.json",
+      ".audit/entregar-issue/evidence/learning-closure-755-A004-A005.json",
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/learning-closure.json",
+      ".audit/entregar-issue/requirement-closure.json",
+      ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/standard-evidence.json"
     ]
   },
   "contract_version": "2026-08-20.3",
   "evidence_profile": "standard",
-  "remediation_mode": null,
+  "remediation_mode": "targeted-remediation",
   "producer": {
     "skill": "entregar-issue",
     "skill_sha256": "e1fb562779fa1d091d72317aa66f1f09e6b337b8df32284fbb46e58e6bd53326"
@@ -93,9 +112,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "2305b21b528cc455235aa7abf0995ddbaf6d829f4ea37769a13cd6802e34447f",
-      "logical_sha256": "2305b21b528cc455235aa7abf0995ddbaf6d829f4ea37769a13cd6802e34447f",
-      "logical_size": 12288,
+      "sha256": "4fd227704580a7082b8f8fb6a2c627a71c40e454c9ded97e2948d6d78f16e8d7",
+      "logical_sha256": "4fd227704580a7082b8f8fb6a2c627a71c40e454c9ded97e2948d6d78f16e8d7",
+      "logical_size": 12742,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -103,9 +122,49 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "5cd93641b5593f7d0dc849451e83ae7dfb7c2c0f423064ec3d545c31f488cd51",
-      "logical_sha256": "5cd93641b5593f7d0dc849451e83ae7dfb7c2c0f423064ec3d545c31f488cd51",
-      "logical_size": 6753,
+      "sha256": "1519c07ba6d46f620e76fd3afcc5b1ead7cbefc39f4b5e6ab4f1269bc4f30ea3",
+      "logical_sha256": "1519c07ba6d46f620e76fd3afcc5b1ead7cbefc39f4b5e6ab4f1269bc4f30ea3",
+      "logical_size": 11349,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_escape_closure": {
+      "name": "audit-escape-closure-755.json",
+      "sha256": "1af4b702882754901e1a5c3ec72bc5359ffb643e21521bafb83af648bf55f1e0",
+      "logical_sha256": "1af4b702882754901e1a5c3ec72bc5359ffb643e21521bafb83af648bf55f1e0",
+      "logical_size": 9545,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "learning_closure": {
+      "name": "learning-closure.json",
+      "sha256": "4b77e1cb557bcef8f1841a4a32f1db43a8db861b9110d632f3b223d92d84c45f",
+      "logical_sha256": "4b77e1cb557bcef8f1841a4a32f1db43a8db861b9110d632f3b223d92d84c45f",
+      "logical_size": 682,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_remediation": {
+      "name": "audit-remediation.json",
+      "sha256": "763bbc093d958c82409a24e35db175ab4fb74e57c331b83edf205e76da8b7ffe",
+      "logical_sha256": "763bbc093d958c82409a24e35db175ab4fb74e57c331b83edf205e76da8b7ffe",
+      "logical_size": 1852,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_source_result": {
+      "name": "audit-source-result.json",
+      "sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5",
+      "logical_sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5",
+      "logical_size": 1462,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -113,9 +172,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "0391ce0997536df416de2d10062c29bb6eccbd5506530928d8e4fe071d0a57b1",
-      "logical_sha256": "0391ce0997536df416de2d10062c29bb6eccbd5506530928d8e4fe071d0a57b1",
-      "logical_size": 5118,
+      "sha256": "7e44edfc186ec49257b5ca54744d2e5b51105c07e187448023113176e7187087",
+      "logical_sha256": "7e44edfc186ec49257b5ca54744d2e5b51105c07e187448023113176e7187087",
+      "logical_size": 6496,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -123,9 +182,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "da2bd33e443b2b07624ef0b28d3e857a8444078f5f22b03d1ed92581cbb0d495",
-      "logical_sha256": "da2bd33e443b2b07624ef0b28d3e857a8444078f5f22b03d1ed92581cbb0d495",
-      "logical_size": 1246,
+      "sha256": "14e68f58416022c886ddd63fffdf0367511205291c386efeed4cae6cd3483951",
+      "logical_sha256": "14e68f58416022c886ddd63fffdf0367511205291c386efeed4cae6cd3483951",
+      "logical_size": 1380,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -143,12 +202,12 @@
       "applicable": true,
       "status": "passed",
       "checked": 1,
-      "subject_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+      "subject_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
       "evidence_artifacts": [
         "requirement_closure",
         "standard_evidence"
       ]
     }
   },
-  "previous_independent_rejection": false
+  "previous_independent_rejection": true
 }

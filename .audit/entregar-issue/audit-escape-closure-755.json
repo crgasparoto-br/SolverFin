@@ -1,0 +1,232 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 755,
+    "pull_request_number": 756,
+    "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+  },
+  "escapes": [
+    {
+      "subject": {
+        "repository": "crgasparoto-br/SolverFin",
+        "issue_number": 755,
+        "pull_request_number": 756,
+        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "escape_id": "ESC-755-A-004-DIAGNOSTIC",
+      "escape_class": "diagnostic-financial-payload-leak",
+      "source_audit": {
+        "head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+        "rejection_id": "audit-rejection:1bc557a9-4ae9-4fd9-ab6d-d815019e7ba2",
+        "finding_id": "A-004",
+        "audit_report_sha256": "8d282dcf230bd56c18c1ba6d8019f07f39ff2888ac725d7a5c36513617f185ec"
+      },
+      "plausible_wrong_implementation": "Filter only four-digit numbers; leave monetary decimals and account descriptions in error JSON.",
+      "literal_case": {
+        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+        "status": "passed",
+        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "sibling_cases": [
+        {
+          "id": "small-brl",
+          "surface": "error-json",
+          "dimension": "12,34",
+          "status": "passed",
+          "evidence": "Node monetary injection rejects R$12,34"
+        },
+        {
+          "id": "usd-decimal",
+          "surface": "error-json",
+          "dimension": "56.78",
+          "status": "passed",
+          "evidence": "Node monetary injection rejects USD56.78"
+        },
+        {
+          "id": "email-account",
+          "surface": "error-json",
+          "dimension": "pii",
+          "status": "passed",
+          "evidence": "Node injection rejects email and names"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "privacy",
+          "surface": "visual-failure-json",
+          "dimension": "small-decimal-monetary"
+        },
+        {
+          "risk_family": "privacy",
+          "surface": "visual-failure-json",
+          "dimension": "pii-account-name"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/statement-visual/issue-755-ci-determinism.mjs: message-class allowlist, no free-form serialization",
+        "evidence": "Exact material 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 contains fail-closed implementation and tests."
+      },
+      "detection_change": {
+        "skill_or_gate": "scripts/statement-visual/issue-755-ci-determinism.test.mjs: privacy injection",
+        "control_id": "ESC-755-A-004-DIAGNOSTIC",
+        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "trigger_terms": [
+        "Chrome visual fixture",
+        "false-positive",
+        "deterministic negative control"
+      ],
+      "required_risk_families": [
+        "privacy"
+      ],
+      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "status": "passed"
+    },
+    {
+      "subject": {
+        "repository": "crgasparoto-br/SolverFin",
+        "issue_number": 755,
+        "pull_request_number": 756,
+        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "escape_id": "ESC-755-A-005-HISTORY",
+      "escape_class": "budget-oracle-unbound-category",
+      "source_audit": {
+        "head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+        "rejection_id": "audit-rejection:1bc557a9-4ae9-4fd9-ab6d-d815019e7ba2",
+        "finding_id": "A-005",
+        "audit_report_sha256": "8d282dcf230bd56c18c1ba6d8019f07f39ff2888ac725d7a5c36513617f185ec"
+      },
+      "plausible_wrong_implementation": "Count unrelated budget rows and global labels as if they were nine historical entries from one category.",
+      "literal_case": {
+        "procedure": "Execute original previous audit counterexample and restore expected state on material candidate 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+        "status": "passed",
+        "observed": "Focused tests and Chromium DOM controls now reject invalid cases on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "sibling_cases": [
+        {
+          "id": "history-absent",
+          "surface": "real-dom",
+          "dimension": "no-history",
+          "status": "passed",
+          "evidence": "Real Chromium rejects removed history"
+        },
+        {
+          "id": "other-category",
+          "surface": "real-dom",
+          "dimension": "wrong-category",
+          "status": "passed",
+          "evidence": "Real Chromium rejects changed category"
+        },
+        {
+          "id": "duplicate-row",
+          "surface": "real-dom",
+          "dimension": "duplicate-row",
+          "status": "passed",
+          "evidence": "Real Chromium rejects duplicated category rows"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "integrity",
+          "surface": "budget-dom",
+          "dimension": "same-category-history"
+        },
+        {
+          "risk_family": "integrity",
+          "surface": "budget-api-readback",
+          "dimension": "id-and-interval-binding"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/statement-visual/issue-755-budget-list.mjs: binds newest ID and same-category history",
+        "evidence": "Exact material 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9 contains fail-closed implementation and tests."
+      },
+      "detection_change": {
+        "skill_or_gate": "scripts/statement-visual/issue-606-budgets-pilot.mjs: real DOM mutation and restoration",
+        "control_id": "ESC-755-A-005-HISTORY",
+        "evidence": "Focused Node 3/3 and real Chromium synthetic DOM negative controls at 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "trigger_terms": [
+        "Chrome visual fixture",
+        "false-positive",
+        "deterministic negative control"
+      ],
+      "required_risk_families": [
+        "integrity"
+      ],
+      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "status": "passed"
+    },
+    {
+      "subject": {
+        "repository": "crgasparoto-br/SolverFin",
+        "issue_number": 755,
+        "pull_request_number": 756,
+        "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "escape_id": "ESC-755-A-006-SCOPE",
+      "escape_class": "handoff-certified-scope-incomplete",
+      "source_audit": {
+        "head_sha": "b86730805450cd96fd1a7fd0a687bb0488b17e8a",
+        "rejection_id": "audit-rejection:2d877402-971a-4906-b0e4-f4f13cde773c",
+        "finding_id": "A-006",
+        "audit_report_sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5"
+      },
+      "plausible_wrong_implementation": "Derive issue_changed_paths from only changed executable scripts while omitting committed intermediate .audit paths in B..M.",
+      "literal_case": {
+        "procedure": "Compare git diff --name-only B M to certificate issue_changed_paths; run official check_delivery_preflight.py with independently observed paths.",
+        "status": "passed",
+        "observed": "Prior seven-path certificate was BLOCK; replacement bound to all fifteen historical paths and revalidated on current material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9"
+      },
+      "sibling_cases": [
+        {
+          "id": "omit-different-historical-path",
+          "surface": "scope-certificate",
+          "dimension": "remove-one-audit-file-from-list",
+          "status": "passed",
+          "evidence": "Official preflight rejects any missing path in the independently observed B..M delta."
+        },
+        {
+          "id": "tampered-scope-digest",
+          "surface": "scope-certificate",
+          "dimension": "wrong-delta-sha256",
+          "status": "passed",
+          "evidence": "Official validate_handoff_certificate.py rejects a mismatched scope issue_delta_sha256."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "integrity",
+          "surface": "handoff-scope",
+          "dimension": "full-git-delta"
+        },
+        {
+          "risk_family": "integrity",
+          "surface": "handoff-scope",
+          "dimension": "digest-tamper"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "Official build_handoff_certificate.py invoked with the independent B..M Git path inventory (15 paths)",
+        "evidence": "Certificate scope generated with all 15 paths, matching exact Git B..M including intermediate .audit."
+      },
+      "detection_change": {
+        "skill_or_gate": "Official check_delivery_preflight.py and validate_terminal_handoff.py on prospective sibling result-only H",
+        "control_id": "ESC-755-A-006-SCOPE",
+        "evidence": "B..M comparison and negative tests reject omitted path and altered digest, while corrected certificate is READY."
+      },
+      "trigger_terms": [
+        "result-only handoff",
+        "scope changed paths",
+        "audit paths in material diff"
+      ],
+      "required_risk_families": [
+        "integrity"
+      ],
+      "revalidated_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+      "status": "passed"
+    }
+  ]
+}

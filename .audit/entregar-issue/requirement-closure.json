@@ -235,8 +235,8 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..b027adad59be5367038f0942a5f339ca8a89b2c7 touches only scripts/statement-visual; no docs/product/API/schema changes",
-      "node scripts/validate-statement-visual-coverage.mjs: 67 modules, 75 execution units and coverage fingerprints (exact material tree)"
+      "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9: 7 scripts/statement-visual files; no docs/product/API/schema changes",
+      "node scripts/validate-statement-visual-coverage.mjs: 67 modules, 75 executions and fingerprints preserved"
     ]
   },
   "scope_reduction_review": {
@@ -262,10 +262,11 @@
       "OBL-009"
     ],
     "evidence": [
-      "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..b027adad59be5367038f0942a5f339ca8a89b2c7",
-      "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs (3 tests pass)",
-      "node scripts/validate-statement-visual-coverage.mjs (75 scenario registrations preserved)",
-      "Chrome visual workflow exact SHA must be externally verified prior to terminal certificate publication"
+      "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9: 7 issue-local Chrome harness/test paths, no API/product/migrations",
+      "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs (3 tests pass, category history and financial redaction adversarial controls)",
+      "node scripts/validate-statement-visual-coverage.mjs (67 modules, 75 one-record executions, 75 fingerprints)",
+      "Real Chromium CDP synthetic DOM budget fixture: missing month, wrong category, removed history, duplicate row each rejected, restored state passes",
+      "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

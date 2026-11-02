@@ -3,15 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
+    "rejection_id": "audit-rejection:2d877402-971a-4906-b0e4-f4f13cde773c",
     "finding_ids": [
-      "A-002"
+      "A-006"
     ],
-    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d"
+    "audit_report_sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The exact-head post-write refreeze guard and existing Skill already reject stale certificates; defect is a specific missed terminal refresh after additional feature commits. No new generic rule should be introduced."
+    "reason": "The observed mismatch is a target-specific handoff scope input error. Canonical verifier already rejects omitted Git paths. Use the Git B..M inventory without filtering historical .audit files on future terminal certification."
   },
   "skill_changes": []
 }

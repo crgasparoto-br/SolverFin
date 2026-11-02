@@ -3,44 +3,33 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "candidate_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
-    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
-    "audited_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
+    "rejection_id": "audit-rejection:2d877402-971a-4906-b0e4-f4f13cde773c",
+    "audit_report_sha256": "7926c5adde569c51a498343214de2bd7b0791f96b627874fdc64bf75afbd3fc5",
+    "audited_head_sha": "b86730805450cd96fd1a7fd0a687bb0488b17e8a"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-006",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/code-growth.json",
-        ".audit/entregar-issue/codebase-grounding.json",
-        ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
-        ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
-        ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
-        ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
-        ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
         ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/standard-evidence.json"
+        ".audit/entregar-issue/audit-remediation.json",
+        ".audit/entregar-issue/audit-escape-closure-755.json"
       ],
       "evidence": [
-        "Previous A-002 review authentic on cec1: audit-rejection:9a084674-d4ae-457a-8495-16f51b308391; original independent review remains immutable; GitHub published cec1 handoff stale after material changes.",
-        "Current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 contains dialog A-004 fix and formatting A-005 fix; CI 41128555509 CRITICAL exact SHA success; Chrome 41128555517 exact SHA success; authenticated material Git bundle 41128555529.",
-        "Chrome artifact 13011839149 report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66; negative cramped-layout measurement for both create/edit passed in 320 px, restoration passed.",
-        "Independent review of this new material and final child is not claimed or pre-approved."
+        "Exact Git B..M yields 15 changed paths: seven scripts/statement-visual and eight .audit/entregar-issue historical paths; the canonical certificate builder now receives all 15, without altering M.",
+        "Original auditor report sha256 6ff70b70192ec83da12e86bbd792b967082096f9b92247af98ab60b9cdd14136 and previous handoff b86730805450cd96fd1a7fd0a687bb0488b17e8a are preserved, as are original A-004/A-005 remediation files and escape lineage.",
+        "Pre-publication terminal and independent preflight must use B..M observed path list, not a seven-path candidate-controlled subset."
       ],
       "validations": [
-        "Stale cec1 certificate rejected at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 by official validator with exit 2; negative witness evidence/issue-725-stale-certificate-negative.txt",
-        "Exact CI 41128555509 and Chrome 41128555517 completed/success on current material SHA 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9.",
-        "New standard evidence, requirement closure, codebase grounding, code growth and terminal certificate must independently pass official preflight before publication."
+        "Git B..M independently reproduces the exact 15-path set and 13-commit cumulative delta.",
+        "Official canonical build_handoff_certificate.py and validation replay with full path list; candidate hash and sibling result-only scope are revalidated before publication."
       ]
     }
   ]
