@@ -148,29 +148,56 @@ try {
     });
   }
 
-  // This fixture modifies only the disposable Chrome CI database, never production data.
-  const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression());
-  assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(fixture)}`);
+  // Disposable Chrome CI DB only: prove that nine real API/DOM periods fail before creating ten.
+  diagnostics.setFixtureState({ stage: "creating-nine" });
+  const nineFixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression(0, 9));
+  diagnostics.setFixtureState({ stage: "nine-period-readback", ...nineFixture });
+  assert.equal(nineFixture.ok, true, "Nine-period budget fixture must persist successfully");
+  assert.equal(nineFixture.createdCount, 9);
+  assert.equal(nineFixture.readbackCount, 9);
 
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(350);
-  const mixed = await evaluate(
-    browser.cdp,
-    `(() => ({
-    rows: document.querySelectorAll('.budget-results tbody tr').length,
-    historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
-    periodLabels: Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong')).map((node) => node.textContent?.trim() ?? ""),
-    uniqueCategories: (() => {
-      const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
-        [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
-      return new Set(keys).size === keys.length;
-    })(),
-    currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
-    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
-  }))()`,
-  );
+  const nineRendered = await evaluate(browser.cdp, budgetRenderedStateExpression());
+  assert.throws(() => assertBudgetLongList(nineFixture, nineRendered), /9 !== 10/);
+
+  diagnostics.setFixtureState({ stage: "creating-tenth", ...nineFixture });
+  const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression(9, 10, nineFixture.ids));
+  diagnostics.setFixtureState({ stage: "ten-period-readback", ...fixture });
+  assert.equal(fixture.ok, true, "Ten-period budget fixture must persist successfully");
+
+  await navigate(browser.cdp, `${baseUrl}/orcamentos`);
+  await sleep(350);
+  const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression());
   assertBudgetLongList(fixture, mixed);
+  const missingPeriod = await evaluate(browser.cdp, `(() => {
+    const labels = () => Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong'));
+    const month = labels().find((node) => node.textContent?.includes('01/03/2034'));
+    if (!month) throw new Error('Real budget history has no March period to mutate');
+    const original = month.textContent;
+    let omitted;
+    try {
+      month.textContent = 'omitted-in-negative-control';
+      omitted = labels().map((node) => node.textContent?.trim() ?? '');
+    } finally {
+      month.textContent = original;
+    }
+    return { omitted, restored: labels().map((node) => node.textContent?.trim() ?? '') };
+  })()`);
+  assert.throws(
+    () => assertBudgetLongList(fixture, { ...mixed, periodLabels: missingPeriod.omitted }),
+    /missing the fixture period/,
+  );
+  assertBudgetLongList(fixture, { ...mixed, periodLabels: missingPeriod.restored });
+  report.issue755RealBrowserNegatives = {
+    nineCreated: nineFixture.createdCount,
+    nineReadback: nineFixture.readbackCount,
+    tenCreated: fixture.createdCount,
+    tenReadback: fixture.readbackCount,
+    rejectedNineThenAcceptedTen: true,
+    rejectedMissingPeriodThenRestored: true,
+  };
   assert.equal(
     mixed.uniqueCategories,
     true,
@@ -393,24 +420,43 @@ try {
   );
   console.log("Issue 606 budgets desktop and mobile baseline validation passed.");
 } catch (error) {
-  await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
+  try {
+    await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
+  } catch (diagnosticError) {
+    console.error("[issue-755] Could not preserve failure-only diagnostics:", diagnosticError?.name);
+  }
   throw error;
 } finally {
   diagnostics.stop();
   await browser.close(outputDir);
 }
 
-function budgetAcceptanceFixtureExpression() {
+function budgetRenderedStateExpression() {
+  return `(() => ({
+    rows: document.querySelectorAll('.budget-results tbody tr').length,
+    historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
+    periodLabels: Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong')).map((node) => node.textContent?.trim() ?? ''),
+    uniqueCategories: (() => {
+      const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
+        [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
+      return new Set(keys).size === keys.length;
+    })(),
+    currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
+    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
+  }))()`;
+}
+
+// prettier-ignore
+function budgetAcceptanceFixtureExpression(startIndex, endIndex, previousIds = []) {
+  const inputs = BUDGET_LONG_LIST_PERIODS.slice(startIndex, endIndex);
   return `(async () => {
     const categoriesResponse = await fetch('/api/categories?status=all', { credentials: 'same-origin' });
-    if (!categoriesResponse.ok) {
-      return { ok: false, stage: 'categories', status: categoriesResponse.status };
-    }
+    if (!categoriesResponse.ok) return { ok: false, stage: 'categories', status: categoriesResponse.status };
     const categories = (await categoriesResponse.json()).categories ?? [];
     const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
     if (!category?.id) return { ok: false, stage: 'expense-category' };
-    const periodInputs = ${JSON.stringify(BUDGET_LONG_LIST_PERIODS)};
-    const ids = [];
+    const periodInputs = ${JSON.stringify(inputs)};
+    const ids = ${JSON.stringify(previousIds)};
     for (const period of periodInputs) {
       const response = await fetch('/api/budgets', {
         method: 'POST',
@@ -426,15 +472,19 @@ function budgetAcceptanceFixtureExpression() {
       });
       if (!response.ok) return {
         ok: false, stage: 'create-budget', status: response.status,
-        periodStartOn: period.periodStartOn, createdCount: ids.length,
+        createdCount: ids.length,
       };
       ids.push((await response.json()).budget.id);
     }
     const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
     if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
     const budgets = (await readback.json()).budgets ?? [];
-    const readbackCount = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD').length;
-    return { ok: readbackCount === ids.length, createdCount: ids.length, readbackCount, currency: 'USD' };
+    const matched = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD');
+    const expectedMonths = ${JSON.stringify(BUDGET_LONG_LIST_PERIODS)}.slice(0, ids.length).map((item) => item.periodStartOn);
+    const readbackCount = matched.length;
+    const periodReadback = expectedMonths.every((start) => matched.some((item) => item.periodStartOn === start));
+    return { ok: readbackCount === ids.length && periodReadback, stage: 'readback',
+      createdCount: ids.length, readbackCount, currency: 'USD', ids };
   })()`;
 }
 
