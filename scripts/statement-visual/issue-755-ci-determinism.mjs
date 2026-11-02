@@ -115,18 +115,39 @@ const SAFE_API_SEGMENTS = new Set([
 // stable protocol categories may reach disk; pattern checks alone can leak PII.
 const SAFE_HTTP_METHODS = new Set(["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]);
 const SAFE_EXCEPTION_CLASSES = new Set([
-  "Error", "EvalError", "RangeError", "ReferenceError", "SyntaxError", "TypeError", "URIError", "AggregateError",
+  "Error",
+  "EvalError",
+  "RangeError",
+  "ReferenceError",
+  "SyntaxError",
+  "TypeError",
+  "URIError",
+  "AggregateError",
 ]);
 const SAFE_TRANSPORT_CODES = new Set([
-  "net::ERR_ABORTED", "net::ERR_FAILED", "net::ERR_BLOCKED_BY_CLIENT",
-  "net::ERR_CONNECTION_RESET", "net::ERR_CONNECTION_REFUSED", "net::ERR_CONNECTION_CLOSED",
-  "net::ERR_CONNECTION_ABORTED", "net::ERR_CONNECTION_TIMED_OUT", "net::ERR_TIMED_OUT",
-  "net::ERR_NAME_NOT_RESOLVED", "net::ERR_INTERNET_DISCONNECTED",
-  "net::ERR_ADDRESS_UNREACHABLE", "net::ERR_EMPTY_RESPONSE", "net::ERR_NETWORK_CHANGED",
-  "net::ERR_SSL_PROTOCOL_ERROR", "net::ERR_CERT_AUTHORITY_INVALID",
+  "net::ERR_ABORTED",
+  "net::ERR_FAILED",
+  "net::ERR_BLOCKED_BY_CLIENT",
+  "net::ERR_CONNECTION_RESET",
+  "net::ERR_CONNECTION_REFUSED",
+  "net::ERR_CONNECTION_CLOSED",
+  "net::ERR_CONNECTION_ABORTED",
+  "net::ERR_CONNECTION_TIMED_OUT",
+  "net::ERR_TIMED_OUT",
+  "net::ERR_NAME_NOT_RESOLVED",
+  "net::ERR_INTERNET_DISCONNECTED",
+  "net::ERR_ADDRESS_UNREACHABLE",
+  "net::ERR_EMPTY_RESPONSE",
+  "net::ERR_NETWORK_CHANGED",
+  "net::ERR_SSL_PROTOCOL_ERROR",
+  "net::ERR_CERT_AUTHORITY_INVALID",
 ]);
 const SAFE_FIXTURE_STAGES = new Set([
-  "not-started", "creating-nine", "nine-period-readback", "creating-tenth", "ten-period-readback",
+  "not-started",
+  "creating-nine",
+  "nine-period-readback",
+  "creating-tenth",
+  "ten-period-readback",
 ]);
 
 function safeHttpMethod(method) {
@@ -135,7 +156,8 @@ function safeHttpMethod(method) {
 
 function safeCount(count) {
   return Number.isInteger(count) && count >= 0 && count <= BUDGET_LONG_LIST_PERIODS.length
-    ? count : null;
+    ? count
+    : null;
 }
 
 function safeEndpoint(url) {
@@ -190,7 +212,13 @@ export function watchVisualFailures(cdp) {
     }),
     cdp.on("Network.responseReceived", ({ requestId, response }) => {
       // Never serialize malformed CDP statuses (e.g. attacker-controlled strings).
-      if (!Number.isInteger(response?.status) || response.status < 400 || response.status > 599 || networkErrors.length >= 15) return;
+      if (
+        !Number.isInteger(response?.status) ||
+        response.status < 400 ||
+        response.status > 599 ||
+        networkErrors.length >= 15
+      )
+        return;
       const request = recentRequests.get(requestId);
       networkErrors.push({
         status: response?.status ?? 0,

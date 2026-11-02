@@ -268,12 +268,22 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     assert.deepEqual(report.browserErrors[1], { className: "browser-exception", lineNumber: 22 });
     assert.deepEqual(report.browserErrors[2], { className: "TypeError", lineNumber: 23 });
     assert.equal(report.error.message, "unclassified-test-failure");
-    for (const secret of ["PRIVATE", "SECRET", "MariaAccountError", "private@example.com", "123456", "private-id"]) {
+    for (const secret of [
+      "PRIVATE",
+      "SECRET",
+      "MariaAccountError",
+      "private@example.com",
+      "123456",
+      "private-id",
+    ]) {
       assert.equal(output.includes(secret), false, `Diagnostics exposed ${secret}`);
     }
     diagnostics.setFixtureState({ stage: "MariaAccount", createdCount: 100000, readbackCount: 9 });
     await diagnostics.save(dir, "untrusted-fixture", new Error("Synthetic R$ 12,34"));
-    const unsafeState = await readFile(join(dir, "issue-755-untrusted-fixture-failure.json"), "utf8");
+    const unsafeState = await readFile(
+      join(dir, "issue-755-untrusted-fixture-failure.json"),
+      "utf8",
+    );
     assert.equal(JSON.parse(unsafeState).fixtureState.stage, "unknown");
     assert.equal(JSON.parse(unsafeState).fixtureState.createdCount, null);
     assert.equal(unsafeState.includes("MariaAccount"), false);
