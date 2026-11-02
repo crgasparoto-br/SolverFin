@@ -182,10 +182,7 @@ try {
   const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression(fixture));
   assertBudgetLongList(fixture, mixed);
   // Mutate the actual target category row. Unrelated rows must not satisfy this oracle.
-  const budgetGroupMutations = await evaluate(
-    browser.cdp,
-    budgetGroupMutationsExpression(fixture),
-  );
+  const budgetGroupMutations = await evaluate(browser.cdp, budgetGroupMutationsExpression(fixture));
   assert.throws(
     () => assertBudgetLongList(fixture, budgetGroupMutations.missingMonth),
     /history must contain exactly one/,
