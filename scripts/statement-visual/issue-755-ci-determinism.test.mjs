@@ -7,24 +7,116 @@ import {
   assertBudgetLongList,
 } from "./issue-755-ci-determinism.mjs";
 
-const periodLabels = BUDGET_LONG_LIST_PERIODS.map(({ periodStartOn }) => {
+const ids = Array.from({ length: 10 }, (_, index) => `synthetic-budget-${index + 1}`);
+const historyPeriodLabels = BUDGET_LONG_LIST_PERIODS.slice(0, -1).map(({ periodStartOn }) => {
   const [year, month, day] = periodStartOn.split("-");
   return `${day}/${month}/${year} a 31/12/2099`;
 });
 
-const fixture = { ok: true, createdCount: 10, readbackCount: 10 };
-const rendered = { rows: 1, historyCount: 9, periodLabels };
+const fixture = {
+  ok: true,
+  createdCount: 10,
+  readbackCount: 10,
+  periodReadback: true,
+  categoryId: "synthetic-category",
+  categoryName: "Categoria sintética",
+  currency: "USD",
+  ids,
+};
+const fixtureGroup = {
+  rowIds: [ids.at(-1)],
+  currentRowId: ids.at(-1),
+  categoryName: fixture.categoryName,
+  currency: "USD",
+  currentPeriodLabel: "01/10/2034 → 31/10/2034",
+  historyPeriodLabels,
+};
+const rendered = { rows: 1, historyCount: 9, fixtureGroup };
 
-test("budget long-list passes only when ten created periods survive API readback and SSR", () => {
+test("budget long-list requires exact API readback and the same category's nine history entries", () => {
   assert.doesNotThrow(() => assertBudgetLongList(fixture, rendered));
   assert.throws(() => assertBudgetLongList({ ...fixture, readbackCount: 9 }, rendered), /9 !== 10/);
   assert.throws(
-    () => assertBudgetLongList(fixture, { ...rendered, historyCount: 8 }),
-    /ten or more period records/,
+    () => assertBudgetLongList({ ...fixture, periodReadback: false }, rendered),
+    /API readback/,
   );
   assert.throws(
-    () => assertBudgetLongList(fixture, { ...rendered, periodLabels: periodLabels.slice(1) }),
-    /missing the fixture period/,
+    () => assertBudgetLongList({ ...fixture, categoryId: null }, rendered),
+    /category is missing/,
+  );
+  assert.throws(() => assertBudgetLongList({ ...fixture, ids: ids.slice(1) }, rendered), /9 !== 10/);
+  assert.throws(
+    () => assertBudgetLongList(fixture, { ...rendered, fixtureGroup: null }),
+    /history is missing/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        rows: 10,
+        historyCount: 0,
+        fixtureGroup: { ...fixtureGroup, rowIds: ids, historyPeriodLabels: [] },
+      }),
+    /exactly one category row/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, historyPeriodLabels: [] },
+      }),
+    /nine history entries/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, rowIds: [ids.at(-1), ids.at(-1)] },
+      }),
+    /exactly one category row/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, categoryName: "Outra categoria" },
+      }),
+    /another category/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, currency: "BRL" },
+      }),
+    /another currency/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, historyPeriodLabels: historyPeriodLabels.slice(1) },
+      }),
+    /nine history entries/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: {
+          ...fixtureGroup,
+          historyPeriodLabels: [historyPeriodLabels[1], ...historyPeriodLabels.slice(1)],
+        },
+      }),
+    /history must contain exactly one/,
+  );
+  assert.throws(
+    () =>
+      assertBudgetLongList(fixture, {
+        ...rendered,
+        fixtureGroup: { ...fixtureGroup, currentPeriodLabel: "01/01/2033" },
+      }),
+    /current period is missing/,
   );
 });
 
@@ -129,8 +221,25 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     ]);
     assert.deepEqual(report.consoleEvents, [{ type: "error" }]);
     assert.equal(report.browserErrors[0].lineNumber, 21);
+    assert.equal(report.error.message, "unclassified-test-failure");
     for (const secret of ["PRIVATE", "SECRET", "private@example.com", "123456", "private-id"]) {
       assert.equal(output.includes(secret), false, `Diagnostics exposed ${secret}`);
+    }
+    // Both decimal formats bypassed the former four-digit redactor. Never persist free-form text.
+    for (const message of [
+      "Budget amount R$ 12,34 and USD 56.78 on account Maria",
+      "Saldo -0,01; CPF 123.456.789-09; 12,3%",
+      "Request failed: 1.000,00 | 0.01 | private@example.com",
+      "Transaction edit dialog failed with price EUR 9,99",
+    ]) {
+      await diagnostics.save(dir, "fixture-9", new Error(message));
+      const sanitized = await readFile(join(dir, "issue-755-fixture-9-failure.json"), "utf8");
+      for (const secret of [
+        "12,34", "56.78", "Maria", "-0,01", "123.456", "1.000,00",
+        "0.01", "9,99", "private@example.com",
+      ]) {
+        assert.equal(sanitized.includes(secret), false, `Diagnostics leaked ${secret}`);
+      }
     }
   } finally {
     diagnostics.stop();

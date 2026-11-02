@@ -228,11 +228,14 @@ export function budgetAcceptanceFixtureExpression(periods, startIndex, endIndex,
     const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
     if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
     const budgets = (await readback.json()).budgets ?? [];
-    const matched = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD');
-    const expectedMonths = ${JSON.stringify(periods)}.slice(0, ids.length).map((item) => item.periodStartOn);
+    const matched = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD' && item.categoryId === category.id);
+    const expectedPeriods = ${JSON.stringify(periods)}.slice(0, ids.length);
     const readbackCount = matched.length;
-    const periodReadback = expectedMonths.every((start) => matched.some((item) => item.periodStartOn === start));
+    const periodReadback = ids.every((id, index) => matched.some((item) => item.id === id &&
+      item.periodStartOn === expectedPeriods[index]?.periodStartOn &&
+      item.periodEndOn === expectedPeriods[index]?.periodEndOn));
     return { ok: readbackCount === ids.length && periodReadback, stage: 'readback',
-      createdCount: ids.length, readbackCount, currency: 'USD', ids };
+      createdCount: ids.length, readbackCount, periodReadback,
+      categoryId: category.id, categoryName: category.name, currency: 'USD', ids };
   })()`;
 }

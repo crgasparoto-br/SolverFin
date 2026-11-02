@@ -162,7 +162,7 @@ try {
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(350);
-  const nineRendered = await evaluate(browser.cdp, budgetRenderedStateExpression());
+  const nineRendered = await evaluate(browser.cdp, budgetRenderedStateExpression(nineFixture));
   assert.throws(() => assertBudgetLongList(nineFixture, nineRendered), /9 !== 10/);
 
   diagnostics.setFixtureState({ stage: "creating-tenth", ...nineFixture });
@@ -175,38 +175,78 @@ try {
 
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(350);
-  const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression());
+  const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression(fixture));
   assertBudgetLongList(fixture, mixed);
-  const missingPeriod = await evaluate(
+  // Mutate the actual target category row. Unrelated rows must not satisfy this oracle.
+  const budgetGroupMutations = await evaluate(
     browser.cdp,
     `(() => {
-    const labels = () => Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong'));
-    const months = labels().filter((node) => node.textContent?.includes('01/03/2034'));
-    if (!months.length) throw new Error('Real budget history has no March period to mutate');
-    const originals = months.map((node) => node.textContent);
-    let omitted;
+    const target = document.querySelector('.budget-results tr[data-row-key=${JSON.stringify(fixture.ids.at(-1))}]');
+    const history = target?.querySelector('.budget-period-history');
+    const march = [...(history?.querySelectorAll('.budget-history-heading > strong') ?? [])]
+      .find((node) => node.textContent?.includes('01/03/2034'));
+    const category = target?.querySelector('[data-column="category"] .budget-category-tree strong');
+    if (!target || !history || !march || !category) throw new Error('Budget fixture target category row is incomplete');
+    const categoryNameNode = [...category.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
+    if (!categoryNameNode) throw new Error('Budget fixture category label missing');
+    const original = { month: march.textContent, name: categoryNameNode.nodeValue };
+    const read = () => ${budgetRenderedStateExpression(fixture)};
+    const snapshots = {};
     try {
-      for (const node of months) node.textContent = 'omitted-in-negative-control';
-      omitted = labels().map((node) => node.textContent?.trim() ?? '');
-      if (omitted.some((text) => text.includes('01/03/2034'))) throw new Error('March still present after negative-control mutation');
+      march.textContent = 'month-omitted-for-negative-control';
+      snapshots.missingMonth = read();
+      march.textContent = original.month;
+      categoryNameNode.nodeValue = 'wrong-category-for-negative-control';
+      snapshots.wrongCategory = read();
+      categoryNameNode.nodeValue = original.name;
+      history.remove();
+      snapshots.noHistory = read();
+      target.querySelector('[data-column="period"]').appendChild(history);
+      const duplicate = target.cloneNode(true);
+      target.after(duplicate);
+      snapshots.duplicateRows = read();
+      duplicate.remove();
     } finally {
-      months.forEach((node, index) => { node.textContent = originals[index]; });
+      march.textContent = original.month;
+      categoryNameNode.nodeValue = original.name;
+      if (!history.isConnected) target.querySelector('[data-column="period"]').appendChild(history);
+      const table = target.closest('tbody');
+      [...(table?.querySelectorAll('tr[data-row-key]') ?? [])]
+        .filter((row) => row !== target && row.getAttribute('data-row-key') === target.getAttribute('data-row-key'))
+        .forEach((row) => row.remove());
     }
-    return { omitted, restored: labels().map((node) => node.textContent?.trim() ?? '') };
+    snapshots.restored = read();
+    return snapshots;
   })()`,
   );
   assert.throws(
-    () => assertBudgetLongList(fixture, { ...mixed, periodLabels: missingPeriod.omitted }),
-    /missing the fixture period/,
+    () => assertBudgetLongList(fixture, budgetGroupMutations.missingMonth),
+    /history must contain exactly one/,
   );
-  assertBudgetLongList(fixture, { ...mixed, periodLabels: missingPeriod.restored });
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.wrongCategory),
+    /another category/,
+  );
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.noHistory),
+    /nine history entries/,
+  );
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.duplicateRows),
+    /exactly one category row/,
+  );
+  assertBudgetLongList(fixture, budgetGroupMutations.restored);
   report.issue755RealBrowserNegatives = {
     nineCreated: nineFixture.createdCount,
     nineReadback: nineFixture.readbackCount,
     tenCreated: fixture.createdCount,
     tenReadback: fixture.readbackCount,
     rejectedNineThenAcceptedTen: true,
-    rejectedMissingPeriodThenRestored: true,
+    rejectedMissingMonth: true,
+    rejectedMissingHistory: true,
+    rejectedWrongCategory: true,
+    rejectedDuplicateRows: true,
+    restored: true,
   };
   assert.equal(
     mixed.uniqueCategories,
@@ -444,19 +484,36 @@ try {
   await browser.close(outputDir);
 }
 
-function budgetRenderedStateExpression() {
-  return `(() => ({
-    rows: document.querySelectorAll('.budget-results tbody tr').length,
-    historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
-    periodLabels: Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong')).map((node) => node.textContent?.trim() ?? ''),
-    uniqueCategories: (() => {
-      const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
-        [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
-      return new Set(keys).size === keys.length;
-    })(),
-    currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
-    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
-  }))()`;
+function budgetRenderedStateExpression(fixture) {
+  return `(() => {
+    const fixtureIds = new Set(${JSON.stringify(fixture.ids)});
+    const newestId = ${JSON.stringify(fixture.ids.at(-1))};
+    const rows = Array.from(document.querySelectorAll('.budget-results tbody tr[data-row-key]'));
+    const matchingRows = rows.filter((row) => fixtureIds.has(row.getAttribute('data-row-key')));
+    const current = matchingRows.find((row) => row.getAttribute('data-row-key') === newestId);
+    const history = Array.from(current?.querySelectorAll('[data-column="period"] .budget-period-history .budget-history-entry') ?? []);
+    const keys = rows.map((row) => [row.querySelector('[data-column="category"]')?.textContent?.trim(),
+      row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
+    return {
+      rows: rows.length,
+      historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
+      uniqueCategories: new Set(keys).size === keys.length,
+      fixtureGroup: {
+        rowIds: matchingRows.map((row) => row.getAttribute('data-row-key')),
+        currentRowId: current?.getAttribute('data-row-key') ?? null,
+        categoryName: (() => {
+          const strong = current?.querySelector('[data-column="category"] .budget-category-tree strong');
+          return [...(strong?.childNodes ?? [])].filter((node) => node.nodeType === Node.TEXT_NODE)
+            .map((node) => node.textContent).join('').trim() || null;
+        })(),
+        currency: current?.querySelector('[data-column="currency"] .budget-currency')?.textContent?.trim() ?? null,
+        currentPeriodLabel: current?.querySelector('[data-column="period"] .budget-period')?.textContent?.trim() ?? null,
+        historyPeriodLabels: history.map((node) => node.querySelector('.budget-history-heading > strong')?.textContent?.trim() ?? ''),
+      },
+      currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
+      focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
+    };
+  })()`;
 }
 
 async function readBudget(cdp, id) {

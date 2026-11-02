@@ -26,16 +26,37 @@ export function assertBudgetLongList(fixture, rendered) {
   assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(safeFixture)}`);
   assert.equal(fixture.createdCount, BUDGET_LONG_LIST_PERIODS.length);
   assert.equal(fixture.readbackCount, BUDGET_LONG_LIST_PERIODS.length);
-  assert.ok(
-    rendered.rows + rendered.historyCount >= BUDGET_LONG_LIST_PERIODS.length,
-    "Budget long-list scenario must preserve ten or more period records",
+  assert.equal(fixture.periodReadback, true, "Budget periods differ from their API readback");
+  assert.equal(fixture.ids?.length, BUDGET_LONG_LIST_PERIODS.length);
+  assert.equal(
+    new Set(fixture.ids).size,
+    BUDGET_LONG_LIST_PERIODS.length,
+    "Budget fixture IDs must be unique",
   );
-  for (const period of BUDGET_LONG_LIST_PERIODS) {
+  assert.ok(fixture.categoryId && fixture.categoryName, "Budget fixture category is missing");
+  const group = rendered.fixtureGroup;
+  assert.ok(group, "Budget category history is missing from the DOM");
+  // The last API-created budget is the newest period and must be the single grouped row.
+  const newestId = fixture.ids.at(-1);
+  assert.deepEqual(group.rowIds, [newestId], "Budget fixture must have exactly one category row");
+  assert.equal(group.currentRowId, newestId, "Budget category row points to the wrong budget");
+  assert.equal(group.categoryName, fixture.categoryName, "Budget category row has another category");
+  assert.equal(group.currency, fixture.currency, "Budget category row has another currency");
+  assert.equal(group.historyPeriodLabels?.length, 9, "Budget category must have nine history entries");
+  const labelFor = (period) => {
     const [year, month, day] = period.periodStartOn.split("-");
-    const label = `${day}/${month}/${year}`;
-    assert.ok(
-      rendered.periodLabels.some((text) => text.includes(label)),
-      `Budget long-list is missing the fixture period ${period.periodStartOn}`,
+    return `${day}/${month}/${year}`;
+  };
+  assert.ok(
+    group.currentPeriodLabel?.includes(labelFor(BUDGET_LONG_LIST_PERIODS[9])),
+    "Budget category current period is missing",
+  );
+  for (const period of BUDGET_LONG_LIST_PERIODS.slice(0, -1)) {
+    const label = labelFor(period);
+    assert.equal(
+      group.historyPeriodLabels.filter((text) => text.includes(label)).length,
+      1,
+      `Budget category history must contain exactly one ${period.periodStartOn} period`,
     );
   }
 }
@@ -157,14 +178,23 @@ function safeEndpoint(url) {
   }
 }
 
+// Failure artifacts must never serialize arbitrary exception text. Classify into
+// bounded, non-sensitive messages; currency/PII formats cannot be enumerated safely.
 function safeErrorMessage(error) {
-  const message = String(error?.message ?? error ?? "unknown-error");
-  return message
-    .replace(/https?:\/\/\S+/gi, "[url]")
-    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, "[email]")
-    .replace(/\b[0-9a-f]{8}-[0-9a-f-]{27,}\b/gi, "[id]")
-    .replace(/\b\d{4,}\b/g, "[number]")
-    .slice(0, 320);
+  const message = String(error?.message ?? "");
+  if (/^Budget fixture failed:/.test(message)) return "budget-fixture-failure";
+  if (/^Budget .*API readback|^Budget periods differ/.test(message)) {
+    return "budget-readback-failure";
+  }
+  if (/^Budget (?:category|fixture|long-list)/.test(message)) {
+    return "budget-dom-invariant-failure";
+  }
+  if (/^Transaction (?:action|edit|attachment)/.test(message)) {
+    return "transaction-dialog-invariant-failure";
+  }
+  if (/^Timed out waiting for/.test(message)) return "browser-state-timeout";
+  if (/^Demo login failed:/.test(message)) return "demo-login-failure";
+  return "unclassified-test-failure";
 }
 
 // Bounded evidence collected only when a scenario fails; no payloads, URLs with queries or console arguments.
@@ -257,7 +287,11 @@ export function watchVisualFailures(cdp) {
       const data = {
         scenario: safeScenario,
         error: {
-          kind: error instanceof Error ? error.name : "Error",
+          kind:
+            error instanceof Error &&
+            ["Error", "AssertionError", "TypeError", "RangeError", "SyntaxError"].includes(error.name)
+              ? error.name
+              : "Error",
           message: safeErrorMessage(error),
         },
         fixtureState,
