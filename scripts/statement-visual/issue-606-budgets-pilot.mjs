@@ -5,6 +5,10 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { budgetAcceptanceFixtureExpression, loginExpression } from "./fixtures.mjs";
 import {
+  budgetGroupMutationsExpression,
+  budgetRenderedStateExpression,
+} from "./issue-755-budget-list.mjs";
+import {
   BUDGET_LONG_LIST_PERIODS,
   assertBudgetLongList,
   watchVisualFailures,
@@ -180,44 +184,7 @@ try {
   // Mutate the actual target category row. Unrelated rows must not satisfy this oracle.
   const budgetGroupMutations = await evaluate(
     browser.cdp,
-    `(() => {
-    const target = document.querySelector('.budget-results tr[data-row-key=${JSON.stringify(fixture.ids.at(-1))}]');
-    const history = target?.querySelector('.budget-period-history');
-    const march = [...(history?.querySelectorAll('.budget-history-heading > strong') ?? [])]
-      .find((node) => node.textContent?.includes('01/03/2034'));
-    const category = target?.querySelector('[data-column="category"] .budget-category-tree strong');
-    if (!target || !history || !march || !category) throw new Error('Budget fixture target category row is incomplete');
-    const categoryNameNode = [...category.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
-    if (!categoryNameNode) throw new Error('Budget fixture category label missing');
-    const original = { month: march.textContent, name: categoryNameNode.nodeValue };
-    const read = () => ${budgetRenderedStateExpression(fixture)};
-    const snapshots = {};
-    try {
-      march.textContent = 'month-omitted-for-negative-control';
-      snapshots.missingMonth = read();
-      march.textContent = original.month;
-      categoryNameNode.nodeValue = 'wrong-category-for-negative-control';
-      snapshots.wrongCategory = read();
-      categoryNameNode.nodeValue = original.name;
-      history.remove();
-      snapshots.noHistory = read();
-      target.querySelector('[data-column="period"]').appendChild(history);
-      const duplicate = target.cloneNode(true);
-      target.after(duplicate);
-      snapshots.duplicateRows = read();
-      duplicate.remove();
-    } finally {
-      march.textContent = original.month;
-      categoryNameNode.nodeValue = original.name;
-      if (!history.isConnected) target.querySelector('[data-column="period"]').appendChild(history);
-      const table = target.closest('tbody');
-      [...(table?.querySelectorAll('tr[data-row-key]') ?? [])]
-        .filter((row) => row !== target && row.getAttribute('data-row-key') === target.getAttribute('data-row-key'))
-        .forEach((row) => row.remove());
-    }
-    snapshots.restored = read();
-    return snapshots;
-  })()`,
+    budgetGroupMutationsExpression(fixture),
   );
   assert.throws(
     () => assertBudgetLongList(fixture, budgetGroupMutations.missingMonth),
@@ -482,38 +449,6 @@ try {
 } finally {
   diagnostics.stop();
   await browser.close(outputDir);
-}
-
-function budgetRenderedStateExpression(fixture) {
-  return `(() => {
-    const fixtureIds = new Set(${JSON.stringify(fixture.ids)});
-    const newestId = ${JSON.stringify(fixture.ids.at(-1))};
-    const rows = Array.from(document.querySelectorAll('.budget-results tbody tr[data-row-key]'));
-    const matchingRows = rows.filter((row) => fixtureIds.has(row.getAttribute('data-row-key')));
-    const current = matchingRows.find((row) => row.getAttribute('data-row-key') === newestId);
-    const history = Array.from(current?.querySelectorAll('[data-column="period"] .budget-period-history .budget-history-entry') ?? []);
-    const keys = rows.map((row) => [row.querySelector('[data-column="category"]')?.textContent?.trim(),
-      row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
-    return {
-      rows: rows.length,
-      historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
-      uniqueCategories: new Set(keys).size === keys.length,
-      fixtureGroup: {
-        rowIds: matchingRows.map((row) => row.getAttribute('data-row-key')),
-        currentRowId: current?.getAttribute('data-row-key') ?? null,
-        categoryName: (() => {
-          const strong = current?.querySelector('[data-column="category"] .budget-category-tree strong');
-          return [...(strong?.childNodes ?? [])].filter((node) => node.nodeType === Node.TEXT_NODE)
-            .map((node) => node.textContent).join('').trim() || null;
-        })(),
-        currency: current?.querySelector('[data-column="currency"] .budget-currency')?.textContent?.trim() ?? null,
-        currentPeriodLabel: current?.querySelector('[data-column="period"] .budget-period')?.textContent?.trim() ?? null,
-        historyPeriodLabels: history.map((node) => node.querySelector('.budget-history-heading > strong')?.textContent?.trim() ?? ''),
-      },
-      currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
-      focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
-    };
-  })()`;
 }
 
 async function readBudget(cdp, id) {

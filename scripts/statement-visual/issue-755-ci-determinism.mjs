@@ -4,70 +4,8 @@ import { join } from "node:path";
 
 import { evaluate } from "./cdp.mjs";
 
-export const BUDGET_LONG_LIST_PERIODS = Object.freeze(
-  Array.from({ length: 10 }, (_, index) => {
-    const year = 2034;
-    const month = String(index + 1).padStart(2, "0");
-    const end = new Date(Date.UTC(year, index + 1, 0)).getUTCDate();
-    return {
-      periodStartOn: `${year}-${month}-01`,
-      periodEndOn: `${year}-${month}-${String(end).padStart(2, "0")}`,
-    };
-  }),
-);
-
-export function assertBudgetLongList(fixture, rendered) {
-  const safeFixture = {
-    stage: fixture.stage ?? "budget-readback",
-    ok: fixture.ok,
-    createdCount: fixture.createdCount,
-    readbackCount: fixture.readbackCount,
-  };
-  assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(safeFixture)}`);
-  assert.equal(fixture.createdCount, BUDGET_LONG_LIST_PERIODS.length);
-  assert.equal(fixture.readbackCount, BUDGET_LONG_LIST_PERIODS.length);
-  assert.equal(fixture.periodReadback, true, "Budget periods differ from their API readback");
-  assert.equal(fixture.ids?.length, BUDGET_LONG_LIST_PERIODS.length);
-  assert.equal(
-    new Set(fixture.ids).size,
-    BUDGET_LONG_LIST_PERIODS.length,
-    "Budget fixture IDs must be unique",
-  );
-  assert.ok(fixture.categoryId && fixture.categoryName, "Budget fixture category is missing");
-  const group = rendered.fixtureGroup;
-  assert.ok(group, "Budget category history is missing from the DOM");
-  // The last API-created budget is the newest period and must be the single grouped row.
-  const newestId = fixture.ids.at(-1);
-  assert.deepEqual(group.rowIds, [newestId], "Budget fixture must have exactly one category row");
-  assert.equal(group.currentRowId, newestId, "Budget category row points to the wrong budget");
-  assert.equal(
-    group.categoryName,
-    fixture.categoryName,
-    "Budget category row has another category",
-  );
-  assert.equal(group.currency, fixture.currency, "Budget category row has another currency");
-  assert.equal(
-    group.historyPeriodLabels?.length,
-    9,
-    "Budget category must have nine history entries",
-  );
-  const labelFor = (period) => {
-    const [year, month, day] = period.periodStartOn.split("-");
-    return `${day}/${month}/${year}`;
-  };
-  assert.ok(
-    group.currentPeriodLabel?.includes(labelFor(BUDGET_LONG_LIST_PERIODS[9])),
-    "Budget category current period is missing",
-  );
-  for (const period of BUDGET_LONG_LIST_PERIODS.slice(0, -1)) {
-    const label = labelFor(period);
-    assert.equal(
-      group.historyPeriodLabels.filter((text) => text.includes(label)).length,
-      1,
-      `Budget category history must contain exactly one ${period.periodStartOn} period`,
-    );
-  }
-}
+import { BUDGET_LONG_LIST_PERIODS } from "./issue-755-budget-list.mjs";
+export { BUDGET_LONG_LIST_PERIODS, assertBudgetLongList } from "./issue-755-budget-list.mjs";
 
 export function assertAttachmentEditState(state, transactionId) {
   assert.equal(state.menuOpen, true, "Transaction action menu is not open");
