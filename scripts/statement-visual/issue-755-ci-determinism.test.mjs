@@ -69,34 +69,64 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     },
     async send(method) {
       assert.equal(method, "Runtime.evaluate");
-      return { result: { value: { route: "orcamentos", openDialogs: 0, budgetHistoryEntries: 9 } } };
+      return {
+        result: { value: { route: "orcamentos", openDialogs: 0, budgetHistoryEntries: 9 } },
+      };
     },
   };
   const emit = (name, data) => {
     for (const callback of listeners.get(name) ?? []) callback(data);
   };
   const diagnostics = watchVisualFailures(fakeCdp);
-  diagnostics.setFixtureState({ stage: "nine-period-readback", createdCount: 9, readbackCount: 9, bankDetail: "PRIVATE" });
+  diagnostics.setFixtureState({
+    stage: "nine-period-readback",
+    createdCount: 9,
+    readbackCount: 9,
+    bankDetail: "PRIVATE",
+  });
   emit("Network.requestWillBeSent", {
     requestId: "request-1",
-    request: { method: "POST", url: "https://localhost/api/budgets/private-id?email=private@example.com&amount=123456" },
+    request: {
+      method: "POST",
+      url: "https://localhost/api/budgets/private-id?email=private@example.com&amount=123456",
+    },
   });
   emit("Network.responseReceived", {
-    requestId: "request-1", response: { status: 503, url: "https://localhost/api/budgets/private-id?bank=SECRET" },
+    requestId: "request-1",
+    response: { status: 503, url: "https://localhost/api/budgets/private-id?bank=SECRET" },
   });
-  emit("Network.loadingFailed", { requestId: "request-1", errorText: "net::ERR_CONNECTION_RESET", canceled: false });
+  emit("Network.loadingFailed", {
+    requestId: "request-1",
+    errorText: "net::ERR_CONNECTION_RESET",
+    canceled: false,
+  });
   emit("Runtime.consoleAPICalled", { type: "error", args: [{ value: "PRIVATE FINANCIAL VALUE" }] });
-  emit("Runtime.exceptionThrown", { exceptionDetails: { text: "PRIVATE ERROR PAYLOAD", lineNumber: 21 } });
+  emit("Runtime.exceptionThrown", {
+    exceptionDetails: { text: "PRIVATE ERROR PAYLOAD", lineNumber: 21 },
+  });
   const dir = await mkdtemp(join(tmpdir(), "issue-755-diagnostics-"));
   try {
-    await diagnostics.save(dir, "fixture-9", new Error("Request failed for private@example.com 123456"));
+    await diagnostics.save(
+      dir,
+      "fixture-9",
+      new Error("Request failed for private@example.com 123456"),
+    );
     const output = await readFile(join(dir, "issue-755-fixture-9-failure.json"), "utf8");
     const report = JSON.parse(output);
     assert.equal(report.fixtureState.createdCount, 9);
     assert.equal(report.fixtureState.readbackCount, 9);
     assert.equal(report.dom.budgetHistoryEntries, 9);
-    assert.deepEqual(report.networkErrors, [{ status: 503, method: "POST", endpoint: "/api/budgets/:id" }]);
-    assert.deepEqual(report.transportFailures, [{ method: "POST", endpoint: "/api/budgets/:id", canceled: false, code: "net::ERR_CONNECTION_RESET" }]);
+    assert.deepEqual(report.networkErrors, [
+      { status: 503, method: "POST", endpoint: "/api/budgets/:id" },
+    ]);
+    assert.deepEqual(report.transportFailures, [
+      {
+        method: "POST",
+        endpoint: "/api/budgets/:id",
+        canceled: false,
+        code: "net::ERR_CONNECTION_RESET",
+      },
+    ]);
     assert.deepEqual(report.consoleEvents, [{ type: "error" }]);
     assert.equal(report.browserErrors[0].lineNumber, 21);
     for (const secret of ["PRIVATE", "SECRET", "private@example.com", "123456", "private-id"]) {
@@ -104,7 +134,10 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
     }
   } finally {
     diagnostics.stop();
-    assert.equal([...listeners.values()].every((callbacks) => callbacks.size === 0), true);
+    assert.equal(
+      [...listeners.values()].every((callbacks) => callbacks.size === 0),
+      true,
+    );
     await rm(dir, { recursive: true, force: true });
   }
 });

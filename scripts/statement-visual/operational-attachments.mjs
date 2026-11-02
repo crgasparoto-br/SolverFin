@@ -41,7 +41,10 @@ try {
   try {
     await diagnostics.save(outputDir, scenarioId, error);
   } catch (diagnosticError) {
-    console.error("[issue-755] Could not preserve failure-only diagnostics:", diagnosticError?.name);
+    console.error(
+      "[issue-755] Could not preserve failure-only diagnostics:",
+      diagnosticError?.name,
+    );
   }
   throw error;
 } finally {

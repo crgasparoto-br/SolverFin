@@ -163,7 +163,10 @@ try {
   assert.throws(() => assertBudgetLongList(nineFixture, nineRendered), /9 !== 10/);
 
   diagnostics.setFixtureState({ stage: "creating-tenth", ...nineFixture });
-  const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression(9, 10, nineFixture.ids));
+  const fixture = await evaluate(
+    browser.cdp,
+    budgetAcceptanceFixtureExpression(9, 10, nineFixture.ids),
+  );
   diagnostics.setFixtureState({ stage: "ten-period-readback", ...fixture });
   assert.equal(fixture.ok, true, "Ten-period budget fixture must persist successfully");
 
@@ -171,7 +174,9 @@ try {
   await sleep(350);
   const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression());
   assertBudgetLongList(fixture, mixed);
-  const missingPeriod = await evaluate(browser.cdp, `(() => {
+  const missingPeriod = await evaluate(
+    browser.cdp,
+    `(() => {
     const labels = () => Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong'));
     const month = labels().find((node) => node.textContent?.includes('01/03/2034'));
     if (!month) throw new Error('Real budget history has no March period to mutate');
@@ -184,7 +189,8 @@ try {
       month.textContent = original;
     }
     return { omitted, restored: labels().map((node) => node.textContent?.trim() ?? '') };
-  })()`);
+  })()`,
+  );
   assert.throws(
     () => assertBudgetLongList(fixture, { ...mixed, periodLabels: missingPeriod.omitted }),
     /missing the fixture period/,
@@ -423,7 +429,10 @@ try {
   try {
     await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
   } catch (diagnosticError) {
-    console.error("[issue-755] Could not preserve failure-only diagnostics:", diagnosticError?.name);
+    console.error(
+      "[issue-755] Could not preserve failure-only diagnostics:",
+      diagnosticError?.name,
+    );
   }
   throw error;
 } finally {

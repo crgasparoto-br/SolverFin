@@ -69,9 +69,16 @@ export function attachmentStateReaderExpression(menuOpen, actionVisible) {
 }
 
 // Fail closed on real DOM mutations, then prove that the unmodified browser state passes again.
-export async function assertBrowserAttachmentNegativeControls(cdp, transactionId, menuOpen, actionVisible) {
+export async function assertBrowserAttachmentNegativeControls(
+  cdp,
+  transactionId,
+  menuOpen,
+  actionVisible,
+) {
   const read = attachmentStateReaderExpression(menuOpen, actionVisible);
-  const snapshots = await evaluate(cdp, `(() => {
+  const snapshots = await evaluate(
+    cdp,
+    `(() => {
     const readState = ${read};
     const dialog = document.querySelector('dialog[data-modal][open]');
     const workspace = dialog?.querySelector('[data-attachment-workspace][data-entity-kind="transaction"]');
@@ -103,25 +110,48 @@ export async function assertBrowserAttachmentNegativeControls(cdp, transactionId
       workspace.dataset.entityId = originalId;
     }
     return { before, absent, hidden, wrongEntity, restored: readState() };
-  })()`);
+  })()`,
+  );
   assertAttachmentEditState(snapshots.before, transactionId);
   assert.throws(() => assertAttachmentEditState(snapshots.absent, transactionId), /did not open/);
   assert.throws(() => assertAttachmentEditState(snapshots.hidden, transactionId), /did not open/);
-  assert.throws(() => assertAttachmentEditState(snapshots.wrongEntity, transactionId), /another transaction/);
+  assert.throws(
+    () => assertAttachmentEditState(snapshots.wrongEntity, transactionId),
+    /another transaction/,
+  );
   assertAttachmentEditState(snapshots.restored, transactionId);
-  return { realDom: true, rejected: ["modal-absent", "modal-hidden", "wrong-entity"], restored: true };
+  return {
+    realDom: true,
+    rejected: ["modal-absent", "modal-hidden", "wrong-entity"],
+    restored: true,
+  };
 }
 
 const SAFE_API_SEGMENTS = new Set([
-  "api", "accounts", "attachments", "budgets", "categories", "content", "credit-card-accounts",
-  "inbox", "invoices", "me", "transactions", "import-batches", "health", "auth",
+  "api",
+  "accounts",
+  "attachments",
+  "budgets",
+  "categories",
+  "content",
+  "credit-card-accounts",
+  "inbox",
+  "invoices",
+  "me",
+  "transactions",
+  "import-batches",
+  "health",
+  "auth",
 ]);
 
 function safeEndpoint(url) {
   try {
     const segments = new URL(url).pathname.split("/").filter(Boolean);
     if (segments[0] !== "api") return "non-api";
-    return `/${segments.slice(0, 4).map((segment) => SAFE_API_SEGMENTS.has(segment) ? segment : ":id").join("/")}`;
+    return `/${segments
+      .slice(0, 4)
+      .map((segment) => (SAFE_API_SEGMENTS.has(segment) ? segment : ":id"))
+      .join("/")}`;
   } catch {
     return "unknown";
   }
@@ -149,13 +179,20 @@ export function watchVisualFailures(cdp) {
     cdp.on("Network.requestWillBeSent", ({ requestId, request }) => {
       if (requestId && request) {
         if (recentRequests.size >= 80) recentRequests.delete(recentRequests.keys().next().value);
-        recentRequests.set(requestId, { method: request.method, endpoint: safeEndpoint(request.url) });
+        recentRequests.set(requestId, {
+          method: request.method,
+          endpoint: safeEndpoint(request.url),
+        });
       }
     }),
     cdp.on("Network.responseReceived", ({ requestId, response }) => {
       if (response?.status < 400 || networkErrors.length >= 15) return;
       const request = recentRequests.get(requestId);
-      networkErrors.push({ status: response?.status ?? 0, method: request?.method ?? "unknown", endpoint: safeEndpoint(response?.url) });
+      networkErrors.push({
+        status: response?.status ?? 0,
+        method: request?.method ?? "unknown",
+        endpoint: safeEndpoint(response?.url),
+      });
     }),
     cdp.on("Network.loadingFailed", ({ requestId, errorText, canceled }) => {
       if (transportFailures.length >= 15) return;
@@ -171,8 +208,11 @@ export function watchVisualFailures(cdp) {
       if (browserErrors.length >= 8) return;
       browserErrors.push({
         className: /^[A-Za-z]+Error$/.test(exceptionDetails?.exception?.className ?? "")
-          ? exceptionDetails.exception.className : "browser-exception",
-        lineNumber: Number.isInteger(exceptionDetails?.lineNumber) ? exceptionDetails.lineNumber : null,
+          ? exceptionDetails.exception.className
+          : "browser-exception",
+        lineNumber: Number.isInteger(exceptionDetails?.lineNumber)
+          ? exceptionDetails.lineNumber
+          : null,
       });
     }),
     cdp.on("Runtime.consoleAPICalled", ({ type }) => {
@@ -184,7 +224,9 @@ export function watchVisualFailures(cdp) {
   return {
     setFixtureState(state) {
       fixtureState = {
-        stage: String(state.stage ?? "unknown").replace(/[^a-z0-9-]/gi, "-").slice(0, 50),
+        stage: String(state.stage ?? "unknown")
+          .replace(/[^a-z0-9-]/gi, "-")
+          .slice(0, 50),
         expectedCount: BUDGET_LONG_LIST_PERIODS.length,
         createdCount: Number.isInteger(state.createdCount) ? state.createdCount : null,
         readbackCount: Number.isInteger(state.readbackCount) ? state.readbackCount : null,
@@ -214,7 +256,10 @@ export function watchVisualFailures(cdp) {
       const path = join(outputDir, `issue-755-${safeScenario}-failure.json`);
       const data = {
         scenario: safeScenario,
-        error: { kind: error instanceof Error ? error.name : "Error", message: safeErrorMessage(error) },
+        error: {
+          kind: error instanceof Error ? error.name : "Error",
+          message: safeErrorMessage(error),
+        },
         fixtureState,
         dom,
         networkErrors,
