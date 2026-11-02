@@ -1,224 +1,82 @@
 {
   "schema_version": 2,
-  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "subject_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
+  "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
   "creations": [
     {
-      "path": "apps/web/src/dev-server/budgets-action-menu.ts",
+      "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
       "kind": "file",
       "search": {
         "queries": [
-          "git grep -n \"budgets-action-menu\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-action-menu.ts"
+          "git grep -n \"watchVisualFailures\" -- scripts/statement-visual",
+          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..b027adad59be5367038f0942a5f339ca8a89b2c7 -- scripts/statement-visual"
         ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
+        "scope": "Reused existing CDP event hooks/evaluate plus issue-606 budget pilot and visible transaction modal instead of a second Chrome protocol client.",
         "candidates": [
           {
-            "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-action-menu.ts cohesion while continuing to import canonical helpers."
+            "path": "scripts/statement-visual/cdp.mjs",
+            "reason_not_reused": "CDP already owns browser transport; new module only encodes issue-specific deterministic oracles and bounded diagnostics."
+          },
+          {
+            "path": "scripts/statement-visual/fixtures.mjs",
+            "reason_not_reused": "Shared login/budget API expression fixture belongs in fixtures.mjs, extracted to existing module as part of this delivery."
           }
         ]
       },
       "decision": "create",
-      "justification": "Extract existing contextual menu behaviour with focus/keyboard handling instead of duplicating it for cards/table."
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-filters.ts",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"budgets-filters\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-filters.ts"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-filters.ts cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Separate SSR filter markup while reusing shared renderFilterBar and URL status parsing."
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-focus.ts",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"budgets-focus\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-focus.ts"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-focus.ts cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Extract first-fold financial hierarchy with existing money renderer; no new financial calculation."
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-form.ts",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"budgets-form\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-form.ts"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-form.ts cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Share new/edit dialogs and locale money input instead of separate modal implementations."
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-table.ts",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"budgets-table\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-table.ts"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-page.ts",
-            "reason_not_reused": "Extracted from high-density existing module to keep apps/web/src/dev-server/budgets-table.ts cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Consolidate category/currency display and expand older periods without aggregating amounts."
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"issue-725-budget-golden-dialogs\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-golden-dialogs.mjs"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-golden-dialogs.mjs cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Reuse the existing Chrome budgets pilot to validate dialogs across desktop/mobile."
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-measurements.mjs",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"issue-725-budget-measurements\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-measurements.mjs"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-measurements.mjs cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Factor viewport measurements shared with existing Chrome pilot, avoiding duplicated DOM probes."
-    },
-    {
-      "path": "scripts/statement-visual/issue-725-budget-menu-checks.mjs",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git grep -n \"issue-725-budget-menu-checks\" -- apps/web/src/dev-server scripts/statement-visual",
-          "git diff --name-status 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- scripts/statement-visual/issue-725-budget-menu-checks.mjs"
-        ],
-        "scope": "Reviewed existing SSR page/shared primitives or statement-visual pilot at material head before extracting this module.",
-        "candidates": [
-          {
-            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-            "reason_not_reused": "Extracted from high-density existing module to keep scripts/statement-visual/issue-725-budget-menu-checks.mjs cohesion while continuing to import canonical helpers."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Factor action menu keyboard and overlap checks from existing Chrome pilot."
+      "justification": "Small issue-specific, dependency-free collection of deterministic negative oracles and bounded redacted browser failure diagnostics; reused CDP core."
     }
   ],
   "references": [
     {
-      "symbol": "renderBudgetFocus",
+      "symbol": "watchVisualFailures",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/budgets-focus.ts",
-        "line": 20
+        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "line": 171
       },
       "verified_by": {
-        "command": "git grep -n renderBudgetFocus apps/web/src/dev-server",
+        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "renderBudgetFilters",
+      "symbol": "assertBudgetLongList",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/budgets-filters.ts",
-        "line": 6
+        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "line": 19
       },
       "verified_by": {
-        "command": "git grep -n renderBudgetFilters apps/web/src/dev-server",
+        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "renderBudgetTable",
+      "symbol": "budgetAcceptanceFixtureExpression",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/budgets-page.ts",
+      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/budgets-table.ts",
-        "line": 8
+        "path": "scripts/statement-visual/fixtures.mjs",
+        "line": 199
       },
       "verified_by": {
-        "command": "git grep -n renderBudgetTable apps/web/src/dev-server",
+        "command": "node --check scripts/statement-visual/fixtures.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "renderBudgetActionMenu",
+      "symbol": "assertBrowserAttachmentNegativeControls",
       "kind": "local",
-      "used_in": "apps/web/src/dev-server/budgets-table.ts",
+      "used_in": "scripts/statement-visual/operational-attachments.mjs",
       "defined_at": {
-        "path": "apps/web/src/dev-server/budgets-action-menu.ts",
-        "line": 5
+        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "line": 72
       },
       "verified_by": {
-        "command": "git grep -n renderBudgetActionMenu apps/web/src/dev-server",
-        "exit_code": 0
-      }
-    },
-    {
-      "symbol": "renderNewBudgetDialog",
-      "kind": "local",
-      "used_in": "apps/web/src/dev-server/budgets-page.ts",
-      "defined_at": {
-        "path": "apps/web/src/dev-server/budgets-form.ts",
-        "line": 12
-      },
-      "verified_by": {
-        "command": "git grep -n renderNewBudgetDialog apps/web/src/dev-server",
+        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
         "exit_code": 0
       }
     }
@@ -226,147 +84,39 @@
   "replacements": [],
   "test_decisions": [
     {
-      "path": "apps/web/src/design-system/money.test.ts",
-      "operation": "modified",
-      "scenario": "Shared financial money and maintenance API smoke regression",
-      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
+      "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+      "operation": "added",
+      "scenario": "Negative cases for 9-period readback, missing/hidden/wrong-entity modal and leak-safe diagnostic evidence",
+      "requirement": "REQ-755-06 / REQ-755-07 / REQ-755-04",
       "search": {
         "queries": [
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/design-system/money.test.ts",
-          "git grep -n \"test(\" apps/web/src/design-system/money.test.ts"
+          "git grep -n \"assertBudgetLongList\" -- scripts/statement-visual",
+          "git ls-tree -r --name-only 36cbfb7ee0a8aea2412073d113644bf2e1e683e5 | grep \"statement-visual.*test\""
         ],
-        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
-        "runner": "npm run test",
+        "scope": "Read pre-existing tests, visual coverage registry, and the exact current test suite.",
+        "runner": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
         "candidates": [
           {
-            "path": "apps/web/src/design-system/money.test.ts",
-            "case": "Full existing suite apps/web/src/design-system/money.test.ts; 8 cases passed",
-            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
-            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
+            "path": "scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs",
+            "case": "Visual desktop/mobile deterministic fixture contracts",
+            "oracle": "Node assert and registered scenario coverage",
+            "comparison": "Existing unit contract does not exercise absent modal, real budget API readback, or redacted error diagnostics."
           }
         ]
       },
-      "decision": "extend-existing",
-      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
+      "decision": "new-test-required",
+      "justification": "New negative controls are not in the older Golden Screen tests; preserve every previous visual scenario and add focused tests.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "npm run test",
+        "command": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
         "exit_code": 0,
-        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "subject_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7",
         "reached_tests": [
-          "apps/web/src/design-system/money.test.ts"
+          "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-page.test.ts",
-      "operation": "modified",
-      "scenario": "Golden Screen budget UI/contract regression",
-      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
-      "search": {
-        "queries": [
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-page.test.ts",
-          "git grep -n \"test(\" apps/web/src/dev-server/budgets-page.test.ts"
-        ],
-        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-page.test.ts",
-            "case": "Full existing suite apps/web/src/dev-server/budgets-page.test.ts; 21 cases passed",
-            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
-            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-        "reached_tests": [
-          "apps/web/src/dev-server/budgets-page.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/budgets-view-model.test.ts",
-      "operation": "modified",
-      "scenario": "Golden Screen budget UI/contract regression",
-      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
-      "search": {
-        "queries": [
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/budgets-view-model.test.ts",
-          "git grep -n \"test(\" apps/web/src/dev-server/budgets-view-model.test.ts"
-        ],
-        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/budgets-view-model.test.ts",
-            "case": "Full existing suite apps/web/src/dev-server/budgets-view-model.test.ts; 6 cases passed",
-            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
-            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-        "reached_tests": [
-          "apps/web/src/dev-server/budgets-view-model.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
-      }
-    },
-    {
-      "path": "apps/web/src/dev-server/maintenance-actions.test.ts",
-      "operation": "modified",
-      "scenario": "Shared financial money and maintenance API smoke regression",
-      "requirement": "Issue #725 contract/SSR/regression and UI infrastructure must remain unaffected.",
-      "search": {
-        "queries": [
-          "git diff 9265025a21c39528131f3319943d0125c5cf9538..cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 -- apps/web/src/dev-server/maintenance-actions.test.ts",
-          "git grep -n \"test(\" apps/web/src/dev-server/maintenance-actions.test.ts"
-        ],
-        "scope": "Preserved and extended existing canonical tests, no parallel duplicated suite.",
-        "runner": "npm run test",
-        "candidates": [
-          {
-            "path": "apps/web/src/dev-server/maintenance-actions.test.ts",
-            "case": "Full existing suite apps/web/src/dev-server/maintenance-actions.test.ts; reached in full npm test",
-            "oracle": "Deterministic API/SSR financial values, null distinctions, currency isolation, accessible hierarchy and action contract.",
-            "comparison": "Retain existing cases and exercise modified test file on the exact material head."
-          }
-        ]
-      },
-      "decision": "extend-existing",
-      "justification": "Existing test file already covers this subsystem and now exercises the updated boundary.",
-      "disposition": "keep",
-      "verification": {
-        "status": "passed",
-        "command": "npm run test",
-        "exit_code": 0,
-        "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-        "reached_tests": [
-          "apps/web/src/dev-server/maintenance-actions.test.ts"
-        ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        "evidence_sha256": "3c30189b2e99d25c5b2d1bf887f70ecf82653917f2428046842bf8c0ae3fe33a"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
+        "evidence_sha256": "197a1bcdd706c26d68c4b6deb3ef8c08d88546e04738e342e6775a50ec49d1ee"
       }
     }
   ]
