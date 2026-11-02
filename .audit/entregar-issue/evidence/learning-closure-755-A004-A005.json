@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:1bc557a9-4ae9-4fd9-ab6d-d815019e7ba2",
+    "finding_ids": [
+      "A-004",
+      "A-005"
+    ],
+    "audit_report_sha256": "8d282dcf230bd56c18c1ba6d8019f07f39ff2888ac725d7a5c36513617f185ec"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Both misses are issue-specific harness oracles: fixed by project-local deterministic negative controls; the official Skill already requires leak-safe evidence and anti-false-positive tests."
+  },
+  "skill_changes": []
+}

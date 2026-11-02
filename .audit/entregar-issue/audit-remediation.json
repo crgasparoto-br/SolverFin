@@ -3,44 +3,35 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "status": "closed",
-  "candidate_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "candidate_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
   "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
-    "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
-    "audited_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683"
+    "rejection_id": "audit-rejection:50e1f167-0d18-4a96-a859-eb5d5a824245",
+    "audit_report_sha256": "6e643defecf835b7460964ac7272dea39e77566f2a54ba3a2b4bf56002f94224",
+    "audited_head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533"
   },
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-007",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        ".audit/entregar-issue/audit-remediation.json",
-        ".audit/entregar-issue/code-growth.json",
-        ".audit/entregar-issue/codebase-grounding.json",
-        ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-        ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
-        ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
-        ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
-        ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
-        ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
-        ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/standard-evidence.json"
+        "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+        "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+        "scripts/statement-visual/operational-attachments.mjs"
       ],
       "evidence": [
-        "Previous A-002 review authentic on cec1: audit-rejection:9a084674-d4ae-457a-8495-16f51b308391; original independent review remains immutable; GitHub published cec1 handoff stale after material changes.",
-        "Current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 contains dialog A-004 fix and formatting A-005 fix; CI 41128555509 CRITICAL exact SHA success; Chrome 41128555517 exact SHA success; authenticated material Git bundle 41128555529.",
-        "Chrome artifact 13011839149 report sha256 f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66; negative cramped-layout measurement for both create/edit passed in 320 px, restoration passed.",
-        "Independent review of this new material and final child is not claimed or pre-approved."
+        "Real Chromium Runtime.exceptionThrown with MariaAccountError is mapped to browser-exception; persisted JSON includes neither class nor synthetic amount R$ 12,34.",
+        "Adversarial Network.requestWillBeSent method PRIVATEACCOUNT injected through live CdpClient dispatcher is mapped to unknown and never emitted verbatim in the persisted JSON.",
+        "Focused Node test also rejects forged net::ERR_PRIVATEACCOUNT, SECRET_STATUS HTTP status and unsafe fixture stage, preserving valid TypeError/POST/503 categories.",
+        "All 75 original Chrome scenario fingerprints were retained without skipping coverage or changing product/API/database."
       ],
       "validations": [
-        "Stale cec1 certificate rejected at 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 by official validator with exit 2; negative witness evidence/issue-725-stale-certificate-negative.txt",
-        "Exact CI 41128555509 and Chrome 41128555517 completed/success on current material SHA 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9.",
-        "New standard evidence, requirement closure, codebase grounding, code growth and terminal certificate must independently pass official preflight before publication."
+        "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs passes all three tests at exact material M3.",
+        "node --test scripts/statement-visual/*.test.mjs passes all 122 tests; Chrome negative helper executed on real Chromium and checks serialized JSON."
       ]
     }
   ]

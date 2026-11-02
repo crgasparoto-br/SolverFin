@@ -1,25 +1,25 @@
-**Parent epic:** #702
-**Origin:** #719 — inventário de fase 2
-**Baseline do inventário:** `develop@45f516268ab5a51931bdd096c7a131fc3b8f73d8` (congelado em 17/10/2026)
-**Fonte visual:** Golden Screen de `/lancamentos` aprovada em 14/10/2026; `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md` e `AGENTS.md`.
-**Precedência:** consolidar evidência do marco técnico #714; aproveitar os componentes e verificações de #715–#718 quando aplicáveis. Não depender de merge automático.
+## Contexto e impacto
 
-**Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.
+O workflow `Statement visual validation` da [PR #754](https://github.com/crgasparoto-br/SolverFin/pull/754), no exato SHA `b639b2a552ad3e986571c7f6296220d44607fd10`, apresentou **duas falhas diferentes e intermitentes** ao executar a mesma arvore de produto. O SHA material `8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85` passou em todos os 75 cenarios no [Chrome #41203149301](https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301), e o filho so alterou arquivos `.audit/entregar-issue/`.
 
-**Rota / arquétipo:** `/orcamentos`, A1 Cockpit. **Prioridade:** P1 (planejamento de caixa).
-**Antecedentes:** #591, #613 e contrato atual `docs/API_BUDGETS_GOALS_ALERTS.md`. Não duplicar escopo funcional da #619.
+**Evidencia bruta:** [workflow #41253627370](https://github.com/crgasparoto-br/SolverFin/actions/runs/41253627370) (duas tentativas no mesmo SHA):
 
-### Delta observável na fonte
-`apps/web/src/dev-server/budgets-page.ts` em `renderPageContainer` (~103–137) emite **quatro `renderMetricCard`** de contagem — Ativos, Sem orçamento, Sem categoria, Moedas — *antes* da tabela com valores financeiros planejado/realizado/comprometido/projetado (~282–320). Esses contadores podem competir visualmente com a decisão operacional; `budget-results.panel` e a barra de filtros completam a carga inicial. Comparar com hierarquia A1, preservando integralmente dados atuais.
+1. **Tentativa 1:** 74 PASS, 1 FAIL no cenario `operational-attachments::0-lancamentos-attachment-lifecycle`. `scripts/statement-visual/operational-attachments.mjs:64/227` aguardou 15s pelo seletor `dialog[open] [data-attachment-workspace][data-entity-kind="transaction"]` depois de clicar em editar e excedeu o timeout. Os cenarios de anexos `/cartoes` e `/inbox` passaram.
+2. **Tentativa 2 (reexecucao unica e dirigida):** 74 PASS, 1 FAIL no cenario `budgets-pilot-baseline` da rota `/orcamentos`, com assert `Budget long-list scenario must preserve ten or more period records` em `scripts/statement-visual/issue-606-budgets-pilot.mjs:168`. O cenario de anexos do Extrato desta vez **passou**.
 
-### Escopo fechado
-- Reorganizar primeira leitura para período, moeda, orçamento/execução/alerta e ação contextual; tornar contagens informativas secundárias, sem criar somas ou KPIs não existentes na API.
-- Ajustar densidade da tabela e filtros por moeda/estado, com estado ativo evidente e mesma operação SSR.
-- Preservar orçamento sem categoria, `unbudgeted`, alertas, controle de permissão, modais de novo/editar e campos atuais da #613 e da #619 quando já existentes.
+Todos os cenarios Golden Screen e IA Review Queue da `/inbox` passaram em ambas as tentativas. Nao houve mudanca de codigo entre os runs nem alteracao de contratos financeiros, DOM das rotas afetadas ou migracoes na PR #754. O [Repository CI #41253627375](https://github.com/crgasparoto-br/SolverFin/actions/runs/41253627375) do mesmo SHA concluiu com **success**. A issue #726/PR #754 nao deve ser usada para aplicar uma correcao fora do escopo e invalidar um handoff critical ja certificado.
 
-### Aceite / regressão
-- [ ] Evidências Chrome no SHA 1366×768 / 390×844 / 320×740, dois códigos de moeda, lista longa, filtro sem resultado, erro, criação/edição.
-- [ ] Valores planejado/realizado/remanescente e estado dominam contadores de catálogo; labels/status/moedas explícitos; filtros permanecem operáveis e persistentes.
-- [ ] Nenhum recálculo de status/saldo no renderer, nenhuma mistura BRL/USD, nem zeros sintéticos para dados ausentes.
-- [ ] Controles negativos: priorização artificial de contagens e truncamento de moeda/valores devem ser rejeitados; restauração passa.
-- [ ] Testes de contrato orçamento e SSR + CI/Chrome exact-SHA verdes e parecer visual/técnico independente.
+## Objetivo da correcao separada
+
+Diagnosticar e eliminar o nao determinismo de fixture/estado assincrono/espera de modal e contagem de periodos do teste Chrome, com **evidencia discriminante e testes de regressao**, sem esconder falhas reais.
+
+## Criterios de aceite
+
+- [ ] Reproduzir cada falha com registro de DOM, estado de fixture, console/rede e mensagem, no menor teste focado possivel; separar problema do harness e problema real de produto.
+- [ ] Corrigir causa raiz do seletor/espera do dialogo de anexo do Extrato; nao elevar timeout arbitrariamente, nem ignorar ausencias reais de modal.
+- [ ] Garantir criacao/contagem deterministica dos 10+ registros no cenario de lista longa de Orcamentos; nao reduzir o assert para fazer o teste ficar verde.
+- [ ] Provar controles negativos: modal realmente ausente e fixture com menos de 10 periodos ainda precisam falhar; restauracoes devem passar.
+- [ ] Validar os dois cenarios em execucoes independentes e o gate completo Chrome no SHA exato; manter 75 cenarios, nao remover/desabilitar nenhum.
+- [ ] Seguir `crgasparoto-br/skill@develop`, branch base `develop`, PR propria, sem merge automatico nem dependencia de VPS.
+
+**Classificacao:** falha no CI fora do diff da issue #726; nao e evidencia de defeito de Inbox. Nao disparar mais retries cegos nem alterar o certificado/handoff da PR #754 para contornar o gate.

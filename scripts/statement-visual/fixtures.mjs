@@ -194,3 +194,48 @@ export function accountEditFixtureExpression() {
     };
   })()`;
 }
+
+// prettier-ignore
+export function budgetAcceptanceFixtureExpression(periods, startIndex, endIndex, previousIds = []) {
+  const inputs = periods.slice(startIndex, endIndex);
+  return `(async () => {
+    const categoriesResponse = await fetch('/api/categories?status=all', { credentials: 'same-origin' });
+    if (!categoriesResponse.ok) return { ok: false, stage: 'categories', status: categoriesResponse.status };
+    const categories = (await categoriesResponse.json()).categories ?? [];
+    const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
+    if (!category?.id) return { ok: false, stage: 'expense-category' };
+    const periodInputs = ${JSON.stringify(inputs)};
+    const ids = ${JSON.stringify(previousIds)};
+    for (const period of periodInputs) {
+      const response = await fetch('/api/budgets', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          categoryId: category.id,
+          periodStartOn: period.periodStartOn,
+          periodEndOn: period.periodEndOn,
+          currency: 'USD',
+          plannedAmountMinor: 500000,
+        }),
+      });
+      if (!response.ok) return {
+        ok: false, stage: 'create-budget', status: response.status,
+        createdCount: ids.length,
+      };
+      ids.push((await response.json()).budget.id);
+    }
+    const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
+    if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
+    const budgets = (await readback.json()).budgets ?? [];
+    const matched = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD' && item.categoryId === category.id);
+    const expectedPeriods = ${JSON.stringify(periods)}.slice(0, ids.length);
+    const readbackCount = matched.length;
+    const periodReadback = ids.every((id, index) => matched.some((item) => item.id === id &&
+      item.periodStartOn === expectedPeriods[index]?.periodStartOn &&
+      item.periodEndOn === expectedPeriods[index]?.periodEndOn));
+    return { ok: readbackCount === ids.length && periodReadback, stage: 'readback',
+      createdCount: ids.length, readbackCount, periodReadback,
+      categoryId: category.id, categoryName: category.name, currency: 'USD', ids };
+  })()`;
+}

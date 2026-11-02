@@ -3,93 +3,74 @@
   "status": "ready",
   "phase": "final",
   "completion": {
-    "issue_completion": "partial",
-    "deferred_obligation_ids": [
-      "OBL-012"
-    ],
-    "remaining_issue_ids": [
-      725
-    ],
-    "parent_issue_must_remain_open": true
+    "issue_completion": "complete",
+    "deferred_obligation_ids": [],
+    "remaining_issue_ids": [],
+    "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-10-30T21:19:04.815975+00:00",
+  "created_at": "2026-11-02T19:38:18.378966+00:00",
   "identity": {
-    "head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-    "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-    "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
-    "merge_preview_sha": "1512489ecd6269e3861ba3e8de55a82a12af155b",
-    "material_merge_preview_sha": "1512489ecd6269e3861ba3e8de55a82a12af155b"
+    "head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
+    "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
+    "base_sha": "06409277b5ad2f5e7af1e26c743986ab1a6e32c3",
+    "merge_preview_sha": null,
+    "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 725,
-    "pull_request_number": 751,
+    "issue_number": 755,
+    "pull_request_number": 756,
     "work_item_kind": "issue",
-    "work_item_number": 725,
-    "pull_request": 751,
+    "work_item_number": 755,
+    "pull_request": 756,
     "base_ref": "develop",
-    "head_ref": "feat/725-golden-budgets-cockpit"
+    "head_ref": "fix/755-chrome-fixture-determinism"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "9265025a21c39528131f3319943d0125c5cf9538",
-    "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+    "work_item_start_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+    "material_head_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
     "issue_changed_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/audit-escape-closure.parts/part-000.b64",
+      ".audit/entregar-issue/audit-escape-closure-755.json",
       ".audit/entregar-issue/audit-remediation.json",
       ".audit/entregar-issue/audit-source-result.json",
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
-      ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-      ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
-      ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
-      ".audit/entregar-issue/evidence/issue-725-inherited-binding.json",
-      ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
-      ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
-      ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
+      ".audit/entregar-issue/evidence/audit-remediation-755-A004-A005.json",
+      ".audit/entregar-issue/evidence/audit-source-result-755-A004-A005.json",
+      ".audit/entregar-issue/evidence/independent-audit-756-A006.md",
+      ".audit/entregar-issue/evidence/independent-audit-756-original.md",
+      ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
+      ".audit/entregar-issue/evidence/issue-755-previous-target-escape-baseline.json",
+      ".audit/entregar-issue/evidence/issue-755-remediation-lineage.json",
+      ".audit/entregar-issue/evidence/learning-closure-755-A004-A005.json",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/requirement-closure.json",
       ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE.txt",
       ".audit/entregar-issue/standard-evidence.json",
-      "apps/web/src/design-system/money.test.ts",
-      "apps/web/src/design-system/money.ts",
-      "apps/web/src/dev-server/budgets-action-menu.ts",
-      "apps/web/src/dev-server/budgets-filters.ts",
-      "apps/web/src/dev-server/budgets-focus.ts",
-      "apps/web/src/dev-server/budgets-form.ts",
-      "apps/web/src/dev-server/budgets-page.test.ts",
-      "apps/web/src/dev-server/budgets-page.ts",
-      "apps/web/src/dev-server/budgets-table.ts",
-      "apps/web/src/dev-server/budgets-view-model.test.ts",
-      "apps/web/src/dev-server/budgets-view-model.ts",
-      "apps/web/src/dev-server/maintenance-actions.test.ts",
-      "docs/API_BUDGETS_GOALS_ALERTS.md",
-      "docs/VISUAL_VALIDATION.md",
+      "scripts/statement-visual/fixtures.mjs",
       "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
-      "scripts/statement-visual/issue-725-budget-measurements.mjs",
-      "scripts/statement-visual/issue-725-budget-menu-checks.mjs"
+      "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+      "scripts/statement-visual/issue-755-budget-list.mjs",
+      "scripts/statement-visual/issue-755-ci-determinism.mjs",
+      "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+      "scripts/statement-visual/operational-attachments.mjs"
     ],
-    "issue_delta_sha256": "796cc29b5360ea8bf234e243eaf714f0fa6dc0ab3f5709d3db7e6bfa74fd6b5b"
+    "issue_delta_sha256": "6383715af8ca41cf35485e0984a7133407a7b4d5e4f256bdddcc955c6602d4ff"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json",
-      ".audit/entregar-issue/audit-escape-closure.parts/part-000.b64",
+      ".audit/entregar-issue/audit-escape-closure-755.json",
       ".audit/entregar-issue/audit-remediation.json",
       ".audit/entregar-issue/audit-source-result.json",
       ".audit/entregar-issue/code-growth.json",
       ".audit/entregar-issue/codebase-grounding.json",
-      ".audit/entregar-issue/evidence/issue-725-budget-ssr-execution.txt",
-      ".audit/entregar-issue/evidence/issue-725-chrome-exact-material.json",
-      ".audit/entregar-issue/evidence/issue-725-diff-scope.json",
-      ".audit/entregar-issue/evidence/issue-725-negative-controls.json",
-      ".audit/entregar-issue/evidence/issue-725-stale-certificate-negative.txt",
-      ".audit/entregar-issue/evidence/issue-725-visual-provenance.json",
+      ".audit/entregar-issue/evidence/independent-audit-756-A007.md",
+      ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/learning-closure.json",
       ".audit/entregar-issue/requirement-closure.json",
@@ -127,8 +108,8 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "01318656024d722128c8e2af91352f7dc35202d88708c7abe0de8b22f48003b1",
-      "logical_sha256": "01318656024d722128c8e2af91352f7dc35202d88708c7abe0de8b22f48003b1",
+      "sha256": "eeaa3fdb3fe7747a34d00772572aed7f68a20ca6be109f64290307b333ba7608",
+      "logical_sha256": "eeaa3fdb3fe7747a34d00772572aed7f68a20ca6be109f64290307b333ba7608",
       "logical_size": 574,
       "artifact_transport": {
         "format": "plain-json",
@@ -137,9 +118,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "e9a3e751120d16c8f113d5894f84c44367facf555dd2971fec64db1434d78dfb",
-      "logical_sha256": "e9a3e751120d16c8f113d5894f84c44367facf555dd2971fec64db1434d78dfb",
-      "logical_size": 18316,
+      "sha256": "4fd227704580a7082b8f8fb6a2c627a71c40e454c9ded97e2948d6d78f16e8d7",
+      "logical_sha256": "4fd227704580a7082b8f8fb6a2c627a71c40e454c9ded97e2948d6d78f16e8d7",
+      "logical_size": 12742,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -147,41 +128,29 @@
     },
     "standard_evidence": {
       "name": "standard-evidence.json",
-      "sha256": "1e0f87167e68f6cac0d73d64601023aec177f05f8b3218424befd74ad19765b0",
-      "logical_sha256": "1e0f87167e68f6cac0d73d64601023aec177f05f8b3218424befd74ad19765b0",
-      "logical_size": 23977,
+      "sha256": "6454e4e17f4fb766fd775f801dcc92ddd6d1b48bd73d37b56e5a3f90e20dfbd4",
+      "logical_sha256": "6454e4e17f4fb766fd775f801dcc92ddd6d1b48bd73d37b56e5a3f90e20dfbd4",
+      "logical_size": 12222,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
       }
     },
     "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "c8f05bc1f569c7943e6d8913e7b66c86f0299d6fe37aac22f7a52d2438d5206c",
-      "logical_sha256": "9f3f2affb8dc8352a61fd41038f363a691686f36813881492eb007ef90e1ca05",
-      "logical_size": 57593,
+      "name": "audit-escape-closure-755.json",
+      "sha256": "fe5bda8f3cf0172cf333e1086575579d86174f32139f4fba539d4131d64bd03b",
+      "logical_sha256": "fe5bda8f3cf0172cf333e1086575579d86174f32139f4fba539d4131d64bd03b",
+      "logical_size": 13459,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 11248,
-        "decoded_size": 57593,
-        "decoded_sha256": "9f3f2affb8dc8352a61fd41038f363a691686f36813881492eb007ef90e1ca05",
-        "encoded_sha256": "420200bd10e3af1dcdf04a64ab2ae32fd5859334fc053c9a045dd59e12bbd0b1",
-        "parts": [
-          {
-            "path": "audit-escape-closure.parts/part-000.b64",
-            "size": 11248,
-            "sha256": "420200bd10e3af1dcdf04a64ab2ae32fd5859334fc053c9a045dd59e12bbd0b1"
-          }
-        ]
+        "format": "plain-json",
+        "version": 1
       }
     },
     "learning_closure": {
       "name": "learning-closure.json",
-      "sha256": "44439c92458bb5706b9a8fdfece53a08a7639dd290e35f87fd99052d0bde32ac",
-      "logical_sha256": "44439c92458bb5706b9a8fdfece53a08a7639dd290e35f87fd99052d0bde32ac",
-      "logical_size": 671,
+      "sha256": "402c5235ebd2d085116657f61376d2ea6a310534fb132d48ed57ba0488a4df0c",
+      "logical_sha256": "402c5235ebd2d085116657f61376d2ea6a310534fb132d48ed57ba0488a4df0c",
+      "logical_size": 702,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -189,9 +158,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "86e328bcdc5de0d2fe4bf682d2a6b3d9ab7f52ce16eb333330df4d409fe6f7d9",
-      "logical_sha256": "86e328bcdc5de0d2fe4bf682d2a6b3d9ab7f52ce16eb333330df4d409fe6f7d9",
-      "logical_size": 2864,
+      "sha256": "b66f855f46dff266fdbcaf0abbd7e5c0e678c056b305c59a850df177948a615f",
+      "logical_sha256": "b66f855f46dff266fdbcaf0abbd7e5c0e678c056b305c59a850df177948a615f",
+      "logical_size": 2016,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -199,9 +168,9 @@
     },
     "audit_source_result": {
       "name": "audit-source-result.json",
-      "sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
-      "logical_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d",
-      "logical_size": 1551,
+      "sha256": "6e643defecf835b7460964ac7272dea39e77566f2a54ba3a2b4bf56002f94224",
+      "logical_sha256": "6e643defecf835b7460964ac7272dea39e77566f2a54ba3a2b4bf56002f94224",
+      "logical_size": 1423,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -209,9 +178,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "8c76dd329d5cfdc8a51e18a65fd16282df924170c4d2d86fb9cb52ea559bd602",
-      "logical_sha256": "8c76dd329d5cfdc8a51e18a65fd16282df924170c4d2d86fb9cb52ea559bd602",
-      "logical_size": 17827,
+      "sha256": "8c8cddd30056b4d483a27113579c9c18221aa5bd2effc8d00ea14070fa2b39a9",
+      "logical_sha256": "8c8cddd30056b4d483a27113579c9c18221aa5bd2effc8d00ea14070fa2b39a9",
+      "logical_size": 8239,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -219,9 +188,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "a0119eb46e987c9a5de26037b75f61c522db6b4b6cbe0e2e37a74fd9853f8de6",
-      "logical_sha256": "a0119eb46e987c9a5de26037b75f61c522db6b4b6cbe0e2e37a74fd9853f8de6",
-      "logical_size": 2575,
+      "sha256": "18cc2d39c490c22c98bc2654c8fab216d75250333c17dad9e5168bb147b8d4f0",
+      "logical_sha256": "18cc2d39c490c22c98bc2654c8fab216d75250333c17dad9e5168bb147b8d4f0",
+      "logical_size": 1884,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -236,11 +205,14 @@
       "applicable": true
     },
     "source_locations": {
-      "applicable": false,
-      "status": "not-applicable",
-      "checked": 0,
-      "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
-      "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
+      "applicable": true,
+      "status": "passed",
+      "checked": 1,
+      "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
+      "evidence_artifacts": [
+        "requirement_closure",
+        "standard_evidence"
+      ]
     }
   },
   "previous_independent_rejection": true
