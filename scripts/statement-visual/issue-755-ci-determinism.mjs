@@ -40,9 +40,17 @@ export function assertBudgetLongList(fixture, rendered) {
   const newestId = fixture.ids.at(-1);
   assert.deepEqual(group.rowIds, [newestId], "Budget fixture must have exactly one category row");
   assert.equal(group.currentRowId, newestId, "Budget category row points to the wrong budget");
-  assert.equal(group.categoryName, fixture.categoryName, "Budget category row has another category");
+  assert.equal(
+    group.categoryName,
+    fixture.categoryName,
+    "Budget category row has another category",
+  );
   assert.equal(group.currency, fixture.currency, "Budget category row has another currency");
-  assert.equal(group.historyPeriodLabels?.length, 9, "Budget category must have nine history entries");
+  assert.equal(
+    group.historyPeriodLabels?.length,
+    9,
+    "Budget category must have nine history entries",
+  );
   const labelFor = (period) => {
     const [year, month, day] = period.periodStartOn.split("-");
     return `${day}/${month}/${year}`;
@@ -289,7 +297,9 @@ export function watchVisualFailures(cdp) {
         error: {
           kind:
             error instanceof Error &&
-            ["Error", "AssertionError", "TypeError", "RangeError", "SyntaxError"].includes(error.name)
+            ["Error", "AssertionError", "TypeError", "RangeError", "SyntaxError"].includes(
+              error.name,
+            )
               ? error.name
               : "Error",
           message: safeErrorMessage(error),

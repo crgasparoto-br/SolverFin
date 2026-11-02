@@ -44,7 +44,10 @@ test("budget long-list requires exact API readback and the same category's nine 
     () => assertBudgetLongList({ ...fixture, categoryId: null }, rendered),
     /category is missing/,
   );
-  assert.throws(() => assertBudgetLongList({ ...fixture, ids: ids.slice(1) }, rendered), /9 !== 10/);
+  assert.throws(
+    () => assertBudgetLongList({ ...fixture, ids: ids.slice(1) }, rendered),
+    /9 !== 10/,
+  );
   assert.throws(
     () => assertBudgetLongList(fixture, { ...rendered, fixtureGroup: null }),
     /history is missing/,
@@ -235,8 +238,15 @@ test("failure diagnostics preserve DOM, fixture and network causes without finan
       await diagnostics.save(dir, "fixture-9", new Error(message));
       const sanitized = await readFile(join(dir, "issue-755-fixture-9-failure.json"), "utf8");
       for (const secret of [
-        "12,34", "56.78", "Maria", "-0,01", "123.456", "1.000,00",
-        "0.01", "9,99", "private@example.com",
+        "12,34",
+        "56.78",
+        "Maria",
+        "-0,01",
+        "123.456",
+        "1.000,00",
+        "0.01",
+        "9,99",
+        "private@example.com",
       ]) {
         assert.equal(sanitized.includes(secret), false, `Diagnostics leaked ${secret}`);
       }
