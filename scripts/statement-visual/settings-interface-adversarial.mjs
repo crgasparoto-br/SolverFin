@@ -17,8 +17,12 @@ if (!chromePath) throw new Error("CHROME_BIN is required for settings visual val
 await mkdir(outputDir, { recursive: true });
 
 const profilesDesktop = await runScenario("profiles-desktop", 1440, 1000, "profiles");
+const profilesGoldenDesktop = await runScenario("profiles-1366", 1366, 768, "profiles");
+const profilesSmallMobile = await runScenario("profiles-320", 320, 740, "profiles");
 const profilesMobile = await runScenario("profiles-mobile", 390, 844, "profiles");
 const rulesDesktop = await runScenario("rules-desktop", 1440, 1000, "rules");
+const rulesGoldenDesktop = await runScenario("rules-1366", 1366, 768, "rules");
+const rulesSmallMobile = await runScenario("rules-320", 320, 740, "rules");
 const rulesTablet = await runScenario("rules-tablet", 768, 1024, "rules");
 const rulesMobile = await runScenario("rules-mobile", 390, 844, "rules");
 const rulesZoom = await runScenario("rules-mobile-zoom-200", 390, 844, "rules", true);
@@ -43,8 +47,12 @@ const report = {
   screenshots,
   zoomEvidence,
   profilesDesktop,
+  profilesGoldenDesktop,
+  profilesSmallMobile,
   profilesMobile,
   rulesDesktop,
+  rulesGoldenDesktop,
+  rulesSmallMobile,
   rulesTablet,
   rulesMobile,
   rulesZoom,
@@ -80,6 +88,13 @@ async function runScenario(name, width, height, section, zoom = false) {
       section === "rules" ? await validateRenderedRuleFixtures(browser.cdp, ruleFixtures) : null;
     const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const textScale = await applyTextScale(browser.cdp, zoom);
+    const hierarchy = await validateActionHierarchy(browser.cdp, section);
+    const restFilename = `issue-727-${name}-rest.png`;
+    await screenshot(browser.cdp, join(outputDir, restFilename));
+    screenshots.push(restFilename);
+    check(hierarchy.primaryCount === 1, `${name}: hierarquia tem mais de uma ação principal`, hierarchy);
+    check(hierarchy.negativeControlRejectsCompetingPrimary, `${name}: controle negativo da ação principal`, hierarchy);
+    check(hierarchy.restored, `${name}: controle negativo não restaurou a hierarquia`, hierarchy);
     const dialogSelector =
       section === "profiles"
         ? '[data-open-dialog="new-profile-dialog"]'
@@ -207,6 +222,8 @@ async function runScenario(name, width, height, section, zoom = false) {
       ruleFixtures,
       renderedRules,
       keyboardNavigation,
+      hierarchy,
+      restScreenshot: restFilename,
       textScale,
       dialogKeyboard,
       decimalForm,
@@ -609,6 +626,27 @@ async function waitForDialog(cdp) {
     await sleep(50);
   }
   throw new Error("Settings dialog did not open.");
+}
+
+async function validateActionHierarchy(cdp, section) {
+  return evaluate(cdp, `(() => {
+    const scope = document.querySelector('[data-settings-scope="${section}"]');
+    const actions = Array.from(scope?.querySelectorAll('button.sf-button-primary') || []);
+    const primaryCount = actions.length;
+    const secondary = scope?.querySelector('[data-api-path="/api/automation-rules/apply"]');
+    let negativeControlRejectsCompetingPrimary = true;
+    let restored = true;
+    if (secondary) {
+      secondary.classList.remove('sf-button-secondary');
+      secondary.classList.add('sf-button-primary');
+      const mutatedCount = scope.querySelectorAll('button.sf-button-primary').length;
+      negativeControlRejectsCompetingPrimary = mutatedCount > 1;
+      secondary.classList.remove('sf-button-primary');
+      secondary.classList.add('sf-button-secondary');
+      restored = scope.querySelectorAll('button.sf-button-primary').length === primaryCount;
+    }
+    return { section: '${section}', primaryCount, negativeControlRejectsCompetingPrimary, restored };
+  })()`);
 }
 
 function measurementExpression(section) {
