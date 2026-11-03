@@ -186,9 +186,9 @@ export const solverFinSsrStyleContracts = [
     pageCssFragments: [".reports-heading {"],
   }),
   authenticated("settings", "/configuracoes", "settings-page.js", {
-    representativeHtmlFragments: ['class="page-heading secondary-heading"'],
+    representativeHtmlFragments: ['class="settings-section-heading"'],
     requiredHeadProviders: ["shared-shell", "shared-dialog"],
-    pageCssFragments: [".secondary-heading {"],
+    pageCssFragments: [".settings-section-heading {"],
   }),
   authenticated("adminInstitutions", "/admin/instituicoes", "admin-institutions-page.js", {
     representativeHtmlFragments: [
