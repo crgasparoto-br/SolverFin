@@ -9,7 +9,7 @@ import { renderAuthenticatedShellDocument } from "./shell.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 interface InstitutionFailure {
-  status?: number;
+  status: number | undefined;
   error: string;
   retryHref: string;
   filtersHtml: string;
