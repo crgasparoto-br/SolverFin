@@ -89,8 +89,8 @@ async function adminInstitutionsPagePrioritizesCatalogAndCollapsesAdvancedFilter
   assert.match(html, /aria-label="Enviar logomarca de Instituição fictícia/);
   assert.match(html, /<span class="status-pill status-pill-active">Ativo<\/span>/);
 
-  const primary = html.split('<div class="filters-grid">')[1].split("</div>")[0];
-  const advanced = html.split('<div class="advanced-filters-grid">')[1].split("</div>")[0];
+  const primary = html.split('<div class="filters-grid">')[1]?.split("</div>")[0] ?? "";
+  const advanced = html.split('<div class="advanced-filters-grid">')[1]?.split("</div>")[0] ?? "";
   for (const name of ["q", "status", "sort"]) {
     assert.match(primary, new RegExp('name="' + name + '"'));
     assert.doesNotMatch(advanced, new RegExp('name="' + name + '"'));
