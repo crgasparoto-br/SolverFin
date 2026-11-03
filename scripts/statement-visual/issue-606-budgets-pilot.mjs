@@ -3,7 +3,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
-import { loginExpression } from "./fixtures.mjs";
+import { budgetAcceptanceFixtureExpression, loginExpression } from "./fixtures.mjs";
+import {
+  budgetGroupMutationsExpression,
+  budgetRenderedStateExpression,
+} from "./issue-755-budget-list.mjs";
 import {
   BUDGET_LONG_LIST_PERIODS,
   assertBudgetLongList,
@@ -148,29 +152,66 @@ try {
     });
   }
 
-  // This fixture modifies only the disposable Chrome CI database, never production data.
-  const fixture = await evaluate(browser.cdp, budgetAcceptanceFixtureExpression());
-  assert.equal(fixture.ok, true, `Budget fixture failed: ${JSON.stringify(fixture)}`);
+  // Disposable Chrome CI DB only: prove that nine real API/DOM periods fail before creating ten.
+  diagnostics.setFixtureState({ stage: "creating-nine" });
+  const nineFixture = await evaluate(
+    browser.cdp,
+    budgetAcceptanceFixtureExpression(BUDGET_LONG_LIST_PERIODS, 0, 9),
+  );
+  diagnostics.setFixtureState({ stage: "nine-period-readback", ...nineFixture });
+  assert.equal(nineFixture.ok, true, "Nine-period budget fixture must persist successfully");
+  assert.equal(nineFixture.createdCount, 9);
+  assert.equal(nineFixture.readbackCount, 9);
 
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, `${baseUrl}/orcamentos`);
   await sleep(350);
-  const mixed = await evaluate(
+  const nineRendered = await evaluate(browser.cdp, budgetRenderedStateExpression(nineFixture));
+  assert.throws(() => assertBudgetLongList(nineFixture, nineRendered), /9 !== 10/);
+
+  diagnostics.setFixtureState({ stage: "creating-tenth", ...nineFixture });
+  const fixture = await evaluate(
     browser.cdp,
-    `(() => ({
-    rows: document.querySelectorAll('.budget-results tbody tr').length,
-    historyCount: document.querySelectorAll('.budget-results .budget-history-entry').length,
-    periodLabels: Array.from(document.querySelectorAll('.budget-results .budget-period, .budget-results .budget-history-heading strong')).map((node) => node.textContent?.trim() ?? ""),
-    uniqueCategories: (() => {
-      const keys = Array.from(document.querySelectorAll('.budget-results tbody tr')).map((row) =>
-        [row.querySelector('[data-column="category"]')?.textContent?.trim(), row.querySelector('[data-column="currency"]')?.textContent?.trim()].join('|'));
-      return new Set(keys).size === keys.length;
-    })(),
-    currencies: Array.from(document.querySelectorAll('select[name="currency"] option')).map((option) => option.value),
-    focused: Array.from(document.querySelectorAll('.budget-focus-item .budget-currency')).map((node) => node.textContent?.trim()),
-  }))()`,
+    budgetAcceptanceFixtureExpression(BUDGET_LONG_LIST_PERIODS, 9, 10, nineFixture.ids),
   );
+  diagnostics.setFixtureState({ stage: "ten-period-readback", ...fixture });
+  assert.equal(fixture.ok, true, "Ten-period budget fixture must persist successfully");
+
+  await navigate(browser.cdp, `${baseUrl}/orcamentos`);
+  await sleep(350);
+  const mixed = await evaluate(browser.cdp, budgetRenderedStateExpression(fixture));
   assertBudgetLongList(fixture, mixed);
+  // Mutate the actual target category row. Unrelated rows must not satisfy this oracle.
+  const budgetGroupMutations = await evaluate(browser.cdp, budgetGroupMutationsExpression(fixture));
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.missingMonth),
+    /history must contain exactly one/,
+  );
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.wrongCategory),
+    /another category/,
+  );
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.noHistory),
+    /nine history entries/,
+  );
+  assert.throws(
+    () => assertBudgetLongList(fixture, budgetGroupMutations.duplicateRows),
+    /exactly one category row/,
+  );
+  assertBudgetLongList(fixture, budgetGroupMutations.restored);
+  report.issue755RealBrowserNegatives = {
+    nineCreated: nineFixture.createdCount,
+    nineReadback: nineFixture.readbackCount,
+    tenCreated: fixture.createdCount,
+    tenReadback: fixture.readbackCount,
+    rejectedNineThenAcceptedTen: true,
+    rejectedMissingMonth: true,
+    rejectedMissingHistory: true,
+    rejectedWrongCategory: true,
+    rejectedDuplicateRows: true,
+    restored: true,
+  };
   assert.equal(
     mixed.uniqueCategories,
     true,
@@ -393,49 +434,18 @@ try {
   );
   console.log("Issue 606 budgets desktop and mobile baseline validation passed.");
 } catch (error) {
-  await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
+  try {
+    await diagnostics.save(outputDir, "budgets-pilot-baseline", error);
+  } catch (diagnosticError) {
+    console.error(
+      "[issue-755] Could not preserve failure-only diagnostics:",
+      diagnosticError?.name,
+    );
+  }
   throw error;
 } finally {
   diagnostics.stop();
   await browser.close(outputDir);
-}
-
-function budgetAcceptanceFixtureExpression() {
-  return `(async () => {
-    const categoriesResponse = await fetch('/api/categories?status=all', { credentials: 'same-origin' });
-    if (!categoriesResponse.ok) {
-      return { ok: false, stage: 'categories', status: categoriesResponse.status };
-    }
-    const categories = (await categoriesResponse.json()).categories ?? [];
-    const category = categories.find((item) => item.kind === 'expense' && item.status === 'active');
-    if (!category?.id) return { ok: false, stage: 'expense-category' };
-    const periodInputs = ${JSON.stringify(BUDGET_LONG_LIST_PERIODS)};
-    const ids = [];
-    for (const period of periodInputs) {
-      const response = await fetch('/api/budgets', {
-        method: 'POST',
-        credentials: 'same-origin',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          categoryId: category.id,
-          periodStartOn: period.periodStartOn,
-          periodEndOn: period.periodEndOn,
-          currency: 'USD',
-          plannedAmountMinor: 500000,
-        }),
-      });
-      if (!response.ok) return {
-        ok: false, stage: 'create-budget', status: response.status,
-        periodStartOn: period.periodStartOn, createdCount: ids.length,
-      };
-      ids.push((await response.json()).budget.id);
-    }
-    const readback = await fetch('/api/budgets?status=all', { credentials: 'same-origin' });
-    if (!readback.ok) return { ok: false, stage: 'readback', status: readback.status };
-    const budgets = (await readback.json()).budgets ?? [];
-    const readbackCount = budgets.filter((item) => ids.includes(item.id) && item.status === 'active' && item.currency === 'USD').length;
-    return { ok: readbackCount === ids.length, createdCount: ids.length, readbackCount, currency: 'USD' };
-  })()`;
 }
 
 async function readBudget(cdp, id) {
