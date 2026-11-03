@@ -1,9 +1,7 @@
 import {
-  renderMetricCard,
   renderPageContainer,
   renderPageHeader,
   renderPermissionState,
-  renderSummaryGrid,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
@@ -70,6 +68,8 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
 
   const { institutions, summary, pagination } = result.data;
   const params = url?.searchParams ?? new URLSearchParams();
+  const advancedFilterCount = countAdvancedFilters(params);
+  const hasAppliedFilters = hasAnyInstitutionFilter(params);
 
   return renderAuthenticatedShellDocument({
     activePathname: "/admin/instituicoes",
@@ -85,91 +85,68 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
         description: adminInstitutionsPageModel.description,
         actionsHtml: `<button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>`,
       })}
-      ${renderSummaryGrid({
-        childrenHtml:
-          renderSummaryCard("Instituições", summary.total, "itens encontrados") +
-          renderSummaryCard("Ativas", summary.active, "disponíveis para seleção") +
-          renderSummaryCard("Com logo", summary.withLogo, "assets locais ou R2") +
-          renderSummaryCard("Fallback", summary.usingFallback, "usando iniciais acessíveis"),
-      })}
-      <section class="panel filters-panel">
-        <form method="get" action="/admin/instituicoes" class="filters-grid">
-          <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave interna, COMPE ou ISPB" /></label>
-          <label>Status<select name="status">${renderSelectOptions(
-            [
-              ["all", "Todos"],
-              ["active", "Ativos"],
-              ["inactive", "Inativos"],
-            ],
-            params.get("status") ?? "all",
-          )}</select></label>
-          <label>Situação da logo<select name="logoStatus">${renderSelectOptions(
-            [
-              ["all", "Todas"],
-              ["r2_asset", "Logo R2"],
-              ["local_asset", "Logo local"],
-              ["fallback", "Fallback"],
-            ],
-            params.get("logoStatus") ?? "all",
-          )}</select></label>
-          <label>Código bancário<input name="bankCode" inputmode="numeric" value="${escapeHtml(params.get("bankCode") ?? "")}" placeholder="001" /></label>
-          <label>ISPB<input name="ispb" value="${escapeHtml(params.get("ispb") ?? "")}" placeholder="Busca parcial" /></label>
-          <label>Tipo<select name="institutionType">${renderSelectOptions(
-            [
-              ["", "Todos"],
-              ["bank", "Banco"],
-              ["cooperative", "Cooperativa"],
-              ["payment_institution", "Instituição de pagamento"],
-              ["digital_wallet", "Carteira digital"],
-              ["demo", "Demo"],
-            ],
-            params.get("institutionType") ?? "",
-          )}</select></label>
-          <label>Pendências<select name="missing">${renderSelectOptions(
-            [
-              ["", "Todas"],
-              ["bankCode", "Sem código bancário"],
-              ["ispb", "Sem ISPB"],
-              ["logo", "Sem logo"],
-            ],
-            params.get("missing") ?? "",
-          )}</select></label>
-          <label>Ordenar<select name="sort">${renderSelectOptions(
-            [
-              ["label", "Nome"],
-              ["key", "Chave interna"],
-              ["bankCode", "Código bancário"],
-              ["ispb", "ISPB"],
-              ["status", "Status"],
-              ["updatedAt", "Atualização"],
-            ],
-            params.get("sort") ?? "label",
-          )}</select></label>
+      <section class="panel filters-panel" aria-labelledby="institution-filters-heading">
+        <h2 id="institution-filters-heading">Buscar no catálogo</h2>
+        <form method="get" action="/admin/instituicoes" class="admin-filter-form">
+          <div class="filters-grid">
+            <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave, COMPE ou ISPB" /></label>
+            <label>Status<select name="status">${renderSelectOptions(
+              [["all", "Todos"], ["active", "Ativos"], ["inactive", "Inativos"]],
+              params.get("status") ?? "all",
+            )}</select></label>
+            <label>Ordenar<select name="sort">${renderSelectOptions(
+              [["label", "Nome"], ["key", "Chave interna"], ["bankCode", "Código bancário"], ["ispb", "ISPB"], ["status", "Status"], ["updatedAt", "Atualização"]],
+              params.get("sort") ?? "label",
+            )}</select></label>
+          </div>
+          <details class="admin-advanced-filters" data-advanced-filters>
+            <summary>Filtros avançados${advancedFilterCount ? ` <span class="advanced-count" aria-label="${advancedFilterCount} filtros avançados ativos">${advancedFilterCount} ativos</span>` : ""}</summary>
+            <div class="advanced-filters-grid">
+              <label>Situação da logo<select name="logoStatus">${renderSelectOptions(
+                [["all", "Todas"], ["r2_asset", "Logo R2"], ["local_asset", "Logo local"], ["fallback", "Fallback"]],
+                params.get("logoStatus") ?? "all",
+              )}</select></label>
+              <label>Código bancário<input name="bankCode" inputmode="numeric" value="${escapeHtml(params.get("bankCode") ?? "")}" placeholder="001" /></label>
+              <label>ISPB<input name="ispb" value="${escapeHtml(params.get("ispb") ?? "")}" placeholder="Busca parcial" /></label>
+              <label>Tipo<select name="institutionType">${renderSelectOptions(
+                [["", "Todos"], ["bank", "Banco"], ["cooperative", "Cooperativa"], ["payment_institution", "Instituição de pagamento"], ["digital_wallet", "Carteira digital"], ["demo", "Demo"]],
+                params.get("institutionType") ?? "",
+              )}</select></label>
+              <label>Pendências<select name="missing">${renderSelectOptions(
+                [["", "Todas"], ["bankCode", "Sem código bancário"], ["ispb", "Sem ISPB"], ["logo", "Sem logo"]],
+                params.get("missing") ?? "",
+              )}</select></label>
+            </div>
+          </details>
+          ${renderActiveAdvancedFilters(params)}
           <input type="hidden" name="order" value="${escapeHtml(params.get("order") ?? "asc")}" />
+          ${params.get("pageSize") ? `<input type="hidden" name="pageSize" value="${escapeHtml(params.get("pageSize") ?? "")}" />` : ""}
           <div class="filter-actions">
             <button type="submit">Aplicar filtros</button>
             <a class="button-link secondary-link" href="/admin/instituicoes">Limpar filtros</a>
           </div>
         </form>
       </section>
-      <section class="panel admin-actions-panel">
-        <div>
-          <h2>Atualização do catálogo</h2>
-          <p class="muted">A ação abaixo sincroniza os padrões sem duplicar instituições nem apagar logomarcas já enviadas.</p>
-          <p class="muted">Última atualização nesta tela: ${escapeHtml(summary.updatedAt ?? "ainda não executada")}</p>
-        </div>
-        <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para verificar o catálogo global.</p>
-      </section>
-      <section class="panel list-panel">
+      <section class="panel list-panel" aria-labelledby="admin-catalog-heading">
         <div class="section-heading">
           <div>
-            <h2>Catálogo global</h2>
-            <p class="muted">Linhas compactas com código, status e logo. Use o quadrado do logo para enviar ou substituir a imagem.</p>
+            <h2 id="admin-catalog-heading">Catálogo global</h2>
+            <p class="muted">Selecione a logomarca para enviar ou substituir a imagem de cada instituição.</p>
           </div>
           <span>${pagination?.total ?? institutions.length} itens</span>
         </div>
+        <div class="catalog-summary" aria-label="Resumo do catálogo">
+          <span class="admin-summary-item"><strong>${summary.total}</strong> instituições</span>
+          <span class="admin-summary-item"><strong>${summary.active}</strong> ativas</span>
+          <span class="admin-summary-item"><strong>${summary.withLogo}</strong> com logo</span>
+          <span class="admin-summary-item"><strong>${summary.usingFallback}</strong> com fallback</span>
+        </div>
+        <div class="catalog-refresh-meta">
+          <span class="muted">Atualizado: ${escapeHtml(summary.updatedAt ?? "ainda não executado")}</span>
+          <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para atualizar o catálogo global.</p>
+        </div>
         <div class="admin-institution-list">
-          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState()}
+          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState(hasAppliedFilters)}
         </div>
       </section>
       ${institutions.map((institution) => renderLogoUploadDialog(institution, query)).join("")}
@@ -208,12 +185,55 @@ function buildAdminApiQuery(params: URLSearchParams): string {
   return query ? `?${query}` : "";
 }
 
-function renderSummaryCard(title: string, value: number, subtitle: string): string {
-  return renderMetricCard({
-    label: title,
-    value: String(value),
-    detail: subtitle,
+function countAdvancedFilters(params: URLSearchParams): number {
+  return ["logoStatus", "bankCode", "ispb", "institutionType", "missing"].filter((key) => {
+    const value = params.get(key)?.trim();
+    return Boolean(value && value !== "all");
+  }).length;
+}
+
+function hasAnyInstitutionFilter(params: URLSearchParams): boolean {
+  return ["q", "status", "logoStatus", "bankCode", "ispb", "institutionType", "missing"].some(
+    (key) => {
+      const value = params.get(key)?.trim();
+      return Boolean(value && value !== "all");
+    },
+  );
+}
+
+function renderActiveAdvancedFilters(params: URLSearchParams): string {
+  const definitions: Array<[string, string]> = [
+    ["logoStatus", "Logo"],
+    ["bankCode", "Código"],
+    ["ispb", "ISPB"],
+    ["institutionType", "Tipo"],
+    ["missing", "Pendências"],
+  ];
+  const active = definitions.flatMap(([key, label]) => {
+    const value = params.get(key)?.trim();
+    return value && value !== "all" ? [{ key, label, value }] : [];
   });
+
+  if (!active.length) return "";
+  return `<div class="active-filter-list" aria-label="Filtros avançados aplicados">
+    <span class="active-filter-caption">Filtros ativos:</span>
+    ${active.map(({ key, label, value }) => {
+      const next = new URLSearchParams(params);
+      next.delete(key);
+      next.delete("page");
+      const title = `${label}: ${formatAdvancedFilterValue(key, value)}`;
+      return `<a class="active-filter-chip" href="${escapeHtml(`/admin/instituicoes${buildAdminApiQuery(next)}`)}" aria-label="Remover filtro ${escapeHtml(title)}">${escapeHtml(title)} <span aria-hidden="true">×</span></a>`;
+    }).join("")}
+  </div>`;
+}
+
+function formatAdvancedFilterValue(key: string, value: string): string {
+  const labels: Record<string, Record<string, string>> = {
+    logoStatus: { r2_asset: "Logo R2", local_asset: "Logo local", fallback: "Fallback" },
+    institutionType: { bank: "Banco", cooperative: "Cooperativa", payment_institution: "Instituição de pagamento", digital_wallet: "Carteira digital", demo: "Demo" },
+    missing: { bankCode: "Sem código bancário", ispb: "Sem ISPB", logo: "Sem logo" },
+  };
+  return labels[key]?.[value] ?? value;
 }
 
 function renderInstitutionRow(institution: AdminInstitutionView, query: string): string {
@@ -300,8 +320,10 @@ function renderSelectOptions(options: Array<[string, string]>, selected: string)
     .join("");
 }
 
-function renderEmptyState(): string {
-  return `<div class="empty-state"><strong>Nenhuma instituição encontrada.</strong><p class="muted">Ajuste os filtros ou use Limpar filtros para voltar à lista completa.</p></div>`;
+function renderEmptyState(filtered: boolean): string {
+  return filtered
+    ? `<div class="empty-state"><strong>Nenhum resultado para os filtros aplicados.</strong><p class="muted">Ajuste os filtros ou use Limpar filtros para voltar à lista completa.</p></div>`
+    : `<div class="empty-state"><strong>Nenhuma instituição cadastrada.</strong><p class="muted">Use Atualizar bancos para sincronizar o catálogo.</p></div>`;
 }
 
 function logoDialogId(institution: AdminInstitutionView): string {
@@ -473,15 +495,28 @@ function adminPageStyles(): string {
     main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; }
     .admin-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; }
     .admin-heading > div { display: grid; gap: 4px; max-width: 760px; }
-    .summary-grid { display: grid; gap: 10px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); display: grid; gap: 5px; padding: 12px 14px; }
-    .metric-card span { color: var(--muted); font-size: 0.6875rem; font-weight: 700; text-transform: uppercase; }
-    .metric-card strong { color: var(--text); font-size: 1.25rem; font-weight: 700; line-height: 1.1; }
-    .metric-card p { color: var(--muted); font-size: 0.8125rem; margin: 0; }
-    .filters-grid { display: grid; gap: 12px; grid-template-columns: minmax(220px, 1.4fr) repeat(4, minmax(150px, 1fr)); }
-    .filters-grid .wide { grid-column: span 2; }
-    .filter-actions { align-items: end; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
-    .admin-actions-panel { align-items: center; display: flex; justify-content: space-between; }
+    .filters-panel { padding: 12px 16px; }
+    .filters-panel h2 { font-size: 0.87rem; margin: 0 0 10px; }
+    .admin-filter-form { display: grid; gap: 10px; }
+    .filters-grid { align-items: end; display: grid; gap: 10px; grid-template-columns: minmax(220px, 2.2fr) repeat(2, minmax(140px, 1fr)); }
+    .filters-grid label, .advanced-filters-grid label { display: grid; gap: 5px; min-width: 0; }
+    .filters-grid input, .filters-grid select, .advanced-filters-grid input, .advanced-filters-grid select { min-width: 0; width: 100%; }
+    .admin-advanced-filters { border-top: 1px solid var(--line); padding-top: 2px; }
+    .admin-advanced-filters > summary { color: var(--primary); cursor: pointer; font-size: 0.83rem; font-weight: 700; min-height: 36px; padding: 7px 0; }
+    .admin-advanced-filters > summary:focus-visible, .active-filter-chip:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+    .advanced-count { background: var(--primary-soft); border-radius: 999px; color: var(--primary); display: inline-block; font-size: 0.72rem; margin-left: 8px; padding: 2px 8px; }
+    .advanced-filters-grid { display: grid; gap: 10px; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 10px 0 2px; }
+    .active-filter-list { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; }
+    .active-filter-caption { color: var(--muted); font-size: 0.75rem; font-weight: 700; }
+    .active-filter-chip { background: var(--primary-soft); border: 1px solid var(--line); border-radius: 999px; color: var(--primary); display: inline-flex; font-size: 0.75rem; gap: 6px; min-height: 32px; padding: 6px 10px; text-decoration: none; }
+    .active-filter-chip:hover { border-color: var(--cyan); }
+    .filter-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+    .filter-actions button, .filter-actions .button-link { min-height: 40px; min-width: 140px; }
+    .catalog-summary { align-items: center; color: var(--muted); display: flex; flex-wrap: wrap; font-size: 0.78rem; gap: 6px 16px; }
+    .admin-summary-item { white-space: nowrap; }
+    .admin-summary-item strong { color: var(--text); font-weight: 700; margin-right: 4px; }
+    .catalog-refresh-meta { align-items: baseline; display: flex; flex-wrap: wrap; font-size: 0.75rem; gap: 4px 14px; }
+
     .list-panel { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
     .section-heading > div { display: grid; gap: 3px; }
@@ -494,10 +529,10 @@ function adminPageStyles(): string {
     .logo-upload-hint { align-items: center; background: rgba(15,61,76,.86); bottom: 0; color: white; display: flex; font-size: 0.58rem; font-weight: 800; height: 16px; justify-content: center; left: 0; opacity: 0; position: absolute; right: 0; transition: opacity .16s ease; }
     .institution-logo-trigger:hover .logo-upload-hint, .institution-logo-trigger:focus-visible .logo-upload-hint { opacity: 1; }
     .institution-main { display: grid; gap: 3px; min-width: 0; }
-    .institution-title-line { align-items: center; display: flex; gap: 7px; min-width: 0; }
-    .institution-title-line strong { font-size: 0.92rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .institution-main span:not(.status-pill) { color: var(--muted); font-size: 0.82rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .institution-main code { background: var(--bg); border-radius: 999px; color: var(--muted); font-size: 0.7rem; justify-self: start; max-width: 100%; overflow: hidden; padding: 2px 7px; text-overflow: ellipsis; white-space: nowrap; }
+    .institution-title-line { align-items: center; display: flex; flex-wrap: wrap; gap: 5px 7px; min-width: 0; }
+    .institution-title-line strong { font-size: 0.92rem; overflow-wrap: anywhere; }
+    .institution-main span:not(.status-pill) { color: var(--muted); font-size: 0.82rem; line-height: 1.3; overflow-wrap: anywhere; }
+    .institution-main code { background: var(--bg); border-radius: 999px; color: var(--muted); font-size: 0.7rem; justify-self: start; max-width: 100%; overflow-wrap: anywhere; padding: 2px 7px; }
     .status-pill { background: var(--warning-bg); border: 1px solid #fde68a; border-radius: 999px; color: var(--warning); flex: 0 0 auto; font-size: 0.68rem; font-weight: 800; padding: 2px 7px; }
     .status-pill-active { background: var(--success-bg); border-color: #bbf7d0; color: var(--success); }
     .institution-meta { align-items: start; display: grid; gap: 8px; grid-template-columns: .55fr .8fr .7fr .85fr 1fr; margin: 0; min-width: 0; }
@@ -506,7 +541,7 @@ function adminPageStyles(): string {
     .institution-meta dd { font-size: 0.76rem; line-height: 1.24; margin: 0; min-width: 0; overflow-wrap: anywhere; }
     .institution-actions { display: flex; justify-content: flex-end; }
     .status-form { display: flex; justify-content: flex-start; }
-    .status-form button { font-size: 0.8125rem; min-height: 32px; min-width: 72px; padding: 0 10px; }
+    .status-form button { font-size: 0.8125rem; min-height: 44px; min-width: 72px; padding: 0 10px; }
     .logo-upload-dialog { max-width: 560px; }
     .logo-dialog-layout { align-items: center; display: grid; gap: 16px; grid-template-columns: 84px 1fr; margin-bottom: 16px; }
     .logo-dialog-preview { align-items: center; background: var(--primary-soft); border: 1px solid #d4e6ec; border-radius: 8px; color: var(--primary); display: flex; font-size: 1.1rem; font-weight: 900; height: 84px; justify-content: center; overflow: hidden; width: 84px; }
@@ -516,8 +551,8 @@ function adminPageStyles(): string {
     .admin-denied { max-width: 760px; }
     .form-status { margin: 0; }
     @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 56px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
-    @media (max-width: 980px) { .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { main { padding: 14px 14px 24px; } .admin-heading, .admin-actions-panel, .section-heading, .filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .summary-grid { grid-template-columns: 1fr; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: 1fr; } .logo-dialog-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 980px) { .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid .wide { grid-column: 1 / -1; } .advanced-filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 640px) { main { padding: 14px 14px 24px; } .admin-heading, .section-heading, .filters-grid, .advanced-filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .filter-actions button, .filter-actions .button-link { flex: 1 1 130px; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }
 
