@@ -288,14 +288,15 @@ async function settingsGoldenHierarchyHasDiscriminatingNegativeControls(): Promi
     {
       "/api/financial-profiles": {
         activeProfileId: "profile-a",
-        profiles: [
-          { id: "profile-a", name: "Conta pessoal", kind: "personal", status: "active" },
-        ],
+        profiles: [{ id: "profile-a", name: "Conta pessoal", kind: "personal", status: "active" }],
       },
       "/api/automation-rules?status=all": {
         rules: [
           {
-            id: "rule-a", name: "Mercado", status: "active", priority: 100,
+            id: "rule-a",
+            name: "Mercado",
+            status: "active",
+            priority: 100,
             conditions: { descriptionIncludes: "mercado" },
             actions: { status: "suggested" },
           },
@@ -311,11 +312,14 @@ async function settingsGoldenHierarchyHasDiscriminatingNegativeControls(): Promi
           new URL(`https://example.test/configuracoes?section=${section}`),
         );
         const scopeStart = html.indexOf('<section class="settings-section"');
-        const dialogStart = html.indexOf('<dialog id=', scopeStart);
+        const dialogStart = html.indexOf("<dialog id=", scopeStart);
         assert.ok(scopeStart >= 0 && dialogStart > scopeStart);
         const visible = html.slice(scopeStart, dialogStart);
         assert.equal((visible.match(/class="sf-button sf-button-primary"/g) ?? []).length, 1);
-        assert.doesNotMatch(visible, /settings-section-panel|priority-badge|class="rule-detail"[^>]*style=/);
+        assert.doesNotMatch(
+          visible,
+          /settings-section-panel|priority-badge|class="rule-detail"[^>]*style=/,
+        );
         assert.match(visible, /settings-collection-heading/);
         assert.match(visible, /maintenance-rows/);
         if (section === "rules") {
@@ -327,8 +331,15 @@ async function settingsGoldenHierarchyHasDiscriminatingNegativeControls(): Promi
             'class="sf-button sf-button-secondary" data-api-action',
             'class="sf-button sf-button-primary" data-api-action',
           );
-          assert.equal((competingPrimary.match(/class="sf-button sf-button-primary"/g) ?? []).length, 2);
-          assert.notEqual(competingPrimary, visible, "The negative control must actually mutate the action.");
+          assert.equal(
+            (competingPrimary.match(/class="sf-button sf-button-primary"/g) ?? []).length,
+            2,
+          );
+          assert.notEqual(
+            competingPrimary,
+            visible,
+            "The negative control must actually mutate the action.",
+          );
         } else {
           assert.match(visible, /data-current-profile="true"/);
           assert.equal((visible.match(/>Em uso<\/span>/g) ?? []).length, 1);
@@ -358,9 +369,15 @@ async function longProfileNameRemainsEscapedAndReadable(): Promise<void> {
       assert.match(html, /Perfil de uso muito longo com &amp; caracteres &lt;especiais&gt;/);
       assert.doesNotMatch(html, /<strong>Perfil de uso muito longo com & caracteres/);
       assert.match(html, /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/);
-      const truncatedVariant = html.replace("overflow-wrap: anywhere", "overflow: hidden; text-overflow: ellipsis");
+      const truncatedVariant = html.replace(
+        "overflow-wrap: anywhere",
+        "overflow: hidden; text-overflow: ellipsis",
+      );
       assert.notEqual(truncatedVariant, html);
-      assert.doesNotMatch(truncatedVariant, /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/);
+      assert.doesNotMatch(
+        truncatedVariant,
+        /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/,
+      );
     },
   );
 }
@@ -374,12 +391,16 @@ async function emptyAndErrorContextsStayDistinguishable(): Promise<void> {
       "/api/categories": { categories: [] },
     },
     async () => {
-      const profiles = await renderSettingsPage("token", new URL("https://example.test/configuracoes"));
+      const profiles = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes"),
+      );
       assert.match(profiles, /Nenhum perfil financeiro/);
       assert.match(profiles, /Novo perfil/);
       assert.doesNotMatch(profiles, /Não foi possível carregar os perfis/);
       const rules = await renderSettingsPage(
-        "token", new URL("https://example.test/configuracoes?section=rules"),
+        "token",
+        new URL("https://example.test/configuracoes?section=rules"),
       );
       assert.match(rules, /Nenhuma regra automática/);
       assert.match(rules, /Aplicar regras/);
