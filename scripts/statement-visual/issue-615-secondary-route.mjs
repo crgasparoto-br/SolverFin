@@ -217,6 +217,7 @@ async function verifyAdminScenarios(cdp) {
       return {
         noResults: document.querySelector(".empty-state")?.textContent?.includes("Nenhum resultado para os filtros aplicados"),
         chips: chips.length,
+        chipsVisible: Array.from(chips).every((chip) => chip.getClientRects().length > 0),
         detailsClosed: Boolean(details && !details.open),
         filterCount: document.querySelector(".advanced-count")?.textContent?.trim(),
         sorting: document.querySelector('select[name="sort"]')?.value,
@@ -228,6 +229,7 @@ async function verifyAdminScenarios(cdp) {
     check(
       filtered.noResults &&
         filtered.chips === 1 &&
+        filtered.chipsVisible &&
         filtered.detailsClosed &&
         filtered.filterCount === "1 ativos",
       label + ": active filter not visible with empty catalog",
@@ -272,6 +274,7 @@ async function verifyAdminScenarios(cdp) {
         dialog.labelled &&
         dialog.acceptsImages &&
         dialog.withinViewport &&
+        dialog.fallbackAvailable &&
         !dialog.horizontalOverflow,
       label + ": logo upload dialog not accessible or clipped",
       dialog,

@@ -396,6 +396,7 @@ const simpleScenarios = [
     "master-institutions",
     "master",
   ],
+  ["admin-institutions-728-states", "scripts/statement-visual/issue-728-admin-states.mjs", "/admin/instituicoes", "admin-maintenance", "alternate", "responsive", "keyboard-native-get", "master-institutions-states", "master"],
   [
     "secondary-admin-financial-indexes",
     "scripts/statement-visual/issue-615-secondary-admin-financial-indexes.mjs",
