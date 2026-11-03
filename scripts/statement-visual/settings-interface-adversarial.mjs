@@ -219,6 +219,16 @@ async function runScenario(name, width, height, section, zoom = false) {
         `${name}: erro não associado ao campo`,
         decimalForm,
       );
+      check(
+        decimalForm?.networkErrorVisible === true && decimalForm?.retryEnabled === true,
+        `${name}: erro de rede não recuperável`,
+        decimalForm,
+      );
+      check(
+        decimalForm?.networkValuePreserved === true,
+        `${name}: falha de rede perdeu dados do formulário`,
+        decimalForm,
+      );
     }
 
     return {
@@ -458,16 +468,34 @@ async function validateDecimalFormBehavior(cdp) {
         form.requestSubmit();
         await new Promise((resolve) => setTimeout(resolve, 120));
 
+        const invalidBlocked = requests.length === 1;
+        const invalidValuePreserved = minimum.value === '10,501';
+        const errorAssociated =
+          minimum.getAttribute('aria-invalid') === 'true' &&
+          minimum.getAttribute('aria-describedby') === error.id &&
+          !error.hidden;
+
+        window.fetch = async () => {
+          throw new Error('QA simulated network rejection');
+        };
+        minimum.value = '10,50';
+        minimum.dispatchEvent(new Event('input', { bubbles: true }));
+        form.requestSubmit();
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          if (form.querySelector('[data-form-status].error')) break;
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        const status = form.querySelector('[data-form-status]');
         return {
           validPayloadMinor,
           validValuePreserved,
           requestCount: requests.length,
-          invalidBlocked: requests.length === 1,
-          invalidValuePreserved: minimum.value === '10,501',
-          errorAssociated:
-            minimum.getAttribute('aria-invalid') === 'true' &&
-            minimum.getAttribute('aria-describedby') === error.id &&
-            !error.hidden,
+          invalidBlocked,
+          invalidValuePreserved,
+          errorAssociated,
+          networkErrorVisible: Boolean(status?.textContent?.includes('Falha de conexão')),
+          retryEnabled: form.querySelector('button[type="submit"]')?.disabled === false,
+          networkValuePreserved: minimum.value === '10,50',
         };
       } finally {
         window.fetch = originalFetch;
