@@ -66,7 +66,7 @@ async function profilesSectionRendersAsTheDefault(): Promise<void> {
       assert.match(html, /href="\/configuracoes\?section=profiles" aria-current="page"/);
       assert.match(html, /href="\/configuracoes\?section=rules"/);
       assert.match(html, />Em uso<\/span>/);
-      assert.doesNotMatch(html, /Em uso<\/span>[\s\S]*?status-active\">Ativo<\/span>/);
+      assert.doesNotMatch(html, /Em uso<\/span>[\s\S]*?status-active">Ativo<\/span>/);
       assert.match(html, />Arquivado<\/span>/);
       assert.doesNotMatch(html, /Tenant operacional/);
       assert.doesNotMatch(html, /Regras configuradas/);
