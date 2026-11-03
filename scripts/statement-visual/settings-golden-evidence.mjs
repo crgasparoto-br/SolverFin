@@ -1,6 +1,6 @@
 import { join } from "node:path";
 
-import { evaluate, screenshot, sleep } from "./cdp.mjs";
+import { evaluate, screenshot } from "./cdp.mjs";
 
 // Supplement real authenticated flows with exact-renderer SSR fixtures for unavailable API states.
 export async function captureSettingsGoldenEvidence({
@@ -78,7 +78,7 @@ export async function captureSettingsGoldenEvidence({
       cdp,
       '(() => {'
         + 'const fixture = new DOMParser().parseFromString(' + JSON.stringify(html) + ', "text/html");'
-        + 'const selector = "[data-settings-scope=' + String.fromCharCode(39) + '" + ' + JSON.stringify(section) + ' + "' + String.fromCharCode(39) + ']";'
+        + 'const selector = ' + JSON.stringify('[data-settings-scope="' + section + '"]') + ';'
         + 'const existing = document.querySelector(selector);'
         + 'const replacement = fixture.querySelector(selector);'
         + 'if (!existing || !replacement) throw Error("missing settings SSR state section");'
