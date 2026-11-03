@@ -369,10 +369,7 @@ async function longProfileNameRemainsEscapedAndReadable(): Promise<void> {
       assert.match(html, /Perfil de uso muito longo com &amp; caracteres &lt;especiais&gt;/);
       assert.doesNotMatch(html, /<strong>Perfil de uso muito longo com & caracteres/);
       assert.match(html, /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/);
-      const truncatedVariant = html.replace(
-        "overflow-wrap: anywhere",
-        "overflow: hidden; text-overflow: ellipsis",
-      );
+      const truncatedVariant = html.replace(\n        /(\\.item-title-line strong \\{[^}]*?)overflow-wrap: anywhere/,\n        "$1overflow: hidden; text-overflow: ellipsis",\n      );
       assert.notEqual(truncatedVariant, html);
       assert.doesNotMatch(
         truncatedVariant,
