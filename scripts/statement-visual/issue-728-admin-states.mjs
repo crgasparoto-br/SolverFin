@@ -103,12 +103,12 @@ try {
         browser.cdp,
         "document.querySelector('.admin-advanced-filters summary').focus(); true",
       );
-      await pressEnter(browser.cdp);
+      await pressSpace(browser.cdp);
       assert.equal(
         await evaluate(browser.cdp, "document.querySelector('.admin-advanced-filters').open"),
         true,
       );
-      await pressEnter(browser.cdp);
+      await pressSpace(browser.cdp);
       assert.equal(
         await evaluate(browser.cdp, "document.querySelector('.admin-advanced-filters').open"),
         false,
@@ -137,7 +137,7 @@ try {
         browser.cdp,
         "document.querySelector('.admin-filter-form button[type=submit]').focus(); true",
       );
-      await pressEnter(browser.cdp);
+      await pressSpace(browser.cdp);
       let search;
       for (let attempt = 0; attempt < 50; attempt += 1) {
         search = await evaluate(browser.cdp, "location.search").catch(() => "");
@@ -209,8 +209,8 @@ async function renderFixture(body, status = 200) {
   }
 }
 
-async function pressEnter(cdp) {
-  const keys = { key: "Enter", code: "Enter", windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13 };
+async function pressSpace(cdp) {
+  const keys = { key: " ", code: "Space", windowsVirtualKeyCode: 32, nativeVirtualKeyCode: 32 };
   await cdp.send("Input.dispatchKeyEvent", { type: "rawKeyDown", ...keys });
   await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...keys });
   await sleep(60);
