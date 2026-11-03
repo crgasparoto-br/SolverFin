@@ -313,8 +313,11 @@ async function verifyAdminScenarios(cdp) {
       })()`,
     );
     check(
-      network.refreshExists && network.statusExists && network.refreshEnabled &&
-        network.statusEnabled && network.refreshMessage?.includes("Tente novamente") &&
+      network.refreshExists &&
+        network.statusExists &&
+        network.refreshEnabled &&
+        network.statusEnabled &&
+        network.refreshMessage?.includes("Tente novamente") &&
         network.statusMessage.includes("Tente novamente"),
       label + ": network rejection left an admin action disabled or without feedback",
       network,

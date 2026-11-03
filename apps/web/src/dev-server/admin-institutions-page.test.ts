@@ -180,7 +180,11 @@ async function adminInstitutionsPagePreservesFiltersOnRecoverableApiFailure(): P
     "http://localhost/admin/instituicoes?q=teste&status=inactive&logoStatus=fallback&sort=bankCode&order=desc&pageSize=10",
   );
   for (const status of [502, 503]) {
-    const html = await renderWithApi({ error: { message: "Falha temporária simulada." } }, url, status);
+    const html = await renderWithApi(
+      { error: { message: "Falha temporária simulada." } },
+      url,
+      status,
+    );
     assert.match(html, /<section class="sf-state-panel" data-state="error"/);
     assert.match(html, /Não foi possível carregar o catálogo de instituições/);
     assert.match(html, /Falha temporária simulada/);
@@ -202,7 +206,9 @@ async function adminInstitutionsPagePreservesFiltersOnRecoverableApiFailure(): P
 
 async function adminInstitutionsPageRecoversFromNetworkFailure(): Promise<void> {
   const original = globalThis.fetch;
-  globalThis.fetch = async () => { throw new TypeError("connection reset"); };
+  globalThis.fetch = async () => {
+    throw new TypeError("connection reset");
+  };
   try {
     const html = await renderAdminInstitutionsPage(
       "fake-session",
@@ -211,7 +217,10 @@ async function adminInstitutionsPageRecoversFromNetworkFailure(): Promise<void> 
     assert.match(html, /<section class="sf-state-panel" data-state="error"/);
     assert.match(html, /Nao foi possivel conectar com a API/);
     assert.match(html, /name="q" type="search" value="sem-rede"/);
-    assert.match(html, /href="\/admin\/instituicoes\?q=sem-rede&amp;logoStatus=fallback">Tentar novamente<\/a>/);
+    assert.match(
+      html,
+      /href="\/admin\/instituicoes\?q=sem-rede&amp;logoStatus=fallback">Tentar novamente<\/a>/,
+    );
     assert.doesNotMatch(html, /<section class="sf-state-panel" data-state="permission"/);
     assert.doesNotMatch(html, /Acesso restrito/);
   } finally {

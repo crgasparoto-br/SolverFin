@@ -55,7 +55,8 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       ? renderPermissionState({
           title: "Acesso restrito",
           description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
-          actionHtml: '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
+          actionHtml:
+            '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
         })
       : `${renderPageHeader({
           eyebrow: adminInstitutionsPageModel.eyebrow,

@@ -21,7 +21,8 @@ const report = {
 let browser;
 try {
   const errorUrl = new URL(
-    baseUrl + "/admin/instituicoes?q=before728&status=inactive&logoStatus=fallback&sort=bankCode&order=desc&pageSize=10",
+    baseUrl +
+      "/admin/instituicoes?q=before728&status=inactive&logoStatus=fallback&sort=bankCode&order=desc&pageSize=10",
   );
   const fixtures = {
     empty: await renderFixture({
@@ -90,13 +91,24 @@ try {
         const retry = new URL(observed.retry, baseUrl);
         assert.equal(retry.pathname, "/admin/instituicoes");
         for (const [key, value] of Object.entries({
-          q: "before728", status: "inactive", logoStatus: "fallback",
-          sort: "bankCode", order: "desc", pageSize: "10",
-        })) assert.equal(retry.searchParams.get(key), value, label + ": retry lost " + key);
+          q: "before728",
+          status: "inactive",
+          logoStatus: "fallback",
+          sort: "bankCode",
+          order: "desc",
+          pageSize: "10",
+        }))
+          assert.equal(retry.searchParams.get(key), value, label + ": retry lost " + key);
         assert.equal(observed.message.includes("Acesso restrito"), false);
         assert.equal(
-          observed.message.includes(state === "error" ? "Falha temporária simulada" :
-            state === "gateway" ? "Gateway indisponível" : "Nao foi possivel conectar"), true,
+          observed.message.includes(
+            state === "error"
+              ? "Falha temporária simulada"
+              : state === "gateway"
+                ? "Gateway indisponível"
+                : "Nao foi possivel conectar",
+          ),
+          true,
         );
       }
       const file = "issue-728-" + state + "-" + width + "x" + height + ".png";
@@ -228,10 +240,7 @@ async function renderFixture(body, status = 200, url = new URL(baseUrl + "/admin
     });
   };
   try {
-    return await renderAdminInstitutionsPage(
-      "fixture-token",
-      url,
-    );
+    return await renderAdminInstitutionsPage("fixture-token", url);
   } finally {
     globalThis.fetch = original;
   }
