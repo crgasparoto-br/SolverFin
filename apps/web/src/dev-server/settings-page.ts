@@ -245,19 +245,18 @@ function renderRulesSection(
 function renderNewProfileDialog(): string {
   return `
     <dialog id="new-profile-dialog" class="master-dialog" aria-labelledby="new-profile-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+            <div class="dialog-heading">
         <p class="eyebrow">Novo cadastro</p>
         <h2 id="new-profile-title">Novo perfil</h2>
       </div>
-      <form data-api-form data-api-path="/api/financial-profiles" class="edit-grid">
-        <label>Nome<input name="name" required placeholder="Ex.: Família" /></label>
+      <form data-api-form data-api-path="/api/financial-profiles" data-api-success="Perfil criado. Atualizando..." class="edit-grid">
+        <label>Nome<input name="name" required autofocus placeholder="Ex.: Família" /></label>
         <label>Tipo
           <select name="kind" required>
             ${renderProfileKindOptions()}
           </select>
         </label>
-        <button type="submit" title="Salvar novo perfil">${icon("save", 14)} Criar perfil</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar novo perfil">${icon("save", 14)} Criar perfil</button></div>
       </form>
     </dialog>
   `;
@@ -268,14 +267,14 @@ function renderNewAutomationRuleDialog(
   categories: DependencyState<CategoryRecord>,
 ): string {
   return `
-    <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+    <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title" aria-describedby="new-rule-dialog-context">
+            <div class="dialog-heading">
         <p class="eyebrow">Nova automação</p>
         <h2 id="new-automation-rule-title">Nova regra automática</h2>
       </div>
-      <form data-api-form data-api-path="/api/automation-rules" class="edit-grid" novalidate>
-        <label>Nome<input name="name" required placeholder="Ex.: Mercado vira Alimentação" /></label>
+      <p class="settings-dialog-context" id="new-rule-dialog-context">Cada execução gera sugestões revisáveis, não confirma lançamentos.</p>
+      <form data-api-form data-api-path="/api/automation-rules" data-api-success="Regra criada. Atualizando..." class="edit-grid" novalidate>
+        <label>Nome<input name="name" required autofocus placeholder="Ex.: Mercado vira Alimentação" /></label>
         <label>Prioridade<input name="priority" type="number" value="100" /></label>
         <label>Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
         <label>Tipo
@@ -299,7 +298,7 @@ function renderNewAutomationRuleDialog(
           </select>
         </label>
         <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
-        <button type="submit" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button></div>
       </form>
     </dialog>
   `;
@@ -360,15 +359,14 @@ function renderProfileEditDialog(profile: FinancialProfileRecord): string {
 
   return `
     <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+            <div class="dialog-heading">
         <p class="eyebrow">Editar cadastro</p>
         <h2 id="${escapeHtml(titleId)}">${escapeHtml(profile.name)}</h2>
       </div>
-      <form data-api-form data-api-method="PATCH" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}" class="edit-grid">
-        <label>Nome<input name="name" value="${escapeHtml(profile.name)}" required /></label>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}" data-api-success="Perfil atualizado. Atualizando..." class="edit-grid">
+        <label>Nome<input name="name" value="${escapeHtml(profile.name)}" required autofocus /></label>
         <label>Tipo<select name="kind">${renderProfileKindOptions(profile.kind)}</select></label>
-        <button type="submit" title="Salvar alterações do perfil">${icon("save", 14)} Salvar perfil</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar alterações do perfil">${icon("save", 14)} Salvar perfil</button></div>
       </form>
     </dialog>
   `;
@@ -402,7 +400,7 @@ function renderProfileRow(
                <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
                <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
              </nav>`
-          : '<span class="profile-disabled-note">Perfil arquivado — disponível para consulta.</span>'}
+          : '<span class="profile-disabled-note">Perfil arquivado.</span>'}
         <div class="item-actions">
           <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" data-sf-dialog-open="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}" title="Editar perfil">${renderEditIcon()}</button>
           ${isActive
@@ -516,7 +514,7 @@ function settingsScript(): string {
           const error = input.parentElement.querySelector("[data-decimal-error]");
           const invalid = !result.ok;
           if (invalid) input.setAttribute("aria-invalid", "true");
-else input.removeAttribute("aria-invalid");
+          else input.removeAttribute("aria-invalid");
           if (error) error.hidden = !invalid;
           if (invalid && !firstInvalid) firstInvalid = input;
         });
@@ -539,9 +537,9 @@ else input.removeAttribute("aria-invalid");
         return payload;
       }
 
-      async function readApiMessage(response) {
+      async function readApiMessage(response, successMessage) {
         const body = await response.json().catch(() => ({}));
-        if (response.ok) return "Ação concluída. Atualizando a tela...";
+        if (response.ok) return successMessage || "Ação concluída. Atualizando a tela...";
         return (body.error && body.error.message) || "Não foi possível concluir a ação.";
       }
 
@@ -570,23 +568,28 @@ else input.removeAttribute("aria-invalid");
           if (submitButton) submitButton.disabled = true;
           status.className = "form-status muted";
           status.textContent = "Salvando...";
-          const response = await fetch(form.dataset.apiPath, {
-            method: form.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(buildPayload(form)),
-          });
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+          try {
+            const response = await fetch(form.dataset.apiPath, {
+              method: form.dataset.apiMethod || "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(buildPayload(form)),
+            });
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = await readApiMessage(response, form.dataset.apiSuccess);
+            if (response.ok) {
+              window.setTimeout(() => window.location.reload(), 450);
+              return;
+            }
+          } catch {
+            status.className = "form-status error";
+            status.textContent = "Falha de conexão. Revise os dados e tente novamente.";
           }
           if (submitButton) submitButton.disabled = false;
         });
       });
 
       document.querySelectorAll("[data-api-action]").forEach((button) => {
-        const container = button.closest(".maintenance-actions") || button.closest(".heading-actions") || button.parentElement;
+        const container = button.closest(".maintenance-actions") || button.closest(".settings-operation") || button.parentElement;
         const status = ensureStatus(container);
         button.addEventListener("click", async () => {
           if (button.disabled) return;
@@ -595,15 +598,20 @@ else input.removeAttribute("aria-invalid");
           button.disabled = true;
           status.className = "form-status muted";
           status.textContent = "Enviando...";
-          const response = await fetch(button.dataset.apiPath, {
-            method: button.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-          });
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+          try {
+            const response = await fetch(button.dataset.apiPath, {
+              method: button.dataset.apiMethod || "POST",
+              headers: { "content-type": "application/json" },
+            });
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = await readApiMessage(response, button.dataset.apiSuccess);
+            if (response.ok) {
+              window.setTimeout(() => window.location.reload(), 450);
+              return;
+            }
+          } catch {
+            status.className = "form-status error";
+            status.textContent = "Falha de conexão. Tente novamente.";
           }
           button.disabled = false;
         });
