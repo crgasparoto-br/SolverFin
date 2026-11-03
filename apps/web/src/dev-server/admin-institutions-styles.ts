@@ -28,6 +28,8 @@ export function adminPageStyles(): string {
     .admin-summary-item { white-space: nowrap; }
     .admin-summary-item strong { color: var(--text); font-weight: 700; margin-right: 4px; }
     .catalog-refresh-meta { align-items: baseline; display: flex; flex-wrap: wrap; font-size: 0.75rem; gap: 4px 14px; }
+    .admin-refresh-actions { display: grid; gap: 4px; }
+    .admin-refresh-actions [data-admin-refresh-status]:empty { display: none; }
 
     .list-panel { gap: 12px; }
     .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
@@ -64,6 +66,6 @@ export function adminPageStyles(): string {
     .form-status { margin: 0; }
     @media (max-width: 1240px) { .admin-institution-row { grid-template-columns: 56px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 2 / -1; } .institution-actions { justify-content: flex-start; } }
     @media (max-width: 980px) { .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid .wide { grid-column: 1 / -1; } .advanced-filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 640px) { .filters-panel { padding: 10px 12px; } .filters-panel h2 { margin-bottom: 6px; } .admin-filter-form, .filters-grid { gap: 7px; } main { padding: 14px 14px 24px; } .admin-heading, .section-heading, .filters-grid, .advanced-filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .filter-actions button, .filter-actions .button-link { flex: 1 1 130px; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } .logo-dialog-layout { grid-template-columns: 1fr; } }
+    @media (max-width: 640px) { .filters-panel { padding: 10px 12px; } .filters-panel h2 { margin-bottom: 6px; } .admin-filter-form, .filters-grid { gap: 7px; } main { padding: 14px 14px 24px; } .admin-heading, .section-heading, .advanced-filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .filters-grid .wide { grid-column: 1 / -1; } .filter-actions { gap: 6px; } .filter-actions button, .filter-actions .button-link { flex: 1 1 0; min-width: 0; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }

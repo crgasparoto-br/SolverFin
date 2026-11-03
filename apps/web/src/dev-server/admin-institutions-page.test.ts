@@ -200,7 +200,7 @@ async function adminInstitutionsPagePreservesFiltersOnRecoverableApiFailure(): P
       html,
       /href="\/admin\/instituicoes\?q=teste&amp;status=inactive&amp;logoStatus=fallback&amp;pageSize=10&amp;sort=bankCode&amp;order=desc">Tentar novamente<\/a>/,
     );
-    assert.doesNotMatch(html, /data-admin-refresh|data-status-form|data-logo-upload-form/);
+    assert.doesNotMatch(html, /<button[^>]*data-admin-refresh|<form[^>]*data-status-form|<form[^>]*data-logo-upload-form/);
   }
 }
 

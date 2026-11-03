@@ -69,7 +69,7 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
         eyebrow: adminInstitutionsPageModel.eyebrow,
         title: adminInstitutionsPageModel.title,
         description: adminInstitutionsPageModel.description,
-        actionsHtml: `<button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>`,
+        actionsHtml: `<span class="admin-refresh-actions"><button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button><span class="form-status muted" data-admin-refresh-status aria-live="polite"></span></span>`,
       })}
       ${renderInstitutionFilters(params)}
       <section class="panel list-panel" aria-labelledby="admin-catalog-heading">
@@ -80,6 +80,9 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
           </div>
           <span>${pagination?.total ?? institutions.length} itens</span>
         </div>
+        <div class="admin-institution-list">
+          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState(hasAppliedFilters)}
+        </div>
         <div class="catalog-summary" aria-label="Resumo do catálogo">
           <span class="admin-summary-item"><strong>${summary.total}</strong> instituições</span>
           <span class="admin-summary-item"><strong>${summary.active}</strong> ativas</span>
@@ -88,10 +91,6 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
         </div>
         <div class="catalog-refresh-meta">
           <span class="muted">Atualizado: ${escapeHtml(summary.updatedAt ?? "ainda não executado")}</span>
-          <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para atualizar o catálogo global.</p>
-        </div>
-        <div class="admin-institution-list">
-          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState(hasAppliedFilters)}
         </div>
       </section>
       ${institutions.map((institution) => renderLogoUploadDialog(institution, query)).join("")}

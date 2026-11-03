@@ -171,6 +171,13 @@ async function verify(cdp, width, height, label) {
       label + ": advanced filters compete with catalog",
       measurements,
     );
+    if (width <= 390 && measurements.routeSpecific.firstRowTop !== null) {
+      check(
+        measurements.routeSpecific.firstRowTop < height,
+        label + ": first catalog row is below the initial viewport",
+        measurements,
+      );
+    }
   }
   if (route === "/admin/indices-financeiros") {
     check(
@@ -379,6 +386,7 @@ function measurementExpression() {
         restricted: Boolean(root.querySelector('[data-state="permission"]')),
         summaryCards: root.querySelectorAll(".sf-metric-card").length,
         compactSummary: root.querySelectorAll(".admin-summary-item").length,
+        firstRowTop: root.querySelector(".admin-institution-row")?.getBoundingClientRect().top ?? null,
         primaryFilters: root.querySelectorAll(".filters-grid input,.filters-grid select").length,
         filterControls: root.querySelectorAll(".filters-grid input,.filters-grid select,.advanced-filters-grid input,.advanced-filters-grid select").length,
         advancedCollapsed: Boolean(root.querySelector(".admin-advanced-filters:not([open]) summary")),
