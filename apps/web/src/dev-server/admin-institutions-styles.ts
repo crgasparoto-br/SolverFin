@@ -67,4 +67,3 @@ export function adminPageStyles(): string {
     @media (max-width: 640px) { main { padding: 14px 14px 24px; } .admin-heading, .section-heading, .filters-grid, .advanced-filters-grid { align-items: stretch; display: grid; grid-template-columns: 1fr; } .filters-grid .wide { grid-column: auto; } .filter-actions button, .filter-actions .button-link { flex: 1 1 130px; } .admin-institution-row { align-items: start; grid-template-columns: 52px minmax(0, 1fr); } .institution-meta, .institution-actions { grid-column: 1 / -1; } .institution-meta { grid-template-columns: repeat(2, minmax(0, 1fr)); } .logo-dialog-layout { grid-template-columns: 1fr; } }
   `;
 }
-
