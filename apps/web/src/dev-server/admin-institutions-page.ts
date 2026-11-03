@@ -1,13 +1,9 @@
-import {
-  renderPageContainer,
-  renderPageHeader,
-  renderPermissionState,
-  renderRecoverableError,
-} from "../design-system/primitives.js";
+import { renderPageContainer, renderPageHeader } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dialogScript } from "./shared-styles.js";
 import { adminPageStyles } from "./admin-institutions-styles.js";
+import { renderAdminInstitutionsFailurePage } from "./admin-institutions-error-page.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
 const adminInstitutionsPageModel = getSecondaryRoutePageViewModel("adminInstitutions");
@@ -49,34 +45,11 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
   const result = await apiGet<AdminInstitutionsResponse>(token, `/api/admin/institutions${query}`);
 
   if (!result.ok) {
-    const isMasterDenied = result.status === 403;
-    const params = url?.searchParams ?? new URLSearchParams();
-    const content = isMasterDenied
-      ? renderPermissionState({
-          title: "Acesso restrito",
-          description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
-          actionHtml:
-            '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
-        })
-      : `${renderPageHeader({
-          eyebrow: adminInstitutionsPageModel.eyebrow,
-          title: adminInstitutionsPageModel.title,
-          description: adminInstitutionsPageModel.description,
-        })}${renderRecoverableError({
-          title: "Não foi possível carregar o catálogo de instituições",
-          description: result.error,
-          actionHtml: `<a class="button-link" href="/admin/instituicoes${escapeHtml(query)}">Tentar novamente</a>`,
-        })}${renderInstitutionFilters(params)}`;
-
-    return renderAuthenticatedShellDocument({
-      activePathname: "/admin/instituicoes",
-      currentLabel: "Admin - Instituições",
-      showAdminNavigation: false,
-      styles: adminPageStyles(),
-      content: renderPageContainer({
-        className: "secondary-route-page admin-institutions-page",
-        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${content}</div>`,
-      }),
+    return renderAdminInstitutionsFailurePage({
+      status: result.status,
+      error: result.error,
+      retryHref: `/admin/instituicoes${escapeHtml(query)}`,
+      filtersHtml: renderInstitutionFilters(url?.searchParams ?? new URLSearchParams()),
     });
   }
 
