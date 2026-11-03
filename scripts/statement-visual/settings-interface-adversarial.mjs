@@ -92,8 +92,16 @@ async function runScenario(name, width, height, section, zoom = false) {
     const restFilename = `issue-727-${name}-rest.png`;
     await screenshot(browser.cdp, join(outputDir, restFilename));
     screenshots.push(restFilename);
-    check(hierarchy.primaryCount === 1, `${name}: hierarquia tem mais de uma ação principal`, hierarchy);
-    check(hierarchy.negativeControlRejectsCompetingPrimary, `${name}: controle negativo da ação principal`, hierarchy);
+    check(
+      hierarchy.primaryCount === 1,
+      `${name}: hierarquia tem mais de uma ação principal`,
+      hierarchy,
+    );
+    check(
+      hierarchy.negativeControlRejectsCompetingPrimary,
+      `${name}: controle negativo da ação principal`,
+      hierarchy,
+    );
     check(hierarchy.restored, `${name}: controle negativo não restaurou a hierarquia`, hierarchy);
     const dialogSelector =
       section === "profiles"
@@ -629,7 +637,9 @@ async function waitForDialog(cdp) {
 }
 
 async function validateActionHierarchy(cdp, section) {
-  return evaluate(cdp, `(() => {
+  return evaluate(
+    cdp,
+    `(() => {
     const scope = document.querySelector('[data-settings-scope="${section}"]');
     const actions = Array.from(scope?.querySelectorAll('button.sf-button-primary') || []);
     const primaryCount = actions.length;
@@ -646,7 +656,8 @@ async function validateActionHierarchy(cdp, section) {
       restored = scope.querySelectorAll('button.sf-button-primary').length === primaryCount;
     }
     return { section: '${section}', primaryCount, negativeControlRejectsCompetingPrimary, restored };
-  })()`);
+  })()`,
+  );
 }
 
 function measurementExpression(section) {
