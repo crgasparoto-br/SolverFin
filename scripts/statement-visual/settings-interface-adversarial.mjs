@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { captureSettingsGoldenEvidence } from "./settings-golden-evidence.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -245,6 +246,18 @@ async function runScenario(name, width, height, section, zoom = false) {
       );
     }
 
+    const goldenEvidence = await captureSettingsGoldenEvidence({
+      cdp: browser.cdp,
+      name,
+      section,
+      outputDir,
+      check,
+      pressKey,
+      openDialogWithKeyboard,
+      waitForDialogClosed,
+    });
+    if (goldenEvidence) screenshots.push(...goldenEvidence.screenshots);
+
     return {
       name,
       width,
@@ -255,6 +268,7 @@ async function runScenario(name, width, height, section, zoom = false) {
       renderedRules,
       keyboardNavigation,
       hierarchy,
+      goldenEvidence,
       restScreenshot: restFilename,
       longNameEvidence,
       textScale,
@@ -763,6 +777,11 @@ function measurementExpression(section) {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       rootFontSizePx: parseFloat(getComputedStyle(document.documentElement).fontSize),
       noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      horizontalOverflowCandidates: Array.from(document.querySelectorAll("body *")).filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.right > innerWidth + 1;
+      }).slice(0, 8).map((element) => ({ tag: element.tagName, className: String(element.className).slice(0, 110), right: Math.round(element.getBoundingClientRect().right) })),
       h1Count: document.querySelectorAll('h1').length,
       h1Text: document.querySelector('h1')?.textContent?.trim() || '',
       activeSection: active?.getAttribute('href')?.endsWith('section=rules') ? 'rules' : 'profiles',
