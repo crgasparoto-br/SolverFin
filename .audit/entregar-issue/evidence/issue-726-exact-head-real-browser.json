@@ -1,25 +1,25 @@
 {
   "schema_version": 1,
-  "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
   "runner": "GitHub-hosted Chrome authenticated demo profile",
-  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
-  "workflow_run_id": 41334271338,
+  "workflow_run": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
+  "workflow_run_id": 41549913813,
   "workflow_status": "completed/success",
-  "artifact_id": 13094852898,
-  "artifact_name": "statement-visual-evidence-0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-  "artifact_digest": "local-download-zip-sha256:9a7e50fa46c8a1f344cde5bfa5287324df34ef5775451c43af0148e967f57136",
+  "artifact_id": 13191796729,
+  "artifact_name": "statement-visual-evidence-0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "artifact_digest": "sha256:3aa52522c9db39c56f976f913124f938f3885afab9da60c907633504dceca5f2",
   "raw_evidence": {
     "queue": {
       "path": "evidence/issue-726-chrome-queue-exact-head.json",
-      "sha256": "211eb7492f551c2906a5ff4c69fd7755346e87b682c165640a082f65a16b00ed"
+      "sha256": "94d7800f5e5b73e76281a433144949e5cd2a4bf8324cd56d28e839d83f50f449"
     },
     "states": {
       "path": "evidence/issue-726-chrome-queue-states-exact-head.json",
-      "sha256": "8a925fd690c20532152d6e0740a3311204c8de2bc9eda40a2b49e6e9385c041f"
+      "sha256": "7fc736e349e55753e41ef91bb677ea031ad7e2950073ef3ea8fb9bb573f5b8d6"
     },
     "correction": {
       "path": "evidence/issue-726-chrome-category-correction-exact-head.json",
-      "sha256": "3f1cf6478e4f21fd7153b1d5a9c41d2114ef188d6e5ec88a0b2da7d028dca86d"
+      "sha256": "0777ae9aa96f09893c1ad893e877a3246f57eea0c3051e5c3169edafcf3fc238"
     }
   },
   "observations": {
@@ -141,25 +141,25 @@
       "actionsVisible": true,
       "actionsContainedInCards": true,
       "bodyFitsViewport": true,
-      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvy556pvRevisar"
+      "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvzxkgebRevisar"
     },
     "correction_guards": [
       {
-        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "fingerprint": "sha256-7a4936a4c4a5f4770169e26b4a54fde347af1a9da414a6a0a4c497b1f5b8f8b9",
         "mode": "hidden",
         "posts": 0,
         "blocked": true,
         "reviewState": "ready"
       },
       {
-        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "fingerprint": "sha256-7a4936a4c4a5f4770169e26b4a54fde347af1a9da414a6a0a4c497b1f5b8f8b9",
         "mode": "wrong-selection",
         "posts": 0,
         "blocked": true,
         "reviewState": "ready"
       },
       {
-        "fingerprint": "sha256-1d0ace16a554eefd59ca821512a331ed9c5b40e74d58beef8bbafcb176bcaeae",
+        "fingerprint": "sha256-7a4936a4c4a5f4770169e26b4a54fde347af1a9da414a6a0a4c497b1f5b8f8b9",
         "mode": "changed-fingerprint",
         "posts": 0,
         "blocked": true,
@@ -445,5 +445,5 @@
     "The certification and release audit remain separate operations; current material cannot carry independent approval from its implementing context.",
     "Historical pre-edit Chrome provenance is retrospective; no backdating of this evidence is claimed."
   ],
-  "artifact_hash_scope": "ZIP downloaded by authenticated GitHub connector; this is NOT an attestation of a GitHub API digest."
+  "artifact_hash_scope": "Official GitHub Actions artifact digest from authenticated connector, verified against the downloaded exact-HEAD ZIP."
 }

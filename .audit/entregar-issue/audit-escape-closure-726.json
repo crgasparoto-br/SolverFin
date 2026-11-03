@@ -5,7 +5,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 726,
     "pull_request_number": 754,
-    "material_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2"
+    "material_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a"
   },
   "escapes": [
     {
@@ -64,11 +64,11 @@
           "dimension": "foreign-issue-number-725"
         }
       ],
-      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+      "revalidated_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
       "latest_regression_evidence": {
-        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
         "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
@@ -134,11 +134,11 @@
           "dimension": "approve-stale-no-post"
         }
       ],
-      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+      "revalidated_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
       "latest_regression_evidence": {
-        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
         "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
@@ -204,11 +204,11 @@
           "dimension": "hidden-evidence"
         }
       ],
-      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+      "revalidated_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
       "latest_regression_evidence": {
-        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
         "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
@@ -274,11 +274,11 @@
           "dimension": "secondary-before-review"
         }
       ],
-      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+      "revalidated_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
       "latest_regression_evidence": {
-        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
         "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {
@@ -344,11 +344,11 @@
           "dimension": "capture-before-pr"
         }
       ],
-      "revalidated_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+      "revalidated_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
       "latest_regression_evidence": {
-        "head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
-        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338",
+        "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
         "validation_scope": "CRITICAL validation 125 tests, Chrome 75 units and 11 typed editor checks in exact-material head"
       },
       "revalidation": {

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
   "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
@@ -54,6 +54,11 @@
       "lines_after": 302
     },
     {
+      "path": "scripts/statement-visual/fixtures.mjs",
+      "lines_before": 196,
+      "lines_after": 241
+    },
+    {
       "path": "scripts/statement-visual/inbox-interface-accessibility.mjs",
       "lines_before": 500,
       "lines_after": 500
@@ -76,7 +81,7 @@
     {
       "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
       "lines_before": 455,
-      "lines_after": 476
+      "lines_after": 486
     },
     {
       "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
@@ -109,14 +114,25 @@
       "lines_after": 148
     },
     {
+      "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
+      "lines_before": null,
+      "lines_after": 84
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-budget-list.mjs",
+      "lines_before": null,
+      "lines_after": 142
+    },
+    {
       "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
       "lines_before": null,
-      "lines_after": 123
+      "lines_after": 313,
+      "justification": "Inherited deterministic Chrome validation from issue #755 and integrated develop in the exact candidate; 313-line module is fully covered by issue-755-ci-determinism.test.mjs and CI Chrome negative regressions. No new module was added for issue #726 in this result-only certification."
     },
     {
       "path": "scripts/statement-visual/operational-attachments.mjs",
       "lines_before": 345,
-      "lines_after": 386
+      "lines_after": 397
     }
   ],
   "blocking_files": []

@@ -3,11 +3,11 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
-    "audit_report_sha256": "e7e66a3e08a3b865fc8be41b1dcb2a5ed1fbd581e0fdf9a59e57059cdcaef7f5",
-    "audited_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
+    "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
+    "audit_report_sha256": "782c0c515aa650666206ee7c8119aef70b68b4eb617ab86dec9589e61e6a0c6c",
+    "audited_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a"
   },
-  "candidate_head_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "candidate_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -19,100 +19,23 @@
       "changed_files": [
         ".audit/entregar-issue/handoff-ready.json",
         ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json"
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/evidence-provenance-726.json"
       ],
       "evidence": [
-        "evidence/issue-726-previous-audit-20261101.md",
+        "evidence/issue-726-latest-independent-rejection-20261103.md",
         "evidence/issue-726-ci-execution.txt",
         "evidence/issue-726-exact-head-real-browser.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
+        "Validate terminal exact parent/paths and auditor preflight before and after publication"
       ],
-      "explanation": "Previous handoff stale after 2 material commits; refreeze current exact material 0374ab3de95900cf60d5439ebecc83ff764eb9b2 and publish a validated result-only child with parent 0374ab3de95900cf60d5439ebecc83ff764eb9b2. Independent approval still required."
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-002",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
-        "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
-        "scripts/statement-visual/issue-726-inbox-controls.mjs"
-      ],
-      "evidence": [
-        "evidence/issue-726-browser-evidence.json",
-        "evidence/issue-726-static-probes.json"
-      ],
-      "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
-      ],
-      "explanation": "A reviewed fingerprint is bound to approval and rejection; changed B payload blocks POST until the user reviews again."
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-003",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "apps/web/src/dev-server/category-learning-controller.ts",
-        "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
-        "scripts/statement-visual/issue-564-category-learning.mjs"
-      ],
-      "evidence": [
-        "evidence/issue-726-browser-evidence.json",
-        "evidence/issue-726-static-probes.json"
-      ],
-      "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
-      ],
-      "explanation": "Legacy capture-phase submit interceptor removed and category correction follows selected-evidence guard, including races and changed selection."
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-004",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "apps/web/src/dev-server/inbox-page.ts",
-        "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
-        "docs/AI_REVIEW_QUEUE.md"
-      ],
-      "evidence": [
-        "evidence/issue-726-browser-evidence.json",
-        "evidence/issue-726-static-probes.json"
-      ],
-      "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
-      ],
-      "explanation": "Insufficient insight fallback and message/import sections moved after review cockpit and documented; negative promotion detected and restored."
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-005",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [],
-      "evidence": [
-        "evidence/issue-726-pre-edit-baseline.json",
-        "evidence/issue-726-browser-evidence.json"
-      ],
-      "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271352",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41334271338"
-      ],
-      "explanation": "Authenticated browser captured preexisting UI divergence before PR creation on identical Inbox source; prior implementation-time human inspection is not provable and is explicitly not claimed."
+      "explanation": "Previous handoff was valid for material 0374ab3 but stale after merge material 0fcbe716e0c196e6e31b5670c7bd8097f52ec94a. Complete post-write refreeze with 25 issue obligations, new exact material Chrome/CI and direct result-only child; official terminal/preflight must pass post-publication."
     }
   ],
   "status": "closed",
-  "honesty": "Latest independent audit of 0374ab3de95900cf60d5439ebecc83ff764eb9b2 (audit-rejection:b9b62392-f035-49d6-b6f3-e00cef0313a2) rejected stale transport only; new result-only child must be observed remotely and independently reviewed. Earlier rejection lineage retained."
+  "honesty": "Functional code in candidate remains frozen. This producer-side closure records a packaging correction and depends on passing exact published SHA terminal guard; independent approval still pending; previous rejection lineage remains in version history."
 }

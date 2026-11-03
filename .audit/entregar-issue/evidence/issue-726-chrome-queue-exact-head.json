@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-01T18:06:15.564Z",
-  "commit": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+  "generatedAt": "2026-11-03T00:09:44.064Z",
+  "commit": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
   "browser": "Google Chrome 156.0.8078.47",
   "fixture": {
-    "suggestionId": "fc4e896c-1ee4-4d6f-99d5-bc672f05c5d9",
+    "suggestionId": "98f2522c-a772-4f43-806f-d3fff9c7322d",
     "accountId": "44444444-4444-4444-8444-444444444445",
     "description": "Linha 2 importada e pronta para revisao humana."
   },
@@ -232,7 +232,7 @@
     "actionsVisible": true,
     "actionsContainedInCards": true,
     "bodyFitsViewport": true,
-    "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvy556pvRevisar"
+    "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvzxkgebRevisar"
   },
   "evidenceNegative": {
     "cases": [
@@ -242,7 +242,7 @@
         "guard": true,
         "posts": 1,
         "confirmations": 1,
-        "expectedFingerprint": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+        "expectedFingerprint": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
         "ok": true
       },
       {
@@ -299,7 +299,7 @@
         "guard": true,
         "posts": 1,
         "confirmations": 1,
-        "expectedFingerprint": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+        "expectedFingerprint": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
         "ok": true
       },
       {
@@ -359,7 +359,7 @@
       "action": "approve",
       "changed": true,
       "posts": 0,
-      "original": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+      "original": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
       "settled": true,
       "ok": true
     },
@@ -367,8 +367,8 @@
       "action": "approve",
       "changed": false,
       "posts": 1,
-      "original": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
-      "expectedFingerprint": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+      "original": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
+      "expectedFingerprint": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
       "settled": true,
       "ok": true
     },
@@ -376,7 +376,7 @@
       "action": "reject",
       "changed": true,
       "posts": 0,
-      "original": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+      "original": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
       "settled": true,
       "ok": true
     },
@@ -384,8 +384,8 @@
       "action": "reject",
       "changed": false,
       "posts": 1,
-      "original": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
-      "expectedFingerprint": "db-fp-v1-13285b085464a31d3d6902f67299762502c6e7c2966237e5115977620aaa051e",
+      "original": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
+      "expectedFingerprint": "db-fp-v1-e6fd692af8b2d05bbafe93b344e0236f5dd1ff8afee6ce7f6fcfb7cacd3b8a31",
       "settled": true,
       "ok": true
     }
