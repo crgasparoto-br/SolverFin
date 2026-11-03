@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+  "base_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
+  "comparison_base_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/web/src/dev-server/admin-institutions-page.ts",
+      "lines_before": 531,
+      "lines_after": 535
+    },
+    {
+      "path": "apps/web/src/dev-server/admin-institutions-styles.ts",
+      "lines_before": null,
+      "lines_after": 69
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.mjs",
+      "lines_before": 448,
+      "lines_after": 449
+    },
+    {
+      "path": "scripts/statement-visual/issue-615-secondary-route.mjs",
+      "lines_before": 358,
+      "lines_after": 470
+    },
+    {
+      "path": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "lines_before": null,
+      "lines_after": 217
+    }
+  ],
+  "blocking_files": []
+}

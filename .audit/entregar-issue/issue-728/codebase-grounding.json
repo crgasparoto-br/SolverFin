@@ -1,0 +1,231 @@
+{
+  "schema_version": 2,
+  "subject_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+  "base_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
+  "creations": [
+    {
+      "path": "apps/web/src/dev-server/admin-institutions-styles.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n \"adminPageStyles|sharedShellStyles\" apps/web/src/dev-server",
+          "git diff --name-status 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2"
+        ],
+        "scope": "Existing SSR renderer/shared styles or registered Chrome scenario was inspected; new file isolates focused style/state logic and reuses canonical helpers.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/admin-institutions-page.ts",
+            "reason_not_reused": "Original module retained as main consumer/entrypoint; a focused extracted module reduces monolithic growth and reuses its helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Keeps file-size budget and separates reusable normal logic from focused browser state matrix without duplicating CDP launch/navigation."
+    },
+    {
+      "path": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n \"issue-615-secondary|cdp.mjs|admin-states\" scripts/statement-visual",
+          "git diff --name-status 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2"
+        ],
+        "scope": "Existing SSR renderer/shared styles or registered Chrome scenario was inspected; new file isolates focused style/state logic and reuses canonical helpers.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-615-secondary-route.mjs",
+            "reason_not_reused": "Original module retained as main consumer/entrypoint; a focused extracted module reduces monolithic growth and reuses its helpers."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Keeps file-size budget and separates reusable normal logic from focused browser state matrix without duplicating CDP launch/navigation."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "adminPageStyles",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/admin-institutions-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/admin-institutions-styles.ts",
+        "line": 3
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderAdminInstitutionsPage",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/admin-institutions-page.ts",
+        "line": 46
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "evaluate",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/cdp.mjs",
+        "line": 195
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "screenshot",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/cdp.mjs",
+        "line": 209
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/web/src/dev-server/admin-institutions-page.test.ts",
+      "operation": "modified",
+      "scenario": "SSR admin institutions Golden Screen and stylesheet integration, with current negative assertions",
+      "requirement": "REQ-728-004, REQ-728-007, REQ-728-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2",
+          "rg -n \"admin-institutions|shared-styles|shell-pages\" apps/web/src/dev-server"
+        ],
+        "scope": "Existing SSR/visual test harness and changed files in candidate",
+        "runner": "npm run test -> compiled Node test runner in Repository CI",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/admin-institutions-page.test.ts",
+            "case": "Preserved and extended current registered test rather than replacing its existing assertions",
+            "oracle": "Compiled Node test runner: exit code 0 on CI run",
+            "comparison": "Original test file exists in base and is extended in candidate"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Original regression tests preserved; added focused checks for extracted styles, component contracts and SSR filter progression.",
+      "disposition": "keep",
+      "coverage_before": [
+        "SSR existing administrative interface"
+      ],
+      "coverage_after": [
+        "SSR existing administrative interface",
+        "Golden Screen filters/catalogue/state tests"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+        "reached_tests": [
+          "apps/web/src/dev-server/admin-institutions-page.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
+        "evidence_sha256": "6bb4bb858fdde099b47793dfaa3d83f26dd7471b8217e6fc9f7a25d4fceb6327"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shared-styles.test.ts",
+      "operation": "modified",
+      "scenario": "SSR admin institutions Golden Screen and stylesheet integration, with current negative assertions",
+      "requirement": "REQ-728-004, REQ-728-007, REQ-728-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2",
+          "rg -n \"admin-institutions|shared-styles|shell-pages\" apps/web/src/dev-server"
+        ],
+        "scope": "Existing SSR/visual test harness and changed files in candidate",
+        "runner": "npm run test -> compiled Node test runner in Repository CI",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shared-styles.test.ts",
+            "case": "Preserved and extended current registered test rather than replacing its existing assertions",
+            "oracle": "Compiled Node test runner: exit code 0 on CI run",
+            "comparison": "Original test file exists in base and is extended in candidate"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Original regression tests preserved; added focused checks for extracted styles, component contracts and SSR filter progression.",
+      "disposition": "keep",
+      "coverage_before": [
+        "SSR existing administrative interface"
+      ],
+      "coverage_after": [
+        "SSR existing administrative interface",
+        "Golden Screen filters/catalogue/state tests"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+        "reached_tests": [
+          "apps/web/src/dev-server/shared-styles.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
+        "evidence_sha256": "6bb4bb858fdde099b47793dfaa3d83f26dd7471b8217e6fc9f7a25d4fceb6327"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/shell-pages.test.ts",
+      "operation": "modified",
+      "scenario": "SSR admin institutions Golden Screen and stylesheet integration, with current negative assertions",
+      "requirement": "REQ-728-004, REQ-728-007, REQ-728-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2",
+          "rg -n \"admin-institutions|shared-styles|shell-pages\" apps/web/src/dev-server"
+        ],
+        "scope": "Existing SSR/visual test harness and changed files in candidate",
+        "runner": "npm run test -> compiled Node test runner in Repository CI",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/shell-pages.test.ts",
+            "case": "Preserved and extended current registered test rather than replacing its existing assertions",
+            "oracle": "Compiled Node test runner: exit code 0 on CI run",
+            "comparison": "Original test file exists in base and is extended in candidate"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Original regression tests preserved; added focused checks for extracted styles, component contracts and SSR filter progression.",
+      "disposition": "keep",
+      "coverage_before": [
+        "SSR existing administrative interface"
+      ],
+      "coverage_after": [
+        "SSR existing administrative interface",
+        "Golden Screen filters/catalogue/state tests"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+        "reached_tests": [
+          "apps/web/src/dev-server/shell-pages.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
+        "evidence_sha256": "6bb4bb858fdde099b47793dfaa3d83f26dd7471b8217e6fc9f7a25d4fceb6327"
+      }
+    }
+  ]
+}

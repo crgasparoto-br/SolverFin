@@ -1,0 +1,368 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/work728/solver/repo/.audit/entregar-issue/issue-728/specification-snapshot.json",
+    "sha256": "096b9964b733f08ecf8284ac48156c99f7adfb6ecca09094628253454b35d267"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-728",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "c49ffdc176d07554b995ca8ed9b086c9e52e319de916b4e08e5f76703afad747",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 5,
+      "source_text": "**Precedência:** consolidar evidência do marco técnico #714; aproveitar os componentes e verificações de #715–#718 quando aplicáveis. Não depender de merge automático.",
+      "flags": [
+        "negative",
+        "precedence"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Precedencia do marco Golden Screen: renderer preserva renderPageContainer, renderPageHeader e regras de escopo; a entrega nao executou merge. O diff do SHA material nao altera contratos financeiros nem fornecedores."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "491528297db2a897e5d35ae3d4d8afd87928c2d1a65b53a2c5d8612b8f88aab4",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 7,
+      "source_text": "**Limites:** redesign apenas de apresentação, SSR e primitives atuais; nenhuma alteração de contratos financeiros, moedas, permissões, dados, API, IA ou navegação. Trabalhar em PR própria com base `develop` e auditoria independente exact-SHA. Antes de editar, comprovar a divergência no Chrome autenticado; se a divergência não persistir, registrar evidência e encerrar por não aplicabilidade, sem refatorar por obrigação.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Mudanca confinada a SSR, estilos e scripts de teste (oito paths materializados), com PR propria contra develop. A divergencia anterior foi demonstrada estruturalmente no SSR de develop; captura autenticada pre-edicao nao foi possivel e permanece ressalva historica nao reproduzivel retroativamente."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "cd7f8bd05749ef85cfd16a64eab4d13d18e3f5a495298a82b7990cac012b5256",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 10,
+      "source_text": "**Antecedentes:** #591, #615. Preservar acesso master e catálogo institucional central.",
+      "flags": [
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Acesso master verificado: Chrome fixture 403 e teste SSR confirmam ausencia da lista e de acoes administrativas para erro de permissao. Catalogo central e API existentes foram preservados."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "854995b5472894fd9adaa32a7798c7095d10f48bd994b5cc6860cf7aed2e77e2",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 16,
+      "source_text": "Manter busca/filtros principais visíveis e recolher filtros avançados sem perder querystring/estado ativo/teclado e fallback SSR.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Renderer SSR imprime busca/status/ordenacao, details nativo colapsado, chips de ativos, e parametros GET; Chrome executou no-JS real nas tres resolucoes com teclado e persistencia."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "65188ac6deca9c1da0d8f1fe890bfb179c23dce955de83d727aa42d7c966b202",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 17,
+      "source_text": "Destacar catálogo, logo, instituição, status e ação contextual; reduzir peso da barra de métricas e dos painéis que empurram a lista para baixo.",
+      "flags": [
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "A tela removeu quatro metric cards antes do catalogo e o painel intermediario; colocou resumo compacto dentro do catalogo, com logo/nome/status prioritarios e quebra de nomes longos."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "d436e00b50816503457d216cd4e1ae5f5b19930ab340fb898b79291bb39cc0c0",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 18,
+      "source_text": "Preservar upload/substituição de logotipo, refresh idempotente, filtros e autorização master.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "O diff permanece no renderer/testes e conserva POST refresh, upload de logo, PATCH status, fallback e controle de acesso master; Chrome testou modais nas tres resolucoes e SSR de permissao."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "a33aa72ad254c43a3df886a2fe62654ab573e147489e4e47ad1f177d85cc8f25",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 21,
+      "source_text": "[ ] Capturas desktop 1366×768 e mobile 390×844/320×740 em lista populada, vazia, erro, filtro ativo, logo fallback e modal de upload.",
+      "flags": [
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Artefato visual exact-SHA inclui capturas base de lista preenchida, filtros ativos/fallback/modal e novos estados empty/error/forbidden/no-JS em 1366x768, 390x844, 320x740; failures=[] nos dois relatorios."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "fdeaee329a7e8fd449ac6b93229d55c0961706360ed85703785cc37309875687",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 22,
+      "source_text": "[ ] Catálogo identificável sem atravessar oito filtros; filtros avançados acessíveis, indicadores ativos visíveis e busca/ordem persistentes com/sem JS.",
+      "flags": [
+        "negative",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Chrome prova detalhes colapsados, chips ativos visiveis, persistencia da busca/order/pageSize com JS desativado e reflow sem overflow; SSR testa selecao ativa."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "19a490dbcb683a325c951b2f6bce924579e5e97b6afdc22373b4a077d59dfd2f",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 23,
+      "source_text": "[ ] Nome/logotipo/status e fallback acessíveis; controles de upload/refresh com estados e permissão intactos; sem truncamento/overflow.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Logo tem alt/fallback, status acessivel e fluxo de upload preservado; capturas Chrome e assertions de overflow para as tres larguras, testes SSR e CSS de quebra sem truncamento."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "f939bc0facc061b40c4168efd50663e6b3875d1ca588ebc100bb39b5d9c19d11",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 24,
+      "source_text": "[ ] Controle negativo: abrir todos os filtros com prioridade igual ao catálogo ou ocultar filtros ativos deve falhar; restauração passa.",
+      "flags": [
+        "exhaustive",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-728-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Controle negativo no Chrome testa abrir details e ocultar lista de chips, ambas falham a checagem de contrato; restauracao passa, em todas as tres larguras. SSR rejeita metric cards pre-catalogo."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "c3775ea56a0af0b158977ce8dc68bb28ce77fa2736b2d69f5535481a59abce60",
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "source_line": 25,
+      "source_text": "[ ] Testes SSR/CI/Chrome exact-SHA e auditoria visual/técnica independente.",
+      "flags": [],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-728-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-728",
+        "decision_source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+        "decision_locator": "e auditoria visual/técnica independente",
+        "target_issue": 728,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "[ ] Testes SSR/CI/Chrome exact-SHA",
+          "rationale": "Checks CI e visual completados no material SHA, mas revisao independente so pode ser executada em contexto separado apos a publicacao do pacote e continua pendente."
+        }
+      },
+      "rationale": "Testes SSR, CI e Chrome completaram no SHA material; auditoria visual e tecnica independente posterior deve ocorrer em contexto separado, sem automerge ou autodeclaracao de independencia."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-728",
+      "source_sha256": "f72f0e30cbda6e3192000ae44e5cc3ac7625f3db8dd83bec74fb1a45e372755c",
+      "candidate_count": 11,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Precedencia da Golden Screen e restricao a SSR/primitives, sem novo endpoint, permissoes ou alteracao de contratos financeiros.",
+    "entries": [
+      {
+        "id": "SIC-001",
+        "kind": "precedence",
+        "requirement_ids": [
+          "REQ-728-001",
+          "REQ-728-002"
+        ],
+        "obligation_ids": [
+          "OBL-001",
+          "OBL-002"
+        ],
+        "plausible_wrong_implementation": "Reintroduzir quatro cards metricos acima da lista ou abandonar primitives canonicas criaria dois planos primarios concorrentes.",
+        "canonical_path": "apps/web/src/dev-server/admin-institutions-page.ts:73",
+        "competing_paths": [
+          "apps/web/src/dev-server/admin-institutions-styles.ts:3"
+        ],
+        "evidence_ids": [
+          "https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246905: secondary-admin-institutions e admin-institutions-728-states passaram",
+          "admin-institutions-page.test.ts ordena painel e lista"
+        ],
+        "scenario_ids": [
+          "secondary-admin-institutions",
+          "admin-institutions-728-states"
+        ],
+        "negative_control_evidence": [
+          "Chrome no-JS controls exposedFails=true hiddenFails=true restored=true; SSR rejeita sf-metric-card"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Nenhum read model persistido, paginacao, schema ou API novo; somente SSR e testes de interface.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Rotas e end points da API de admin, autorizacao master, catalogo compartilhado e fluxo de refresh/upload/status existentes continuam sem alteracao no diff material.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Documentos existentes de design e arquétipos mantidos, sem mudanca normativa de negocio, API ou navegacao.",
+    "old_contract_terms": [
+      "A2 Listagem",
+      "Golden Screen",
+      "Admin Instituicoes"
+    ],
+    "new_contract_terms": [
+      "Filtros avancados",
+      "Catalogo global",
+      "Resumo compacto"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "AGENTS.md",
+      "docs/DESIGN_SYSTEM.md",
+      "docs/SCREEN_ARCHETYPES.md",
+      "docs/VISUAL_VALIDATION.md"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-728-001",
+      "REQ-728-002",
+      "REQ-728-003",
+      "REQ-728-004",
+      "REQ-728-005",
+      "REQ-728-006",
+      "REQ-728-007",
+      "REQ-728-008",
+      "REQ-728-009",
+      "REQ-728-010",
+      "REQ-728-011"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011"
+    ],
+    "evidence": [
+      "Git diff 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2 exatamente oito arquivos, sem API/migracao",
+      "Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246940: CRITICAL, types, test and build completed/success",
+      "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246905, artefato https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246905/artifacts/13262046485: 3 viewports, capturas 728, sem overflow, no-JS, estados empty, permission e error",
+      "Teste SSR admin-institutions-page.test.ts e ajustes de estilo/shared-shell integrados; auditoria independente permanece deferida"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
