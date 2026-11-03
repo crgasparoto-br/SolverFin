@@ -11,6 +11,11 @@ const pageSource = readFileSync(
   "utf8",
 );
 
+const stylesSource = readFileSync(
+  path.join(repoRoot, "apps", "web", "src", "dev-server", "admin-institutions-styles.ts"),
+  "utf8",
+);
+
 const institution = {
   key: "banco-demo",
   label: "Instituição fictícia com identificação longa para teste de reflow",
@@ -66,15 +71,15 @@ function adminInstitutionsPageKeepsRefreshIdempotentAction(): void {
 
 function adminInstitutionsPageAllowsFilterActionsToWrapWithoutHorizontalOverflow(): void {
   assert.match(
-    pageSource,
+    stylesSource,
     /\.filter-actions \{ align-items: center; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; \}/,
   );
   assert.match(
-    pageSource,
+    stylesSource,
     /\.institution-title-line strong \{ font-size: 0\.92rem; overflow-wrap: anywhere; \}/,
   );
   assert.match(
-    pageSource,
+    stylesSource,
     /\.institution-meta \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/,
   );
 }
