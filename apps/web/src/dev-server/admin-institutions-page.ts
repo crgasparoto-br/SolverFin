@@ -2,6 +2,7 @@ import {
   renderPageContainer,
   renderPageHeader,
   renderPermissionState,
+  renderRecoverableError,
 } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
@@ -48,6 +49,24 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
   const result = await apiGet<AdminInstitutionsResponse>(token, `/api/admin/institutions${query}`);
 
   if (!result.ok) {
+    const isMasterDenied = result.status === 403;
+    const params = url?.searchParams ?? new URLSearchParams();
+    const content = isMasterDenied
+      ? renderPermissionState({
+          title: "Acesso restrito",
+          description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
+          actionHtml: '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
+        })
+      : `${renderPageHeader({
+          eyebrow: adminInstitutionsPageModel.eyebrow,
+          title: adminInstitutionsPageModel.title,
+          description: adminInstitutionsPageModel.description,
+        })}${renderRecoverableError({
+          title: "Não foi possível carregar o catálogo de instituições",
+          description: result.error,
+          actionHtml: `<a class="button-link" href="/admin/instituicoes${escapeHtml(query)}">Tentar novamente</a>`,
+        })}${renderInstitutionFilters(params)}`;
+
     return renderAuthenticatedShellDocument({
       activePathname: "/admin/instituicoes",
       currentLabel: "Admin - Instituições",
@@ -55,21 +74,13 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
       styles: adminPageStyles(),
       content: renderPageContainer({
         className: "secondary-route-page admin-institutions-page",
-        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${renderPermissionState(
-          {
-            title: "Acesso restrito",
-            description: `${result.error} A tela de instituições financeiras só fica disponível para usuários master configurados no backend.`,
-            actionHtml:
-              '<a class="button-link secondary-link" href="/dashboard">Voltar ao Dashboard</a>',
-          },
-        )}</div>`,
+        childrenHtml: `<div data-secondary-route-foundation="${adminInstitutionsPageModel.id}" data-route-archetype="${adminInstitutionsPageModel.archetype}" data-route-audience="${adminInstitutionsPageModel.audience}" data-operational-mode="${adminInstitutionsPageModel.operationalMode}">${content}</div>`,
       }),
     });
   }
 
   const { institutions, summary, pagination } = result.data;
   const params = url?.searchParams ?? new URLSearchParams();
-  const advancedFilterCount = countAdvancedFilters(params);
   const hasAppliedFilters = hasAnyInstitutionFilter(params);
 
   return renderAuthenticatedShellDocument({
@@ -86,7 +97,43 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
         description: adminInstitutionsPageModel.description,
         actionsHtml: `<button type="button" class="button-link" data-admin-refresh data-api-path="/api/admin/institutions/refresh" data-api-query="${escapeHtml(query)}">Atualizar bancos</button>`,
       })}
-      <section class="panel filters-panel" aria-labelledby="institution-filters-heading">
+      ${renderInstitutionFilters(params)}
+      <section class="panel list-panel" aria-labelledby="admin-catalog-heading">
+        <div class="section-heading">
+          <div>
+            <h2 id="admin-catalog-heading">Catálogo global</h2>
+            <p class="muted">Selecione a logomarca para enviar ou substituir a imagem de cada instituição.</p>
+          </div>
+          <span>${pagination?.total ?? institutions.length} itens</span>
+        </div>
+        <div class="catalog-summary" aria-label="Resumo do catálogo">
+          <span class="admin-summary-item"><strong>${summary.total}</strong> instituições</span>
+          <span class="admin-summary-item"><strong>${summary.active}</strong> ativas</span>
+          <span class="admin-summary-item"><strong>${summary.withLogo}</strong> com logo</span>
+          <span class="admin-summary-item"><strong>${summary.usingFallback}</strong> com fallback</span>
+        </div>
+        <div class="catalog-refresh-meta">
+          <span class="muted">Atualizado: ${escapeHtml(summary.updatedAt ?? "ainda não executado")}</span>
+          <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para atualizar o catálogo global.</p>
+        </div>
+        <div class="admin-institution-list">
+          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState(hasAppliedFilters)}
+        </div>
+      </section>
+      ${institutions.map((institution) => renderLogoUploadDialog(institution, query)).join("")}
+      ${adminRefreshScript()}
+      ${dialogScript()}
+      ${adminLogoUploadScript()}
+      ${adminStatusScript()}
+      </div>`,
+    }),
+  });
+}
+
+function renderInstitutionFilters(params: URLSearchParams): string {
+  const advancedFilterCount = countAdvancedFilters(params);
+  return `
+<section class="panel filters-panel" aria-labelledby="institution-filters-heading">
         <h2 id="institution-filters-heading">Buscar no catálogo</h2>
         <form method="get" action="/admin/instituicoes" class="admin-filter-form">
           <div class="filters-grid">
@@ -156,36 +203,7 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
           </div>
         </form>
       </section>
-      <section class="panel list-panel" aria-labelledby="admin-catalog-heading">
-        <div class="section-heading">
-          <div>
-            <h2 id="admin-catalog-heading">Catálogo global</h2>
-            <p class="muted">Selecione a logomarca para enviar ou substituir a imagem de cada instituição.</p>
-          </div>
-          <span>${pagination?.total ?? institutions.length} itens</span>
-        </div>
-        <div class="catalog-summary" aria-label="Resumo do catálogo">
-          <span class="admin-summary-item"><strong>${summary.total}</strong> instituições</span>
-          <span class="admin-summary-item"><strong>${summary.active}</strong> ativas</span>
-          <span class="admin-summary-item"><strong>${summary.withLogo}</strong> com logo</span>
-          <span class="admin-summary-item"><strong>${summary.usingFallback}</strong> com fallback</span>
-        </div>
-        <div class="catalog-refresh-meta">
-          <span class="muted">Atualizado: ${escapeHtml(summary.updatedAt ?? "ainda não executado")}</span>
-          <p class="form-status muted" data-admin-refresh-status aria-live="polite">Pronto para atualizar o catálogo global.</p>
-        </div>
-        <div class="admin-institution-list">
-          ${institutions.map((institution) => renderInstitutionRow(institution, query)).join("") || renderEmptyState(hasAppliedFilters)}
-        </div>
-      </section>
-      ${institutions.map((institution) => renderLogoUploadDialog(institution, query)).join("")}
-      ${adminRefreshScript()}
-      ${dialogScript()}
-      ${adminLogoUploadScript()}
-      ${adminStatusScript()}
-      </div>`,
-    }),
-  });
+  `;
 }
 
 function buildAdminApiQuery(params: URLSearchParams): string {
@@ -403,26 +421,34 @@ function adminRefreshScript(): string {
           }
 
           const refreshPath = button.dataset.apiPath + (button.dataset.apiQuery || "");
-          const response = await fetch(refreshPath, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ source: "admin" }),
-          });
-          const body = await response.json().catch(() => ({}));
+          let succeeded = false;
+          try {
+            const response = await fetch(refreshPath, {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ source: "admin" }),
+            });
+            const body = await response.json().catch(() => ({}));
 
-          if (status) {
-            status.className = response.ok ? "form-status success" : "form-status error";
-            status.textContent = response.ok
-              ? ((body.operation && body.operation.message) || "Catálogo atualizado.")
-              : ((body.error && body.error.message) || "Não foi possível atualizar o catálogo.");
+            if (status) {
+              status.className = response.ok ? "form-status success" : "form-status error";
+              status.textContent = response.ok
+                ? ((body.operation && body.operation.message) || "Catálogo atualizado.")
+                : ((body.error && body.error.message) || "Não foi possível atualizar o catálogo.");
+            }
+
+            if (response.ok) {
+              succeeded = true;
+              window.setTimeout(() => window.location.reload(), 700);
+            }
+          } catch {
+            if (status) {
+              status.className = "form-status error";
+              status.textContent = "Não foi possível conectar com a API. Tente novamente.";
+            }
+          } finally {
+            if (!succeeded) button.disabled = false;
           }
-
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 700);
-            return;
-          }
-
-          button.disabled = false;
         });
       });
     </script>
@@ -505,20 +531,27 @@ function adminStatusScript(): string {
           event.preventDefault();
           const button = form.querySelector('button[type="submit"]');
           if (button) button.disabled = true;
-          const response = await fetch(form.dataset.apiPath, {
-            method: "PATCH",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ status: form.dataset.nextStatus }),
-          });
+          let succeeded = false;
+          try {
+            const response = await fetch(form.dataset.apiPath, {
+              method: "PATCH",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({ status: form.dataset.nextStatus }),
+            });
 
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+            if (response.ok) {
+              succeeded = true;
+              window.setTimeout(() => window.location.reload(), 450);
+              return;
+            }
+
+            const body = await response.json().catch(() => ({}));
+            window.alert((body.error && body.error.message) || "Não foi possível alterar o status.");
+          } catch {
+            window.alert("Não foi possível conectar com a API. Tente novamente.");
+          } finally {
+            if (!succeeded && button) button.disabled = false;
           }
-
-          if (button) button.disabled = false;
-          const body = await response.json().catch(() => ({}));
-          window.alert((body.error && body.error.message) || "Não foi possível alterar o status.");
         });
       });
     </script>

@@ -38,6 +38,8 @@ await adminInstitutionsPagePrioritizesCatalogAndCollapsesAdvancedFilters();
 await adminInstitutionsPagePreservesSelectedFiltersAndLinksWithoutJavaScript();
 await adminInstitutionsPageDistinguishesEmptyCatalogFromNoResults();
 await adminInstitutionsPageRetainsMasterAccessFailure();
+await adminInstitutionsPagePreservesFiltersOnRecoverableApiFailure();
+await adminInstitutionsPageRecoversFromNetworkFailure();
 
 function adminInstitutionsPageUsesBackendOnlyUpload(): void {
   assert.match(
@@ -168,6 +170,53 @@ async function adminInstitutionsPageRetainsMasterAccessFailure(): Promise<void> 
   assert.match(html, /Acesso restrito/);
   assert.match(html, /Permissão master necessária/);
   assert.doesNotMatch(html, /Catálogo global/);
+  assert.match(html, /<section class="sf-state-panel" data-state="permission"/);
+  assert.doesNotMatch(html, /<section class="sf-state-panel" data-state="error"/);
+  assert.doesNotMatch(html, /Tentar novamente/);
+}
+
+async function adminInstitutionsPagePreservesFiltersOnRecoverableApiFailure(): Promise<void> {
+  const url = new URL(
+    "http://localhost/admin/instituicoes?q=teste&status=inactive&logoStatus=fallback&sort=bankCode&order=desc&pageSize=10",
+  );
+  for (const status of [502, 503]) {
+    const html = await renderWithApi({ error: { message: "Falha temporária simulada." } }, url, status);
+    assert.match(html, /<section class="sf-state-panel" data-state="error"/);
+    assert.match(html, /Não foi possível carregar o catálogo de instituições/);
+    assert.match(html, /Falha temporária simulada/);
+    assert.doesNotMatch(html, /<section class="sf-state-panel" data-state="permission"/);
+    assert.doesNotMatch(html, /Permissão master necessária|Acesso restrito/);
+    assert.match(html, /name="q" type="search" value="teste"/);
+    assert.match(html, /<option value="inactive" selected>Inativos<\/option>/);
+    assert.match(html, /<option value="bankCode" selected>Código bancário<\/option>/);
+    assert.match(html, /class="active-filter-chip"/);
+    assert.match(html, /name="order" value="desc"/);
+    assert.match(html, /name="pageSize" value="10"/);
+    assert.match(
+      html,
+      /href="\/admin\/instituicoes\?q=teste&amp;status=inactive&amp;logoStatus=fallback&amp;pageSize=10&amp;sort=bankCode&amp;order=desc">Tentar novamente<\/a>/,
+    );
+    assert.doesNotMatch(html, /data-admin-refresh|data-status-form|data-logo-upload-form/);
+  }
+}
+
+async function adminInstitutionsPageRecoversFromNetworkFailure(): Promise<void> {
+  const original = globalThis.fetch;
+  globalThis.fetch = async () => { throw new TypeError("connection reset"); };
+  try {
+    const html = await renderAdminInstitutionsPage(
+      "fake-session",
+      new URL("http://localhost/admin/instituicoes?q=sem-rede&logoStatus=fallback"),
+    );
+    assert.match(html, /<section class="sf-state-panel" data-state="error"/);
+    assert.match(html, /Nao foi possivel conectar com a API/);
+    assert.match(html, /name="q" type="search" value="sem-rede"/);
+    assert.match(html, /href="\/admin\/instituicoes\?q=sem-rede&amp;logoStatus=fallback">Tentar novamente<\/a>/);
+    assert.doesNotMatch(html, /<section class="sf-state-panel" data-state="permission"/);
+    assert.doesNotMatch(html, /Acesso restrito/);
+  } finally {
+    globalThis.fetch = original;
+  }
 }
 
 async function renderWithApi(body: unknown, url?: URL, status = 200): Promise<string> {

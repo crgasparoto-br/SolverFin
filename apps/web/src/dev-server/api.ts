@@ -28,6 +28,7 @@ export interface ApiSuccess<T> {
 export interface ApiFailure {
   ok: false;
   error: string;
+  status?: number;
 }
 
 export async function handleApiRequest(
@@ -142,6 +143,7 @@ export async function apiGet<T>(
       return {
         ok: false,
         error: errorBody?.error?.message ?? "Nao foi possivel carregar os dados.",
+        status: upstreamResponse.status,
       };
     }
 

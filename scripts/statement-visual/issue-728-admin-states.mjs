@@ -20,13 +20,18 @@ const report = {
 };
 let browser;
 try {
+  const errorUrl = new URL(
+    baseUrl + "/admin/instituicoes?q=before728&status=inactive&logoStatus=fallback&sort=bankCode&order=desc&pageSize=10",
+  );
   const fixtures = {
     empty: await renderFixture({
       institutions: [],
       summary: { total: 0, active: 0, withLogo: 0, usingFallback: 0, updatedAt: null },
     }),
     forbidden: await renderFixture({ error: { message: "Permissão master necessária." } }, 403),
-    error: await renderFixture({ error: { message: "Falha temporária simulada." } }, 503),
+    error: await renderFixture({ error: { message: "Falha temporária simulada." } }, 503, errorUrl),
+    gateway: await renderFixture({ error: { message: "Gateway indisponível." } }, 502, errorUrl),
+    network: await renderFixture(null, 0, errorUrl),
   };
   browser = await launchChrome({ baseUrl, chromePath });
   report.browser = browser.version;
@@ -39,7 +44,7 @@ try {
   ]) {
     await setViewport(browser.cdp, width, height);
     const states = {};
-    for (const state of ["empty", "forbidden", "error"]) {
+    for (const state of ["empty", "forbidden", "error", "gateway", "network"]) {
       await navigate(browser.cdp, "about:blank");
       const tree = await browser.cdp.send("Page.getFrameTree");
       await browser.cdp.send("Page.setDocumentContent", {
@@ -53,6 +58,11 @@ try {
           "const root = document.querySelector('.admin-institutions-page');" +
           "return { empty: root?.querySelector('.empty-state')?.textContent?.includes('Nenhuma instituição cadastrada')," +
           "denied: Boolean(root?.querySelector('[data-state=permission]'))," +
+          "error: Boolean(root?.querySelector('[data-state=error]'))," +
+          "retry: root?.querySelector('[data-state=error] a')?.getAttribute('href') ?? ''," +
+          "query: root?.querySelector('[name=q]')?.value ?? ''," +
+          "sort: root?.querySelector('[name=sort]')?.value ?? ''," +
+          "advanced: root?.querySelectorAll('.active-filter-chip').length ?? 0," +
           "message: root?.textContent ?? '', list: Boolean(root?.querySelector('.list-panel'))," +
           "actions: root?.querySelectorAll('[data-admin-refresh],[data-logo-upload-form]').length ?? 0," +
           "overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1 };})()",
@@ -62,15 +72,31 @@ try {
         assert.equal(observed.empty, true);
         assert.equal(observed.list, true);
         assert.equal(observed.actions, 1);
-      } else {
+      } else if (state === "forbidden") {
         assert.equal(observed.denied, true);
+        assert.equal(observed.error, false);
         assert.equal(observed.list, false);
         assert.equal(observed.actions, 0);
+        assert.equal(observed.message.includes("Permissão master necessária"), true);
+        assert.equal(observed.retry, "");
+      } else {
+        assert.equal(observed.error, true, label + ": " + state + " must be recoverable");
+        assert.equal(observed.denied, false, label + ": " + state + " must not deny access");
+        assert.equal(observed.list, false);
+        assert.equal(observed.actions, 0);
+        assert.equal(observed.query, "before728");
+        assert.equal(observed.sort, "bankCode");
+        assert.equal(observed.advanced, 1);
+        const retry = new URL(observed.retry, baseUrl);
+        assert.equal(retry.pathname, "/admin/instituicoes");
+        for (const [key, value] of Object.entries({
+          q: "before728", status: "inactive", logoStatus: "fallback",
+          sort: "bankCode", order: "desc", pageSize: "10",
+        })) assert.equal(retry.searchParams.get(key), value, label + ": retry lost " + key);
+        assert.equal(observed.message.includes("Acesso restrito"), false);
         assert.equal(
-          observed.message.includes(
-            state === "forbidden" ? "Permissão master necessária" : "Falha temporária simulada",
-          ),
-          true,
+          observed.message.includes(state === "error" ? "Falha temporária simulada" :
+            state === "gateway" ? "Gateway indisponível" : "Nao foi possivel conectar"), true,
         );
       }
       const file = "issue-728-" + state + "-" + width + "x" + height + ".png";
@@ -188,21 +214,23 @@ if (report.failures.length) {
   process.exitCode = 1;
 } else {
   console.log(
-    "Issue #728 empty, permission/error, and no-JavaScript browser states passed for three viewports.",
+    "Issue #728 empty, permission, 503/502/network recovery, and no-JavaScript states passed for three viewports.",
   );
 }
 
-async function renderFixture(body, status = 200) {
+async function renderFixture(body, status = 200, url = new URL(baseUrl + "/admin/instituicoes")) {
   const original = globalThis.fetch;
-  globalThis.fetch = async () =>
-    new Response(JSON.stringify(body), {
+  globalThis.fetch = async () => {
+    if (status === 0) throw new TypeError("Simulated network rejection");
+    return new Response(JSON.stringify(body), {
       status,
       headers: { "content-type": "application/json" },
     });
+  };
   try {
     return await renderAdminInstitutionsPage(
       "fixture-token",
-      new URL(baseUrl + "/admin/instituicoes"),
+      url,
     );
   } finally {
     globalThis.fetch = original;

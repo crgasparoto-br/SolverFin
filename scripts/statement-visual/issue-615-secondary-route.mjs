@@ -198,6 +198,7 @@ async function verify(cdp, width, height, label) {
 async function verifyAdminScenarios(cdp) {
   const filterRuns = [];
   const modalRuns = [];
+  const networkRuns = [];
   for (const [width, height, label] of [
     [1366, 768, "desktop"],
     [390, 844, "mobile"],
@@ -283,8 +284,44 @@ async function verifyAdminScenarios(cdp) {
     await screenshot(cdp, join(outputDir, modalImage));
     modalRuns.push({ viewport: { width, height }, screenshot: modalImage, assertions: dialog });
     await evaluate(cdp, `document.querySelector(".logo-upload-dialog[open]")?.close(); true`);
+
+    const network = await evaluate(
+      cdp,
+      `(async () => {
+        const originalFetch = window.fetch;
+        const originalAlert = window.alert;
+        let lastAlert = "";
+        window.fetch = async () => { throw new TypeError("simulated connection reset"); };
+        window.alert = (message) => { lastAlert = String(message); };
+        try {
+          const refresh = document.querySelector("[data-admin-refresh]");
+          const statusForm = document.querySelector("[data-status-form]");
+          refresh?.click();
+          statusForm?.requestSubmit();
+          await new Promise((resolve) => setTimeout(resolve, 120));
+          return {
+            refreshExists: Boolean(refresh), statusExists: Boolean(statusForm),
+            refreshEnabled: Boolean(refresh && !refresh.disabled),
+            refreshMessage: document.querySelector("[data-admin-refresh-status]")?.textContent?.trim(),
+            statusEnabled: Boolean(statusForm?.querySelector("button") && !statusForm.querySelector("button").disabled),
+            statusMessage: lastAlert,
+          };
+        } finally {
+          window.fetch = originalFetch;
+          window.alert = originalAlert;
+        }
+      })()`,
+    );
+    check(
+      network.refreshExists && network.statusExists && network.refreshEnabled &&
+        network.statusEnabled && network.refreshMessage?.includes("Tente novamente") &&
+        network.statusMessage.includes("Tente novamente"),
+      label + ": network rejection left an admin action disabled or without feedback",
+      network,
+    );
+    networkRuns.push({ viewport: { width, height }, assertions: network });
   }
-  return { filtered: filterRuns, upload: modalRuns };
+  return { filtered: filterRuns, upload: modalRuns, network: networkRuns };
 }
 
 async function waitReady(cdp) {
