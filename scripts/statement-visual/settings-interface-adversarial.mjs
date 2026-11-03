@@ -690,7 +690,13 @@ async function validateLongProfileName(cdp, scenario) {
       return original;
     })()`,
   );
-  if (original === null) return { wrapped: false, noHorizontalOverflow: false, truncationRejected: false, restored: false };
+  if (original === null)
+    return {
+      wrapped: false,
+      noHorizontalOverflow: false,
+      truncationRejected: false,
+      restored: false,
+    };
 
   const filename = `issue-727-${scenario}-long-profile.png`;
   await screenshot(cdp, join(outputDir, filename));
