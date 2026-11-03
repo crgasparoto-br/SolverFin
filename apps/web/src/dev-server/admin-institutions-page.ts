@@ -91,11 +91,22 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
           <div class="filters-grid">
             <label class="wide">Busca geral<input name="q" type="search" value="${escapeHtml(params.get("q") ?? "")}" placeholder="Nome, chave, COMPE ou ISPB" /></label>
             <label>Status<select name="status">${renderSelectOptions(
-              [["all", "Todos"], ["active", "Ativos"], ["inactive", "Inativos"]],
+              [
+                ["all", "Todos"],
+                ["active", "Ativos"],
+                ["inactive", "Inativos"],
+              ],
               params.get("status") ?? "all",
             )}</select></label>
             <label>Ordenar<select name="sort">${renderSelectOptions(
-              [["label", "Nome"], ["key", "Chave interna"], ["bankCode", "Código bancário"], ["ispb", "ISPB"], ["status", "Status"], ["updatedAt", "Atualização"]],
+              [
+                ["label", "Nome"],
+                ["key", "Chave interna"],
+                ["bankCode", "Código bancário"],
+                ["ispb", "ISPB"],
+                ["status", "Status"],
+                ["updatedAt", "Atualização"],
+              ],
               params.get("sort") ?? "label",
             )}</select></label>
           </div>
@@ -103,17 +114,34 @@ export async function renderAdminInstitutionsPage(token: string, url?: URL): Pro
             <summary>Filtros avançados${advancedFilterCount ? ` <span class="advanced-count" aria-label="${advancedFilterCount} filtros avançados ativos">${advancedFilterCount} ativos</span>` : ""}</summary>
             <div class="advanced-filters-grid">
               <label>Situação da logo<select name="logoStatus">${renderSelectOptions(
-                [["all", "Todas"], ["r2_asset", "Logo R2"], ["local_asset", "Logo local"], ["fallback", "Fallback"]],
+                [
+                  ["all", "Todas"],
+                  ["r2_asset", "Logo R2"],
+                  ["local_asset", "Logo local"],
+                  ["fallback", "Fallback"],
+                ],
                 params.get("logoStatus") ?? "all",
               )}</select></label>
               <label>Código bancário<input name="bankCode" inputmode="numeric" value="${escapeHtml(params.get("bankCode") ?? "")}" placeholder="001" /></label>
               <label>ISPB<input name="ispb" value="${escapeHtml(params.get("ispb") ?? "")}" placeholder="Busca parcial" /></label>
               <label>Tipo<select name="institutionType">${renderSelectOptions(
-                [["", "Todos"], ["bank", "Banco"], ["cooperative", "Cooperativa"], ["payment_institution", "Instituição de pagamento"], ["digital_wallet", "Carteira digital"], ["demo", "Demo"]],
+                [
+                  ["", "Todos"],
+                  ["bank", "Banco"],
+                  ["cooperative", "Cooperativa"],
+                  ["payment_institution", "Instituição de pagamento"],
+                  ["digital_wallet", "Carteira digital"],
+                  ["demo", "Demo"],
+                ],
                 params.get("institutionType") ?? "",
               )}</select></label>
               <label>Pendências<select name="missing">${renderSelectOptions(
-                [["", "Todas"], ["bankCode", "Sem código bancário"], ["ispb", "Sem ISPB"], ["logo", "Sem logo"]],
+                [
+                  ["", "Todas"],
+                  ["bankCode", "Sem código bancário"],
+                  ["ispb", "Sem ISPB"],
+                  ["logo", "Sem logo"],
+                ],
                 params.get("missing") ?? "",
               )}</select></label>
             </div>
@@ -217,20 +245,28 @@ function renderActiveAdvancedFilters(params: URLSearchParams): string {
   if (!active.length) return "";
   return `<div class="active-filter-list" aria-label="Filtros avançados aplicados">
     <span class="active-filter-caption">Filtros ativos:</span>
-    ${active.map(({ key, label, value }) => {
-      const next = new URLSearchParams(params);
-      next.delete(key);
-      next.delete("page");
-      const title = `${label}: ${formatAdvancedFilterValue(key, value)}`;
-      return `<a class="active-filter-chip" href="${escapeHtml(`/admin/instituicoes${buildAdminApiQuery(next)}`)}" aria-label="Remover filtro ${escapeHtml(title)}">${escapeHtml(title)} <span aria-hidden="true">×</span></a>`;
-    }).join("")}
+    ${active
+      .map(({ key, label, value }) => {
+        const next = new URLSearchParams(params);
+        next.delete(key);
+        next.delete("page");
+        const title = `${label}: ${formatAdvancedFilterValue(key, value)}`;
+        return `<a class="active-filter-chip" href="${escapeHtml(`/admin/instituicoes${buildAdminApiQuery(next)}`)}" aria-label="Remover filtro ${escapeHtml(title)}">${escapeHtml(title)} <span aria-hidden="true">×</span></a>`;
+      })
+      .join("")}
   </div>`;
 }
 
 function formatAdvancedFilterValue(key: string, value: string): string {
   const labels: Record<string, Record<string, string>> = {
     logoStatus: { r2_asset: "Logo R2", local_asset: "Logo local", fallback: "Fallback" },
-    institutionType: { bank: "Banco", cooperative: "Cooperativa", payment_institution: "Instituição de pagamento", digital_wallet: "Carteira digital", demo: "Demo" },
+    institutionType: {
+      bank: "Banco",
+      cooperative: "Cooperativa",
+      payment_institution: "Instituição de pagamento",
+      digital_wallet: "Carteira digital",
+      demo: "Demo",
+    },
     missing: { bankCode: "Sem código bancário", ispb: "Sem ISPB", logo: "Sem logo" },
   };
   return labels[key]?.[value] ?? value;

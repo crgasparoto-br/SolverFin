@@ -69,8 +69,14 @@ function adminInstitutionsPageAllowsFilterActionsToWrapWithoutHorizontalOverflow
     pageSource,
     /\.filter-actions \{ align-items: center; display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; \}/,
   );
-  assert.match(pageSource, /\.institution-title-line strong \{ font-size: 0\.92rem; overflow-wrap: anywhere; \}/);
-  assert.match(pageSource, /\.institution-meta \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/);
+  assert.match(
+    pageSource,
+    /\.institution-title-line strong \{ font-size: 0\.92rem; overflow-wrap: anywhere; \}/,
+  );
+  assert.match(
+    pageSource,
+    /\.institution-meta \{ grid-template-columns: repeat\(2, minmax\(0, 1fr\)\); \}/,
+  );
 }
 
 async function adminInstitutionsPagePrioritizesCatalogAndCollapsesAdvancedFilters(): Promise<void> {
@@ -113,14 +119,20 @@ async function adminInstitutionsPagePreservesSelectedFiltersAndLinksWithoutJavaS
   assert.match(html, /<option value="fallback" selected>Fallback<\/option>/);
   assert.match(html, /name="order" value="desc"/);
   assert.match(html, /name="pageSize" value="10"/);
-  assert.match(html, /<span class="advanced-count" aria-label="5 filtros avançados ativos">5 ativos<\/span>/);
+  assert.match(
+    html,
+    /<span class="advanced-count" aria-label="5 filtros avançados ativos">5 ativos<\/span>/,
+  );
   assert.equal((html.match(/class="active-filter-chip"/g) ?? []).length, 5);
   assert.match(html, /aria-label="Remover filtro Logo: Fallback"/);
   assert.match(html, /href="\/admin\/instituicoes\?q=teste&amp;status=inactive/);
   assert.match(html, /<form method="get" action="\/admin\/instituicoes"/);
   assert.match(html, /href="\/admin\/instituicoes">Limpar filtros<\/a>/);
 
-  const unsafe = await renderWithApi(populated, new URL("http://localhost/admin/instituicoes?q=%3Cscript%3E"));
+  const unsafe = await renderWithApi(
+    populated,
+    new URL("http://localhost/admin/instituicoes?q=%3Cscript%3E"),
+  );
   assert.match(unsafe, /value="&lt;script&gt;"/);
   assert.doesNotMatch(unsafe, /value="<script>"/);
 }
@@ -131,7 +143,10 @@ async function adminInstitutionsPageDistinguishesEmptyCatalogFromNoResults(): Pr
     summary: { total: 0, active: 0, withLogo: 0, usingFallback: 0, updatedAt: null },
   };
   const noData = await renderWithApi(empty);
-  const noMatch = await renderWithApi(empty, new URL("http://localhost/admin/instituicoes?q=ausente"));
+  const noMatch = await renderWithApi(
+    empty,
+    new URL("http://localhost/admin/instituicoes?q=ausente"),
+  );
 
   assert.match(noData, /Nenhuma instituição cadastrada/);
   assert.doesNotMatch(noData, /Nenhum resultado para os filtros aplicados/);
