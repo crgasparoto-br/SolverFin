@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { verifyAdminNetworkRecovery } from "./admin-institutions-network-check.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -285,33 +286,7 @@ async function verifyAdminScenarios(cdp) {
     modalRuns.push({ viewport: { width, height }, screenshot: modalImage, assertions: dialog });
     await evaluate(cdp, `document.querySelector(".logo-upload-dialog[open]")?.close(); true`);
 
-    const network = await evaluate(
-      cdp,
-      `(async () => {
-        const originalFetch = window.fetch;
-        const originalAlert = window.alert;
-        let lastAlert = "";
-        window.fetch = async () => { throw new TypeError("simulated connection reset"); };
-        window.alert = (message) => { lastAlert = String(message); };
-        try {
-          const refresh = document.querySelector("[data-admin-refresh]");
-          const statusForm = document.querySelector("[data-status-form]");
-          refresh?.click();
-          statusForm?.requestSubmit();
-          await new Promise((resolve) => setTimeout(resolve, 120));
-          return {
-            refreshExists: Boolean(refresh), statusExists: Boolean(statusForm),
-            refreshEnabled: Boolean(refresh && !refresh.disabled),
-            refreshMessage: document.querySelector("[data-admin-refresh-status]")?.textContent?.trim(),
-            statusEnabled: Boolean(statusForm?.querySelector("button") && !statusForm.querySelector("button").disabled),
-            statusMessage: lastAlert,
-          };
-        } finally {
-          window.fetch = originalFetch;
-          window.alert = originalAlert;
-        }
-      })()`,
-    );
+    const network = await verifyAdminNetworkRecovery(cdp);
     check(
       network.refreshExists &&
         network.statusExists &&
