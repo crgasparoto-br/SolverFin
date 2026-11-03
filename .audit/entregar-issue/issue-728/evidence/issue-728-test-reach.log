@@ -1,9 +1,9 @@
-HEAD: e017110006135b4b56daf6359f6f561b316de6d2
+HEAD: 6faa75259168ab01ffde20bf1212c98090546244
 COMMAND: npm run test
 EXIT_CODE: 0
-CI_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246940
-CI_JOB: https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246940/job/126124598410
-OBSERVED: 162 compiled web test files passed; logs name each file
+CI_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535
+CI_JOB: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535/job/126236158573
+OBSERVED: CRITICAL validation npm run test completed/success on material 6faa75259168ab01ffde20bf1212c98090546244
 REACHED: apps/web/src/dev-server/admin-institutions-page.test.ts
 REACHED: apps/web/src/dev-server/shared-styles.test.ts
 REACHED: apps/web/src/dev-server/shell-pages.test.ts

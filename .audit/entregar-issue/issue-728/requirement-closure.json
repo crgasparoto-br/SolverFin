@@ -45,7 +45,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Mudanca confinada a SSR, estilos e scripts de teste (oito paths materializados), com PR propria contra develop. A divergencia anterior foi demonstrada estruturalmente no SSR de develop; captura autenticada pre-edicao nao foi possivel e permanece ressalva historica nao reproduzivel retroativamente."
+      "rationale": "Pre-edit Chrome authenticated evidence https://github.com/crgasparoto-br/SolverFin/actions/runs/41652781220/artifacts/13239385633 at 97c5fcab (14:30 UTC) predates implementation start; Git diff confirms relevant page files unchanged through develop@008f097b. Scope limited to SSR/UI and tests; CI+Chrome prove no navigation or finance-contract change."
     },
     {
       "id": "OBL-003",
@@ -102,7 +102,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "A tela removeu quatro metric cards antes do catalogo e o painel intermediario; colocou resumo compacto dentro do catalogo, com logo/nome/status prioritarios e quebra de nomes longos."
+      "rationale": "Catalog now visually first, with row preceding compact secondary summary; responsive Chrome records firstRowTop 712.17 at 320x740 and 691.17 at 390x844."
     },
     {
       "id": "OBL-006",
@@ -138,7 +138,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Artefato visual exact-SHA inclui capturas base de lista preenchida, filtros ativos/fallback/modal e novos estados empty/error/forbidden/no-JS em 1366x768, 390x844, 320x740; failures=[] nos dois relatorios."
+      "rationale": "Chromium https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593 exact-SHA runs populated, empty, 403, 502, 503, offline, active filters and modal/fallback across 1366x768, 390x844 and 320x740."
     },
     {
       "id": "OBL-008",
@@ -177,7 +177,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Logo tem alt/fallback, status acessivel e fluxo de upload preservado; capturas Chrome e assertions de overflow para as tres larguras, testes SSR e CSS de quebra sem truncamento."
+      "rationale": "403 remains master-only and 502/503/network show recoverable errors with original filters and retry. Logo upload/status/refresh retain controls; transient fetch rejection re-enables refresh and status buttons with human-readable feedback."
     },
     {
       "id": "OBL-010",
@@ -224,7 +224,7 @@
           "rationale": "Checks CI e visual completados no material SHA, mas revisao independente so pode ser executada em contexto separado apos a publicacao do pacote e continua pendente."
         }
       },
-      "rationale": "Testes SSR, CI e Chrome completaram no SHA material; auditoria visual e tecnica independente posterior deve ocorrer em contexto separado, sem automerge ou autodeclaracao de independencia."
+      "rationale": "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535 and Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593 terminal success at exact material SHA; independent re-audit is deferred until this handoff is published and reviewed in separate context."
     }
   ],
   "source_coverage": [
@@ -355,10 +355,11 @@
       "OBL-011"
     ],
     "evidence": [
-      "Git diff 008f097b490d8bf90a7174db8ddfb169893bcef6..e017110006135b4b56daf6359f6f561b316de6d2 exatamente oito arquivos, sem API/migracao",
-      "Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246940: CRITICAL, types, test and build completed/success",
-      "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246905, artefato https://github.com/crgasparoto-br/SolverFin/actions/runs/41695246905/artifacts/13262046485: 3 viewports, capturas 728, sem overflow, no-JS, estados empty, permission e error",
-      "Teste SSR admin-institutions-page.test.ts e ajustes de estilo/shared-shell integrados; auditoria independente permanece deferida"
+      "Git diff 008f097b490d8bf90a7174db8ddfb169893bcef6..6faa75259168ab01ffde20bf1212c98090546244 includes presentation/test/docs only, and status-code passthrough without API endpoint changes",
+      "Repository CI CRITICAL passed https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535",
+      "Chrome visual passed https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593 with 3 viewports and explicit negative controls",
+      "Original pre-edit Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41652781220/artifacts/13239385633 predates issue edit",
+      "Independent re-audit remains deferred and issue open"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
