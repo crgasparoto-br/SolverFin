@@ -92,6 +92,20 @@ async function runScenario(name, width, height, section, zoom = false) {
     const restFilename = `issue-727-${name}-rest.png`;
     await screenshot(browser.cdp, join(outputDir, restFilename));
     screenshots.push(restFilename);
+    const longNameEvidence =
+      section === "profiles" ? await validateLongProfileName(browser.cdp, name) : null;
+    if (section === "profiles") {
+      check(
+        longNameEvidence?.wrapped === true && longNameEvidence?.noHorizontalOverflow === true,
+        `${name}: nome longo de perfil cortado ou com overflow`,
+        longNameEvidence,
+      );
+      check(
+        longNameEvidence?.truncationRejected === true && longNameEvidence?.restored === true,
+        `${name}: controle negativo de texto truncado não detectado/restaurado`,
+        longNameEvidence,
+      );
+    }
     check(
       hierarchy.primaryCount === 1,
       `${name}: hierarquia tem mais de uma ação principal`,
@@ -242,6 +256,7 @@ async function runScenario(name, width, height, section, zoom = false) {
       keyboardNavigation,
       hierarchy,
       restScreenshot: restFilename,
+      longNameEvidence,
       textScale,
       dialogKeyboard,
       decimalForm,
@@ -662,6 +677,48 @@ async function waitForDialog(cdp) {
     await sleep(50);
   }
   throw new Error("Settings dialog did not open.");
+}
+
+async function validateLongProfileName(cdp, scenario) {
+  const original = await evaluate(
+    cdp,
+    `(() => {
+      const label = document.querySelector('.profile-item .item-title-line strong');
+      if (!label) return null;
+      const original = label.textContent;
+      label.textContent = 'Perfil-fictício-' + 'A'.repeat(360);
+      return original;
+    })()`,
+  );
+  if (original === null) return { wrapped: false, noHorizontalOverflow: false, truncationRejected: false, restored: false };
+
+  const filename = `issue-727-${scenario}-long-profile.png`;
+  await screenshot(cdp, join(outputDir, filename));
+  screenshots.push(filename);
+
+  const measurements = await evaluate(
+    cdp,
+    `(() => {
+      const label = document.querySelector('.profile-item .item-title-line strong');
+      const originalText = ${JSON.stringify(original)};
+      const originalStyle = label.getAttribute('style');
+      const height = label.getBoundingClientRect().height;
+      const lineHeight = parseFloat(getComputedStyle(label).lineHeight);
+      const wrapped = height >= lineHeight * 1.7;
+      const noHorizontalOverflow = document.documentElement.scrollWidth <= innerWidth + 1;
+      label.style.width = '90px';
+      label.style.whiteSpace = 'nowrap';
+      label.style.overflow = 'hidden';
+      label.style.textOverflow = 'ellipsis';
+      const truncationRejected = label.scrollWidth > label.clientWidth + 1;
+      if (originalStyle === null) label.removeAttribute('style');
+      else label.setAttribute('style', originalStyle);
+      label.textContent = originalText;
+      const restored = label.textContent === originalText && document.documentElement.scrollWidth <= innerWidth + 1;
+      return { wrapped, noHorizontalOverflow, truncationRejected, restored, screenshot: ${JSON.stringify(filename)} };
+    })()`,
+  );
+  return measurements;
 }
 
 async function validateActionHierarchy(cdp, section) {
