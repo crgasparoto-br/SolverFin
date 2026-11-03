@@ -16,7 +16,8 @@ export async function captureSettingsGoldenEvidence({
   if (!/-(1366|320|mobile)$/.test(name)) return null;
 
   const evidence = {
-    source: "authenticated Chrome for forms; production SSR renderer with mocked API for empty/error",
+    source:
+      "authenticated Chrome for forms; production SSR renderer with mocked API for empty/error",
     screenshots: [],
   };
 
@@ -76,16 +77,20 @@ export async function captureSettingsGoldenEvidence({
     const html = await renderSettingsFixture(section, state);
     const probe = await evaluate(
       cdp,
-      '(() => {'
-        + 'const fixture = new DOMParser().parseFromString(' + JSON.stringify(html) + ', "text/html");'
-        + 'const selector = ' + JSON.stringify('[data-settings-scope="' + section + '"]') + ';'
-        + 'const existing = document.querySelector(selector);'
-        + 'const replacement = fixture.querySelector(selector);'
-        + 'if (!existing || !replacement) throw Error("missing settings SSR state section");'
-        + 'existing.replaceWith(document.importNode(replacement, true));'
-        + 'const root = document.querySelector(selector);'
-        + 'return { empty: Boolean(root.querySelector(".empty-state")), error: Boolean(root.querySelector(".load-error[role=alert]")), noOverflow: document.documentElement.scrollWidth <= innerWidth + 1, scrollWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth };'
-        + '})()',
+      "(() => {" +
+        "const fixture = new DOMParser().parseFromString(" +
+        JSON.stringify(html) +
+        ', "text/html");' +
+        "const selector = " +
+        JSON.stringify('[data-settings-scope="' + section + '"]') +
+        ";" +
+        "const existing = document.querySelector(selector);" +
+        "const replacement = fixture.querySelector(selector);" +
+        'if (!existing || !replacement) throw Error("missing settings SSR state section");' +
+        "existing.replaceWith(document.importNode(replacement, true));" +
+        "const root = document.querySelector(selector);" +
+        'return { empty: Boolean(root.querySelector(".empty-state")), error: Boolean(root.querySelector(".load-error[role=alert]")), noOverflow: document.documentElement.scrollWidth <= innerWidth + 1, scrollWidth: document.documentElement.scrollWidth, viewportWidth: innerWidth };' +
+        "})()",
     );
     check(
       probe[state] === true && probe.noOverflow === true,
@@ -105,43 +110,43 @@ export async function captureSettingsGoldenEvidence({
 async function submitWithNetworkFailure(cdp) {
   return evaluate(
     cdp,
-    '(async () => {'
-      + 'const dialog = document.querySelector("dialog[open]");'
-      + 'const form = dialog?.querySelector("form[data-api-form]");'
-      + 'const name = form?.elements.namedItem("name");'
-      + 'if (!form || !name) return { visible: false, retryEnabled: false, valuePreserved: false };'
-      + 'const label = "QA Issue 727 - falha de rede recuperável";'
-      + 'name.value = label;'
-      + 'const originalFetch = window.fetch;'
-      + 'window.fetch = async () => { throw new Error("QA simulated network failure"); };'
-      + 'try {'
-      + 'const status = form.querySelector("[data-form-status]");'
-      + 'if (status) { status.textContent = ""; status.className = "form-status muted"; }'
-      + 'form.requestSubmit();'
-      + 'for (let i = 0; i < 40; i++) {'
-      + 'if (form.querySelector("[data-form-status].error")?.textContent.includes("Falha de conexão")) break;'
-      + 'await new Promise((resolve) => setTimeout(resolve, 25));'
-      + '}'
-      + 'return { visible: Boolean(form.querySelector("[data-form-status].error")?.textContent.includes("Falha de conexão")), retryEnabled: form.querySelector("button[type=submit]")?.disabled === false, valuePreserved: name.value === label, liveRegion: form.querySelector("[data-form-status]")?.getAttribute("aria-live") };'
-      + '} finally { window.fetch = originalFetch; }'
-      + '})()',
+    "(async () => {" +
+      'const dialog = document.querySelector("dialog[open]");' +
+      'const form = dialog?.querySelector("form[data-api-form]");' +
+      'const name = form?.elements.namedItem("name");' +
+      "if (!form || !name) return { visible: false, retryEnabled: false, valuePreserved: false };" +
+      'const label = "QA Issue 727 - falha de rede recuperável";' +
+      "name.value = label;" +
+      "const originalFetch = window.fetch;" +
+      'window.fetch = async () => { throw new Error("QA simulated network failure"); };' +
+      "try {" +
+      'const status = form.querySelector("[data-form-status]");' +
+      'if (status) { status.textContent = ""; status.className = "form-status muted"; }' +
+      "form.requestSubmit();" +
+      "for (let i = 0; i < 40; i++) {" +
+      'if (form.querySelector("[data-form-status].error")?.textContent.includes("Falha de conexão")) break;' +
+      "await new Promise((resolve) => setTimeout(resolve, 25));" +
+      "}" +
+      'return { visible: Boolean(form.querySelector("[data-form-status].error")?.textContent.includes("Falha de conexão")), retryEnabled: form.querySelector("button[type=submit]")?.disabled === false, valuePreserved: name.value === label, liveRegion: form.querySelector("[data-form-status]")?.getAttribute("aria-live") };' +
+      "} finally { window.fetch = originalFetch; }" +
+      "})()",
   );
 }
 
 async function showInvalidAmountError(cdp) {
   return evaluate(
     cdp,
-    '(async () => {'
-      + 'const form = document.querySelector("#new-automation-rule-dialog form[data-api-form]");'
-      + 'const amount = form?.elements.namedItem("amountMinMinor");'
-      + 'const error = document.querySelector("#amount-minor-error");'
-      + 'if (!form || !amount || !error) return { rejected: false, associated: false, valuePreserved: false };'
-      + 'amount.value = "10,501";'
-      + 'amount.dispatchEvent(new Event("input", { bubbles: true }));'
-      + 'form.requestSubmit();'
-      + 'await new Promise((resolve) => setTimeout(resolve, 40));'
-      + 'return { rejected: amount.getAttribute("aria-invalid") === "true" && !error.hidden, associated: amount.getAttribute("aria-describedby") === error.id, valuePreserved: amount.value === "10,501" };'
-      + '})()',
+    "(async () => {" +
+      'const form = document.querySelector("#new-automation-rule-dialog form[data-api-form]");' +
+      'const amount = form?.elements.namedItem("amountMinMinor");' +
+      'const error = document.querySelector("#amount-minor-error");' +
+      "if (!form || !amount || !error) return { rejected: false, associated: false, valuePreserved: false };" +
+      'amount.value = "10,501";' +
+      'amount.dispatchEvent(new Event("input", { bubbles: true }));' +
+      "form.requestSubmit();" +
+      "await new Promise((resolve) => setTimeout(resolve, 40));" +
+      'return { rejected: amount.getAttribute("aria-invalid") === "true" && !error.hidden, associated: amount.getAttribute("aria-describedby") === error.id, valuePreserved: amount.value === "10,501" };' +
+      "})()",
   );
 }
 
@@ -153,12 +158,17 @@ async function renderSettingsFixture(section, state) {
     const path = url.pathname;
     const failed =
       state === "error" &&
-      (section === "profiles" ? path === "/api/financial-profiles" : path === "/api/automation-rules");
+      (section === "profiles"
+        ? path === "/api/financial-profiles"
+        : path === "/api/automation-rules");
     if (failed) {
-      return new Response(JSON.stringify({ error: { message: "Falha simulada para evidência SSR." } }), {
-        status: 503,
-        headers: { "content-type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({ error: { message: "Falha simulada para evidência SSR." } }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json" },
+        },
+      );
     }
     let payload;
     if (path === "/api/financial-profiles") payload = { activeProfileId: undefined, profiles: [] };
