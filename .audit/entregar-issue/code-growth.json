@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
-  "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
-  "comparison_base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+  "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+  "comparison_base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -19,9 +19,64 @@
   },
   "files": [
     {
+      "path": "apps/web/src/dev-server/category-learning-controller.ts",
+      "lines_before": 361,
+      "lines_after": 365
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-interface-accessibility-enhancement.ts",
+      "lines_before": 242,
+      "lines_after": 244
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-page.ts",
+      "lines_before": 1192,
+      "lines_after": 1191
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "lines_before": 449,
+      "lines_after": 500
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "lines_before": 546,
+      "lines_after": 566
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+      "lines_before": null,
+      "lines_after": 31
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+      "lines_before": 284,
+      "lines_after": 302
+    },
+    {
       "path": "scripts/statement-visual/fixtures.mjs",
       "lines_before": 196,
       "lines_after": 241
+    },
+    {
+      "path": "scripts/statement-visual/inbox-interface-accessibility.mjs",
+      "lines_before": 500,
+      "lines_after": 500
+    },
+    {
+      "path": "scripts/statement-visual/issue-564-category-learning.mjs",
+      "lines_before": 462,
+      "lines_after": 490
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue-states.mjs",
+      "lines_before": 521,
+      "lines_after": 528
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "lines_before": 479,
+      "lines_after": 490
     },
     {
       "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
@@ -32,6 +87,31 @@
       "path": "scripts/statement-visual/issue-725-budget-golden-dialogs.mjs",
       "lines_before": 419,
       "lines_after": 425
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+      "lines_before": null,
+      "lines_after": 131
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "lines_before": null,
+      "lines_after": 252
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+      "lines_before": null,
+      "lines_after": 191
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+      "lines_before": null,
+      "lines_after": 286
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-typed-edit-controls.mjs",
+      "lines_before": null,
+      "lines_after": 148
     },
     {
       "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
@@ -47,7 +127,7 @@
       "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
       "lines_before": null,
       "lines_after": 313,
-      "justification": "At 313 lines this existing issue-local diagnostic module remains below the 500-line hard cap. Explicit allowlists for browser exception classes, HTTP methods, transport codes and fixture stages close A-007 without duplicating CDP watchers in a second module; splitting this small cohesive serializer would create additional indirection."
+      "justification": "Inherited deterministic Chrome validation from issue #755 and integrated develop in the exact candidate; 313-line module is fully covered by issue-755-ci-determinism.test.mjs and CI Chrome negative regressions. No new module was added for issue #726 in this result-only certification."
     },
     {
       "path": "scripts/statement-visual/operational-attachments.mjs",

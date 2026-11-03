@@ -1,181 +1,540 @@
 {
   "schema_version": 2,
-  "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
-  "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+  "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "base_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
   "creations": [
+    {
+      "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"validateFingerprintBinding\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..3e3d926bc9f0787a0029b470ef478b4c26ee56b2 -- scripts/statement-visual"
+        ],
+        "scope": "Reviewed issue-564 and issue-565 Chrome validators as pre-existing sources for one shared helper; reused canonical CDP helpers rather than reimplementing browser driver.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+            "reason_not_reused": "Existing visual scenario was already near 500-line legacy ceiling; extract shared issue-726 negative controls to one importable module to preserve existing scripts."
+          },
+          {
+            "path": "scripts/statement-visual/issue-564-category-learning.mjs",
+            "reason_not_reused": "Correction negative control belongs to category-learning scenario, while fingerprint and hierarchy probes are also consumed by issue-565; shared helper prevents duplicate code."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract browser controls from two existing overlong Chrome scripts into one 235-line helper, sharing the established CDP driver and preserving each original executable entry point."
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "rg -n \"validateReviewCardGridNegative\" scripts/statement-visual",
+          "git diff --name-status c273f132..5de15d06 -- scripts/statement-visual"
+        ],
+        "scope": "Reused issue-537-hover-states.mjs, existing CDP helpers and canonical Golden Screen token CSS; extracted one shared A6 negative helper instead of duplicating browser launcher.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-537-hover-states.mjs",
+            "reason_not_reused": "Legacy token hover tests target different routes and cannot inspect A6 selected item geometry."
+          },
+          {
+            "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+            "reason_not_reused": "Issue 726 functional controls already cover fingerprint and hierarchy; Golden A6 geometry/contrast needs separate reusable helper."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Add focused A6 grid-regression control using existing Chrome CDP driver and shared neutral token predicates, without introducing a duplicate browser stack."
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"CSS.forcePseudoState\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- scripts/statement-visual"
+        ],
+        "scope": "Existing CDP API and Golden Screen control wrapper examined on the exact material SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+            "reason_not_reused": "The existing visual wrapper retains entrypoint and token inspections; separate 191-line state oracle prevents a legacy module exceeding line budgets."
+          },
+          {
+            "path": "scripts/statement-visual/issue-537-hover-states.mjs",
+            "reason_not_reused": "Hover-only checks for different screen do not exercise A6 dialog states; CDP.forcePseudoState is reused."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Add a narrowly scoped, directly imported Chrome CDP state matrix with negative/restoration controls while reusing the established CDP driver."
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"inboxReviewQueueStyles\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- apps/web/src/dev-server/inbox-review-queue-styles.ts"
+        ],
+        "scope": "Existing local CSS was moved from the growing legacy HTML enhancer into a small dedicated style supplier; the shared design-system tokens remain the single source of colors.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "Existing local CSS was moved from the growing legacy HTML enhancer into a small dedicated style supplier; the shared design-system tokens remain the single source of colors.",
+      "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"validateEditEvidenceBinding\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs"
+        ],
+        "scope": "New nine-case adversarial Chrome probe was extracted from a growing browser-control helper; reuses canonical CDP evaluate rather than duplicating browser setup.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "New nine-case adversarial Chrome probe was extracted from a growing browser-control helper; reuses canonical CDP evaluate rather than duplicating browser setup.",
+      "decision": "create"
+    },
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
       "kind": "file",
       "search": {
         "queries": [
-          "git grep -n \"watchVisualFailures\" -- scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
+          "git grep -n \"assertEditMenuVisible\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-755-ci-determinism.mjs"
         ],
-        "scope": "Reused existing CDP event hooks/evaluate plus issue-606 budget pilot and visible transaction modal instead of a second Chrome protocol client.",
+        "scope": "Adopted PR 756 deterministic fixtures and predicate helpers to replace flaky dialog/period visual checks without reducing any of the 75 golden-screen scenarios.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/cdp.mjs",
-            "reason_not_reused": "CDP already owns browser transport; new module only encodes issue-specific deterministic oracles and bounded diagnostics."
-          },
-          {
-            "path": "scripts/statement-visual/fixtures.mjs",
-            "reason_not_reused": "Shared login/budget API expression fixture belongs in fixtures.mjs, extracted to existing module as part of this delivery."
+            "path": "scripts/statement-visual/operational-attachments.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
           }
         ]
       },
-      "decision": "create",
-      "justification": "Small issue-specific, dependency-free collection of deterministic negative oracles and bounded redacted browser failure diagnostics; reused CDP core."
+      "justification": "Adopted PR 756 deterministic fixtures and predicate helpers to replace flaky dialog/period visual checks without reducing any of the 75 golden-screen scenarios.",
+      "decision": "create"
     },
     {
-      "path": "scripts/statement-visual/issue-755-budget-list.mjs",
+      "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
       "kind": "file",
       "search": {
         "queries": [
-          "git grep -n \"assertBudgetLongList\" -- scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
+          "git grep -n \"negative-fixtures\" -- apps/web/src scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
-        "scope": "Checked existing budget DOM reader in issue-606-budgets-pilot.mjs and budget assertion in issue-755-ci-determinism.mjs before extracting without behavioral change.",
+        "scope": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
-            "reason_not_reused": "The pilot exceeded CODE-GROWTH-001 hard 500-line threshold; move reusable DOM readback and mutation into an isolated module."
+            "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+            "reason_not_reused": "Existing consumer is preserved; small importable helper is factored out instead of growing a legacy file beyond CODE-GROWTH-001."
+          }
+        ]
+      },
+      "justification": "A focused unit suite ensures missing edit dialog and fewer than ten budget periods fail rather than masking nondeterministic Chrome harness failures.",
+      "decision": "create"
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-typed-edit-controls.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"typedEditEvidence\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual"
+        ],
+        "scope": "Reviewed existing issue-726 edit-evidence negative controls and current A6 typed category edit flow. New consumer requires a distinct typed DOM dialog lifecycle attack with 11 modes.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+            "reason_not_reused": "Covers general editor; the category typed modal has an independent session/close interaction and needs its own specific adversarial routine."
           },
           {
-            "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-            "reason_not_reused": "Diagnostic and attachment-specific CDP watcher stays separate, reducing new file below 300-line soft cap."
+            "path": "scripts/statement-visual/issue-565-ai-review-queue-states.mjs",
+            "reason_not_reused": "Retain existing executable entrypoint and import the focused 11-case helper rather than duplicate the large suite."
           }
         ]
       },
       "decision": "create",
-      "justification": "Single reusable category-bound budget oracle and browser DOM reader/mutation, extracted without dropping any negative or visual coverage."
+      "justification": "A new 148-line helper exercises the distinct typed categorization dialog and its session/close/readback race with fail-closed 0 POST controls, preserving the existing runner."
     },
     {
       "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
       "kind": "file",
       "search": {
         "queries": [
-          "rg -n 'watchVisualFailures|Runtime.exceptionThrown|Network.requestWillBeSent' scripts/statement-visual",
-          "git diff --name-status 36cbfb7ee0a8aea2412073d113644bf2e1e683e5..0cec2270e8d6d12cc58816c959490f4d070f92a2 -- scripts/statement-visual"
+          "git grep -n \"issue-755\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-755-browser-diagnostics.mjs"
         ],
-        "scope": "Reviewed current CDP helper, watcher, operational attachments and focused unit tests for existing Chrome-negative controls.",
+        "scope": "Extracted reusable Chrome browser diagnostics for issue #755, already included on develop when merged into issue #726; preserved as a separate module rather than duplicating diagnostics.",
         "candidates": [
           {
-            "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
-            "reason_not_reused": "Node mock test alone cannot verify real Chromium Runtime.exceptionThrown on the serialized JSON."
-          },
-          {
-            "path": "scripts/statement-visual/operational-attachments.mjs",
-            "reason_not_reused": "Reuse its existing Chrome journey, but isolate 74-line targeted probe to preserve module cohesion and testability."
+            "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
+            "reason_not_reused": "Existing consumer retained to reuse exported helper from a dedicated file and keep the existing test suite; extracted module is already merged from develop, not newly authored for issue #726."
           }
         ]
       },
       "decision": "create",
-      "justification": "Real Chromium Runtime exception control and synthetic Network event control use existing CdpClient and existing watcher; invoked by existing attachments journey, no new visual scenario."
+      "justification": "Extracted reusable Chrome browser diagnostics for issue #755, already included on develop when merged into issue #726; preserved as a separate module rather than duplicating diagnostics."
+    },
+    {
+      "path": "scripts/statement-visual/issue-755-budget-list.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"issue-755\" -- scripts/statement-visual",
+          "git diff --name-status c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-755-budget-list.mjs"
+        ],
+        "scope": "Extracted deterministic budget fixture and long-period validation, already included on develop for issue #755; preserved existing shared budget test logic and avoided duplication.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+            "reason_not_reused": "Existing consumer retained to reuse exported helper from a dedicated file and keep the existing test suite; extracted module is already merged from develop, not newly authored for issue #726."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extracted deterministic budget fixture and long-period validation, already included on develop for issue #755; preserved existing shared budget test logic and avoided duplication."
     }
   ],
   "references": [
     {
-      "symbol": "watchVisualFailures",
+      "symbol": "validateCorrectionGuards",
       "kind": "local",
-      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "used_in": "scripts/statement-visual/issue-564-category-learning.mjs",
       "defined_at": {
-        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 196
+        "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+        "line": 55
       },
       "verified_by": {
-        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "command": "git grep -n validateCorrectionGuards -- scripts/statement-visual/issue-726-inbox-controls.mjs scripts/statement-visual/issue-564-category-learning.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "assertBudgetLongList",
+      "symbol": "validateFingerprintBinding",
       "kind": "local",
-      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "used_in": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
       "defined_at": {
-        "path": "scripts/statement-visual/issue-755-budget-list.mjs",
-        "line": 15
+        "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+        "line": 194
       },
       "verified_by": {
-        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "command": "git grep -n validateFingerprintBinding -- scripts/statement-visual/issue-726-inbox-controls.mjs scripts/statement-visual/issue-565-ai-review-queue.mjs",
         "exit_code": 0
       }
     },
     {
-      "symbol": "budgetAcceptanceFixtureExpression",
+      "symbol": "reviewedEvidenceIsVisible",
       "kind": "local",
-      "used_in": "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+      "used_in": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "defined_at": {
-        "path": "scripts/statement-visual/fixtures.mjs",
-        "line": 199
+        "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "line": 268
       },
       "verified_by": {
-        "command": "node --check scripts/statement-visual/fixtures.mjs",
+        "command": "git grep -n reviewedEvidenceIsVisible -- apps/web/src/dev-server/inbox-review-queue-enhancement.ts apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
         "exit_code": 0
       }
     },
     {
-      "symbol": "assertBrowserAttachmentNegativeControls",
+      "symbol": "inboxReviewQueueStyles",
       "kind": "local",
-      "used_in": "scripts/statement-visual/operational-attachments.mjs",
+      "used_in": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
       "defined_at": {
-        "path": "scripts/statement-visual/issue-755-ci-determinism.mjs",
-        "line": 39
+        "path": "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+        "line": 2
       },
       "verified_by": {
-        "command": "node --check scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "command": "git grep -n inboxReviewQueueStyles -- apps/web/src/dev-server/inbox-review-queue-styles.ts apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
         "exit_code": 0
       }
     },
     {
-      "symbol": "assertBrowserDiagnosticPrivacy",
+      "symbol": "validateEditEvidenceBinding",
       "kind": "local",
-      "used_in": "scripts/statement-visual/operational-attachments.mjs",
+      "used_in": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
       "defined_at": {
-        "path": "scripts/statement-visual/issue-755-browser-diagnostics.mjs",
-        "line": 12
+        "path": "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+        "line": 5
       },
       "verified_by": {
-        "command": "node --check scripts/statement-visual/operational-attachments.mjs",
+        "command": "git grep -n validateEditEvidenceBinding -- scripts/statement-visual/issue-726-edit-evidence-controls.mjs scripts/statement-visual/issue-565-ai-review-queue.mjs",
         "exit_code": 0
       }
     }
   ],
-  "replacements": [],
+  "replacements": [
+    {
+      "old_path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+      "old_symbol": "handleCorrectionSubmit",
+      "disposition": "removed"
+    }
+  ],
   "test_decisions": [
+    {
+      "path": "apps/web/src/dev-server/category-learning-controller.test.ts",
+      "operation": "modified",
+      "scenario": "Preserve end-to-end human review, changed evidence and A6 hierarchy related to REQ-726-07",
+      "requirement": "REQ-726-07",
+      "search": {
+        "queries": [
+          "git grep -n \"category-learning-controller.test\" -- apps/web/src/dev-server",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/category-learning-controller.test.ts"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/category-learning-controller.test.ts",
+            "case": "Existing unit-test module before these UI changes",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The existing test directly exercises the affected SSR/enhancer flow, preserving its setup while adding discriminating assertions.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/category-learning-controller.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+      "operation": "modified",
+      "scenario": "Preserve end-to-end human review, changed evidence and A6 hierarchy related to REQ-726-05",
+      "requirement": "REQ-726-05",
+      "search": {
+        "queries": [
+          "git grep -n \"inbox-category-hierarchy-first-render.test\" -- apps/web/src/dev-server",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+            "case": "Existing unit-test module before these UI changes",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The existing test directly exercises the affected SSR/enhancer flow, preserving its setup while adding discriminating assertions.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "Preserve end-to-end human review, changed evidence and A6 hierarchy related to REQ-726-10",
+      "requirement": "REQ-726-10",
+      "search": {
+        "queries": [
+          "git grep -n \"inbox-review-queue-enhancement.test\" -- apps/web/src/dev-server",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
+            "case": "Existing unit-test module before these UI changes",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The existing test directly exercises the affected SSR/enhancer flow, preserving its setup while adding discriminating assertions.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "Preserve end-to-end human review, changed evidence and A6 hierarchy related to REQ-726-07",
+      "requirement": "REQ-726-07",
+      "search": {
+        "queries": [
+          "git grep -n \"inbox-review-queue-target-enhancement.test\" -- apps/web/src/dev-server",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts",
+            "case": "Existing unit-test module before these UI changes",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The existing test directly exercises the affected SSR/enhancer flow, preserving its setup while adding discriminating assertions.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen A6 filtered queue hierarchy, neutral controls and accessible actions on the existing SSR route.",
+      "requirement": "REQ-726-12",
+      "search": {
+        "queries": [
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+          "git grep -n inbox-interface-enhancement.test.ts -- apps/web/src/dev-server"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-interface-enhancement.test.ts",
+            "case": "Existing SSR and interface test module for A6 and Golden Screen",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing module to keep coverage without a duplicate test runner.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-interface-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+      "operation": "modified",
+      "scenario": "Golden Screen A6 filtered queue hierarchy, neutral controls and accessible actions on the existing SSR route.",
+      "requirement": "REQ-726-12",
+      "search": {
+        "queries": [
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85 -- apps/web/src/dev-server/inbox-review-archetype.test.ts",
+          "git grep -n inbox-review-archetype.test.ts -- apps/web/src/dev-server"
+        ],
+        "scope": "Existing test runner and unit tests examined at immutable base and exact material candidate SHA.",
+        "runner": "node --test (via npm run test @solverfin/web compiled test suite)",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+            "case": "Existing SSR and interface test module for A6 and Golden Screen",
+            "oracle": "Assertions fail when SSR/enhancer contract removes or regresses expected selected review state",
+            "comparison": "Extended preexisting test instead of creating a parallel duplicated unit suite"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing module to keep coverage without a duplicate test runner.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
+        "exit_code": 0,
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-review-archetype.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
+      }
+    },
     {
       "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
       "operation": "added",
-      "scenario": "Existing negative test expanded for arbitrary CDP method, class, transport code, malformed status and fixture stage, together with real Chromium/browser negative control.",
-      "requirement": "REQ-755-06 / REQ-755-07 / REQ-755-04",
+      "scenario": "Negative checks ensure hidden or wrong edit trigger, only nine periods, and incomplete readback never count as success",
+      "requirement": "REQ-726-14",
       "search": {
         "queries": [
-          "git grep -n \"assertBudgetLongList\" -- scripts/statement-visual",
-          "git ls-tree -r --name-only 36cbfb7ee0a8aea2412073d113644bf2e1e683e5 | grep \"statement-visual.*test\""
+          "git grep -n \"issue-755-ci-determinism.test.mjs\" -- .",
+          "git diff c273f132bd2a0f879ae0f6791a2bc7054862da0b..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a -- scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
-        "scope": "Read pre-existing tests, visual coverage registry, and the exact current test suite.",
-        "runner": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+        "scope": "Existing test runners and assertions are preserved; new discriminant controls exercise the actual editing call boundary at the published material SHA.",
+        "runner": "npm run test and Statement visual validation Chrome scenario 565",
         "candidates": [
           {
-            "path": "scripts/statement-visual/issue-606-desktop-mobile-binding.test.mjs",
-            "case": "Visual desktop/mobile deterministic fixture contracts",
-            "oracle": "Node assert and registered scenario coverage",
-            "comparison": "Existing unit contract does not exercise absent modal, real budget API readback, or redacted error diagnostics."
+            "path": "scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+            "case": "Nine distinct selected-evidence edits plus deterministic fixture controls",
+            "oracle": "The real browser and unit oracle must fail for missing, stale, or wrong selected evidence before a protected edit POST.",
+            "comparison": "Extend existing runner and reuse canonical helper rather than duplicating visual workflow; verify matched and mismatched fingerprints."
           }
         ]
       },
       "decision": "new-test-required",
-      "justification": "Extends the original 3-test focused suite without weakening older negative controls or reducing the 75 Chrome scenarios.",
+      "justification": "Extend the already executed Chrome review scenario with a distinct negative edit-evidence matrix and preserve every previous check; the fixture determinism unit suite remains separate.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs",
+        "command": "Repository CI 41549913819 CRITICAL validation (125 compiled test files passed) and Statement visual 41549913813 (75 Chrome execution units)",
         "exit_code": 0,
-        "subject_sha": "0cec2270e8d6d12cc58816c959490f4d070f92a2",
+        "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
         "reached_tests": [
           "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
         ],
-        "evidence_path": ".audit/entregar-issue/evidence/issue-755-focused-test-execution.txt",
-        "evidence_sha256": "92ecf4c194e4dd62293d1945f853051a5f0da8fd30413d8060a26b365a8bfff3"
+        "evidence_path": ".audit/entregar-issue/evidence/issue-726-grounding-test-run-0fc.txt",
+        "evidence_sha256": "94025dc5553060dd9b6762d860e997a1bb8c8cd397c3d4f03c56b5c49e2f978c"
       }
     }
   ]

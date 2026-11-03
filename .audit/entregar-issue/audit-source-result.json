@@ -3,32 +3,32 @@
   "contract_version": "2026-08-20.3",
   "status": "rejected",
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:50e1f167-0d18-4a96-a859-eb5d5a824245",
-  "head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533",
-  "trusted_anchor_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+  "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
+  "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "73aee32f3a4130fc077d7900eac276b2bbc11533",
-    "material_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
-    "base_sha": "06409277b5ad2f5e7af1e26c743986ab1a6e32c3",
-    "issue_number": 755,
-    "pull_request_number": 756
+    "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+    "material_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+    "base_sha": "655e660c82cb9359a3574ac031f14abef151db9c",
+    "issue_number": 726,
+    "pull_request_number": 754
   },
   "external_report": {
-    "sha256": "f0d0627d5d3b1eead32aad979b11dceb3edac762499a4804ce3d30ee3821f9bc",
-    "path": ".audit/entregar-issue/evidence/independent-audit-756-A007.md"
+    "sha256": "05c5cdb6b46521604ef771d024aac0b80378775ca7a8d94a02dea99a752ef4eb",
+    "path": "evidence/issue-726-latest-independent-rejection-20261103.md",
+    "url": "https://github.com/crgasparoto-br/SolverFin/pull/754#pullrequestreview-5747226323"
   },
   "findings": [
     {
-      "id": "A-007",
+      "id": "A-001",
       "disposition": "blocking",
       "status": "open",
       "actionable": true,
       "remediation_mode": "targeted-remediation",
-      "category": "cdp-diagnostic-privacy",
-      "summary": "Arbitrary Chrome exception class name and request.method were persisted to failure JSON without strict categorization."
+      "category": "execution-state-gap",
+      "summary": "Critical result-only certificate stale after two-parent merge of develop into PR #754; freeze/current base mismatch, parent mismatch, non-allowlisted material paths. Post-write refreeze required."
     }
   ],
   "recommendations": [],
-  "provenance_note": "Independent review posted as PR #756 review 5740571831 on 2026-11-02T17:26:38Z. Local report preserved from the previous independent auditor; no third-party cryptographic signature is asserted."
+  "provenance_note": "Transcribed from GitHub review 5747226323 by independent auditor, anchored to exact reviewed material SHA. Raw authoritative review is reachable through external_report.url. No independent approval is claimed by producer."
 }

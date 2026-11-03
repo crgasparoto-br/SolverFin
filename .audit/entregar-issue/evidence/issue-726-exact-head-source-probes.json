@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "subject_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "source_paths": [
+    "apps/web/src/dev-server/inbox-review-archetype.ts",
+    "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+    "apps/web/src/dev-server/inbox-review-queue-styles.ts",
+    "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+    "scripts/statement-visual/issue-726-edit-evidence-controls.mjs",
+    "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+    "scripts/statement-visual/issue-726-typed-edit-controls.mjs"
+  ],
+  "source_code_checks": {
+    "a6_layout": true,
+    "no_hardcoded_colors_in_archetype": true,
+    "css_card_column_fix": true,
+    "current_fingerprint_before_post": true,
+    "manual_confirmation": true,
+    "currency_metadata": true,
+    "secondary_below": true,
+    "visibility_guard_checks_ancestors": true,
+    "neutral_pressed_state_enforced": true,
+    "chromium_forced_pseudo_state_negative": true,
+    "a010_edit_guard": true,
+    "a010_post_revalidation": true,
+    "a010_negative_tests": true,
+    "style_extraction_preserves_tokens": true,
+    "typed_review_capture_guard": true,
+    "typed_review_edit_immutable_generation": true,
+    "typed_review_get_fresh_before_post": true,
+    "typed_review_closed_dialog_blocks": true,
+    "typed_review_11_adversarial_cases": true
+  },
+  "kind": "static-check",
+  "scope": "Exactly frozen Inbox A6 source files verified identical by git diff 0374ab3de95900cf60d5439ebecc83ff764eb9b2..0fcbe716e0c196e6e31b5670c7bd8097f52ec94a; fresh authenticated Chrome evidence is run 41549913813.",
+  "authentic_browser_run": "Completed/success: https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813, 75 cases, 0 failures; inspect raw JSON artifact 13191796729.",
+  "source_blob_equality": {
+    "prior_material_sha": "0374ab3de95900cf60d5439ebecc83ff764eb9b2",
+    "current_material_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+    "all_seven_paths_identical": true
+  }
+}
