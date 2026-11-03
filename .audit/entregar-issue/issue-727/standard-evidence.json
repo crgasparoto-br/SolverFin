@@ -1,0 +1,197 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "8a1afc47fd928ab9dc2be4f0249ec031fa4347e8",
+  "requirements": [
+    {
+      "requirement_id": "REQ-727-001",
+      "positive_evidence": [
+        "Usar A4 e primitives canônicos existentes",
+        "Chrome dialogKeyboard e SSR primitive script",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-001",
+        "status": "passed",
+        "procedure": "Reinstalar controller modal legado no SSR quebraria a restauração de foco; verificação Chrome de Escape/retorno passou",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "Chrome dialogKeyboard e SSR primitive script"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-002",
+      "positive_evidence": [
+        "Restringir alteração a apresentação/SSR; preservar acesso/API",
+        "Diff base..head somente CSS de settings e testes visuais",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-002",
+        "status": "passed",
+        "procedure": "Alterar roteamento GET entre tabs ou enviar dados a endpoint novo seria capturado por testes de rotas/status do renderer; diff de três arquivos não toca API",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "Diff base..head somente CSS de settings e testes visuais"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-003",
+      "positive_evidence": [
+        "Reduzir competição visual e excesso de caixas/badges",
+        "Chrome negativeControlRejectsCompetingPrimary e restored",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-003",
+        "status": "passed",
+        "procedure": "Promover Aplicar regras a outro botão primário provoca primaryCount=2 e controle rejeita; retorno restaura 1",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "Chrome negativeControlRejectsCompetingPrimary e restored"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-004",
+      "positive_evidence": [
+        "Hierarquia e ações contextuais de perfis e regras",
+        "SSR renderSettingsPage e Chrome primaryCount=1",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-004",
+        "status": "passed",
+        "procedure": "Duas ações visíveis como principais falham no oráculo browser; labels e mensagens distintos por seção",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "SSR renderSettingsPage e Chrome primaryCount=1"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-005",
+      "positive_evidence": [
+        "Sem cards/badges excessivos preservando navegação",
+        "settings-page.test.ts settingsGoldenHierarchyHasDiscriminatingNegativeControls",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-005",
+        "status": "passed",
+        "procedure": "Reintroduzir settings-section-panel/priority-badge é rejeitado por teste SSR; tabs GET são testadas em Chromium",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-page.test.ts settingsGoldenHierarchyHasDiscriminatingNegativeControls"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-006",
+      "positive_evidence": [
+        "Aplicar regras gera sugestões revisáveis",
+        "settings-page.test.ts e settings-interface-reservations mutationCoverage.rulesApply",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-006",
+        "status": "passed",
+        "procedure": "Botão de aplicação com mesmo contexto de criação e sem texto de revisão é rejeitado por SSR test; backend financeiro não mudou",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-page.test.ts e settings-interface-reservations mutationCoverage.rulesApply"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-007",
+      "positive_evidence": [
+        "Capturas 1366/390/320 e vazio/erro/long/novo/editar/form",
+        "settings-golden-evidence.mjs captureSettingsGoldenEvidence + screenshots",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-007",
+        "status": "passed",
+        "procedure": "Novo estado SSR vazio/erro errado é rejeitado pelo helper; erro de formulário com perda de dados reprova teste",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-golden-evidence.mjs captureSettingsGoldenEvidence + screenshots"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-008",
+      "positive_evidence": [
+        "Uma ação principal por escopo e salvação distinta",
+        "settings-interface.json hierarchy",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-008",
+        "status": "passed",
+        "procedure": "Promover botão Aplicar para primário causa two-primary e negativo rejeita com restauração",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-interface.json hierarchy"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-009",
+      "positive_evidence": [
+        "Foco/Escape/retorno e zoom/reflow sem overflow",
+        "settings-interface-reservations.json e settings-interface.json",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-009",
+        "status": "passed",
+        "procedure": "Alterar texto a 200% e cortar formulário dispara noHorizontalOverflow=false; erro fetch exige retryEnabled e valuePreserved",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-interface-reservations.json e settings-interface.json"
+      ]
+    },
+    {
+      "requirement_id": "REQ-727-010",
+      "positive_evidence": [
+        "Controle negativo de dois primários e perfil cortado",
+        "settings-interface.json longNameEvidence e hierarchy",
+        "Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 e CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 no material 8a1afc47fd928ab9dc2be4f0249ec031fa4347e8"
+      ],
+      "primary_negative_control": {
+        "id": "NC-727-010",
+        "status": "passed",
+        "procedure": "Forçar nowrap+ellipsis em nome longo causa truncationRejected=true, seguido de restored=true; mutação de botão secundário causa contagem 2",
+        "expected": "Critério da obrigação e suas condições adversariais detectáveis; estado correto preservado em ambas as abas.",
+        "observed": "Chromium real https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 com failures=[]; validações SSR e testes focados no CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 atingidos."
+      },
+      "regression_evidence": [
+        "CI https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451569 succeeded; Chrome https://github.com/crgasparoto-br/SolverFin/actions/runs/41648451789 completed success",
+        "settings-interface.json longNameEvidence e hierarchy"
+      ]
+    }
+  ]
+}
