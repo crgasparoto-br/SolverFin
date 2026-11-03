@@ -1,7 +1,7 @@
-import { renderPageContainer, renderPageHeader, renderTabs } from "../design-system/primitives.js";
+import { renderPageContainer, renderPageHeader, renderSolverFinUiInteractionsScriptTag, renderTabs } from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
-import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
+import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
@@ -120,7 +120,7 @@ function renderSettingsDocument(section: SettingsSection, selectedSection: strin
     ${renderSettingsNavigation(section)}
     ${selectedSection}
     ${settingsScript()}
-    ${dialogScript()}
+    ${renderSolverFinUiInteractionsScriptTag()}
   `;
 }
 
@@ -142,18 +142,24 @@ function renderSettingsNavigation(section: SettingsSection): string {
   });
 }
 
+
 function renderProfilesSection(
   profiles: { ok: true; data: FinancialProfilesResponse } | { ok: false; error: string },
 ): string {
+  const heading = `
+    <header class="settings-section-heading">
+      <div>
+        <h2 id="profiles-section-title">Perfis financeiros</h2>
+        <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
+      </div>
+      ${profiles.ok ? `<button type="button" class="sf-button sf-button-primary" data-open-dialog="new-profile-dialog" data-sf-dialog-open="new-profile-dialog" title="Criar novo perfil financeiro">${icon("plus", 14)} Novo perfil</button>` : ""}
+    </header>
+  `;
+
   if (!profiles.ok) {
     return `
-      <section class="panel settings-section-panel" aria-labelledby="profiles-section-title">
-        <div class="page-heading secondary-heading">
-          <div>
-            <h2 id="profiles-section-title">Perfis financeiros</h2>
-            <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
-          </div>
-        </div>
+      <section class="settings-section" data-settings-scope="profiles" aria-labelledby="profiles-section-title">
+        ${heading}
         ${renderLoadError(
           "Não foi possível carregar os perfis financeiros.",
           profiles.error,
@@ -168,33 +174,25 @@ function renderProfilesSection(
     .join("");
 
   return `
-    <section class="panel settings-section-panel" aria-labelledby="profiles-section-title">
-      <div class="page-heading secondary-heading">
-        <div>
-          <h2 id="profiles-section-title">Perfis financeiros</h2>
-          <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
-        </div>
-        <button type="button" data-open-dialog="new-profile-dialog" title="Criar novo perfil financeiro">${icon("plus", 14)} Novo perfil</button>
-      </div>
-      <div class="section-heading">
+    <section class="settings-section" data-settings-scope="profiles" aria-labelledby="profiles-section-title">
+      ${heading}
+      <div class="settings-collection-heading">
         <h3>Perfis disponíveis</h3>
-        <span>${profiles.data.profiles.length} itens</span>
+        <span>${profiles.data.profiles.length} perfis</span>
       </div>
       <div class="rows maintenance-rows">
-        ${
-          profileRows ||
+        ${profileRows ||
           renderEmptyState(
             "Nenhum perfil financeiro.",
-            "Crie seu primeiro perfil para começar a organizar os dados financeiros.",
-            `<button type="button" data-open-dialog="new-profile-dialog">${icon("plus", 14)} Criar primeiro perfil</button>`,
-          )
-        }
+            "Use Novo perfil para começar a organizar os dados financeiros.",
+          )}
       </div>
     </section>
     ${renderNewProfileDialog()}
     ${profiles.data.profiles.map(renderProfileEditDialog).join("")}
   `;
 }
+
 
 function renderRulesSection(
   rules: { ok: true; data: { rules: AutomationRuleRecord[] } } | { ok: false; error: string },
@@ -204,41 +202,41 @@ function renderRulesSection(
   const automationRules = rules.ok ? rules.data.rules : [];
 
   return `
-    <section class="panel settings-section-panel" aria-labelledby="rules-section-title">
-      <div class="page-heading secondary-heading">
+    <section class="settings-section" data-settings-scope="rules" aria-labelledby="rules-section-title">
+      <header class="settings-section-heading">
         <div>
           <h2 id="rules-section-title">Regras automáticas</h2>
-          <p class="muted">Regras geram sugestões revisáveis e nunca confirmam um lançamento final sem sua aprovação.</p>
+          <p class="muted">Configure os critérios que geram sugestões para revisão.</p>
         </div>
-        <div class="heading-actions">
-          <button type="button" data-open-dialog="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
-          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : ' disabled aria-disabled="true"'}>${icon("play", 14)} Aplicar regras</button>
-        </div>
-      </div>
-      <p class="priority-help">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
-      <div class="section-heading">
+        <button type="button" class="sf-button sf-button-primary" data-open-dialog="new-automation-rule-dialog" data-sf-dialog-open="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
+      </header>
+      <p class="settings-priority-note">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
+      <div class="settings-collection-heading">
         <h3>Regras configuradas</h3>
-        ${rules.ok ? `<span>${automationRules.length} itens</span>` : ""}
+        ${rules.ok ? `<span>${automationRules.length} regras</span>` : ""}
       </div>
-      ${
-        rules.ok
-          ? `<div class="rows maintenance-rows">
-              ${
-                automationRules
-                  .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
-                  .join("") ||
-                renderEmptyState(
-                  "Nenhuma regra automática.",
-                  "Crie uma regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
-                )
-              }
-            </div>`
-          : renderLoadError(
-              "Não foi possível carregar as regras automáticas.",
-              rules.error,
-              `${SETTINGS_PATH}?section=rules`,
-            )
-      }
+      ${rules.ok
+        ? `<div class="rows maintenance-rows">
+             ${automationRules.map((rule) => renderAutomationRuleRow(rule, accounts, categories)).join("") ||
+               renderEmptyState(
+                 "Nenhuma regra automática.",
+                 "Use Nova regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
+               )}
+           </div>`
+        : renderLoadError(
+            "Não foi possível carregar as regras automáticas.",
+            rules.error,
+            `${SETTINGS_PATH}?section=rules`,
+          )}
+      <section class="settings-operation" aria-labelledby="rules-apply-title">
+        <div>
+          <h3 id="rules-apply-title">Aplicar regras às sugestões</h3>
+          <p id="rules-apply-description" class="muted">A aplicação gera sugestões revisáveis; nunca confirma lançamentos finais sem sua aprovação.</p>
+        </div>
+        <div class="settings-operation-actions">
+          <button type="button" class="sf-button sf-button-secondary" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-success="Regras aplicadas. Revise as sugestões antes de confirmar." data-api-confirm="Executar regras sobre sugestões pendentes?" aria-describedby="rules-apply-description" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : ' disabled aria-disabled="true"'}>${icon("play", 14)} Aplicar regras</button>
+        </div>
+      </section>
     </section>
     ${renderNewAutomationRuleDialog(accounts, categories)}
   `;
@@ -376,6 +374,7 @@ function renderProfileEditDialog(profile: FinancialProfileRecord): string {
   `;
 }
 
+
 function renderProfileRow(
   profile: FinancialProfileRecord,
   activeProfileId: string | undefined,
@@ -385,39 +384,36 @@ function renderProfileRow(
   const profileQuery = `profileId=${encodeURIComponent(profile.id)}`;
 
   return `
-    <article class="maintenance-item profile-item">
+    <article class="maintenance-item profile-item${isSelected ? " is-current-profile" : ""}" data-current-profile="${isSelected}">
       <div class="maintenance-summary">
-        <div>
+        <div class="profile-identity">
           <div class="item-title-line">
             <strong>${escapeHtml(profile.name)}</strong>
             ${isSelected ? '<span class="status-badge status-in-use">Em uso</span>' : ""}
-            ${renderProfileStatusBadge(profile.status)}
+            ${isSelected && isActive ? "" : renderProfileStatusBadge(profile.status)}
           </div>
           <span>${escapeHtml(formatProfileKind(profile.kind))}</span>
         </div>
       </div>
       <div class="maintenance-actions" aria-label="Ações do perfil ${escapeHtml(profile.name)}">
-        ${
-          isActive
-            ? `<div class="profile-links" aria-label="Abrir áreas com este perfil">
-                <a class="button-link secondary-link" href="/dashboard?${profileQuery}">Dashboard</a>
-                <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
-                <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
-              </div>`
-            : ""
-        }
+        ${isActive
+          ? `<nav class="profile-links" aria-label="Abrir áreas do perfil ${escapeHtml(profile.name)}">
+               <a class="button-link secondary-link" href="/dashboard?${profileQuery}">Dashboard</a>
+               <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
+               <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
+             </nav>`
+          : '<span class="profile-disabled-note">Perfil arquivado — disponível para consulta.</span>'}
         <div class="item-actions">
-          <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}">${renderEditIcon()}</button>
-          ${
-            isActive
-              ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-confirm="Arquivar este perfil financeiro?" title="Arquivar este perfil">${icon("archive", 13)} Arquivar perfil</button>`
-              : ""
-          }
+          <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" data-sf-dialog-open="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}" title="Editar perfil">${renderEditIcon()}</button>
+          ${isActive
+            ? `<button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-success="Perfil arquivado. Atualizando..." data-api-confirm="Arquivar este perfil financeiro?" aria-label="Arquivar perfil ${escapeHtml(profile.name)}" title="Arquivar perfil">${icon("archive", 14)}</button>`
+            : ""}
         </div>
       </div>
     </article>
   `;
 }
+
 
 function renderAutomationRuleRow(
   rule: AutomationRuleRecord,
@@ -433,7 +429,7 @@ function renderAutomationRuleRow(
           <strong>${escapeHtml(rule.name)}</strong>
           ${renderAutomationStatusBadge(rule.status)}
         </div>
-        <span class="priority-badge" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
+        <span class="rule-priority" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
       </div>
       <div class="rule-detail-grid">
         <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
@@ -446,13 +442,11 @@ function renderAutomationRuleRow(
         </section>
       </div>
       ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
-      <div class="item-actions rule-actions">
-        ${
-          isActive
-            ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-confirm="Inativar esta regra automática?" title="Inativar esta regra automática">${icon("archive", 13)} Inativar regra</button>`
-            : ""
-        }
-      </div>
+      ${isActive
+        ? `<div class="item-actions rule-actions">
+             <button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-success="Regra inativada. Atualizando..." data-api-confirm="Inativar esta regra automática?" aria-label="Inativar regra ${escapeHtml(rule.name)}" title="Inativar regra">${icon("archive", 14)}</button>
+           </div>`
+        : ""}
     </article>
   `;
 }
