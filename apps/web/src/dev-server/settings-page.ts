@@ -1,4 +1,9 @@
-import { renderPageContainer, renderPageHeader, renderSolverFinUiInteractionsScriptTag, renderTabs } from "../design-system/primitives.js";
+import {
+  renderPageContainer,
+  renderPageHeader,
+  renderSolverFinUiInteractionsScriptTag,
+  renderTabs,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
@@ -142,7 +147,6 @@ function renderSettingsNavigation(section: SettingsSection): string {
   });
 }
 
-
 function renderProfilesSection(
   profiles: { ok: true; data: FinancialProfilesResponse } | { ok: false; error: string },
 ): string {
@@ -181,18 +185,19 @@ function renderProfilesSection(
         <span>${profiles.data.profiles.length} perfis</span>
       </div>
       <div class="rows maintenance-rows">
-        ${profileRows ||
+        ${
+          profileRows ||
           renderEmptyState(
             "Nenhum perfil financeiro.",
             "Use Novo perfil para começar a organizar os dados financeiros.",
-          )}
+          )
+        }
       </div>
     </section>
     ${renderNewProfileDialog()}
     ${profiles.data.profiles.map(renderProfileEditDialog).join("")}
   `;
 }
-
 
 function renderRulesSection(
   rules: { ok: true; data: { rules: AutomationRuleRecord[] } } | { ok: false; error: string },
@@ -215,19 +220,25 @@ function renderRulesSection(
         <h3>Regras configuradas</h3>
         ${rules.ok ? `<span>${automationRules.length} regras</span>` : ""}
       </div>
-      ${rules.ok
-        ? `<div class="rows maintenance-rows">
-             ${automationRules.map((rule) => renderAutomationRuleRow(rule, accounts, categories)).join("") ||
+      ${
+        rules.ok
+          ? `<div class="rows maintenance-rows">
+             ${
+               automationRules
+                 .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
+                 .join("") ||
                renderEmptyState(
                  "Nenhuma regra automática.",
                  "Use Nova regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
-               )}
+               )
+             }
            </div>`
-        : renderLoadError(
-            "Não foi possível carregar as regras automáticas.",
-            rules.error,
-            `${SETTINGS_PATH}?section=rules`,
-          )}
+          : renderLoadError(
+              "Não foi possível carregar as regras automáticas.",
+              rules.error,
+              `${SETTINGS_PATH}?section=rules`,
+            )
+      }
       <section class="settings-operation" aria-labelledby="rules-apply-title">
         <div>
           <h3 id="rules-apply-title">Aplicar regras às sugestões</h3>
@@ -372,7 +383,6 @@ function renderProfileEditDialog(profile: FinancialProfileRecord): string {
   `;
 }
 
-
 function renderProfileRow(
   profile: FinancialProfileRecord,
   activeProfileId: string | undefined,
@@ -394,24 +404,27 @@ function renderProfileRow(
         </div>
       </div>
       <div class="maintenance-actions" aria-label="Ações do perfil ${escapeHtml(profile.name)}">
-        ${isActive
-          ? `<nav class="profile-links" aria-label="Abrir áreas do perfil ${escapeHtml(profile.name)}">
+        ${
+          isActive
+            ? `<nav class="profile-links" aria-label="Abrir áreas do perfil ${escapeHtml(profile.name)}">
                <a class="button-link secondary-link" href="/dashboard?${profileQuery}">Dashboard</a>
                <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
                <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
              </nav>`
-          : '<span class="profile-disabled-note">Perfil arquivado.</span>'}
+            : '<span class="profile-disabled-note">Perfil arquivado.</span>'
+        }
         <div class="item-actions">
           <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" data-sf-dialog-open="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}" title="Editar perfil">${renderEditIcon()}</button>
-          ${isActive
-            ? `<button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-success="Perfil arquivado. Atualizando..." data-api-confirm="Arquivar este perfil financeiro?" aria-label="Arquivar perfil ${escapeHtml(profile.name)}" title="Arquivar perfil">${icon("archive", 14)}</button>`
-            : ""}
+          ${
+            isActive
+              ? `<button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-success="Perfil arquivado. Atualizando..." data-api-confirm="Arquivar este perfil financeiro?" aria-label="Arquivar perfil ${escapeHtml(profile.name)}" title="Arquivar perfil">${icon("archive", 14)}</button>`
+              : ""
+          }
         </div>
       </div>
     </article>
   `;
 }
-
 
 function renderAutomationRuleRow(
   rule: AutomationRuleRecord,
@@ -440,11 +453,13 @@ function renderAutomationRuleRow(
         </section>
       </div>
       ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
-      ${isActive
-        ? `<div class="item-actions rule-actions">
+      ${
+        isActive
+          ? `<div class="item-actions rule-actions">
              <button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-success="Regra inativada. Atualizando..." data-api-confirm="Inativar esta regra automática?" aria-label="Inativar regra ${escapeHtml(rule.name)}" title="Inativar regra">${icon("archive", 14)}</button>
            </div>`
-        : ""}
+          : ""
+      }
     </article>
   `;
 }
