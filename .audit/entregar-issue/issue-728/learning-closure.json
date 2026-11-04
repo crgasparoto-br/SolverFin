@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:1729b972-8d92-4071-a0dd-e2d15a19163c",
+    "finding_ids": [
+      "A-001",
+      "A-002",
+      "R-001"
+    ],
+    "audit_report_sha256": "174319285f6cd10f345e9174187a1b1edb2c53c8e105965ea62781676bfc4138"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "These defects are addressed in one SSR route and its Chrome coverage. Existing architectural and visual rules already require accurate error classification, provenance, and primary-content hierarchy; no new global Skill policy is justified."
+  },
+  "skill_changes": []
+}

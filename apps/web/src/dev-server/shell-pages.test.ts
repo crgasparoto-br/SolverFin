@@ -45,6 +45,12 @@ const resolveAuthenticatedSources = (
     };
   }
 
+  if (routeId === "adminInstitutions") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /import \{ adminPageStyles \} from "\.\/admin-institutions-styles\.js"/);
+    return { renderer, styles: readModuleSource("admin-institutions-styles.js") };
+  }
+
   const source = readModuleSource(moduleFileName);
   return { renderer: source, styles: source };
 };

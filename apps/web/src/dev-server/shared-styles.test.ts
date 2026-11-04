@@ -268,6 +268,18 @@ describe("shared shell styles", () => {
         assert.match(extractedStyles, /sharedShellStyles\(\)/);
         return;
       }
+      if (moduleFileName === "admin-institutions-page.js" && source.includes("adminPageStyles()")) {
+        assert.match(
+          source,
+          /import \{ adminPageStyles \} from "\.\/admin-institutions-styles\.js"/,
+        );
+        const extractedStyles = readFileSync(
+          join(currentDir, "admin-institutions-styles.js"),
+          "utf8",
+        );
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
       assert.match(source, /sharedShellStyles\(\)/);
     });
   }
