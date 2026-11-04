@@ -7,6 +7,7 @@ import { renderResultTrend } from "./reports-analysis-archetype.js";
 import {
   escapeReportHtml as escapeHtml,
   parseReportCurrencyFilter,
+  renderReportExportActions,
   renderReportCurrencyOptions,
   selectReportCurrencyBlocks,
   renderReportHeading as renderHeading,
@@ -40,7 +41,7 @@ interface CashFlowProjectionCurrencyBlock {
   closingBalanceMinor: number;
   points: CashFlowProjectionPoint[];
 }
-interface CashFlowProjection {
+export interface CashFlowProjection {
   referenceDate: string;
   horizonDays: 30 | 60 | 90;
   from: string;
@@ -121,11 +122,21 @@ export async function renderCashFlowProjectionView(
     selection.currency,
     projection.currencyBlocks.map((block) => block.currency),
   );
+  const exportLinks = renderReportExportActions(
+    "cash-flow",
+    new URLSearchParams({
+      referenceDate: filters.referenceDate,
+      horizonDays: String(filters.horizonDays),
+      currency: selection.currency,
+      ...(filters.profileId ? { profileId: filters.profileId } : {}),
+    }),
+  );
   if (projection.currencyBlocks.length === 0) {
     return renderShell(
       heading +
         navigation +
         form +
+        exportLinks +
         renderState(
           "empty",
           "Nenhuma posição financeira disponível",
@@ -139,6 +150,7 @@ export async function renderCashFlowProjectionView(
       heading +
         navigation +
         form +
+        exportLinks +
         renderState(
           "empty",
           `Nenhuma posição financeira em ${selection.currency}`,
@@ -150,6 +162,7 @@ export async function renderCashFlowProjectionView(
     heading +
       navigation +
       form +
+      exportLinks +
       `<div data-report-state="ready" class="cash-flow-report-list">${selection.visible
         .map((block) => renderCurrencyBlock(projection, block))
         .join("")}</div>`,
@@ -323,3 +336,9 @@ function parseHorizon(value: string): 30 | 60 | 90 {
   }
   return parsed;
 }
+
+export {
+  buildApiPath as buildCashFlowApiPath,
+  parseReferenceDate as parseCashFlowReferenceDate,
+  parseHorizon as parseCashFlowHorizon,
+};

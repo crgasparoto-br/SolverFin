@@ -15,7 +15,8 @@ import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
 import { renderDashboardPage } from "./dev-server/dashboard-page.js";
 import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-page.js";
-import { sendHtml, sendJson } from "./dev-server/http.js";
+import { apiError, resolveCorrelationId, sendHtml, sendJson } from "./dev-server/http.js";
+import { downloadReportExport, ReportExportError } from "./dev-server/reports-export.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
 import { applyLegacyHtmlPostProcessorPipeline } from "./dev-server/legacy-html-post-processors.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
@@ -115,7 +116,10 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     return;
   }
 
-  const route = resolveRoute(url.pathname, token !== undefined);
+  const route = resolveRoute(
+    url.pathname === "/relatorios/export" ? "/relatorios" : url.pathname,
+    token !== undefined,
+  );
 
   if (token && route.kind !== "not-found" && shouldValidateProductivePageSession()) {
     const session = await apiGet<{ user: { id: string } }>(token, "/api/me");
@@ -219,6 +223,44 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/inbox" && token) {
     sendHtml(response, 200, await renderInboxPage(token, url));
+    return;
+  }
+
+  if (url.pathname === "/relatorios/export" && token) {
+    response.setHeader("cache-control", "private, no-store");
+    if (request.method !== "GET") {
+      sendJson(
+        response, 405,
+        apiError(
+          "REPORT_EXPORT_METHOD_NOT_ALLOWED",
+          "Exportação disponível somente por GET.",
+          resolveCorrelationId(request),
+        ),
+      );
+      return;
+    }
+
+    try {
+      const file = await downloadReportExport(token, url);
+      response.writeHead(200, {
+        "content-type": file.contentType,
+        "content-disposition": 'attachment; filename="' + file.fileName + '"',
+        "cache-control": "private, no-store",
+        "x-content-type-options": "nosniff",
+      });
+      response.end(file.content);
+    } catch (error) {
+      const known = error instanceof ReportExportError;
+      sendJson(
+        response,
+        known ? error.statusCode : 500,
+        apiError(
+          known ? error.code : "REPORT_EXPORT_UNAVAILABLE",
+          known ? error.message : "Não foi possível exportar o relatório.",
+          resolveCorrelationId(request),
+        ),
+      );
+    }
     return;
   }
 

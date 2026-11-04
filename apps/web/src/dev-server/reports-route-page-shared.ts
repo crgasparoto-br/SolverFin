@@ -53,6 +53,21 @@ export function renderReportCurrencyOptions(
 
 export type ReportsView = "category-evolution" | "installments" | "cash-flow";
 
+export function renderReportExportActions(view: ReportsView, filters: URLSearchParams): string {
+  const labels = { csv: "CSV", xlsx: "Excel", pdf: "PDF" } as const;
+  const links = (["csv", "xlsx", "pdf"] as const)
+    .map((format) => {
+      const query = new URLSearchParams(filters);
+      query.set("view", view);
+      query.set("format", format);
+      return '<a class="report-export-link sf-focus-ring" href="/relatorios/export?' +
+        escapeReportHtml(query.toString()) + '">Baixar ' + labels[format] + "</a>";
+    })
+    .join("");
+  return '<nav class="report-export-actions" aria-label="Exportar relatório">' +
+    links + "</nav>";
+}
+
 export function renderReportHeading(title: string, description: string): string {
   return `
     <section class="reports-heading">

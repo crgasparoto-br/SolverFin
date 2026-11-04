@@ -15,6 +15,7 @@ import {
 import {
   escapeReportHtml as escapeHtml,
   parseReportCurrencyFilter,
+  renderReportExportActions,
   renderReportCurrencyOptions,
   selectReportCurrencyBlocks,
   renderReportHeading as renderHeading,
@@ -56,7 +57,7 @@ interface CategoryRecord {
   name: string;
 }
 
-interface InstallmentRecord {
+export interface InstallmentRecord {
   id: string;
   status: string;
   sequenceNumber: number;
@@ -157,11 +158,22 @@ export async function renderInstallmentsView(token: string, url: URL): Promise<s
         selection.currency,
         currencyBlocks.map((block) => block.currency),
       ) +
+      renderReportExportActions(
+        "installments",
+        new URLSearchParams({
+          month: filters.month,
+          status: filters.status,
+          currency: selection.currency,
+          ...(filters.profileId ? { profileId: filters.profileId } : {}),
+          ...(filters.cardId ? { cardId: filters.cardId } : {}),
+          ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+        }),
+      ) +
       renderInstallments(selection.visible, installments.length, filters),
   );
 }
 
-function readInstallmentFilters(url: URL): InstallmentFilters {
+export function readInstallmentFilters(url: URL): InstallmentFilters {
   const month = normalizeMonth(url.searchParams.get("month")) ?? currentMonth();
   const filters: InstallmentFilters = {
     month,
@@ -178,7 +190,7 @@ function readInstallmentFilters(url: URL): InstallmentFilters {
   return filters;
 }
 
-function buildInstallmentsPath(filters: InstallmentFilters): string {
+export function buildInstallmentsPath(filters: InstallmentFilters): string {
   return `/api/installments?${new URLSearchParams({
     status: filters.status,
     dueFrom: filters.dueFrom,

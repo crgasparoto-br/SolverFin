@@ -147,3 +147,19 @@ A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant, de fil
 ## Interface web relacionada
 
 `/relatorios?view=category-evolution` consome este endpoint por SSR e consulta `GET /api/accounts?status=active` e `GET /api/credit-card-accounts?status=all` para montar um unico seletor agrupado. Se qualquer lista falhar, a pagina nao apresenta a outra como resultado parcial. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
+
+
+## Exportação dos recortes na interface web
+
+O fluxo web autenticado `GET /relatorios/export` aceita `format=csv|xlsx|pdf`
+e os parâmetros válidos de cada visão de `/relatorios`. Não é uma segunda
+API financeira: a exportação consulta os mesmos endpoints canônicos, com a
+mesma credencial, isolamento de perfil e validação da origem financeira.
+`category-evolution` preserva `interval`, `start`, `periods`,
+`accountId` ou `cardId`; `installments` preserva `month`,
+`status`, `cardId`, `categoryId`; `cash-flow` preserva
+`referenceDate` e `horizonDays`. Todas aceitam `profileId`
+opcional e `currency` para seleção de blocos, sem converter moedas.
+A exportação rejeita parâmetros repetidos, desconhecidos ou incompatíveis
+com a visão. Os arquivos usam unidades menores, metadados do período e
+seções individualizadas por moeda; veja [REPORTS.md](./REPORTS.md).
