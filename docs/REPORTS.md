@@ -282,7 +282,8 @@ montantes em unidades menores (`*_centavos`). Parcelas inclui indicadores,
 agrupamentos e parcelas consideradas; valores vêm do view-model compartilhado
 com a tela, incluindo exclusão de canceladas dos totais. Projeção inclui posição
 inicial/final, série diária integral e evidências por data/origem, usando
-diretamente os saldos e movimentos calculados pelo backend.
+diretamente os saldos e movimentos calculados pelo backend, incluindo valor
+em unidades menores e identidade das evidências.
 
 **Formatos e limites:**
 
@@ -290,7 +291,8 @@ diretamente os saldos e movimentos calculados pelo backend.
   `view`/`period`/`filter` e seção `currency`/`table` antes dos cabeçalhos.
 - **XLSX:** planilha OpenXML com aba `Contexto` e uma aba por tabela/seção de
   moeda, valores numéricos preservados como células de número e textos como
-  strings, não fórmulas. Planilhas são geradas sem macros.
+  strings, não fórmulas. Cabeçalhos fixos e larguras ajustadas facilitam a leitura;
+  planilhas são geradas sem macros.
 - **PDF:** relatório A4 paginado, legível, com período, filtros e linhas de
   detalhes por moeda; conteúdo Unicode não representável na fonte WinAnsi padrão
   usa notação escapada. Não é relatório contábil/fiscal oficial.

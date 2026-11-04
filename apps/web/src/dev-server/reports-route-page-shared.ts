@@ -60,12 +60,16 @@ export function renderReportExportActions(view: ReportsView, filters: URLSearchP
       const query = new URLSearchParams(filters);
       query.set("view", view);
       query.set("format", format);
-      return '<a class="report-export-link sf-focus-ring" href="/relatorios/export?' +
-        escapeReportHtml(query.toString()) + '">Baixar ' + labels[format] + "</a>";
+      return (
+        '<a class="report-export-link sf-focus-ring" href="/relatorios/export?' +
+        escapeReportHtml(query.toString()) +
+        '">Baixar ' +
+        labels[format] +
+        "</a>"
+      );
     })
     .join("");
-  return '<nav class="report-export-actions" aria-label="Exportar relatório">' +
-    links + "</nav>";
+  return '<nav class="report-export-actions" aria-label="Exportar relatório">' + links + "</nav>";
 }
 
 export function renderReportHeading(title: string, description: string): string {

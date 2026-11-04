@@ -88,10 +88,36 @@ function columnReference(index: number): string {
 }
 
 function sheetXml(columns: readonly string[], rows: readonly (readonly ExportCell[])[]): string {
+  const widths = columns.map((column) => Math.max(12, Math.min(56, column.length + 2)));
+  for (const row of rows) {
+    for (let index = 0; index < widths.length; index += 1) {
+      widths[index] = Math.max(
+        widths[index] ?? 12,
+        Math.min(56, String(row[index] ?? "").length + 2),
+      );
+    }
+  }
+  const columnSettings =
+    "<cols>" +
+    widths
+      .map(
+        (width, index) =>
+          '<col min="' +
+          (index + 1) +
+          '" max="' +
+          (index + 1) +
+          '" width="' +
+          width +
+          '" customWidth="1"/>',
+      )
+      .join("") +
+    "</cols>";
   const allRows: readonly (readonly ExportCell[])[] = [columns, ...rows];
   return (
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>' +
+    columnSettings +
     "<sheetData>" +
     allRows
       .map(

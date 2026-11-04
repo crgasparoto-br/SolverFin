@@ -208,6 +208,8 @@ describe("report exports - canonical snapshot", () => {
         assert.equal(workbook.subarray(0, 4).toString("binary"), "PK\u0003\u0004");
         assert.match(pdf, /^%PDF-1\.4/);
         assert.match(sheets.get("xl/workbook.xml") ?? "", /Contexto/);
+      assert.match(xml, /<cols>/);
+      assert.match(xml, /<pane ySplit="1"/);
         assert.match(csv, /"currency";"BRL"/);
         assert.match(csv, /"currency";"USD"/);
         assert.match(pdf, /Moeda: BRL/);
@@ -233,6 +235,26 @@ describe("report exports - canonical snapshot", () => {
       },
     );
   }
+
+  it("preserves monetary evidence identities in the projected cash-flow export", async () => {
+    fakeReportApi();
+    const report = await loadCanonicalReportExport("session", exportUrl("cash-flow"));
+    const details = report.tables.find(
+      (table) => table.currency === "USD" && table.name === "evidencias",
+    );
+    assert.deepEqual(details?.columns, [
+      "data", "descricao", "origem", "origem_id", "compromisso_id",
+      "efeito_id", "conta_id", "cartao_id", "valor_centavos",
+    ]);
+    assert.deepEqual(details?.rows[0], [
+      "2026-08-02", "-MOVIMENTO", "transaction", "t-1", "c-1",
+      "source", "", "", -50,
+    ]);
+    const csv = serializeReportCsv(report).toString("utf8");
+    assert.match(csv, /"evidencias"/);
+    assert.match(csv, /"origem_id"/);
+    assert.match(csv, /"-50"/);
+  });
 
   it("exports just the requested currency without computing a mixed-currency total", async () => {
     fakeReportApi();

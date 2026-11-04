@@ -148,7 +148,6 @@ A API nao retorna sucesso parcial. Alem dos erros de autenticacao/tenant, de fil
 
 `/relatorios?view=category-evolution` consome este endpoint por SSR e consulta `GET /api/accounts?status=active` e `GET /api/credit-card-accounts?status=all` para montar um unico seletor agrupado. Se qualquer lista falhar, a pagina nao apresenta a outra como resultado parcial. A visao `view=installments` continua usando `GET /api/installments`. Consulte [`REPORTS.md`](./REPORTS.md) para navegacao, apresentacao e estados da interface.
 
-
 ## Exportação dos recortes na interface web
 
 O fluxo web autenticado `GET /relatorios/export` aceita `format=csv|xlsx|pdf`

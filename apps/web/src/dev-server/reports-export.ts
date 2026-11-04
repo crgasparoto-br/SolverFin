@@ -9,11 +9,7 @@ import {
   buildInstallmentAnalysisViewModel,
   type InstallmentCurrencyViewModel,
 } from "./reports-analysis-view-model.js";
-import {
-  formatMonthYear,
-  normalizeMonth,
-  todayDateOnly,
-} from "./reports-installments-format.js";
+import { formatMonthYear, normalizeMonth, todayDateOnly } from "./reports-installments-format.js";
 import {
   buildInstallmentsPath,
   readInstallmentFilters,
@@ -24,7 +20,11 @@ import {
   selectReportCurrencyBlocks,
   type ReportsView,
 } from "./reports-route-page-shared.js";
-import { readEvolutionFilters, resolveReportsView, type CategoryEvolutionReport } from "./reports-route-page.js";
+import {
+  readEvolutionFilters,
+  resolveReportsView,
+  type CategoryEvolutionReport,
+} from "./reports-route-page.js";
 import { buildEvolutionApiPath } from "./reports-evolution-routing-helpers.js";
 import {
   serializeReportCsv,
@@ -50,11 +50,25 @@ export class ReportExportError extends Error {
 
 const allowedQueries: Record<ReportsView, readonly string[]> = {
   "category-evolution": [
-    "view", "format", "profileId", "interval", "start", "periods",
-    "accountId", "cardId", "currency",
+    "view",
+    "format",
+    "profileId",
+    "interval",
+    "start",
+    "periods",
+    "accountId",
+    "cardId",
+    "currency",
   ],
   installments: [
-    "view", "format", "profileId", "month", "status", "cardId", "categoryId", "currency",
+    "view",
+    "format",
+    "profileId",
+    "month",
+    "status",
+    "cardId",
+    "categoryId",
+    "currency",
   ],
   "cash-flow": ["view", "format", "profileId", "referenceDate", "horizonDays", "currency"],
 };
@@ -66,7 +80,11 @@ function assertExportQuery(url: URL, view: ReportsView): void {
   const allowed = new Set(allowedQueries[view]);
   for (const key of url.searchParams.keys()) {
     if (!allowed.has(key) || url.searchParams.getAll(key).length !== 1) {
-      throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Filtro de exportação inválido: " + key);
+      throw new ReportExportError(
+        400,
+        "REPORT_EXPORT_FILTER_INVALID",
+        "Filtro de exportação inválido: " + key,
+      );
     }
   }
 }
@@ -87,13 +105,17 @@ function asSourceError(error: string, status?: number): never {
   );
 }
 
-function selectedTables(
-  tables: readonly ExportTable[],
-  currency: string,
-): ExportTable[] {
+function selectedTables(tables: readonly ExportTable[], currency: string): ExportTable[] {
   return tables.length
     ? [...tables]
-    : [{ name: "sem-dados", currency: currency === "all" ? "" : currency, columns: ["estado"], rows: [] }];
+    : [
+        {
+          name: "sem-dados",
+          currency: currency === "all" ? "" : currency,
+          columns: ["estado"],
+          rows: [],
+        },
+      ];
 }
 
 export async function loadCanonicalReportExport(
@@ -104,7 +126,9 @@ export async function loadCanonicalReportExport(
   const resolution = resolveReportsView(url);
   if (!resolution.view || resolution.error) {
     throw new ReportExportError(
-      400, "REPORT_EXPORT_VIEW_INVALID", resolution.error ?? "Visão inválida.",
+      400,
+      "REPORT_EXPORT_VIEW_INVALID",
+      resolution.error ?? "Visão inválida.",
     );
   }
   const view = resolution.view;
@@ -123,17 +147,21 @@ export async function downloadReportExport(
 ): Promise<{ content: Buffer; contentType: string; fileName: string }> {
   const format = formatFromQuery(url);
   const report = await loadCanonicalReportExport(token, url, referenceDate);
-  const content = format === "csv"
-    ? serializeReportCsv(report)
-    : format === "xlsx"
-      ? serializeReportXlsx(report)
-      : serializeReportPdf(report);
+  const content =
+    format === "csv"
+      ? serializeReportCsv(report)
+      : format === "xlsx"
+        ? serializeReportXlsx(report)
+        : serializeReportPdf(report);
   const contentType = {
     csv: "text/csv; charset=utf-8",
     xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     pdf: "application/pdf",
   }[format];
-  const suffix = report.period.replace(/[^0-9A-Za-z-]/g, "-").replace(/-+/g, "-").slice(0, 45);
+  const suffix = report.period
+    .replace(/[^0-9A-Za-z-]/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 45);
   return {
     content,
     contentType,
@@ -157,10 +185,20 @@ function categoryTable(
     for (const [index, period] of periods.entries()) {
       const cell = series.cells[index];
       rows.push([
-        kind, path.length, path.join(" / "), id, status, period.key,
-        period.startsOn, period.endsOn, cell?.amountMinor ?? null,
-        cell?.percentage ?? null, series.totalMinor, series.totalPercentage,
-        series.averageMinor, series.averagePercentage,
+        kind,
+        path.length,
+        path.join(" / "),
+        id,
+        status,
+        period.key,
+        period.startsOn,
+        period.endsOn,
+        cell?.amountMinor ?? null,
+        cell?.percentage ?? null,
+        series.totalMinor,
+        series.totalPercentage,
+        series.averageMinor,
+        series.averagePercentage,
       ]);
     }
   };
@@ -186,9 +224,20 @@ function categoryTable(
     name: "categorias",
     currency,
     columns: [
-      "secao", "nivel", "hierarquia", "categoria_id", "status", "periodo",
-      "inicio", "fim", "valor_centavos", "percentual", "total_centavos",
-      "percentual_total", "media_centavos", "percentual_medio",
+      "secao",
+      "nivel",
+      "hierarquia",
+      "categoria_id",
+      "status",
+      "periodo",
+      "inicio",
+      "fim",
+      "valor_centavos",
+      "percentual",
+      "total_centavos",
+      "percentual_total",
+      "media_centavos",
+      "percentual_medio",
     ],
     rows,
   };
@@ -204,12 +253,14 @@ async function loadEvolutionExport(
     filters = readEvolutionFilters(url, referenceDate);
   } catch (error) {
     throw new ReportExportError(
-      400, "REPORT_EXPORT_FILTER_INVALID",
+      400,
+      "REPORT_EXPORT_FILTER_INVALID",
       error instanceof Error ? error.message : "Filtros inválidos.",
     );
   }
   const result = await apiGet<{ report: CategoryEvolutionReport }>(
-    token, buildEvolutionApiPath(filters),
+    token,
+    buildEvolutionApiPath(filters),
   );
   if (!result.ok) return asSourceError(result.error, result.status);
   const report = result.data.report;
@@ -225,13 +276,17 @@ async function loadEvolutionExport(
     currency: "",
     columns: ["chave", "rotulo", "inicio", "fim"],
     rows: report.periods.map((period) => [
-      period.key, period.accessibleLabel, period.startsOn, period.endsOn,
+      period.key,
+      period.accessibleLabel,
+      period.startsOn,
+      period.endsOn,
     ]),
   };
   return {
     view: "category-evolution",
     period: report.periods.length
-      ? (report.periods[0]?.startsOn ?? filters.start) + " a " +
+      ? (report.periods[0]?.startsOn ?? filters.start) +
+        " a " +
         (report.periods.at(-1)?.endsOn ?? filters.start)
       : filters.start,
     filters: {
@@ -247,9 +302,7 @@ async function loadEvolutionExport(
   };
 }
 
-function installmentTables(
-  block: InstallmentCurrencyViewModel<InstallmentRecord>,
-): ExportTable[] {
+function installmentTables(block: InstallmentCurrencyViewModel<InstallmentRecord>): ExportTable[] {
   const summary = block.summary;
   const summaryRows: ExportCell[][] = [
     ["total_mensal", summary.activeCount, summary.totalMinor],
@@ -266,39 +319,58 @@ function installmentTables(
   }
   return [
     {
-      name: "resumo", currency: block.currency,
-      columns: ["indicador", "quantidade", "valor_centavos"], rows: summaryRows,
+      name: "resumo",
+      currency: block.currency,
+      columns: ["indicador", "quantidade", "valor_centavos"],
+      rows: summaryRows,
     },
     {
-      name: "grupos", currency: block.currency,
-      columns: ["tipo", "filtro_id", "rotulo", "quantidade", "valor_centavos"], rows: groups,
+      name: "grupos",
+      currency: block.currency,
+      columns: ["tipo", "filtro_id", "rotulo", "quantidade", "valor_centavos"],
+      rows: groups,
     },
     {
-      name: "parcelas", currency: block.currency,
+      name: "parcelas",
+      currency: block.currency,
       columns: [
-        "parcela_id", "vencimento", "numero", "total_parcelas", "descricao",
-        "cartao", "categoria", "status", "status_fatura", "valor_centavos",
+        "parcela_id",
+        "vencimento",
+        "numero",
+        "total_parcelas",
+        "descricao",
+        "cartao",
+        "categoria",
+        "status",
+        "status_fatura",
+        "valor_centavos",
       ],
       rows: block.items.map((item) => [
-        item.id, item.dueOn, item.sequenceNumber, item.totalInstallments,
+        item.id,
+        item.dueOn,
+        item.sequenceNumber,
+        item.totalInstallments,
         item.transaction?.description ?? item.recurrence?.description ?? "Parcela",
-        item.card?.name ?? "Sem cartão", item.category?.name ?? "Sem categoria",
-        item.status, item.invoice?.status ?? "", item.amountMinor,
+        item.card?.name ?? "Sem cartão",
+        item.category?.name ?? "Sem categoria",
+        item.status,
+        item.invoice?.status ?? "",
+        item.amountMinor,
       ]),
     },
   ];
 }
 
-async function loadInstallmentsExport(
-  token: string,
-  url: URL,
-): Promise<CanonicalReportExport> {
+async function loadInstallmentsExport(token: string, url: URL): Promise<CanonicalReportExport> {
   const month = url.searchParams.get("month");
   if (month !== null && !normalizeMonth(month)) {
     throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Mês inválido.");
   }
   const status = url.searchParams.get("status");
-  if (status !== null && !["all", "planned", "posted", "reconciled", "cancelled"].includes(status)) {
+  if (
+    status !== null &&
+    !["all", "planned", "posted", "reconciled", "cancelled"].includes(status)
+  ) {
     throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Status inválido.");
   }
   const filters = readInstallmentFilters(url);
@@ -307,12 +379,14 @@ async function loadInstallmentsExport(
     currency = parseReportCurrencyFilter(url.searchParams.get("currency"));
   } catch (error) {
     throw new ReportExportError(
-      400, "REPORT_EXPORT_FILTER_INVALID",
+      400,
+      "REPORT_EXPORT_FILTER_INVALID",
       error instanceof Error ? error.message : "Moeda inválida.",
     );
   }
   const result = await apiGet<{ installments: InstallmentRecord[] }>(
-    token, buildInstallmentsPath(filters),
+    token,
+    buildInstallmentsPath(filters),
   );
   if (!result.ok) return asSourceError(result.error, result.status);
   const blocks = buildInstallmentAnalysisViewModel(
@@ -337,12 +411,11 @@ async function loadInstallmentsExport(
   };
 }
 
-function cashFlowTables(
-  block: CashFlowProjection["currencyBlocks"][number],
-): ExportTable[] {
+function cashFlowTables(block: CashFlowProjection["currencyBlocks"][number]): ExportTable[] {
   return [
     {
-      name: "resumo", currency: block.currency,
+      name: "resumo",
+      currency: block.currency,
       columns: ["indicador", "valor_centavos"],
       rows: [
         ["saldo_inicial", block.openingBalanceMinor],
@@ -350,18 +423,40 @@ function cashFlowTables(
       ],
     },
     {
-      name: "serie_diaria", currency: block.currency,
+      name: "serie_diaria",
+      currency: block.currency,
       columns: ["data", "movimento_centavos", "saldo_projetado_centavos"],
       rows: block.points.map((point) => [
-        point.date, point.netMovementMinor, point.closingBalanceMinor,
+        point.date,
+        point.netMovementMinor,
+        point.closingBalanceMinor,
       ]),
     },
     {
-      name: "evidencias", currency: block.currency,
-      columns: ["data", "descricao", "origem"],
+      name: "evidencias",
+      currency: block.currency,
+      columns: [
+        "data",
+        "descricao",
+        "origem",
+        "origem_id",
+        "compromisso_id",
+        "efeito_id",
+        "conta_id",
+        "cartao_id",
+        "valor_centavos",
+      ],
       rows: block.points.flatMap((point) =>
         point.movements.map((movement) => [
-          point.date, movement.description, movement.source.kind,
+          point.date,
+          movement.description,
+          movement.source.kind,
+          movement.source.id,
+          movement.commitmentId,
+          movement.effectId,
+          movement.accountId ?? "",
+          movement.cardId ?? "",
+          movement.amountMinor,
         ]),
       ),
     },
@@ -392,7 +487,8 @@ async function loadCashFlowExport(
     };
   } catch (error) {
     throw new ReportExportError(
-      400, "REPORT_EXPORT_FILTER_INVALID",
+      400,
+      "REPORT_EXPORT_FILTER_INVALID",
       error instanceof Error ? error.message : "Filtros inválidos.",
     );
   }
