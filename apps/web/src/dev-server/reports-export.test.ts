@@ -419,7 +419,7 @@ describe("report exports - isolation, validation and injection", () => {
     const xlsx = extractZipEntries(serializeReportXlsx(snapshot));
     const xml = [...xlsx.values()].join("\n");
     assert.match(csv, /'=HYPERLINK/);
-    assert.match(xml, /'=HYPERLINK/);
+    assert.match(xml, /&apos;=HYPERLINK/);
     assert.doesNotMatch(xml, /<f(?:\s|>)/);
     assert.match(xml, /<c r="[A-Z]+[0-9]+" t="inlineStr">/);
     assert.match(xml, /<c r="[A-Z]+[0-9]+"><v>12345<\/v><\/c>/);
