@@ -56,7 +56,9 @@ export function safeSpreadsheetText(value: string): string {
 
 function xmlText(value: string): string {
   return value
-    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, "\uFFFD")
+    .replace(/\p{Cc}/gu, (character) =>
+      character === "\t" || character === "\n" || character === "\r" ? character : "\uFFFD",
+    )
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -147,7 +149,7 @@ export function serializeReportXlsx(report: CanonicalReportExport): Buffer {
       rows: table.rows,
     })),
   ];
-  const names = sheets.map((sheet) => sheet.name.replace(/[:\\/?*\[\]]/g, "-").slice(0, 31));
+  const names = sheets.map((sheet) => sheet.name.replace(/[^a-zA-Z0-9 _-]/g, "-").slice(0, 31));
   const types =
     '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
