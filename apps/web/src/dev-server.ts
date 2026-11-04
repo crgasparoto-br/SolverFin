@@ -230,7 +230,8 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
     response.setHeader("cache-control", "private, no-store");
     if (request.method !== "GET") {
       sendJson(
-        response, 405,
+        response,
+        405,
         apiError(
           "REPORT_EXPORT_METHOD_NOT_ALLOWED",
           "Exportação disponível somente por GET.",

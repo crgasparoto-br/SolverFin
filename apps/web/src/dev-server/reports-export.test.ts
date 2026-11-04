@@ -59,13 +59,15 @@ function evolutionReport(brl = 12345, usd = 99887) {
           income: series(brl),
           expense: series(2345),
           result: series(10000),
-          incomeCategories: [{
-            categoryId: "category-1",
-            name: '=HYPERLINK("https://invalid.example","clique")',
-            status: "active",
-            series: series(brl),
-            children: [],
-          }],
+          incomeCategories: [
+            {
+              categoryId: "category-1",
+              name: '=HYPERLINK("https://invalid.example","clique")',
+              status: "active",
+              series: series(brl),
+              children: [],
+            },
+          ],
           expenseCategories: [],
         },
         {
@@ -152,7 +154,7 @@ function fakeReportApi(): string[] {
 
 function extractZipEntries(zip: Buffer): ReadonlyMap<string, string> {
   const result = new Map<string, string>();
-  for (let offset = 0; offset + 30 < zip.length;) {
+  for (let offset = 0; offset + 30 < zip.length; ) {
     if (zip.readUInt32LE(offset) !== 0x04034b50) break;
     const size = zip.readUInt32LE(offset + 18);
     const nameLength = zip.readUInt16LE(offset + 26);
@@ -184,56 +186,61 @@ function exportUrl(view: string, format = "csv", currency = "all"): URL {
 
 describe("report exports - canonical snapshot", () => {
   for (const view of ["category-evolution", "installments", "cash-flow"]) {
-    it("serializes identical canonical cells and currency boundaries in all formats: " + view, async () => {
-      const paths = fakeReportApi();
-      const snapshot = await loadCanonicalReportExport("session", exportUrl(view));
-      assert.equal(snapshot.view, view);
-      assert.equal(snapshot.filters.currency, "all");
-      assert.equal(snapshot.filters.profileId, "profile-a");
-      assert.deepEqual(
-        [...new Set(snapshot.tables.map((table) => table.currency).filter(Boolean))],
-        ["BRL", "USD"],
-      );
+    it(
+      "serializes identical canonical cells and currency boundaries in all formats: " + view,
+      async () => {
+        const paths = fakeReportApi();
+        const snapshot = await loadCanonicalReportExport("session", exportUrl(view));
+        assert.equal(snapshot.view, view);
+        assert.equal(snapshot.filters.currency, "all");
+        assert.equal(snapshot.filters.profileId, "profile-a");
+        assert.deepEqual(
+          [...new Set(snapshot.tables.map((table) => table.currency).filter(Boolean))],
+          ["BRL", "USD"],
+        );
 
-      const csv = serializeReportCsv(snapshot).toString("utf8");
-      const workbook = serializeReportXlsx(snapshot);
-      const sheets = extractZipEntries(workbook);
-      const xml = [...sheets.values()].join("\n");
-      const pdf = serializeReportPdf(snapshot).toString("latin1");
-      assert.ok(csv.startsWith("\uFEFF"));
-      assert.equal(workbook.subarray(0, 4).toString("binary"), "PK\u0003\u0004");
-      assert.match(pdf, /^%PDF-1\.4/);
-      assert.match(sheets.get("xl/workbook.xml") ?? "", /Contexto/);
-      assert.match(csv, /"currency";"BRL"/);
-      assert.match(csv, /"currency";"USD"/);
-      assert.match(pdf, /Moeda: BRL/);
-      assert.match(pdf, /Moeda: USD/);
-      assert.match(csv, /"filter";"profileId";"profile-a"/);
-      assert.match(xml, /profile-a/);
-      assert.match(pdf, /profileId: profile-a/);
-      for (const table of snapshot.tables) {
-        for (const row of table.rows) {
-          for (const cell of row) {
-            if (typeof cell !== "number" || Math.abs(cell) < 1000) continue;
-            const text = String(cell);
-            assert.ok(csv.includes(text), "CSV missing canonical value " + text);
-            assert.ok(xml.includes(text), "XLSX missing canonical value " + text);
-            assert.ok(pdf.includes(text), "PDF missing canonical value " + text);
+        const csv = serializeReportCsv(snapshot).toString("utf8");
+        const workbook = serializeReportXlsx(snapshot);
+        const sheets = extractZipEntries(workbook);
+        const xml = [...sheets.values()].join("\n");
+        const pdf = serializeReportPdf(snapshot).toString("latin1");
+        assert.ok(csv.startsWith("\uFEFF"));
+        assert.equal(workbook.subarray(0, 4).toString("binary"), "PK\u0003\u0004");
+        assert.match(pdf, /^%PDF-1\.4/);
+        assert.match(sheets.get("xl/workbook.xml") ?? "", /Contexto/);
+        assert.match(csv, /"currency";"BRL"/);
+        assert.match(csv, /"currency";"USD"/);
+        assert.match(pdf, /Moeda: BRL/);
+        assert.match(pdf, /Moeda: USD/);
+        assert.match(csv, /"filter";"profileId";"profile-a"/);
+        assert.match(xml, /profile-a/);
+        assert.match(pdf, /profileId: profile-a/);
+        for (const table of snapshot.tables) {
+          for (const row of table.rows) {
+            for (const cell of row) {
+              if (typeof cell !== "number" || Math.abs(cell) < 1000) continue;
+              const text = String(cell);
+              assert.ok(csv.includes(text), "CSV missing canonical value " + text);
+              assert.ok(xml.includes(text), "XLSX missing canonical value " + text);
+              assert.ok(pdf.includes(text), "PDF missing canonical value " + text);
+            }
           }
         }
-      }
-      assert.equal(sheets.size, snapshot.tables.length + 5);
-      assert.equal(paths.length, 1);
-      assert.match(paths[0] ?? "", /profileId=profile-a/);
-      assert.doesNotMatch(paths[0] ?? "", /currency=all/);
-    });
+        assert.equal(sheets.size, snapshot.tables.length + 5);
+        assert.equal(paths.length, 1);
+        assert.match(paths[0] ?? "", /profileId=profile-a/);
+        assert.doesNotMatch(paths[0] ?? "", /currency=all/);
+      },
+    );
   }
 
   it("exports just the requested currency without computing a mixed-currency total", async () => {
     fakeReportApi();
     for (const view of ["category-evolution", "installments", "cash-flow"]) {
       const snapshot = await loadCanonicalReportExport("session", exportUrl(view, "csv", "USD"));
-      const currencies = [...new Set(snapshot.tables.map((table) => table.currency).filter(Boolean))];
+      const currencies = [
+        ...new Set(snapshot.tables.map((table) => table.currency).filter(Boolean)),
+      ];
       assert.deepEqual(currencies, ["USD"]);
       const csv = serializeReportCsv(snapshot).toString("utf8");
       assert.doesNotMatch(csv, /"currency";"BRL"/);
@@ -273,8 +280,9 @@ describe("report exports - Golden Screen SSR actions", () => {
       assert.match(html, /aria-label="Exportar relatório"/);
       assert.match(html, /class="report-export-link sf-focus-ring"/);
       assert.match(html, /\.report-export-link:focus-visible/);
-      const links = [...html.matchAll(/href="(\/relatorios\/export\?[^"]+)"/g)]
-        .map((match) => new URL((match[1] ?? "").replaceAll("&amp;", "&"), url));
+      const links = [...html.matchAll(/href="(\/relatorios\/export\?[^"]+)"/g)].map(
+        (match) => new URL((match[1] ?? "").replaceAll("&amp;", "&"), url),
+      );
       assert.equal(links.length, 3);
       assert.deepEqual(
         links.map((link) => link.searchParams.get("format")),
@@ -304,7 +312,8 @@ describe("report exports - Golden Screen SSR actions", () => {
       "view=installments&currency=BAD1",
     ]) {
       const html = await renderReportsRoutePage(
-        "session", new URL("http://localhost/relatorios?" + query),
+        "session",
+        new URL("http://localhost/relatorios?" + query),
       );
       assert.match(html, /data-report-state="filter-error"/);
       assert.doesNotMatch(html, /href="\/relatorios\/export\?/);
@@ -346,9 +355,12 @@ describe("report exports - isolation, validation and injection", () => {
       const url = new URL(String(input));
       requests.push(url.searchParams.get("profileId") ?? "");
       if (url.searchParams.get("profileId") === "profile-b") {
-        return jsonResponse({
-          error: { code: "TENANT_PROFILE_REQUIRED", message: "Perfil indisponível." },
-        }, 404);
+        return jsonResponse(
+          {
+            error: { code: "TENANT_PROFILE_REQUIRED", message: "Perfil indisponível." },
+          },
+          404,
+        );
       }
       return jsonResponse(evolutionReport(12345, 99887));
     };
