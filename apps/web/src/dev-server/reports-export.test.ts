@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 
+import { renderReportsRoutePage } from "./reports-route-page.js";
+
 import {
   downloadReportExport,
   loadCanonicalReportExport,
@@ -132,6 +134,12 @@ function fakeReportApi(): string[] {
   globalThis.fetch = async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input));
     paths.push(url.pathname + url.search);
+    if (url.pathname === "/api/accounts") return jsonResponse({ accounts: [] });
+    if (url.pathname === "/api/credit-card-accounts") {
+      return jsonResponse({ creditCardAccounts: [] });
+    }
+    if (url.pathname === "/api/cards") return jsonResponse({ cards: [] });
+    if (url.pathname === "/api/categories") return jsonResponse({ categories: [] });
     if (url.pathname === "/api/reports/category-evolution") {
       return jsonResponse(evolutionReport());
     }
@@ -216,8 +224,8 @@ describe("report exports - canonical snapshot", () => {
       }
       assert.equal(sheets.size, snapshot.tables.length + 5);
       assert.equal(paths.length, 1);
-      assert.match(paths[0], /profileId=profile-a/);
-      assert.doesNotMatch(paths[0], /currency=all/);
+      assert.match(paths[0] ?? "", /profileId=profile-a/);
+      assert.doesNotMatch(paths[0] ?? "", /currency=all/);
     });
   }
 
@@ -246,6 +254,62 @@ describe("report exports - canonical snapshot", () => {
         if (format === "pdf") assert.equal(result.contentType, "application/pdf");
       }
     }
+  });
+});
+
+describe("report exports - Golden Screen SSR actions", () => {
+  for (const view of ["category-evolution", "installments", "cash-flow"]) {
+    it("renders accessible links with current view, profile and filters: " + view, async () => {
+      fakeReportApi();
+      const url = exportUrl(view);
+      url.pathname = "/relatorios";
+      url.searchParams.delete("format");
+      const html = await renderReportsRoutePage(
+        "session",
+        url,
+        new Date("2026-08-01T12:00:00.000Z"),
+      );
+      assert.match(html, /data-report-state="ready"/);
+      assert.match(html, /aria-label="Exportar relatório"/);
+      assert.match(html, /class="report-export-link sf-focus-ring"/);
+      assert.match(html, /\.report-export-link:focus-visible/);
+      const links = [...html.matchAll(/href="(\/relatorios\/export\?[^"]+)"/g)]
+        .map((match) => new URL((match[1] ?? "").replaceAll("&amp;", "&"), url));
+      assert.equal(links.length, 3);
+      assert.deepEqual(
+        links.map((link) => link.searchParams.get("format")),
+        ["csv", "xlsx", "pdf"],
+      );
+      for (const link of links) {
+        assert.equal(link.searchParams.get("view"), view);
+        assert.equal(link.searchParams.get("profileId"), "profile-a");
+        assert.equal(link.searchParams.get("currency"), "all");
+        for (const [key, value] of url.searchParams) {
+          if (key === "view" || key === "format") continue;
+          assert.equal(link.searchParams.get(key), value, key);
+        }
+      }
+    });
+  }
+
+  it("omits download actions in filter-error states", async () => {
+    let requests = 0;
+    globalThis.fetch = async (): Promise<Response> => {
+      requests += 1;
+      return jsonResponse({});
+    };
+    for (const query of [
+      "view=category-evolution&periods=100",
+      "view=cash-flow&horizonDays=42",
+      "view=installments&currency=BAD1",
+    ]) {
+      const html = await renderReportsRoutePage(
+        "session", new URL("http://localhost/relatorios?" + query),
+      );
+      assert.match(html, /data-report-state="filter-error"/);
+      assert.doesNotMatch(html, /href="\/relatorios\/export\?/);
+    }
+    assert.equal(requests, 0);
   });
 });
 

@@ -231,7 +231,8 @@ async function loadEvolutionExport(
   return {
     view: "category-evolution",
     period: report.periods.length
-      ? report.periods[0].startsOn + " a " + report.periods[report.periods.length - 1].endsOn
+      ? (report.periods[0]?.startsOn ?? filters.start) + " a " +
+        (report.periods.at(-1)?.endsOn ?? filters.start)
       : filters.start,
     filters: {
       interval: filters.interval,
@@ -380,12 +381,13 @@ async function loadCashFlowExport(
   };
   try {
     const currency = parseReportCurrencyFilter(url.searchParams.get("currency"));
+    const profileId = url.searchParams.get("profileId");
     filters = {
       referenceDate: parseCashFlowReferenceDate(
         url.searchParams.get("referenceDate") ?? referenceDate.toISOString().slice(0, 10),
       ),
       horizonDays: parseCashFlowHorizon(url.searchParams.get("horizonDays") ?? "30"),
-      ...(url.searchParams.get("profileId") ? { profileId: url.searchParams.get("profileId") ?? undefined } : {}),
+      ...(profileId ? { profileId } : {}),
       ...(currency ? { currency } : {}),
     };
   } catch (error) {
