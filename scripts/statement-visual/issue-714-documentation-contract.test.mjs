@@ -72,3 +72,55 @@ test("issue 714: the #747 footer supersession stays explicit and testable", () =
   assert.doesNotMatch(document.replace(now, ""), now);
   assert.doesNotMatch(adr.replace(superseded, ""), superseded);
 });
+
+// The current financial contract must not be satisfied by unrelated historical
+// mentions elsewhere in the document. Audit only the normative composition.
+function assertCurrentTransferContract(source) {
+  const composition = source.split("## Composicao\n")[1]?.split("## Componentes de escolha")[0];
+  assert.ok(composition, "The current composition section must exist");
+  assert.match(
+    composition,
+    /Conta individual:[\s\S]*?Entradas inclui receitas e transferencias recebidas; Saidas[\s\S]*?transferencias enviadas/,
+    "Individual accounts must include both transfer legs in their cards",
+  );
+  assert.match(
+    composition,
+    /Todas as contas \([\s\S]*?accountId=all[\s\S]*?\):[\s\S]*?mesma moeda[\s\S]*?nao inflam Entradas\/Saidas/,
+    "All-account same-currency transfers must not inflate cards",
+  );
+  assert.match(
+    composition,
+    /transferencias cambiais entram nos cards[\s\S]*?perna da moeda selecionada, sem conversao implicita/,
+    "Foreign-exchange legs must use only the selected currency",
+  );
+  assert.doesNotMatch(
+    composition,
+    /transferencias? (?:recebidas? )?nao (?:entram|integram|contam) (?:nos )?cards? individuais?/i,
+    "An appended current-contract contradiction must be rejected",
+  );
+}
+
+test("issue 714: current card contract rejects contradictory individual/all/FX mutations", () => {
+  assertCurrentTransferContract(document);
+  const contraryIndividual = document.replace(
+    "Entradas inclui receitas e transferencias recebidas; Saidas",
+    "Entradas inclui receitas; transferencias recebidas nao entram; Saidas",
+  );
+  const contraryAll = document.replace(
+    "mas nao inflam Entradas/Saidas",
+    "mas inflam Entradas/Saidas",
+  );
+  const contraryFx = document.replace(
+    "pela perna da moeda selecionada, sem conversao implicita",
+    "pela perna de origem, somando moedas sem conversao",
+  );
+  const appendedContradiction = document.replace(
+    "## Componentes de escolha e confirmacao",
+    "Transferencias nao entram nos cards individuais.\n\n## Componentes de escolha e confirmacao",
+  );
+  for (const mutated of [contraryIndividual, contraryAll, contraryFx, appendedContradiction]) {
+    assert.notEqual(mutated, document, "The adversarial mutation must actually change the source");
+    assert.throws(() => assertCurrentTransferContract(mutated), assert.AssertionError);
+  }
+  assertCurrentTransferContract(document);
+});
