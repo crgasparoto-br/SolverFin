@@ -12,6 +12,7 @@ da PR #713. A decisao de manter os modais de novo, editar e clonar centralizados
 e posterior ao mockup e prevalece sobre sua geometria original.
 
 **Marcos de implementacao integrados na `develop`:**
+
 - PR #713, merge `b50ee44238dd9e63129ebc87a3ee31c0965b19f8`, material
   `07fb199284a7f0bab38148f33d85331aa18403d0`: referencia funcional
   original, documentacao e modais centralizados.
