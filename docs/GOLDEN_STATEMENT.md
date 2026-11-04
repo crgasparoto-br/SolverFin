@@ -88,6 +88,15 @@ design system compartilhado; nenhuma tela deve manter cores semanticas paralelas
   estado selecionado e bloqueios sincronizados. O select original continua como campo
   canonico do payload; transferencia, recorrencia e persistencia usam seus handlers.
   Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
+- **Rodape atual apos a #747 / PR #749:** os dialogos novo e clonar oferecem
+  Cancelar, Salvar e continuar e Salvar lancamento como tres acoes distintas.
+  Editar oferece somente Cancelar e Salvar lancamento. Em 1366 px e 390 px,
+  Cancelar e Salvar e continuar compartilham a primeira linha, enquanto a
+  confirmacao primaria fica abaixo em novo/clonar; em 320 px, as acoes
+  podem ser empilhadas em ordem, sem recorte, cada uma com alvo de pelo menos
+  44 px. Essa atualizacao posterior substitui apenas a geometria antiga de
+  dois botoes da ADR 0018; centralizacao, foco, conteudo e regras financeiras
+  permanecem obrigatorios. Consulte tambem `docs/ENTRY_FILL_RULES.md`.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
 ## Componentes de escolha e confirmacao

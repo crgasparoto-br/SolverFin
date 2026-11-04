@@ -3,6 +3,11 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const document = readFileSync(new URL("../../docs/GOLDEN_STATEMENT.md", import.meta.url), "utf8");
+const adr = readFileSync(
+  new URL("../../docs/adr/0018-golden-statement-consolidated-by-currency.md", import.meta.url),
+  "utf8",
+);
+const manualRules = readFileSync(new URL("../../docs/ENTRY_FILL_RULES.md", import.meta.url), "utf8");
 
 // Document-only regression: does not replace Chrome or independent audit.
 const obligations = [
@@ -44,3 +49,21 @@ for (const [name, pattern] of obligations) {
     assert.match(document, pattern, "Restoration failed: " + name);
   });
 }
+
+// Cross-document precedence regression: a later feature supersedes only the
+// two-action layout, not the original center/focus/financial invariants.
+test("issue 714: the #747 footer supersession stays explicit and testable", () => {
+  const now = /Rodape atual apos a #747 \/ PR #749:[\s\S]*?Essa atualizacao posterior substitui apenas a geometria antiga de/;
+  const superseded = /Evolução posterior do rodapé — #747 \/ PR #749[\s\S]*?substitui \*\*somente\*\* a geometria de dois botões/;
+  const thirdAction = /\*\*Salvar e continuar\*\*/;
+  assert.match(document, now);
+  assert.match(adr, superseded);
+  assert.match(manualRules, thirdAction);
+  assert.match(document, /Editar oferece somente Cancelar e Salvar lancamento/);
+  assert.match(adr, /no mobile de 320 px, as ações podem ocupar linhas consecutivas/);
+  assert.match(document, /centralizacao, foco, conteudo e regras financeiras/);
+  // Remove the supersession statement, retaining old historical two-button
+  // guidance: this plausible documentary regression must be rejected.
+  assert.doesNotMatch(document.replace(now, ""), now);
+  assert.doesNotMatch(adr.replace(superseded, ""), superseded);
+});
