@@ -1,0 +1,106 @@
+{
+  "material_head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "subject_issue": 714,
+  "subject_pr": 760,
+  "control_count": 12,
+  "controls": [
+    {
+      "id": "accepted-title",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "713-integrated-sha",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "721-integrated-sha",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "propagation-boundary",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "individual-transfer-legs",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "all-accounts-no-inflation",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "fx-selected-currency-leg",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "centered-dialogs",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "new-footer-precedence",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "independence-separate",
+      "status": "passed",
+      "positive": "source accepted",
+      "negative": "plausible wrong variant rejected",
+      "restoration": "source still accepted",
+      "source_sha256": "b1611be1cf056332963a7b1f445a62b2fdb5c4e652f612e5f310914c9e015ac0"
+    },
+    {
+      "id": "foreign-handoff-issue-number",
+      "status": "passed",
+      "positive": "subject remains foreign",
+      "negative": "partial reassignment cannot bind both issue and PR",
+      "restoration": "original target #728/#759 unchanged"
+    },
+    {
+      "id": "foreign-handoff-pull-request-number",
+      "status": "passed",
+      "positive": "subject remains foreign",
+      "negative": "partial reassignment cannot bind both issue and PR",
+      "restoration": "original target #728/#759 unchanged"
+    }
+  ],
+  "independent_approval_observed": false,
+  "certification_observed": false,
+  "message": "These controls do not produce a current-target handoff or an independent approval."
+}
