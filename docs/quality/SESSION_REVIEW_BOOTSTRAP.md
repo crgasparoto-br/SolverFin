@@ -46,3 +46,14 @@ no material e no HEAD publicado contra os bytes da base protegida; YAML candidat
 nao pode produzir prova valida apenas por manter o nome do check.
 
 Antes da instalacao, preservar snapshot de rulesets e plano de rollback, mantendo `Delivery V2 gate`, PR obrigatoria e bloqueios de exclusao/force-push. Esta PR nao altera rulesets, nao faz merge e nao encerra a #714.
+
+
+## Correcoes da auditoria A-763-03 a A-763-07 (05/11/2026)
+
+- **A-763-03:** referencia da PR atualizada para `Refs #762;`, sem relaxar o parser canonico.
+- **A-763-04:** a criacao de Check Run bloqueante antecede as leituras faliveis de historico, preservando revogacao fail-closed.
+- **A-763-05:** `Delivery audit workspace` contempla PRs com destino `develop` ou `main`, preservando restricao de base e evidencias exact-SHA.
+- **A-763-06:** oito artefatos criticos obrigatorios e distintos, hashes e tamanho logico comprovados, JSON versionado e vinculos com issue, base e HEAD material.
+- **A-763-07:** conteudo gzip e descomprimido sob limite antes de alocacao excessiva; entrada malformada e rejeitada.
+
+Os testes cobrem controles negativos de watermark, base de destino, aliases e JSON falso, drift de identidade e expansao gzip. A politica permanece `mode=disabled`: codigo candidato nao substitui auditoria independente nem ativa checks ou rulesets nas branches protegidas. A ativacao M2 continua dependente de instalacao confiavel e ensaios reais.
