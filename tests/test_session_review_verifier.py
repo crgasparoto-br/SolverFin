@@ -252,3 +252,37 @@ def test_technical_ci_tampering_blocks_before_green_status_is_considered():
         with pytest.raises(ValueError, match="differs from protected base"):
             evidence.collect_verified(REPO, 10, BASE, HEAD, MATERIAL, "0" * 64)
         status.assert_not_called()
+
+
+def test_history_failure_blocks_old_green_check_before_mutable_read():
+    calls = []
+
+    def start(*args):
+        calls.append("begin")
+        return 42
+
+    def fail(*args):
+        calls.append("history")
+        raise ValueError("history truncated")
+
+    def finish(*args):
+        calls.append(("finish", args[5], args[6]))
+
+    with patch.object(verifier.collector, "api", return_value={"head": {"sha": HEAD}}), \
+         patch.object(verifier, "begin_check", side_effect=start), \
+         patch.object(verifier, "review_watermark", side_effect=fail), \
+         patch.object(verifier, "finish_check", side_effect=finish):
+        assert verifier.evaluate(REPO, 10, 9, "1234") == 2
+    assert calls[:2] == ["begin", "history"]
+    assert calls[2][0] == "finish" and calls[2][1] is False
+    assert "history truncated" in calls[2][2]
+
+
+def test_delivery_workspace_supports_both_protected_bases():
+    workflow = (Path(__file__).resolve().parents[1]
+                / ".github/workflows/delivery-audit-workspace.yml").read_text()
+    assert "branches: [develop, main]" in workflow
+    assert 'case "$AUDIT_BASE_REF" in' in workflow
+    assert "develop|main) ;;" in workflow
+    assert 'test "$AUDIT_BASE_REF" = "develop"' not in workflow
+    assert "persist-credentials: false" in workflow
