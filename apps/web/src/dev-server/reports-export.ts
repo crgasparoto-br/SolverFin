@@ -6,47 +6,25 @@ import {
   type CashFlowProjection,
 } from "./cash-flow-projection-view.js";
 import {
-  buildInstallmentAnalysisViewModel,
-  type InstallmentCurrencyViewModel,
-} from "./reports-analysis-view-model.js";
-import { formatMonthYear, normalizeMonth, todayDateOnly } from "./reports-installments-format.js";
-import {
-  buildInstallmentsPath,
-  readInstallmentFilters,
-  type InstallmentRecord,
-} from "./reports-installments-view.js";
-import {
   parseReportCurrencyFilter,
   selectReportCurrencyBlocks,
   type ReportsView,
 } from "./reports-route-page-shared.js";
-import {
-  readEvolutionFilters,
-  resolveReportsView,
-  type CategoryEvolutionReport,
-} from "./reports-route-page.js";
-import { buildEvolutionApiPath } from "./reports-evolution-routing-helpers.js";
+import { resolveReportsView } from "./reports-route-page.js";
+import { asSourceError, ReportExportError, selectedTables } from "./reports-export-common.js";
+import { loadEvolutionExport } from "./reports-export-evolution.js";
+import { loadInstallmentsExport } from "./reports-export-installments.js";
 import {
   serializeReportCsv,
   serializeReportPdf,
   serializeReportXlsx,
   type CanonicalReportExport,
-  type ExportCell,
   type ExportTable,
 } from "./reports-export-serializers.js";
 
-export type ReportExportFormat = "csv" | "xlsx" | "pdf";
+export { ReportExportError } from "./reports-export-common.js";
 
-export class ReportExportError extends Error {
-  constructor(
-    readonly statusCode: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "ReportExportError";
-  }
-}
+export type ReportExportFormat = "csv" | "xlsx" | "pdf";
 
 const allowedQueries: Record<ReportsView, readonly string[]> = {
   "category-evolution": [
@@ -97,27 +75,6 @@ function formatFromQuery(url: URL): ReportExportFormat {
   return value;
 }
 
-function asSourceError(error: string, status?: number): never {
-  throw new ReportExportError(
-    status && status >= 400 && status <= 599 ? status : 502,
-    "REPORT_EXPORT_SOURCE_UNAVAILABLE",
-    error,
-  );
-}
-
-function selectedTables(tables: readonly ExportTable[], currency: string): ExportTable[] {
-  return tables.length
-    ? [...tables]
-    : [
-        {
-          name: "sem-dados",
-          currency: currency === "all" ? "" : currency,
-          columns: ["estado"],
-          rows: [],
-        },
-      ];
-}
-
 export async function loadCanonicalReportExport(
   token: string,
   url: URL,
@@ -166,248 +123,6 @@ export async function downloadReportExport(
     content,
     contentType,
     fileName: "solverfin-" + report.view + "-" + (suffix || "relatorio") + "." + format,
-  };
-}
-
-function categoryTable(
-  currency: string,
-  periods: CategoryEvolutionReport["periods"],
-  block?: CategoryEvolutionReport["currencyBlocks"][number],
-): ExportTable {
-  const rows: ExportCell[][] = [];
-  const collect = (
-    kind: string,
-    series: CategoryEvolutionReport["currencyBlocks"][number]["income"],
-    path: readonly string[],
-    id: string,
-    status: string,
-  ): void => {
-    for (const [index, period] of periods.entries()) {
-      const cell = series.cells[index];
-      rows.push([
-        kind,
-        path.length,
-        path.join(" / "),
-        id,
-        status,
-        period.key,
-        period.startsOn,
-        period.endsOn,
-        cell?.amountMinor ?? null,
-        cell?.percentage ?? null,
-        series.totalMinor,
-        series.totalPercentage,
-        series.averageMinor,
-        series.averagePercentage,
-      ]);
-    }
-  };
-  if (block) {
-    collect("income", block.income, [], "", "");
-    collect("expense", block.expense, [], "", "");
-    collect("result", block.result, [], "", "");
-    const walk = (
-      kind: "income" | "expense",
-      nodes: CategoryEvolutionReport["currencyBlocks"][number]["incomeCategories"],
-      parents: readonly string[],
-    ): void => {
-      for (const node of nodes) {
-        const path = [...parents, node.name];
-        collect(kind, node.series, path, node.categoryId ?? "", node.status);
-        walk(kind, node.children, path);
-      }
-    };
-    walk("income", block.incomeCategories, []);
-    walk("expense", block.expenseCategories, []);
-  }
-  return {
-    name: "categorias",
-    currency,
-    columns: [
-      "secao",
-      "nivel",
-      "hierarquia",
-      "categoria_id",
-      "status",
-      "periodo",
-      "inicio",
-      "fim",
-      "valor_centavos",
-      "percentual",
-      "total_centavos",
-      "percentual_total",
-      "media_centavos",
-      "percentual_medio",
-    ],
-    rows,
-  };
-}
-
-async function loadEvolutionExport(
-  token: string,
-  url: URL,
-  referenceDate: Date,
-): Promise<CanonicalReportExport> {
-  let filters: ReturnType<typeof readEvolutionFilters>;
-  try {
-    filters = readEvolutionFilters(url, referenceDate);
-  } catch (error) {
-    throw new ReportExportError(
-      400,
-      "REPORT_EXPORT_FILTER_INVALID",
-      error instanceof Error ? error.message : "Filtros inválidos.",
-    );
-  }
-  const result = await apiGet<{ report: CategoryEvolutionReport }>(
-    token,
-    buildEvolutionApiPath(filters),
-  );
-  if (!result.ok) return asSourceError(result.error, result.status);
-  const report = result.data.report;
-  const visible = filters.currency
-    ? report.currencyBlocks.filter((block) => block.currency === filters.currency)
-    : report.currencyBlocks;
-  const currency = filters.currency ?? "all";
-  const tables: ExportTable[] = visible.map((block) =>
-    categoryTable(block.currency, report.periods, block),
-  );
-  const periods: ExportTable = {
-    name: "periodos",
-    currency: "",
-    columns: ["chave", "rotulo", "inicio", "fim"],
-    rows: report.periods.map((period) => [
-      period.key,
-      period.accessibleLabel,
-      period.startsOn,
-      period.endsOn,
-    ]),
-  };
-  return {
-    view: "category-evolution",
-    period: report.periods.length
-      ? (report.periods[0]?.startsOn ?? filters.start) +
-        " a " +
-        (report.periods.at(-1)?.endsOn ?? filters.start)
-      : filters.start,
-    filters: {
-      interval: filters.interval,
-      start: filters.start,
-      periods: String(filters.periods),
-      currency,
-      ...(filters.profileId ? { profileId: filters.profileId } : {}),
-      ...(filters.accountId ? { accountId: filters.accountId } : {}),
-      ...(filters.cardId ? { cardId: filters.cardId } : {}),
-    },
-    tables: [periods, ...selectedTables(tables, currency)],
-  };
-}
-
-function installmentTables(block: InstallmentCurrencyViewModel<InstallmentRecord>): ExportTable[] {
-  const summary = block.summary;
-  const summaryRows: ExportCell[][] = [
-    ["total_mensal", summary.activeCount, summary.totalMinor],
-    ["planejadas_abertas", summary.plannedOpenCount, summary.plannedOpenMinor],
-    ["postadas_fechadas", summary.postedClosedCount, summary.postedClosedMinor],
-    ["vencidas", summary.overdueCount, summary.overdueMinor],
-    ["futuras", summary.futureCount, summary.futureMinor],
-  ];
-  const groups: ExportCell[][] = [];
-  for (const key of ["months", "cards", "categories"] as const) {
-    for (const group of block.groups[key]) {
-      groups.push([key, group.filterId ?? "", group.label, group.count, group.amountMinor]);
-    }
-  }
-  return [
-    {
-      name: "resumo",
-      currency: block.currency,
-      columns: ["indicador", "quantidade", "valor_centavos"],
-      rows: summaryRows,
-    },
-    {
-      name: "grupos",
-      currency: block.currency,
-      columns: ["tipo", "filtro_id", "rotulo", "quantidade", "valor_centavos"],
-      rows: groups,
-    },
-    {
-      name: "parcelas",
-      currency: block.currency,
-      columns: [
-        "parcela_id",
-        "vencimento",
-        "numero",
-        "total_parcelas",
-        "descricao",
-        "cartao",
-        "categoria",
-        "status",
-        "status_fatura",
-        "valor_centavos",
-      ],
-      rows: block.items.map((item) => [
-        item.id,
-        item.dueOn,
-        item.sequenceNumber,
-        item.totalInstallments,
-        item.transaction?.description ?? item.recurrence?.description ?? "Parcela",
-        item.card?.name ?? "Sem cartão",
-        item.category?.name ?? "Sem categoria",
-        item.status,
-        item.invoice?.status ?? "",
-        item.amountMinor,
-      ]),
-    },
-  ];
-}
-
-async function loadInstallmentsExport(token: string, url: URL): Promise<CanonicalReportExport> {
-  const month = url.searchParams.get("month");
-  if (month !== null && !normalizeMonth(month)) {
-    throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Mês inválido.");
-  }
-  const status = url.searchParams.get("status");
-  if (
-    status !== null &&
-    !["all", "planned", "posted", "reconciled", "cancelled"].includes(status)
-  ) {
-    throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Status inválido.");
-  }
-  const filters = readInstallmentFilters(url);
-  let currency: string | undefined;
-  try {
-    currency = parseReportCurrencyFilter(url.searchParams.get("currency"));
-  } catch (error) {
-    throw new ReportExportError(
-      400,
-      "REPORT_EXPORT_FILTER_INVALID",
-      error instanceof Error ? error.message : "Moeda inválida.",
-    );
-  }
-  const result = await apiGet<{ installments: InstallmentRecord[] }>(
-    token,
-    buildInstallmentsPath(filters),
-  );
-  if (!result.ok) return asSourceError(result.error, result.status);
-  const blocks = buildInstallmentAnalysisViewModel(
-    result.data.installments.slice().sort((left, right) => left.dueOn.localeCompare(right.dueOn)),
-    todayDateOnly(),
-    formatMonthYear,
-  );
-  const selection = selectReportCurrencyBlocks(blocks, currency);
-  const tables = selection.visible.flatMap(installmentTables);
-  return {
-    view: "installments",
-    period: filters.dueFrom + " a " + filters.dueTo,
-    filters: {
-      month: filters.month,
-      status: filters.status,
-      currency: selection.currency,
-      ...(filters.cardId ? { cardId: filters.cardId } : {}),
-      ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
-      ...(filters.profileId ? { profileId: filters.profileId } : {}),
-    },
-    tables: selectedTables(tables, selection.currency),
   };
 }
 
