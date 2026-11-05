@@ -11,7 +11,13 @@ on:
   issues:
     types: [edited]
   workflow_run:
-    workflows: ["Repository CI", "Statement visual validation", "Delivery audit workspace", "Session review evidence (exact SHA)"]
+    workflows:
+      [
+        "Repository CI",
+        "Statement visual validation",
+        "Delivery audit workspace",
+        "Session review evidence (exact SHA)",
+      ]
     types: [completed]
   push:
     branches: [develop, main]
