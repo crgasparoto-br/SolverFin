@@ -71,6 +71,8 @@ jobs:
         if: needs.classify.outputs.code_changed == 'true' || (needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true')
       - name: Verify local CI policy on merge preview
         run: node --test scripts/ci-classifier.test.mjs scripts/ci-legacy-dependency.test.mjs
+      - name: Verify solo audit integration security tests
+        run: python -m unittest discover -s scripts/audit -p "test_*.py" -v
       - name: Build workspace packages for FAST merge preview
         if: needs.classify.outputs.risk_profile == 'fast' && needs.classify.outputs.web_changed == 'true'
         run: npm run build:packages
