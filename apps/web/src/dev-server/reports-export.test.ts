@@ -282,22 +282,14 @@ describe("report exports - canonical snapshot", () => {
     assertCsvParity(withNull, serializeReportCsv(withNull));
     assertXlsxParity(withNull, serializeReportXlsx(withNull));
     assertPdfParity(withNull, serializeReportPdf(withNull));
-    for (const [name, assertParity, serialize] of [
+    for (const [, assertParity, serialize] of [
       ["CSV", assertCsvParity, serializeReportCsv],
       ["XLSX", assertXlsxParity, serializeReportXlsx],
       ["PDF", assertPdfParity, serializeReportPdf],
     ] as const) {
-      assert.throws(() => assertParity(original, serialize(swapped)), undefined, name + " swap");
-      assert.throws(
-        () => assertParity(original, serialize(withoutRow)),
-        undefined,
-        name + " missing row",
-      );
-      assert.throws(
-        () => assertParity(withNull, serialize(withEmptyInstead)),
-        undefined,
-        name + " null drift",
-      );
+      assert.throws(() => assertParity(original, serialize(swapped)));
+      assert.throws(() => assertParity(original, serialize(withoutRow)));
+      assert.throws(() => assertParity(withNull, serialize(withEmptyInstead)));
     }
   });
 
