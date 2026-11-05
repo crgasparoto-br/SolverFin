@@ -7,11 +7,18 @@ on:
       - ".github/session-review-policy.json"
       - ".github/workflows/session-review-contract.yml"
       - ".github/workflows/prepare-neutral-audit-packet.yml"
+      - ".github/workflows/session-review.yml"
+      - ".github/workflows/session-review-evidence.yml"
       - "scripts/session_review.py"
       - "scripts/session_review_specification.py"
       - "scripts/prepare_session_review_packet.py"
+      - "scripts/session_review_github.py"
+      - "scripts/session_review_checks.py"
+      - "scripts/session_review_evidence.py"
+      - "scripts/verify_session_review.py"
       - "tests/test_session_review.py"
       - "tests/test_session_review_packet.py"
+      - "tests/test_session_review_verifier.py"
 permissions:
   contents: read
 jobs:
@@ -32,4 +39,4 @@ jobs:
       - name: Install pinned test runner
         run: python -m pip install --disable-pip-version-check pytest==9.0.2
       - name: Validate source contract and collector (no review check emitted)
-        run: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py
+        run: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py

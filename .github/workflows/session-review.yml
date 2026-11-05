@@ -1,0 +1,56 @@
+name: Verify operator-attested session review
+
+# This is NOT a third-party identity proof. No source from a candidate PR is
+# loaded by the trusted reviewer or its check publisher.
+on:
+  issue_comment:
+    types: [created, edited, deleted]
+  pull_request_target:
+    branches: [develop, main]
+    types: [opened, synchronize, reopened, ready_for_review, edited]
+  issues:
+    types: [edited]
+  workflow_run:
+    workflows: ["Repository CI", "Statement visual validation", "Delivery audit workspace", "Session review evidence (exact SHA)"]
+    types: [completed]
+  push:
+    branches: [develop, main]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  actions: read
+  checks: write
+
+concurrency:
+  group: solverfin-session-review-${{ github.repository }}
+  cancel-in-progress: false
+  queue: max
+
+jobs:
+  verify:
+    if: >-
+      (github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main') &&
+      (github.event_name != 'issue_comment' || github.event.issue.pull_request) &&
+      (github.event_name != 'workflow_run' ||
+       (github.event.workflow_run.event == 'pull_request' &&
+        github.event.workflow_run.head_repository.full_name == github.repository))
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout trusted workflow source only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Verify or revoke review on current PR identity
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: python scripts/verify_session_review.py --repo "$REPO" --event "$GITHUB_EVENT_PATH"

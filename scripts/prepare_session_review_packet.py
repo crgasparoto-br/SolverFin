@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import base64
 import difflib
+import gzip
 import hashlib
 import json
 import os
@@ -128,17 +129,80 @@ def checked_preview(repo: str, sha: str, base: str, head: str) -> dict:
     return {"sha": sha, "tree_sha": raw["tree"]["sha"], "parents": parents}
 
 
-def inspect_handoff(repo: str, pr_number: int, base: str, head: str) -> dict:
+def _verified_certificate_artifacts(repo: str, cert: dict, head: str) -> None:
+    """Authenticate artifact bytes; metadata or a hand-written READY flag is not proof."""
+    sub = cert["subject"]
+    prefix = f".audit/entregar-issue/issue-{sub['issue_number']}/"
+    required = {"specification_snapshot", "requirement_closure", "requirement_attack_matrix",
+                "risk_saturation", "inherited_controls", "evidence_provenance",
+                "codebase_grounding", "code_growth"}
+    artifact_index = cert.get("artifacts")
+    require(isinstance(artifact_index, dict) and required.issubset(artifact_index),
+            "critical certificate does not inventory all required evidence")
+    for key, artifact in artifact_index.items():
+        require(isinstance(artifact, dict), "invalid certificate artifact entry")
+        name = artifact.get("name")
+        require(isinstance(name, str) and safe_path(name) and "/" not in name,
+                "certificate artifact path is not canonical")
+        path = prefix + name
+        text, actual_sha = file_at(repo, path, head)
+        require(artifact.get("sha256") == actual_sha,
+                f"certificate artifact digest mismatch: {key}")
+        transport = artifact.get("artifact_transport") or {}
+        kind = transport.get("format", "plain-json")
+        if kind == "plain-json":
+            require(artifact.get("logical_sha256") == actual_sha and text.lstrip().startswith(("{", "[")),
+                    "plain artifact content/digest mismatch")
+            continue
+        require(kind == "base64-shards-v1", "unsupported critical artifact transport")
+        manifest = strict_json(text)
+        require(manifest.get("artifact_format") == "base64-shards-v1"
+                and isinstance(manifest.get("parts"), list) and manifest["parts"],
+                "sharded artifact manifest invalid")
+        encoded = []
+        size = 0
+        for part in manifest["parts"]:
+            rel = part.get("path")
+            require(isinstance(rel, str) and safe_path(rel)
+                    and rel.startswith(name.rsplit(".", 1)[0] + ".parts/"),
+                    "artifact shard path escaped package")
+            piece, hash_value = file_at(repo, prefix + rel, head)
+            require(hash_value == part.get("sha256") and len(piece.encode()) == part.get("size"),
+                    "artifact shard digest or size mismatch")
+            size += len(piece)
+            require(size <= MAX_TOTAL, "sharded artifact exceeds audit budget")
+            encoded.append(piece)
+        base64_text = "".join(encoded).encode()
+        require(manifest.get("encoded_sha256") == digest(base64_text),
+                "sharded artifact aggregate digest mismatch")
+        content = base64.b64decode(base64_text, validate=True)
+        require(len(content) <= MAX_TOTAL, "compressed artifact exceeds budget")
+        decoded = gzip.decompress(content) if manifest.get("compression") == "gzip" else content
+        require(len(decoded) <= MAX_TOTAL and manifest.get("decoded_sha256") == digest(decoded)
+                and artifact.get("logical_sha256") == digest(decoded),
+                "sharded artifact logical bytes mismatch")
+
+
+def inspect_handoff(repo: str, pr_number: int, base: str, head: str,
+                    *, expected_issue: int | None = None, expected_head_ref: str | None = None) -> dict:
     certificate_text, certificate_digest = file_at(repo, ".audit/entregar-issue/handoff-ready.json", head)
     cert = strict_json(certificate_text)
     ident, sub = cert.get("identity", {}), cert.get("subject", {})
     require(cert.get("schema_version") == 2 and cert.get("status") == "ready"
-            and cert.get("phase") == "final", "handoff not ready")
+            and cert.get("phase") == "final" and cert.get("evidence_profile") == "critical",
+            "critical handoff is not ready")
     require(sub.get("repository") == repo and sub.get("pull_request_number") == pr_number
-            and sub.get("base_ref") == "develop", "handoff subject mismatch")
+            and sub.get("base_ref") == "develop" and sub.get("work_item_kind") == "issue"
+            and sub.get("issue_number") == sub.get("work_item_number"),
+            "handoff subject mismatch")
+    if expected_issue is not None:
+        require(sub.get("issue_number") == expected_issue, "handoff canonical issue mismatch")
+    if expected_head_ref is not None:
+        require(sub.get("head_ref") == expected_head_ref, "handoff candidate branch mismatch")
     require(ident.get("base_sha") == base, "handoff base mismatch")
     material = ident.get("material_head_sha")
-    require(isinstance(material, str) and SHA_RE.fullmatch(material), "handoff material missing")
+    require(isinstance(material, str) and SHA_RE.fullmatch(material) and ident.get("head_sha") == material,
+            "handoff material identity missing or inconsistent")
     head_commit = api(f"/repos/{repo}/git/commits/{head}")
     require([x.get("sha") for x in head_commit.get("parents", [])] == [material],
             "published HEAD is not a direct result-only child of the material")
@@ -149,6 +213,18 @@ def inspect_handoff(repo: str, pr_number: int, base: str, head: str) -> dict:
     require(all(str(item.get("filename", "")).startswith(".audit/entregar-issue/")
                 and item.get("status") != "removed" for item in files),
             "non-result-only change after material freeze")
+    permitted = (cert.get("certificate_commit_policy") or {}).get("allowed_paths")
+    require(isinstance(permitted, list) and set(permitted) == {i["filename"] for i in files}
+            and len(permitted) == len(files), "result-only certificate allowlist differs from committed diff")
+    _verified_certificate_artifacts(repo, cert, head)
+    scope = cert.get("scope") or {}
+    require(scope.get("work_item_start_sha") == base and scope.get("material_head_sha") == material,
+            "certificate material scope is stale")
+    actual_scope = api(f"/repos/{repo}/compare/{base}...{material}")
+    require(actual_scope.get("status") == "ahead" and not actual_scope.get("too_large")
+            and {i["filename"] for i in actual_scope.get("files", [])}
+            == set(scope.get("issue_changed_paths") or []),
+            "certificate scope does not match actual material diff")
     return {"certificate_sha256": certificate_digest, "certificate": cert,
             "material_head_sha": material,
             "result_only_changed_paths": [item["filename"] for item in files]}
@@ -207,7 +283,8 @@ def collect(repo: str, number: int) -> dict:
     branch = api(f"/repos/{repo}/branches/{quote(default_branch)}")
     _, policy_sha = trusted_policy(repo, base, branch["commit"]["sha"])
     preview = checked_preview(repo, raw_pr.get("merge_commit_sha"), base, head)
-    handoff = inspect_handoff(repo, number, base, head)
+    handoff = inspect_handoff(repo, number, base, head, expected_issue=number_issue,
+                              expected_head_ref=raw_pr["head"]["ref"])
     require(handoff["certificate"]["subject"]["issue_number"] == number_issue,
             "handoff canonical issue mismatch")
     material = handoff["material_head_sha"]

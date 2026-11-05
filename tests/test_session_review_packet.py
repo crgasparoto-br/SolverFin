@@ -53,9 +53,10 @@ def test_disabled_policy_does_not_claim_approval():
 
 
 def test_result_only_child_cannot_mutate_application():
-    cert = {"schema_version": 2, "status": "ready", "phase": "final",
-            "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
-            "subject": {"repository": REPO, "pull_request_number": 10, "base_ref": "develop"}}
+    cert = {"schema_version": 2, "status": "ready", "phase": "final", "evidence_profile": "critical",
+            "identity": {"base_sha": BASE, "head_sha": MATERIAL, "material_head_sha": MATERIAL},
+            "subject": {"repository": REPO, "pull_request_number": 10, "base_ref": "develop",
+                        "work_item_kind": "issue", "issue_number": 9, "work_item_number": 9}}
     with patch.object(collector, "file_at", return_value=(json.dumps(cert), "0" * 64)), \
          patch.object(collector, "api", side_effect=[
              {"parents": [{"sha": MATERIAL}]},
@@ -96,7 +97,7 @@ def test_file_inventory_rejects_path_traversal_and_oversize():
 def test_neutral_packet_rederives_issue_and_checks_identity():
     issue = "## Requisitos\n- Deve preservar os valores sem mistura de moeda.\n"
     pr = {"state": "open", "draft": False, "body": "Refs #9", "merge_commit_sha": PREVIEW,
-          "head": {"sha": HEAD, "repo": {"full_name": REPO}},
+          "head": {"sha": HEAD, "ref": "feature/audit", "repo": {"full_name": REPO}},
           "base": {"sha": BASE, "ref": "develop", "repo": {"full_name": REPO}}}
     cert = {"subject": {"issue_number": 9}, "material_head_sha": MATERIAL,
             "certificate_sha256": "f" * 64,

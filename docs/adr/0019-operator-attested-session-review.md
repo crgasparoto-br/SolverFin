@@ -11,7 +11,7 @@ A conta GitHub nao prova identidade de um segundo auditor. O novo modo apenas at
 
 ## Decisao
 
-Adotar esse modo apenas apos homologacao M2. Esta PR entrega politica `mode=disabled`, contrato oficial de validacao, testes adversariais e coletor de fontes neutras. Nao emite check de aprovacao, nao muda rulesets, nao fecha #714 e nao libera merge. A mudanca futura de garantia de F-714-06 exige decisao registrada e aceite explicito da governanca.
+Adotar esse modo apenas apos homologacao M2. A PR #763 entrega politica `mode=disabled`, contrato oficial de validacao, coletor de fontes neutras, verificador deterministico e workflows de evidencia/Check Run **ainda nao instalados nas branches confiaveis**. Os workflows privilegiados nao executam codigo candidato; a fonte executada pelo verificador vem de `github.workflow_sha` e precisa coincidir byte a byte com `develop` e `main`. O workflow de testes da PR e somente leitura, nao publica aprovacao e somente oferece JUnit/prova para uma revisao semantica posterior. Nenhum check foi habilitado, nenhum ruleset foi mudado e nao ha liberacao de merge. A mudanca futura de garantia de F-714-06 exige decisao registrada e aceite explicito da governanca.
 
 ## Fronteira de confianca
 
@@ -22,14 +22,18 @@ Adotar esse modo apenas apos homologacao M2. Esta PR entrega politica `mode=disa
 - O modo completo precisa conferir cada obrigacao, fontes, JUnit positivo/negativo/regressao e procedencia real de conversa revisora separada.
 - Editar/apagar um parecer ou alterar SHA/CI deve revogar a aprovacao; nenhum check deve sobreviver a drift nao revalidado.
 
-## M2 — requisitos ainda pendentes
+## M2 — implementacao versus ativacao
 
-1. Implantar o verificador e publicador do check `Verify session review (exact SHA)` usando o contrato oficial adaptado as evidencias do SolverFin.
-2. Instalar e comprovar bytes equivalentes de politica, workflows e scripts em `develop` e `main`.
-3. Executar ensaios positivos e negativos de SHAs, credenciais, comentarios editados, provas, testes e heads compartilhados.
-4. Habilitar politica apenas depois de verificacoes de bootstrap, conferir rulesets e preservar `Delivery V2 gate` e protecoes existentes.
-5. Recertificar PR #760 contra a base nova, auditar em conversa realmente separada, publicar parecer `SOLVERIT_SESSION_REVIEW_V1` e conferir recibo exact-SHA.
-6. Encerrar #714 somente apos a prova formal; manter #702 aberta conforme outras pendencias.
+O codigo candidato implementa a leitura confiavel de politica/base/default, comparacao dos bytes dos workflows, inventario Git, autenticacao de commits/preview, certificado `critical`, verificacao de hashes de artefatos e `result-only-child`, CI terminal exata e JUnit com testes distintos. O leitor bloqueia comentario ausente, editado, revogado, falso, stale, usuario indevido, HEAD compartilhado e evidencia/CI alterada; somente publica um Check Run se o parecer passar no contrato oficial. O check e iniciado `in_progress`, antes das leituras mutaveis, e termina `failure` em bloqueios observaveis. Esses controles estao **em PR candidata, nao em operacao**.
+
+Ainda exigidos para ativacao:
+
+1. Revisar independentemente o diff de seguranca da PR #763 e obter o bootstrap administrativo explicito; nao permitir que a propria nova politica autorize seu merge.
+2. Integrar bytes exatos de politica, workflows, verificador e testes em `develop` e depois em `main` por release regular autorizada. Enquanto diferirem, a aprovacao falha fechada.
+3. Executar ensaios reais de sucesso, falha, edicao, exclusao, revogacao, rebase/base drift, JUnit insuficiente e SHA de duas PRs na infraestrutura GitHub. Testes mockados nao substituem o ensaio.
+4. Registrar explicitamente a decisao de garantia de operador unico, habilitar a politica somente nas bases confiaveis e revalidar as regras efetivas: manter PR obrigatoria, `Delivery V2 gate`, proibir force-push/deletion e requerer o novo check `Verify session review (exact SHA)` sem confundir revisao de sessoes com terceiro humano.
+5. Reconciliar e recertificar a PR #760 contra a nova base `develop`; produzir o artefato de testes auditaveis no novo HEAD, obter parecer em conversa auditora realmente separada, verificar check exato e apenas entao avaliar seu merge.
+6. Encerrar #714 somente apos evidencia formal; manter #702 aberta pelas outras pendencias.
 
 ## Consequencias
 
