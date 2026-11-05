@@ -122,16 +122,78 @@ async function main(): Promise<void> {
     effectiveOn: null,
     description: "Previsto bloqueador",
   });
+  const dateBeforeReconcile = new Date().toISOString().slice(0, 10);
+  const mixedReconcile = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: [directPosted.id, planned.id],
+  });
+  const dateAfterReconcile = new Date().toISOString().slice(0, 10);
+  assert.deepEqual(
+    new Set(mixedReconcile.affectedTransactionIds),
+    new Set([directPosted.id, planned.id]),
+  );
+  assert.deepEqual(mixedReconcile.unchangedTransactionIds, []);
+  const updatedPlanned = await getTransactionForContext(context, planned.id);
+  assert.equal(updatedPlanned.status, "reconciled");
+  assert.ok([dateBeforeReconcile, dateAfterReconcile].includes(updatedPlanned.effectiveOn ?? ""));
+  assert.equal(updatedPlanned.plannedOn, "2028-06-05");
+  assert.equal(updatedPlanned.occurredOn, "2028-06-05");
+  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "reconciled");
+
+  const anotherPlanned = await createTransactionForContext(context, {
+    accountId: account.id,
+    kind: "expense",
+    status: "planned",
+    amountMinor: 6500,
+    occurredOn: "2028-06-06",
+    plannedOn: "2028-06-06",
+    effectiveOn: null,
+    description: "Previsto mantido na desconciliação",
+  });
+  const mixedUnreconcile = await executeTransactionBulkActionForContext(context, {
+    action: "unreconcile",
+    transactionIds: [planned.id, anotherPlanned.id, directReconciled.id],
+  });
+  assert.deepEqual(mixedUnreconcile.affectedTransactionIds, [planned.id]);
+  assert.deepEqual(
+    new Set(mixedUnreconcile.unchangedTransactionIds),
+    new Set([anotherPlanned.id, directReconciled.id]),
+  );
+  assert.equal((await getTransactionForContext(context, planned.id)).status, "posted");
+  assert.equal((await getTransactionForContext(context, anotherPlanned.id)).status, "planned");
+  assert.equal((await getTransactionForContext(context, anotherPlanned.id)).effectiveOn, undefined);
+
+  const idempotentMixed = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: [directPosted.id, directReconciled.id, anotherPlanned.id],
+  });
+  assert.deepEqual(idempotentMixed.unchangedTransactionIds, [directPosted.id]);
+  assert.deepEqual(
+    new Set(idempotentMixed.affectedTransactionIds),
+    new Set([directReconciled.id, anotherPlanned.id]),
+  );
+  assert.equal((await getTransactionForContext(context, anotherPlanned.id)).status, "reconciled");
+
+  const suggested = await createTransactionForContext(context, {
+    accountId: account.id,
+    kind: "expense",
+    status: "suggested",
+    amountMinor: 7000,
+    occurredOn: "2028-06-07",
+    plannedOn: "2028-06-07",
+    effectiveOn: null,
+    description: "Sugestão protegida",
+  });
   await assert.rejects(
     () =>
       executeTransactionBulkActionForContext(context, {
-        action: "reconcile",
-        transactionIds: [directPosted.id, planned.id],
+        action: "unreconcile",
+        transactionIds: [directPosted.id, suggested.id],
       }),
     hasCode("TRANSACTION_BULK_STATUS_INVALID"),
   );
-  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "posted");
-  assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");
+  assert.equal((await getTransactionForContext(context, directPosted.id)).status, "reconciled");
+  assert.equal((await getTransactionForContext(context, suggested.id)).status, "suggested");
 
   const rollbackAuditCountBefore = await countAudits(group.id);
   const rollbackSuffix = randomUUID().replaceAll("-", "");

@@ -20,16 +20,18 @@ POST /api/transactions/bulk-actions
 
 A ação aceita:
 
-- `reconcile`: converte lançamentos `posted` em `reconciled` e preserva os que já estavam conciliados;
-- `unreconcile`: converte lançamentos `reconciled` em `posted` e preserva os já efetivados;
+- `reconcile`: converte lançamentos `planned` ou `posted` em `reconciled` e preserva os que já estavam conciliados;
+- `unreconcile`: converte lançamentos `reconciled` em `posted` e preserva os `planned` e `posted` da seleção;
 - `void`: executa exclusão lógica dos lançamentos e remove os agrupamentos selecionados.
 
 O servidor expande os grupos para seus membros dentro da mesma transação de banco, deduplica IDs e bloqueia a tentativa de alterar diretamente apenas um membro de grupo sem selecionar a linha agrupada.
 
 ## Regras de consistência
 
-- conciliação e desconciliação aceitam somente lançamentos efetivados ou conciliados;
-- lançamento previsto, sugerido ou excluído bloqueia a alteração de conciliação;
+- conciliação aceita lançamentos previstos, efetivados ou conciliados; desconciliação altera somente os conciliados e preserva os demais elegíveis;
+- conciliar um previsto define `effectiveOn` como a data civil UTC da transição, como no domínio individual; um efetivado legado sem data efetiva usa `occurredOn`; `occurredOn` e `plannedOn` nunca são sobrescritos;
+- sugestões pendentes e lançamentos excluídos bloqueiam a alteração de conciliação; compras de cartão/fatura e remuneração automática exigem seus fluxos próprios;
+- seleção mista é idempotente: apenas os alvos aplicáveis são alterados, e os demais são retornados em `unchangedTransactionIds`;
 - agrupamentos são temporariamente desanexados durante a mudança de situação e restaurados antes do commit;
 - na exclusão, os membros são desanexados, marcados como `voided` e o agrupamento é removido;
 - qualquer falha produz rollback completo;

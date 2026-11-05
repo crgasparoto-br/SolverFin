@@ -48,8 +48,8 @@ export function enhanceTransactionBulkSelection(html: string): string {
         const actions = document.createElement("span");
         actions.className = "bulk-selection-actions";
         actions.innerHTML =
-          '<button type="button" class="ghost-btn bulk-selection-action" data-bulk-selection-action="reconcile">' + icon.check + '<span>Marcar como conciliado</span></button>' +
-          '<button type="button" class="ghost-btn bulk-selection-action" data-bulk-selection-action="unreconcile">' + icon.undo + '<span>Desmarcar conciliado</span></button>' +
+          '<button type="button" class="ghost-btn bulk-selection-action" data-button-variant="neutral" data-bulk-selection-action="reconcile">' + icon.check + '<span>Marcar como conciliado</span></button>' +
+          '<button type="button" class="ghost-btn bulk-selection-action" data-button-variant="neutral" data-bulk-selection-action="unreconcile">' + icon.undo + '<span>Desmarcar conciliado</span></button>' +
           '<button type="button" class="bulk-selection-action danger" data-bulk-selection-action="void">' + icon.trash + '<span>Excluir selecionados</span></button>';
         selectionBar.insertBefore(actions, groupOpen || null);
 
@@ -179,18 +179,26 @@ export function enhanceTransactionBulkSelection(html: string): string {
           }
 
           const eligibleStatuses = items.every(function (item) {
-            return item.dataset.status === "posted" || item.dataset.status === "reconciled";
+            return item.dataset.status === "planned" ||
+              item.dataset.status === "posted" ||
+              item.dataset.status === "reconciled";
           });
           const reconcileButton = actions.querySelector('[data-bulk-selection-action="reconcile"]');
           const unreconcileButton = actions.querySelector('[data-bulk-selection-action="unreconcile"]');
           const voidButton = actions.querySelector('[data-bulk-selection-action="void"]');
-          const hasPosted = items.some(function (item) { return item.dataset.status === "posted"; });
+          const hasReconcileTarget = items.some(function (item) {
+            return item.dataset.status === "planned" || item.dataset.status === "posted";
+          });
           const hasReconciled = items.some(function (item) { return item.dataset.status === "reconciled"; });
-          reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasPosted;
+          reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconcileTarget;
           unreconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconciled;
           voidButton.disabled = items.length === 0;
-          reconcileButton.title = eligibleStatuses ? "" : "Efetive os lançamentos previstos antes de conciliá-los.";
-          unreconcileButton.title = eligibleStatuses ? "" : "Somente lançamentos efetivados ou conciliados podem ser alterados.";
+          reconcileButton.title = !eligibleStatuses
+            ? "Sugestões não confirmadas e lançamentos excluídos não podem ser conciliados."
+            : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.";
+          unreconcileButton.title = !eligibleStatuses
+            ? "Esta seleção contém lançamentos com situação indisponível."
+            : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.";
           reconcileButton.setAttribute("aria-describedby", helpNode.id);
           unreconcileButton.setAttribute("aria-describedby", helpNode.id);
           voidButton.setAttribute("aria-describedby", helpNode.id);
@@ -202,9 +210,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
             explanations.push("Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação.");
           }
           if (items.length > 0 && !eligibleStatuses) {
-            explanations.push("Conciliação indisponível: efetive os lançamentos previstos antes de alterar a conciliação.");
+            explanations.push("Conciliação indisponível: a seleção contém sugestões não confirmadas ou lançamentos excluídos.");
           } else if (items.length > 0) {
-            if (!hasPosted) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");
+            if (!hasReconcileTarget) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");
             if (!hasReconciled) explanations.push("Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado.");
           }
           helpNode.textContent = explanations.join(" ");

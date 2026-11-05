@@ -742,7 +742,8 @@ function renderRow(
     transaction.status !== "voided" &&
     !transaction.cardId &&
     !transaction.invoiceId &&
-    !transaction.transactionGroupId;
+    !transaction.transactionGroupId &&
+    !transaction.accountRemuneration;
 
   const rowGlyph = resolveRowGlyph(categoryName, transaction.kind);
   const consolidatedAccountId = consolidated
