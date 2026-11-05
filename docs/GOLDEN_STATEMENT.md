@@ -1,18 +1,31 @@
 # Extrato: Golden Screen aprovada visualmente
 
-Este documento especifica a Golden Screen do Extrato (`/lancamentos`) da epica #702,
-com fechamento tecnico pela issue #714 e pela PR #713, baseada em `develop`. A PR #703
-e o marco historico inicial, ja incorporado a `develop`, nao a referencia material atual.
-Ele complementa `DESIGN_SYSTEM.md`, `SCREEN_ARCHETYPES.md` e `VISUAL_VALIDATION.md`.
+Este documento especifica a Golden Screen do Extrato (`/lancamentos`) da
+epica #702 e a referencia de acabamento consolidada pela issue #714.
+A PR #703 e o marco historico inicial, nao a referencia material vigente.
+Esta especificacao complementa `DESIGN_SYSTEM.md`, `SCREEN_ARCHETYPES.md`
+e `VISUAL_VALIDATION.md`.
 
-**Estado:** aceite visual de produto concedido em 14/10/2026 e registrado na #702.
-**Referencia visual de produto:** SHA material
-`366e02072ee39116cfc50a7bc602273902e516fc` na PR #713, com modais de novo,
-editar e clonar centralizados. O aceite visual nao equivale a certificado de handoff,
-auditoria tecnica independente, integracao na `develop` ou liberacao de release.
-Antes de propagar alteracoes em codigo nas issues #715–#719, consultar o marco tecnico
-publicado apos a integracao regular da #713; a #714, isoladamente, nao implementa
-qualquer tela de propagacao.
+**Aceite visual de produto:** concedido pelo usuario em 14/10/2026, registrado
+na #702; referencia visual do material `366e02072ee39116cfc50a7bc602273902e516fc`
+da PR #713. A decisao de manter os modais de novo, editar e clonar centralizados
+e posterior ao mockup e prevalece sobre sua geometria original.
+
+**Marcos de implementacao integrados na `develop`:**
+
+- PR #713, merge `b50ee44238dd9e63129ebc87a3ee31c0965b19f8`, material
+  `07fb199284a7f0bab38148f33d85331aa18403d0`: referencia funcional
+  original, documentacao e modais centralizados.
+- PR #721, merge `8a56d2f3bdb59d5b0d7abeceee63601c1dfbffe5`, material
+  `fab03d51737a5ecd434aad5e86aa468efe4563db`: contencao responsiva,
+  alvos Cancelar/Salvar de pelo menos 44 px e controles Chrome adversariais.
+
+**Governanca:** aceite visual, implementacao integrada, CI/Chrome,
+certificacao exact-SHA e parecer tecnico independente sao marcos distintos.
+As evidencias e a decisao de fechamento tecnico da #714 pertencem ao registro
+da propria issue; merge ou CI verde nao constituem aprovacao independente.
+A #714 nao implementa automaticamente as subissues #715–#719, cuja
+propagacao e validacao tecnica devem ser verificadas individualmente na #702.
 
 ## Paleta canonica obrigatoria (Golden Screen)
 
@@ -75,6 +88,15 @@ design system compartilhado; nenhuma tela deve manter cores semanticas paralelas
   estado selecionado e bloqueios sincronizados. O select original continua como campo
   canonico do payload; transferencia, recorrencia e persistencia usam seus handlers.
   Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
+- **Rodape atual apos a #747 / PR #749:** os dialogos novo e clonar oferecem
+  Cancelar, Salvar e continuar e Salvar lancamento como tres acoes distintas.
+  Editar oferece somente Cancelar e Salvar lancamento. Em 1366 px e 390 px,
+  Cancelar e Salvar e continuar compartilham a primeira linha, enquanto a
+  confirmacao primaria fica abaixo em novo/clonar; em 320 px, as acoes
+  podem ser empilhadas em ordem, sem recorte, cada uma com alvo de pelo menos
+  44 px. Essa atualizacao posterior substitui apenas a geometria antiga de
+  dois botoes da ADR 0018; centralizacao, foco, conteudo e regras financeiras
+  permanecem obrigatorios. Consulte tambem `docs/ENTRY_FILL_RULES.md`.
 - Logos continuam resolvidos pelo catalogo institucional compartilhado.
 
 ## Componentes de escolha e confirmacao
