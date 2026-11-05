@@ -117,8 +117,13 @@ try {
   assert.equal(mixedSelection.voidDisabled, false);
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
   assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
-  const desktopIcons = await readReconciliationIcons(browser.cdp);
-  assertReconciliationIcons(desktopIcons, "desktop");
+  const desktopIcons = await readSelectionActionIcons(browser.cdp);
+  assertSelectionActionIcons(desktopIcons, "desktop");
+  assert.equal(desktopIcons.find((item) => item.action === "group").disabled, true);
+  assert.match(
+    desktopIcons.find((item) => item.action === "group").tooltip,
+    /Desmarque os agrupamentos/,
+  );
 
   await evaluate(
     browser.cdp,
@@ -173,9 +178,45 @@ try {
   assert.equal(mobile.visibleInViewport, true);
   assert.equal(mobile.actionCount, 3);
   assert.equal(mobile.helpVisible, true);
-  const mobileIcons = await readReconciliationIcons(browser.cdp);
-  assertReconciliationIcons(mobileIcons, "mobile");
+  const mobileIcons = await readSelectionActionIcons(browser.cdp);
+  assertSelectionActionIcons(mobileIcons, "mobile");
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-390x844.png"));
+  const clearReady = await evaluate(
+    browser.cdp,
+    `(() => {
+      const button = document.querySelector('[data-selection-clear]');
+      window.__bulkClearNativeClick = false;
+      button.addEventListener('click', () => { window.__bulkClearNativeClick = true; }, { once: true });
+      button.focus();
+      return {
+        focused: document.activeElement === button,
+        label: button.getAttribute('aria-label'),
+        tooltip: button.getAttribute('data-tooltip')
+      };
+    })()`,
+  );
+  assert.equal(clearReady.focused, true);
+  assert.equal(clearReady.label, "Limpar seleção");
+  assert.equal(clearReady.tooltip, clearReady.label);
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "rawKeyDown", key: "Enter", code: "Enter",
+    windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13,
+  });
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp", key: "Enter", code: "Enter",
+    windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13,
+  });
+  const cleared = await evaluate(
+    browser.cdp,
+    `(() => ({
+      nativeActivated: window.__bulkClearNativeClick === true,
+      selectedCount: document.querySelectorAll('[data-select-transaction]:checked').length,
+      selectionHidden: document.querySelector('[data-selection-bar]').hidden
+    }))()`,
+  );
+  assert.equal(cleared.nativeActivated, true, "Enter should activate Clear selection");
+  assert.equal(cleared.selectedCount, 0);
+  assert.equal(cleared.selectionHidden, true);
 
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}${route}`);
@@ -590,6 +631,7 @@ try {
         mixedSelection,
         desktopIcons,
         mobileIcons,
+        cleared,
         desktop,
         shortDesktop,
         mobile,
@@ -702,11 +744,11 @@ async function readRenderedStatuses(cdp, created) {
   );
 }
 
-async function readReconciliationIcons(cdp) {
+async function readSelectionActionIcons(cdp) {
   return evaluate(
     cdp,
     `(() => Array.from(document.querySelectorAll(
-      '[data-bulk-selection-action="reconcile"], [data-bulk-selection-action="unreconcile"]'
+      '.selection-bar .bulk-selection-actions > button'
     )).map((button) => {
       const circle = button.querySelector(".statement-status");
       const svg = circle?.querySelector("svg");
@@ -714,7 +756,10 @@ async function readReconciliationIcons(cdp) {
       const shape = circle?.getBoundingClientRect();
       const glyph = svg?.getBoundingClientRect();
       return {
-        action: button.dataset.bulkSelectionAction,
+        action: button.dataset.bulkSelectionAction ||
+          (button.hasAttribute("data-group-open") ? "group" : "clear"),
+        disabled: button.disabled,
+        insideToolbar: button.parentElement?.classList.contains("bulk-selection-actions"),
         label: button.getAttribute("aria-label"),
         title: button.getAttribute("title"),
         tooltip: button.getAttribute("data-tooltip"),
@@ -732,9 +777,13 @@ async function readReconciliationIcons(cdp) {
   );
 }
 
-function assertReconciliationIcons(items, viewport) {
-  assert.equal(items.length, 2, `${viewport}: action count`);
+function assertSelectionActionIcons(items, viewport) {
+  assert.deepEqual(items.map((item) => item.action), [
+    "reconcile", "unreconcile", "group", "clear", "void",
+  ], `${viewport}: toolbar order`);
+  assert.equal(items.length, 5, `${viewport}: action count`);
   for (const item of items) {
+    assert.equal(item.insideToolbar, true, `${viewport}: unified toolbar`);
     assert.equal(item.text, "", `${viewport}: no visible label on ${item.action}`);
     assert.equal(item.iconCount, 1, `${viewport}: single SVG on ${item.action}`);
     assert.equal(item.targetWidth, 44);
@@ -748,7 +797,10 @@ function assertReconciliationIcons(items, viewport) {
     assert.match(item.tooltip, new RegExp(item.label));
     assert.match(
       item.circleClass,
-      item.action === "reconcile" ? /statement-status-ok/ : /statement-status-posted/,
+      item.action === "reconcile" ? /statement-status-ok/
+        : item.action === "unreconcile" ? /statement-status-posted/
+        : item.action === "void" ? /bulk-icon-danger/
+        : /bulk-icon-neutral/,
     );
   }
 }

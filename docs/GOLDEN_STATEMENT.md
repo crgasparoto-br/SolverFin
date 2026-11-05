@@ -432,18 +432,29 @@ com `{ status }`, afetando uma única ocorrência.
 
 A coluna **Situacao** tem icone com descricao acessivel e tooltip; o acionador de teclado e o `summary`, nao o `span` ilustrativo. Agrupadores diarios preservam a sequencia financeira sem tornar `article` irmao direto de outro `article`. Em desktop largo, **Valor** e **Saldo** sao colunas independentes e alinhadas a direita, com **Valor** maior; em mobile, o saldo continua na linha secundaria. Os testes nao devem recuperar texto oculto do status nem exigir saldo abaixo do valor no layout desktop.
 
-## Seleção múltipla: ações por ícones no quadro do Extrato — issue #768
+## Seleção múltipla: barra compacta por ícones — issue #768
 
-Na barra de seleção do Extrato, **Marcar como conciliado** e **Desmarcar conciliado**
-utilizam somente um ícone circular por ação, reutilizado do menu da coluna
-Situação (check de conciliação e círculo de não conciliado). Cada ícone possui
-SVG de 15 px, círculo de 26 px e alvo nativo de 44 × 44 px, com aparência
-neutra, hover/foco visíveis e a mesma semântica visual da Golden Screen.
-O texto permanece somente no `aria-label`, no `title` e em `data-tooltip`;
-quando uma ação está indisponível, o tooltip explica o motivo sem esconder o
-nome da ação. A ajuda acessível da seleção continua apresentando as restrições.
+A barra de seleção no Extrato reúne **cinco ações exclusivamente por ícones**,
+sem legendas permanentes: Marcar como conciliado (check), Desmarcar conciliado
+(círculo sem conciliação), Unificar lançamentos (camadas), Limpar seleção (X)
+e Excluir selecionados (lixeira). Todos os botões compartilham um único
+renderer de controle com **um SVG de 15 px**, indicador circular de **26 px** e
+alvo nativo de **44 × 44 px**. Os ícones de conciliação reutilizam exatamente os
+glyphs da coluna Situação. A exclusão possui distinção visual de perigo e mantém
+a confirmação obrigatória.
 
-O quadro mantém as ações de **Excluir selecionados**, **Unificar lançamentos**
-e **Limpar**, sem modificação de regras financeiras, autorizações, confirmações
-ou endpoints. A validação Chrome cobre os dois ícones em desktop/mobile,
-acionamento por teclado e seleções com estados mistos.
+A barra apresenta contagem e total ao lado dos cinco ícones no desktop; no
+mobile, os controles ficam agrupados em uma linha com reflow sem overflow.
+Os botões existentes de Unificar e Limpar são reaproveitados no mesmo
+agrupamento para preservar eventos, restrições e fluxo de teclado.
+
+Cada ação expõe nome acessível via `aria-label` e tooltip via `title` e
+`data-tooltip`. Botões desabilitados mantêm tooltip com a razão do bloqueio,
+inclusive o caso de parcelas canônicas impedidas de unificação, e a ajuda
+acessível informa os motivos. Hover, foco e estados desabilitados respeitam
+os tokens e a Golden Screen. Nenhuma regra financeira, autorização,
+operação do endpoint ou exclusão de dados foi alterada.
+
+A validação Chrome cobre os cinco controles em desktop e mobile, ausência
+de texto visível, estado de bloqueio, confirmação de exclusão e a ativação
+de Limpar por teclado, além dos cenários de conciliação em massa.
