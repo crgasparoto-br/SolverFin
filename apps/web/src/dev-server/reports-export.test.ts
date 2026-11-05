@@ -2,6 +2,11 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 
 import { renderReportsRoutePage } from "./reports-route-page.js";
+import {
+  assertCsvParity,
+  assertPdfParity,
+  assertXlsxParity,
+} from "./reports-export-parity.test-helpers.js";
 
 import {
   downloadReportExport,
@@ -217,17 +222,9 @@ describe("report exports - canonical snapshot", () => {
         assert.match(csv, /"filter";"profileId";"profile-a"/);
         assert.match(xml, /profile-a/);
         assert.match(pdf, /profileId: profile-a/);
-        for (const table of snapshot.tables) {
-          for (const row of table.rows) {
-            for (const cell of row) {
-              if (typeof cell !== "number" || Math.abs(cell) < 1000) continue;
-              const text = String(cell);
-              assert.ok(csv.includes(text), "CSV missing canonical value " + text);
-              assert.ok(xml.includes(text), "XLSX missing canonical value " + text);
-              assert.ok(pdf.includes(text), "PDF missing canonical value " + text);
-            }
-          }
-        }
+        assertCsvParity(snapshot, Buffer.from(csv, "utf8"));
+        assertXlsxParity(snapshot, workbook);
+        assertPdfParity(snapshot, Buffer.from(pdf, "latin1"));
         assert.equal(sheets.size, snapshot.tables.length + 5);
         assert.equal(paths.length, 1);
         assert.match(paths[0] ?? "", /profileId=profile-a/);
@@ -235,6 +232,89 @@ describe("report exports - canonical snapshot", () => {
       },
     );
   }
+
+  it("rejects swapped amounts, missing rows and null drift across all formats", async () => {
+    fakeReportApi();
+    const original = await loadCanonicalReportExport("session", exportUrl("category-evolution"));
+    const tables = original.tables.map((table) => ({
+      ...table,
+      rows: table.rows.map((row) => [...row]),
+    }));
+    const brl = tables.find((table) => table.currency === "BRL");
+    const usd = tables.find((table) => table.currency === "USD");
+    assert.ok(brl && usd);
+    const brlFirst = brl.rows[0];
+    const usdFirst = usd.rows[0];
+    assert.ok(brlFirst && usdFirst);
+    const oldBrlValue = brlFirst[8];
+    brlFirst[8] = usdFirst[8] ?? null;
+    usdFirst[8] = oldBrlValue ?? null;
+    const swapped = { ...original, tables };
+    const withoutRow = {
+      ...original,
+      tables: original.tables.map((table) => ({
+        ...table,
+        rows: table.currency === "USD" ? table.rows.slice(1) : table.rows,
+      })),
+    };
+    const withNull = {
+      ...original,
+      tables: original.tables.map((table) => ({
+        ...table,
+        rows: table.rows.map((row, index) =>
+          table.currency === "BRL" && index === 0
+            ? row.map((cell, column) => (column === 9 ? null : cell))
+            : [...row],
+        ),
+      })),
+    };
+    const withEmptyInstead = {
+      ...withNull,
+      tables: withNull.tables.map((table) => ({
+        ...table,
+        rows: table.rows.map((row, index) =>
+          table.currency === "BRL" && index === 0
+            ? row.map((cell, column) => (column === 9 ? "" : cell))
+            : [...row],
+        ),
+      })),
+    };
+    assertCsvParity(withNull, serializeReportCsv(withNull));
+    assertXlsxParity(withNull, serializeReportXlsx(withNull));
+    assertPdfParity(withNull, serializeReportPdf(withNull));
+    for (const [name, assertParity, serialize] of [
+      ["CSV", assertCsvParity, serializeReportCsv],
+      ["XLSX", assertXlsxParity, serializeReportXlsx],
+      ["PDF", assertPdfParity, serializeReportPdf],
+    ] as const) {
+      assert.throws(() => assertParity(original, serialize(swapped)), undefined, name + " swap");
+      assert.throws(
+        () => assertParity(original, serialize(withoutRow)),
+        undefined,
+        name + " missing row",
+      );
+      assert.throws(
+        () => assertParity(withNull, serialize(withEmptyInstead)),
+        undefined,
+        name + " null drift",
+      );
+    }
+  });
+
+  it("preserves wide descriptions across PDF line wrapping without dropping characters", () => {
+    const description = "W".repeat(100) + " | " + "@".repeat(100);
+    const report = {
+      view: "cash-flow" as const,
+      period: "2026-11-05 a 2026-12-05",
+      filters: { currency: "BRL" },
+      tables: [
+        { name: "evidencias", currency: "BRL", columns: ["descricao"], rows: [[description]] },
+      ],
+    };
+    const pdf = serializeReportPdf(report);
+    assertPdfParity(report, pdf);
+    assert.ok((pdf.toString("latin1").match(/\) Tj T\*/gu) ?? []).length >= 6);
+  });
 
   it("preserves monetary evidence identities in the projected cash-flow export", async () => {
     fakeReportApi();

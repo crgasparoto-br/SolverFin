@@ -289,13 +289,19 @@ em unidades menores e identidade das evidências.
 
 - **CSV:** UTF-8 com BOM, separador `;`, aspas escapadas, linhas de metadados
   `view`/`period`/`filter` e seção `currency`/`table` antes dos cabeçalhos.
+  Célula sem valor (`null`) é campo vazio sem aspas; texto vazio é `""`,
+  permitindo reconstrução distinta.
 - **XLSX:** planilha OpenXML com aba `Contexto` e uma aba por tabela/seção de
   moeda, valores numéricos preservados como células de número e textos como
   strings, não fórmulas. Cabeçalhos fixos e larguras ajustadas facilitam a leitura;
-  planilhas são geradas sem macros.
+  planilhas são geradas sem macros. Células nulas são gravadas como células
+  vazias; texto vazio permanece uma string vazia tipada.
 - **PDF:** relatório A4 paginado, legível, com período, filtros e linhas de
   detalhes por moeda; conteúdo Unicode não representável na fonte WinAnsi padrão
-  usa notação escapada. Não é relatório contábil/fiscal oficial.
+  usa notação escapada. O PDF identifica cada registro e sua seção/moeda;
+  as linhas quebram por largura real de fonte e margens A4, inclusive em
+  descrições longas. Células nulas são identificadas como `<nulo>`.
+  Não é relatório contábil/fiscal oficial.
 
 Texto controlado pelo usuário (nomes, descrições e rótulos) é neutralizado contra
 **formula injection** no CSV e XLSX, inclusive após quebras de linha. Recortes

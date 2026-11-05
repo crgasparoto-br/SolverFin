@@ -38,12 +38,10 @@ export function serializeReportCsv(report: CanonicalReportExport): Buffer {
 function csvLine(values: readonly ExportCell[]): string {
   return values
     .map((value) => {
-      const text =
-        typeof value === "string"
-          ? safeSpreadsheetText(value)
-          : value === null
-            ? ""
-            : String(value);
+      // In the versioned CSV contract an unquoted empty field is null;
+      // a quoted empty string is a real empty string.
+      if (value === null) return "";
+      const text = typeof value === "string" ? safeSpreadsheetText(value) : String(value);
       return '"' + text.replaceAll('"', '""') + '"';
     })
     .join(separator);
@@ -71,7 +69,8 @@ function sheetCell(value: ExportCell, row: number, column: number): string {
   if (typeof value === "number" && Number.isFinite(value)) {
     return '<c r="' + reference + '"><v>' + String(value) + "</v></c>";
   }
-  const content = xmlText(safeSpreadsheetText(value === null ? "" : String(value)));
+  if (value === null) return '<c r="' + reference + '"/>';
+  const content = xmlText(safeSpreadsheetText(String(value)));
   return (
     '<c r="' +
     reference +

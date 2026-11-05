@@ -45,13 +45,43 @@ function pdfLiteral(value: string): string {
   return value.replaceAll("\\", "\\\\").replaceAll("(", "\\(").replaceAll(")", "\\)");
 }
 
+// Helvetica metrics (1/1000 em) for ASCII in the PDF standard WinAnsi font.
+// All remaining WinAnsi glyphs are conservatively bounded by the widest glyph.
+const helveticaAsciiWidths: readonly number[] = [
+  278, 278, 355, 556, 556, 889, 667, 191, 333, 333, 389, 584, 278, 333, 278, 278,
+  556, 556, 556, 556, 556, 556, 556, 556, 556, 556, 278, 278, 584, 584, 584, 556,
+  1015, 667, 667, 722, 722, 667, 611, 778, 722, 278, 500, 667, 556, 833, 722, 778,
+  667, 778, 722, 667, 611, 722, 667, 944, 667, 667, 611, 278, 278, 278, 469, 556,
+  333, 556, 556, 500, 556, 556, 278, 556, 556, 222, 222, 500, 222, 833, 556, 556,
+  556, 556, 333, 500, 278, 556, 500, 722, 500, 500, 500, 334, 260, 334, 584,
+];
+const pageTextWidth = ((595 - 2 * 40) * 1000) / 9;
+
 function wrapPdfLine(value: string): string[] {
   const printable = pdfVisibleText(value);
-  const result: string[] = [];
-  for (let offset = 0; offset < printable.length; offset += 100) {
-    result.push(printable.slice(offset, offset + 100));
+  if (!printable) return [""];
+  const lines: string[] = [];
+  let start = 0;
+  while (start < printable.length) {
+    let cursor = start;
+    let lineWidth = 0;
+    let preferredBreak = start;
+    while (cursor < printable.length) {
+      const code = printable.charCodeAt(cursor);
+      const width =
+        code >= 32 && code <= 126 ? (helveticaAsciiWidths[code - 32] ?? 1015) : 1015;
+      if (cursor > start && lineWidth + width > pageTextWidth) break;
+      lineWidth += width;
+      cursor += 1;
+      if (code === 32 || code === 124) preferredBreak = cursor;
+    }
+    const end =
+      cursor === printable.length ? cursor : preferredBreak > start ? preferredBreak : cursor;
+    // No trimming: joining continuation lines restores the exact displayed text.
+    lines.push(printable.slice(start, end));
+    start = end;
   }
-  return result.length ? result : [""];
+  return lines;
 }
 
 export function serializeReportPdf(report: CanonicalReportExport): Buffer {
@@ -63,9 +93,16 @@ export function serializeReportPdf(report: CanonicalReportExport): Buffer {
   for (const table of report.tables) {
     lines.push("", "Moeda: " + (table.currency || "sem movimentos"), "Secao: " + table.name);
     lines.push(table.rows.length + " registros");
-    for (const row of table.rows) {
+    for (const [index, row] of table.rows.entries()) {
+      lines.push("Registro " + (index + 1) + " de " + table.rows.length);
       lines.push(
-        table.columns.map((column, index) => column + ": " + String(row[index] ?? "")).join(" | "),
+        table.columns
+          .map(
+            (column, columnIndex) =>
+              column + ": " +
+              (row[columnIndex] === null ? "<nulo>" : String(row[columnIndex] ?? "")),
+          )
+          .join(" | "),
       );
     }
   }
