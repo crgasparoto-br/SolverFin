@@ -18,7 +18,7 @@ from pathlib import Path
 from xml.etree import ElementTree
 
 from session_review import canonical, digest, require, safe_path
-from prepare_session_review_packet import api
+from prepare_session_review_packet import api, file_at
 
 WORKFLOW = ".github/workflows/session-review-evidence.yml"
 RUN_NAME = "Session review evidence (exact SHA)"
@@ -119,6 +119,23 @@ CI_WORKFLOWS = {
 }
 
 
+def authenticate_ci_workflows(repo: str, base: str, material: str, head: str,
+                              required: tuple[str, ...]) -> None:
+    """Only protected-base CI producers can provide evidence for this review.
+
+    Run name/path alone is insufficient: a candidate could edit a workflow to
+    emit green without its original controls. Reads authenticate Git blobs.
+    """
+    for name in required:
+        require(name in CI_WORKFLOWS, "unknown technical CI workflow")
+        path = CI_WORKFLOWS[name]
+        trusted, expected_digest = file_at(repo, path, base)
+        for candidate_sha in (material, head):
+            current, actual_digest = file_at(repo, path, candidate_sha)
+            require(current == trusted and actual_digest == expected_digest,
+                    f"technical CI workflow differs from protected base: {path}")
+
+
 def prove_ci(repo: str, head: str, required: tuple[str, ...]) -> dict[str, dict]:
     rows = api(f"/repos/{repo}/actions/runs?head_sha={head}&event=pull_request&per_page=100")
     require(isinstance(rows, dict) and isinstance(rows.get("workflow_runs"), list)
@@ -142,6 +159,7 @@ def collect_verified(repo: str, number: int, base: str, head: str, material: str
     required = ("Repository CI", "Delivery audit workspace")
     if visual_required:
         required += ("Statement visual validation",)
+    authenticate_ci_workflows(repo, base, material, head, required)
     published_runs = prove_ci(repo, head, required)
     material_runs = prove_ci(repo, material, required)
     rows = api(f"/repos/{repo}/actions/runs?head_sha={head}&event=pull_request&per_page=100")

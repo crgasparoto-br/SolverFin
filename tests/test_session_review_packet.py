@@ -94,11 +94,12 @@ def test_file_inventory_rejects_path_traversal_and_oversize():
             collector.freeze_files(REPO, [{"status": "modified", "filename": "docs/a.md"}], BASE, HEAD)
 
 
-def test_neutral_packet_rederives_issue_and_checks_identity():
+@pytest.mark.parametrize("base_ref", ["develop", "main"])
+def test_neutral_packet_rederives_issue_and_checks_identity(base_ref):
     issue = "## Requisitos\n- Deve preservar os valores sem mistura de moeda.\n"
     pr = {"state": "open", "draft": False, "body": "Refs #9", "merge_commit_sha": PREVIEW,
           "head": {"sha": HEAD, "ref": "feature/audit", "repo": {"full_name": REPO}},
-          "base": {"sha": BASE, "ref": "develop", "repo": {"full_name": REPO}}}
+          "base": {"sha": BASE, "ref": base_ref, "repo": {"full_name": REPO}}}
     cert = {"subject": {"issue_number": 9}, "material_head_sha": MATERIAL,
             "certificate_sha256": "f" * 64,
             "result_only_changed_paths": [".audit/entregar-issue/proof.json"],
@@ -119,6 +120,7 @@ def test_neutral_packet_rederives_issue_and_checks_identity():
          patch.object(collector, "ci_runs", return_value=[{"name": "Repository CI", "conclusion": "success"}]):
         result = collector.collect(REPO, 10)
     assert result["identity"]["issue"] == 9
+    assert result["identity"]["base_ref"] == base_ref
     assert result["collector"]["approved"] is False
     assert result["handoff"]["completion"]["issue_completion"] == "partial"
     assert result["requirements"] and result["source_sha256"]
@@ -129,3 +131,14 @@ def test_issue_reference_accepts_canonical_pr_760_prose():
     assert collector.issue_reference({"body": "Refs #714; parent epic #702.\n\n## Escopo"}) == 714
     with pytest.raises(ValueError, match="one canonical issue"):
         collector.issue_reference({"body": "Refs #714\nRefs #702"})
+
+
+def test_handoff_rejects_base_ref_that_differs_from_authenticated_pr():
+    cert = {"schema_version": 2, "status": "ready", "phase": "final",
+            "evidence_profile": "critical", "identity": {"base_sha": BASE},
+            "subject": {"repository": REPO, "pull_request_number": 10,
+                        "base_ref": "develop", "work_item_kind": "issue",
+                        "issue_number": 9, "work_item_number": 9}}
+    with patch.object(collector, "file_at", return_value=(json.dumps(cert), "0" * 64)):
+        with pytest.raises(ValueError, match="handoff protected base mismatch"):
+            collector.inspect_handoff(REPO, 10, BASE, HEAD, expected_base_ref="main")

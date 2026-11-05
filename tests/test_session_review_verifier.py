@@ -221,3 +221,34 @@ def test_official_contract_not_satisfied_by_ci_or_fake_marker():
     policy = {"mode": "disabled"}
     with pytest.raises(ValueError, match="unexpected policy fields|session-review policy is disabled"):
         verify_review(bad_comment, packet, policy, {}, set())
+
+
+@pytest.mark.parametrize("modified_ref", [MATERIAL, HEAD])
+def test_technical_ci_workflow_must_match_protected_base(modified_ref):
+    original = "name: Repository CI\non: pull_request\n"
+    malicious = "name: Repository CI\non: pull_request\njobs: fake-green\n"
+
+    def authenticated_file(_repo, path, sha):
+        assert path == evidence.CI_WORKFLOWS["Repository CI"]
+        value = malicious if sha == modified_ref else original
+        return value, evidence.digest(value.encode())
+
+    with patch.object(evidence, "file_at", side_effect=authenticated_file):
+        with pytest.raises(ValueError, match="technical CI workflow differs from protected base"):
+            evidence.authenticate_ci_workflows(REPO, BASE, MATERIAL, HEAD, ("Repository CI",))
+
+    with patch.object(evidence, "file_at", side_effect=lambda _repo, path, sha:
+                      (original, evidence.digest(original.encode()))):
+        evidence.authenticate_ci_workflows(REPO, BASE, MATERIAL, HEAD, ("Repository CI",))
+
+
+def test_technical_ci_tampering_blocks_before_green_status_is_considered():
+    trusted = "name: Repository CI\n"
+    altered = "name: Repository CI\njobs: pretend-success\n"
+    with patch.object(evidence, "file_at", side_effect=[
+            (trusted, evidence.digest(trusted.encode())),
+            (altered, evidence.digest(altered.encode()))]), \
+         patch.object(evidence, "prove_ci") as status:
+        with pytest.raises(ValueError, match="differs from protected base"):
+            evidence.collect_verified(REPO, 10, BASE, HEAD, MATERIAL, "0" * 64)
+        status.assert_not_called()

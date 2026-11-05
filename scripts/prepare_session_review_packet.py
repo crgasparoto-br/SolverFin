@@ -184,7 +184,8 @@ def _verified_certificate_artifacts(repo: str, cert: dict, head: str) -> None:
 
 
 def inspect_handoff(repo: str, pr_number: int, base: str, head: str,
-                    *, expected_issue: int | None = None, expected_head_ref: str | None = None) -> dict:
+                    *, expected_issue: int | None = None, expected_head_ref: str | None = None,
+                     expected_base_ref: str | None = None) -> dict:
     certificate_text, certificate_digest = file_at(repo, ".audit/entregar-issue/handoff-ready.json", head)
     cert = strict_json(certificate_text)
     ident, sub = cert.get("identity", {}), cert.get("subject", {})
@@ -192,13 +193,17 @@ def inspect_handoff(repo: str, pr_number: int, base: str, head: str,
             and cert.get("phase") == "final" and cert.get("evidence_profile") == "critical",
             "critical handoff is not ready")
     require(sub.get("repository") == repo and sub.get("pull_request_number") == pr_number
-            and sub.get("base_ref") == "develop" and sub.get("work_item_kind") == "issue"
+            and sub.get("base_ref") in {"develop", "main"} and sub.get("work_item_kind") == "issue"
             and sub.get("issue_number") == sub.get("work_item_number"),
             "handoff subject mismatch")
     if expected_issue is not None:
         require(sub.get("issue_number") == expected_issue, "handoff canonical issue mismatch")
     if expected_head_ref is not None:
         require(sub.get("head_ref") == expected_head_ref, "handoff candidate branch mismatch")
+    if expected_base_ref is not None:
+        require(expected_base_ref in {"develop", "main"}
+                and sub.get("base_ref") == expected_base_ref,
+                "handoff protected base mismatch")
     require(ident.get("base_sha") == base, "handoff base mismatch")
     material = ident.get("material_head_sha")
     require(isinstance(material, str) and SHA_RE.fullmatch(material) and ident.get("head_sha") == material,
@@ -272,7 +277,8 @@ def collect(repo: str, number: int) -> dict:
             and raw_pr["base"]["repo"]["full_name"] == repo,
             "cross-repository candidate not authorized")
     base, head = raw_pr["base"]["sha"], raw_pr["head"]["sha"]
-    require(raw_pr["base"]["ref"] == "develop" and SHA_RE.fullmatch(base)
+    base_ref = raw_pr["base"]["ref"]
+    require(base_ref in {"develop", "main"} and SHA_RE.fullmatch(base)
             and SHA_RE.fullmatch(head), "untrusted PR identity")
     number_issue = issue_reference(raw_pr)
     issue = api(f"/repos/{repo}/issues/{number_issue}")
@@ -284,7 +290,8 @@ def collect(repo: str, number: int) -> dict:
     _, policy_sha = trusted_policy(repo, base, branch["commit"]["sha"])
     preview = checked_preview(repo, raw_pr.get("merge_commit_sha"), base, head)
     handoff = inspect_handoff(repo, number, base, head, expected_issue=number_issue,
-                              expected_head_ref=raw_pr["head"]["ref"])
+                              expected_head_ref=raw_pr["head"]["ref"],
+                              expected_base_ref=base_ref)
     require(handoff["certificate"]["subject"]["issue_number"] == number_issue,
             "handoff canonical issue mismatch")
     material = handoff["material_head_sha"]
@@ -292,7 +299,7 @@ def collect(repo: str, number: int) -> dict:
     sources, diffs = freeze_files(repo, changed, base, head)
     runs = {"material": ci_runs(repo, material), "published_head": ci_runs(repo, head)}
     identity = {"repository": repo, "pull_request": number, "issue": number_issue,
-                "base_ref": "develop", "base_sha": base, "head_sha": head,
+                "base_ref": base_ref, "base_sha": base, "head_sha": head,
                 "merge_preview_sha": preview["sha"], "issue_sha256": digest(issue["body"].encode()),
                 "policy_sha256": policy_sha}
     # Re-read mutable identity after collection to avoid an apparently fresh but stale packet.

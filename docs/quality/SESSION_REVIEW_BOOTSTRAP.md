@@ -40,5 +40,9 @@ python -m pytest -q tests/test_session_review.py tests/test_session_review_packe
 A rotina de verificacao foi preparada, mas nao pode ser usada pela PR que a introduz como fonte de autoridade. E necessario instalar e comprovar os mesmos bytes em `develop` e `main`, executar ataques positivos e negativos reais, registrar aceite explicito do modelo de garantia, revalidar rulesets e recertificar a PR #760 na base resultante. O workflow de evidencia produz artefato `session-review-evidence-<SHA>` com `junit.xml`, `session-review-evidence.json` e certificado, exigindo que os controles realmente tenham sido executados.
 
 A revisao da #760 deve ocorrer numa **conversa diferente**, com URL real fornecida pelo operador. Na ausencia da conversa original, usar somente proveniencia GitHub que a politica confiavel habilite e que o verificador autentique. O novo check so pode terminar `success` quando um parecer completo possuir cobertura por obrigacao e tres casos JUnit distintos por requisito, com fontes e SHA-256 de linhas; mero CI verde, comentario de implementacao e bundle de teste nao bastam. O modo desabilitado, fontes divergentes, revisao ausente e arquivo de evidencia desatualizado bloqueiam.
+O coletor deriva `develop` ou `main` somente da PR autenticada e exige a mesma base no certificado.
+Antes de aceitar CI como evidencia, o verificador compara os Git blobs dos workflows tecnicos
+no material e no HEAD publicado contra os bytes da base protegida; YAML candidato adulterado
+nao pode produzir prova valida apenas por manter o nome do check.
 
 Antes da instalacao, preservar snapshot de rulesets e plano de rollback, mantendo `Delivery V2 gate`, PR obrigatoria e bloqueios de exclusao/force-push. Esta PR nao altera rulesets, nao faz merge e nao encerra a #714.
