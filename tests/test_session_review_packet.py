@@ -122,3 +122,9 @@ def test_neutral_packet_rederives_issue_and_checks_identity():
     assert result["handoff"]["completion"]["issue_completion"] == "partial"
     assert result["requirements"] and result["source_sha256"]
     assert not result["implementation_conclusions_included"]
+
+
+def test_issue_reference_accepts_canonical_pr_760_prose():
+    assert collector.issue_reference({"body": "Refs #714; parent epic #702.\n\n## Escopo"}) == 714
+    with pytest.raises(ValueError, match="one canonical issue"):
+        collector.issue_reference({"body": "Refs #714\nRefs #702"})

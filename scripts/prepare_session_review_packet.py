@@ -101,7 +101,7 @@ def parse_requirements(repo: str, issue_number: int, issue_body: str) -> list[di
 
 
 def issue_reference(pr: dict) -> int:
-    matches = {int(m) for m in re.findall(r"(?im)^\s*(?:refs|fixes|closes)\s+#([1-9][0-9]*)\s*$",
+    matches = {int(m) for m in re.findall(r"(?im)^\s*(?:refs|fixes|closes)\s+#([1-9][0-9]*)(?:[ \t]*;[^\n]*)?[ \t]*$",
                                              pr.get("body") or "")}
     require(len(matches) == 1, "PR must reference one canonical issue")
     return next(iter(matches))
