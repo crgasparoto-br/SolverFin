@@ -198,6 +198,7 @@ try {
   assert.equal(clearReady.focused, true);
   assert.equal(clearReady.label, "Limpar seleção");
   assert.equal(clearReady.tooltip, clearReady.label);
+  await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
     type: "rawKeyDown",
     key: "Enter",
@@ -212,6 +213,7 @@ try {
     windowsVirtualKeyCode: 13,
     nativeVirtualKeyCode: 13,
   });
+  await sleep(80);
   const cleared = await evaluate(
     browser.cdp,
     `(() => ({
