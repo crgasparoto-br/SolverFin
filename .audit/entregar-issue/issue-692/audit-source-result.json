@@ -1,0 +1,418 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+    "head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75"
+  },
+  "verdict": "REPROVADA",
+  "coverage": "limited",
+  "discovery_closed": true,
+  "changed_path_reviews": [
+    {
+      "id": "apps/web/src/dev-server.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ENTRY",
+        "S-AUTH"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_ts.txt",
+      "evidence_sha256": "aa5684cabf8b1d9720fb22146bc8efe70692e3cf465ac2e68c7f9f723716cb0a"
+    },
+    {
+      "id": "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-UI",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_cash_flow_projection_view_ts.txt",
+      "evidence_sha256": "dafa63e7aaab274b11b9a72fc621ebbfe5eb838545efd93615236b2cfdcd43fe"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-common.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-EMPTY",
+        "S-ENTRY"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_common_ts.txt",
+      "evidence_sha256": "64713c5468d8bb7241a2a2c2724d986ba362bb524fd8022137e5d4aac259f300"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-evolution.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ENTRY",
+        "S-MULTI",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_evolution_ts.txt",
+      "evidence_sha256": "703d83d7a99e8be9fca9bd0e93c38a63155f11d121fd2852cbb639ea9a69b08b"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-installments.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ENTRY",
+        "S-MULTI",
+        "S-REUSE"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_installments_ts.txt",
+      "evidence_sha256": "7c7b231e3c9956d29bdf4b4be26ad4077e27e9770635f233ffc5825f20c80c68"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-pdf.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-PDF"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_pdf_ts.txt",
+      "evidence_sha256": "8769d481a8468f57d93f907779d8dc9e4fb214b11948890acf3b81ab04599750"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-serializers.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-CSV-XLSX",
+        "S-INJECTION",
+        "S-METADATA"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_serializers_ts.txt",
+      "evidence_sha256": "87a20dcfab0582589bd55871b70251e0dc4ba95a520ec7187ab2303743afff7a"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TEST",
+        "S-EMPTY",
+        "S-INJECTION"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_test_ts.txt",
+      "evidence_sha256": "afbe795e634576b7c6a8ee1f9746a1148caea6842789c3bd543460ad2bea517f",
+      "reason": "Teste alcançado no CI exact-SHA; revisadas as asserções, entradas negativas, descoberta do runner e limites do oráculo."
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ENTRY",
+        "S-VALIDATION",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_export_ts.txt",
+      "evidence_sha256": "56cf32bb7df27954929cbd64a3b20bd8c1f5d041e52f126598fc51cc31caaee9"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-installments-view.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-UI",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_installments_view_ts.txt",
+      "evidence_sha256": "0c5c77190134f19bde5ae42b95f5aee84b3a8500da2802af1df0629a48ec70c5"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-UI"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_route_page_shared_ts.txt",
+      "evidence_sha256": "464e7ad71a5e8c3100eca3b43ede56bc2caad88e8a3f40967a7e09ba7149d4a9"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-UI"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_route_page_styles_ts.txt",
+      "evidence_sha256": "9a91dd044d15064c2e9c08dca2403f3bdc6ca6d36ecea1e950a3a22623a1e29a"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-UI",
+        "S-REUSE"
+      ],
+      "evidence_path": "evidence/paths/apps_web_src_dev_server_reports_route_page_ts.txt",
+      "evidence_sha256": "55eb92082b6d66650b589892ff98c0eb5ee16a48f0ee7c55f310cc700289a730"
+    },
+    {
+      "id": "docs/API_REPORTS.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC"
+      ],
+      "evidence_path": "evidence/paths/docs_API_REPORTS_md.txt",
+      "evidence_sha256": "618c15ceeb8cc51efb95e30078744424c69b0645679a8857fc6c06593c660d51"
+    },
+    {
+      "id": "docs/REPORTS.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC",
+        "S-PDF"
+      ],
+      "evidence_path": "evidence/paths/docs_REPORTS_md.txt",
+      "evidence_sha256": "93e5508f1bc322242c020250fcc310d85e3b063b25e64487ca4c4bd0795367ad"
+    },
+    {
+      "id": "scripts/statement-visual/cdp.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CDP"
+      ],
+      "evidence_path": "evidence/paths/scripts_statement_visual_cdp_mjs.txt",
+      "evidence_sha256": "a0816648ee0ea0ade83b0ba1d31f620c8fcaa5e49970ed67d454672cff84bf9b"
+    },
+    {
+      "id": "scripts/statement-visual/cdp.test.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CDP"
+      ],
+      "evidence_path": "evidence/paths/scripts_statement_visual_cdp_test_mjs.txt",
+      "evidence_sha256": "93cecf5dcbda8c804937bbce1c39f64a900fd47adfc12670800a708df1ff974e",
+      "reason": "Teste alcançado no CI exact-SHA; revisadas as asserções, entradas negativas, descoberta do runner e limites do oráculo."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-001",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-002",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-003",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-004",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-005",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-006",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-007",
+      "status": "covered",
+      "evidence_path": "evidence/pdf-reproduction.log",
+      "evidence_sha256": "1b936b1160e2a778ce5a845665bcf98f79e34b12ed50de4a10fbddb5608708a5"
+    },
+    {
+      "id": "R-008",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-009",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-010",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-011",
+      "status": "covered",
+      "evidence_path": "evidence/oracle-negative-result.json",
+      "evidence_sha256": "d43c88c541b24f5f31bf03e92fe036a948f68f3ed3445d9ec551fe29ff50362d"
+    },
+    {
+      "id": "R-012",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "R-013",
+      "status": "covered",
+      "evidence_path": "evidence/handoff-preflight.log",
+      "evidence_sha256": "bd6ba173919f9bfd82de05dc0d6d0c99181d9713000e2b490ad0295e9c8e5c2b"
+    },
+    {
+      "id": "R-014",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-ENTRY",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-FILTER",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-AUTH",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-AUTH-E2E",
+      "status": "not-executed",
+      "reason": "Prova independente em ambiente de alto custo deixada sem reexecucao: existe falha deterministica em PDF e readiness/handoff do produto, com CI ja verde. O gate barato e a varredura obrigatoria foram concluidos."
+    },
+    {
+      "id": "S-MULTI",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-CSV-XLSX",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-PDF",
+      "status": "covered",
+      "evidence_path": "evidence/pdf-reproduction.log",
+      "evidence_sha256": "1b936b1160e2a778ce5a845665bcf98f79e34b12ed50de4a10fbddb5608708a5"
+    },
+    {
+      "id": "S-EMPTY",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-INJECTION",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-VALIDATION",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-TEST",
+      "status": "covered",
+      "evidence_path": "evidence/oracle-negative-result.json",
+      "evidence_sha256": "d43c88c541b24f5f31bf03e92fe036a948f68f3ed3445d9ec551fe29ff50362d"
+    },
+    {
+      "id": "S-DOC",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-GOV",
+      "status": "covered",
+      "evidence_path": "evidence/handoff-preflight.log",
+      "evidence_sha256": "bd6ba173919f9bfd82de05dc0d6d0c99181d9713000e2b490ad0295e9c8e5c2b"
+    },
+    {
+      "id": "S-UI",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-CDP",
+      "status": "covered",
+      "evidence_path": "evidence/ci-verified.txt",
+      "evidence_sha256": "e08900799aa38d2a133991c645ed6c059505d38870f0e43864c956ca50c2b636"
+    },
+    {
+      "id": "S-VISUAL",
+      "status": "not-executed",
+      "reason": "Prova independente em ambiente de alto custo deixada sem reexecucao: existe falha deterministica em PDF e readiness/handoff do produto, com CI ja verde. O gate barato e a varredura obrigatoria foram concluidos."
+    },
+    {
+      "id": "S-REUSE",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-METADATA",
+      "status": "covered",
+      "evidence_path": "evidence/cross-surface-review.txt",
+      "evidence_sha256": "b5ca0c4237e9ea0265d1a3829203fa95c5b55b18b59f191bf061d16a95518109"
+    },
+    {
+      "id": "S-PDF-LARGE",
+      "status": "not-executed",
+      "reason": "Prova independente em ambiente de alto custo deixada sem reexecucao: existe falha deterministica em PDF e readiness/handoff do produto, com CI ja verde. O gate barato e a varredura obrigatoria foram concluidos."
+    }
+  ],
+  "previous_findings": [],
+  "findings": [
+    {
+      "id": "A-001",
+      "requirement_id": "R-013",
+      "surface_id": "S-GOV",
+      "root_cause": "Handoff de outro work item herdado sem producao de certificado da issue 692",
+      "disposition": "blocking",
+      "evidence_path": "evidence/handoff-preflight.log",
+      "evidence_sha256": "bd6ba173919f9bfd82de05dc0d6d0c99181d9713000e2b490ad0295e9c8e5c2b"
+    },
+    {
+      "id": "A-002",
+      "requirement_id": "R-007",
+      "surface_id": "S-PDF",
+      "root_cause": "Quebra em 100 caracteres ignora largura real da fonte e pagina PDF",
+      "disposition": "blocking",
+      "evidence_path": "evidence/pdf-reproduction.log",
+      "evidence_sha256": "1b936b1160e2a778ce5a845665bcf98f79e34b12ed50de4a10fbddb5608708a5"
+    },
+    {
+      "id": "A-003",
+      "requirement_id": "R-011",
+      "surface_id": "S-TEST",
+      "root_cause": "Testes de paridade verificam apenas inclusao textual de valores e nao pares moeda linha coluna",
+      "disposition": "blocking",
+      "evidence_path": "evidence/oracle-negative-result.json",
+      "evidence_sha256": "d43c88c541b24f5f31bf03e92fe036a948f68f3ed3445d9ec551fe29ff50362d"
+    }
+  ],
+  "blocking_ids": [
+    "A-001",
+    "A-002",
+    "A-003"
+  ]
+}

@@ -3,91 +3,93 @@
   "status": "ready",
   "phase": "final",
   "completion": {
-    "issue_completion": "partial",
-    "deferred_obligation_ids": [
-      "OBL-011"
-    ],
-    "remaining_issue_ids": [
-      728
-    ],
-    "parent_issue_must_remain_open": true
+    "issue_completion": "complete",
+    "deferred_obligation_ids": [],
+    "remaining_issue_ids": [],
+    "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-11-03T22:16:58.294132+00:00",
+  "created_at": "2026-11-05T12:03:14.082935+00:00",
   "identity": {
-    "head_sha": "6faa75259168ab01ffde20bf1212c98090546244",
-    "material_head_sha": "6faa75259168ab01ffde20bf1212c98090546244",
-    "base_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
+    "head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+    "material_head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+    "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
     "merge_preview_sha": null,
     "material_merge_preview_sha": null
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 728,
-    "pull_request_number": 759,
+    "issue_number": 692,
+    "pull_request_number": 761,
     "work_item_kind": "issue",
-    "work_item_number": 728,
-    "pull_request": 759,
+    "work_item_number": 692,
+    "pull_request": 761,
     "base_ref": "develop",
-    "head_ref": "feat/728-golden-admin-institutions-progressive"
+    "head_ref": "feat/issue-692-reports-exports"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
-    "material_head_sha": "6faa75259168ab01ffde20bf1212c98090546244",
+    "work_item_start_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+    "material_head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
     "issue_changed_paths": [
-      ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-728/code-growth.json",
-      ".audit/entregar-issue/issue-728/codebase-grounding.json",
-      ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
-      ".audit/entregar-issue/issue-728/requirement-closure.json",
-      ".audit/entregar-issue/issue-728/specification-snapshot.json",
-      ".audit/entregar-issue/issue-728/specification-sources/SRC-ISSUE-728.txt",
-      ".audit/entregar-issue/issue-728/standard-evidence.json",
-      "apps/web/src/dev-server/admin-institutions-error-page.ts",
-      "apps/web/src/dev-server/admin-institutions-page.test.ts",
-      "apps/web/src/dev-server/admin-institutions-page.ts",
-      "apps/web/src/dev-server/admin-institutions-styles.ts",
-      "apps/web/src/dev-server/api.ts",
-      "apps/web/src/dev-server/shared-styles.test.ts",
-      "apps/web/src/dev-server/shell-pages.test.ts",
-      "docs/audits/ISSUE_728_PREEDIT_CHROME_BASELINE.md",
-      "scripts/statement-visual/admin-institutions-network-check.mjs",
-      "scripts/statement-visual/coverage-contract.mjs",
-      "scripts/statement-visual/issue-615-secondary-route.mjs",
-      "scripts/statement-visual/issue-728-admin-states.mjs"
+      "apps/web/src/dev-server.ts",
+      "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "apps/web/src/dev-server/reports-export-common.ts",
+      "apps/web/src/dev-server/reports-export-evolution.ts",
+      "apps/web/src/dev-server/reports-export-installments.ts",
+      "apps/web/src/dev-server/reports-export-parity.test-helpers.ts",
+      "apps/web/src/dev-server/reports-export-pdf.ts",
+      "apps/web/src/dev-server/reports-export-serializers.ts",
+      "apps/web/src/dev-server/reports-export.test.ts",
+      "apps/web/src/dev-server/reports-export.ts",
+      "apps/web/src/dev-server/reports-installments-view.ts",
+      "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "apps/web/src/dev-server/reports-route-page.ts",
+      "docs/API_REPORTS.md",
+      "docs/REPORTS.md",
+      "scripts/statement-visual/cdp.mjs",
+      "scripts/statement-visual/cdp.test.mjs"
     ],
-    "issue_delta_sha256": "17bb9bccf132f1a83fc47cd2d41159ff423d20bb59d17a65c9031d7c44f4cb6c"
+    "issue_delta_sha256": "e85faacf46e143d128630ce1222fe52f8a18febf6f855482f9b2700ab3813e02"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-728/audit-escape-closure.json",
-      ".audit/entregar-issue/issue-728/audit-remediation.json",
-      ".audit/entregar-issue/issue-728/audit-source-result.json",
-      ".audit/entregar-issue/issue-728/code-growth.json",
-      ".audit/entregar-issue/issue-728/codebase-grounding.json",
-      ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
-      ".audit/entregar-issue/issue-728/learning-closure.json",
-      ".audit/entregar-issue/issue-728/previous-audit-escape-closure.json",
-      ".audit/entregar-issue/issue-728/requirement-closure.json",
-      ".audit/entregar-issue/issue-728/specification-snapshot.json",
-      ".audit/entregar-issue/issue-728/specification-sources/SRC-ISSUE-728.txt",
-      ".audit/entregar-issue/issue-728/standard-evidence.json"
+      ".audit/entregar-issue/issue-692/audit-escape-closure.json",
+      ".audit/entregar-issue/issue-692/audit-remediation.json",
+      ".audit/entregar-issue/issue-692/audit-source-result.json",
+      ".audit/entregar-issue/issue-692/code-growth.json",
+      ".audit/entregar-issue/issue-692/codebase-grounding.json",
+      ".audit/entregar-issue/issue-692/evidence-provenance.json",
+      ".audit/entregar-issue/issue-692/evidence/cdp-exact-head-reach.log",
+      ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
+      ".audit/entregar-issue/issue-692/inherited-controls.json",
+      ".audit/entregar-issue/issue-692/learning-closure.json",
+      ".audit/entregar-issue/issue-692/previous-audit-escape-closure.json",
+      ".audit/entregar-issue/issue-692/previous-inherited-controls.json",
+      ".audit/entregar-issue/issue-692/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-692/requirement-attack-matrix.parts/part-000.b64",
+      ".audit/entregar-issue/issue-692/requirement-attack-matrix.parts/part-001.b64",
+      ".audit/entregar-issue/issue-692/requirement-closure.json",
+      ".audit/entregar-issue/issue-692/requirement-closure.parts/part-000.b64",
+      ".audit/entregar-issue/issue-692/risk-saturation.json",
+      ".audit/entregar-issue/issue-692/specification-snapshot.json",
+      ".audit/entregar-issue/issue-692/specification-sources/SRC-ISSUE-692.txt"
     ]
   },
   "contract_version": "2026-08-20.3",
-  "evidence_profile": "standard",
+  "evidence_profile": "critical",
   "remediation_mode": "targeted-remediation",
   "producer": {
     "skill": "entregar-issue",
-    "skill_sha256": "e1fb562779fa1d091d72317aa66f1f09e6b337b8df32284fbb46e58e6bd53326"
+    "skill_sha256": "1b1872db4640f75c6c26c49bcd6663aef42be5706fc46199f44a740385767e6a"
   },
   "validators": {
     "validate_specification_coverage.py": "097d0d56edd5495f2a0fc3cc0606514a972d6995e6e8977d56e7595ceeb139e3",
     "validate_handoff_readiness.py": "3082260aeec5ad89c9b52267c18097f89885a4a86dd3bb3774db2873c15fb064",
     "validate_standard_evidence.py": "87a82707220b15407cf39b956c7c5c05b6030edee3a87561b0cd0aec3328f588",
-    "validate_requirement_attack_matrix.py": "86372ddf22d64021ec2bb0e267445f449fecf3310a55e2c33e02ce7648ec584e",
+    "validate_requirement_attack_matrix.py": "738b6985c284383ba416ce658916e5f839d88cad7f93fd6c0208c8405eec77c7",
     "validate_evidence_freshness.py": "a611f63315f3a9f42d658cc90483f4b74a52d82abd5bffd1a9cbe2cb67270097",
     "validate_risk_saturation.py": "5ce1d6754bf6a7de171aee76aaec856a571cd221b867a2e5c2564c8d7fbce43e",
     "validate_inherited_controls.py": "38e4e6f3a6ae79622737b1df57e4d81ee1512c8e3143003621769ba199def220",
@@ -106,9 +108,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "096b9964b733f08ecf8284ac48156c99f7adfb6ecca09094628253454b35d267",
-      "logical_sha256": "096b9964b733f08ecf8284ac48156c99f7adfb6ecca09094628253454b35d267",
-      "logical_size": 569,
+      "sha256": "b83c50e813d61606fe2f57e1a1cb54387ccf95417a740e2604bb78262ae53a15",
+      "logical_sha256": "b83c50e813d61606fe2f57e1a1cb54387ccf95417a740e2604bb78262ae53a15",
+      "logical_size": 572,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -116,19 +118,78 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "8caa6ee0417bcdfbff71bb0564ff67e4f9a38bdb46c00af55f07b1d991ed20ff",
-      "logical_sha256": "8caa6ee0417bcdfbff71bb0564ff67e4f9a38bdb46c00af55f07b1d991ed20ff",
-      "logical_size": 15782,
+      "sha256": "4506df3e745602080f622b332ea9d536c8ce99861661214e34f8327c3f5a00b1",
+      "logical_sha256": "5fe14ce3b0fc665cd0e2a268bffbafe2f767d3b9d7317c981ace3e8ae249d3b3",
+      "logical_size": 29497,
+      "artifact_transport": {
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 8088,
+        "decoded_size": 29497,
+        "decoded_sha256": "5fe14ce3b0fc665cd0e2a268bffbafe2f767d3b9d7317c981ace3e8ae249d3b3",
+        "encoded_sha256": "46a277e8fba4344200d67bb23b64522b61ca7c79e618dfd398efbab499a46490",
+        "parts": [
+          {
+            "path": "requirement-closure.parts/part-000.b64",
+            "size": 8088,
+            "sha256": "46a277e8fba4344200d67bb23b64522b61ca7c79e618dfd398efbab499a46490"
+          }
+        ]
+      }
+    },
+    "requirement_attack_matrix": {
+      "name": "requirement-attack-matrix.json",
+      "sha256": "9b9b1bd75646790ca39b090023175bbb01a4325b6f0069d9abefeaa64afd318c",
+      "logical_sha256": "98308331574ea5ade44fe5c59d576af9a3c628e475fb7314a07178f899e542b3",
+      "logical_size": 148475,
+      "artifact_transport": {
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 13284,
+        "decoded_size": 148475,
+        "decoded_sha256": "98308331574ea5ade44fe5c59d576af9a3c628e475fb7314a07178f899e542b3",
+        "encoded_sha256": "0ebb931bf79907bd0098fae0695e5950a08c3960d923176652bba687502b72a6",
+        "parts": [
+          {
+            "path": "requirement-attack-matrix.parts/part-000.b64",
+            "size": 12288,
+            "sha256": "ec070ecdb8782629f69b55f1f8078fb466d6f9cbd660a9617fb036591c806a92"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-001.b64",
+            "size": 996,
+            "sha256": "78d8c7109268a96f31ec6e77d4786ddcaeaf33228b90935fbc1ccb4439b6b51c"
+          }
+        ]
+      }
+    },
+    "risk_saturation": {
+      "name": "risk-saturation.json",
+      "sha256": "0ad7ff0de26b60a15fbf810b76b734af5e3c74b055959ac95edb4fbe84a84b6e",
+      "logical_sha256": "0ad7ff0de26b60a15fbf810b76b734af5e3c74b055959ac95edb4fbe84a84b6e",
+      "logical_size": 6735,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
       }
     },
-    "standard_evidence": {
-      "name": "standard-evidence.json",
-      "sha256": "211b1fe9d45a58a4582dfa33157057c7b2a4d60ca6b5ebcae081133c38a7512e",
-      "logical_sha256": "211b1fe9d45a58a4582dfa33157057c7b2a4d60ca6b5ebcae081133c38a7512e",
-      "logical_size": 20699,
+    "inherited_controls": {
+      "name": "inherited-controls.json",
+      "sha256": "86f06a0e158948e901d5359517990803d32bab615a0e4ac81a8d9fdf147d352e",
+      "logical_sha256": "86f06a0e158948e901d5359517990803d32bab615a0e4ac81a8d9fdf147d352e",
+      "logical_size": 2843,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "evidence_provenance": {
+      "name": "evidence-provenance.json",
+      "sha256": "3af192035d04a092127580265b15a8da32c311dcdab97760030d83b20411f490",
+      "logical_sha256": "3af192035d04a092127580265b15a8da32c311dcdab97760030d83b20411f490",
+      "logical_size": 793,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -136,9 +197,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "ce7321458766815e1eabe8e4b75c98587fcaaf4e7a26a95d51a698f797f58b6d",
-      "logical_sha256": "ce7321458766815e1eabe8e4b75c98587fcaaf4e7a26a95d51a698f797f58b6d",
-      "logical_size": 6520,
+      "sha256": "d0d88b9dff5a5af08759009941f40e6265c7deb83773e688586a25bf83612c40",
+      "logical_sha256": "d0d88b9dff5a5af08759009941f40e6265c7deb83773e688586a25bf83612c40",
+      "logical_size": 7319,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -146,9 +207,9 @@
     },
     "learning_closure": {
       "name": "learning-closure.json",
-      "sha256": "587fab63c30356eee82b5c3295f318f7a76094710c2da4c87c8505150d71a2c3",
-      "logical_sha256": "587fab63c30356eee82b5c3295f318f7a76094710c2da4c87c8505150d71a2c3",
-      "logical_size": 726,
+      "sha256": "20411cc74b35ad2b3e1f078577ae30d1f53a70435021f0875d2d8661c66bfca7",
+      "logical_sha256": "20411cc74b35ad2b3e1f078577ae30d1f53a70435021f0875d2d8661c66bfca7",
+      "logical_size": 684,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -156,9 +217,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "2831e38f0c337add1fbd8881086bcd86c4d49888f36855add4c5d2bcbd3142b3",
-      "logical_sha256": "2831e38f0c337add1fbd8881086bcd86c4d49888f36855add4c5d2bcbd3142b3",
-      "logical_size": 3339,
+      "sha256": "22042c0914eae66a27b139227e0d203476a73cc50b0189fa01e5ae033498844e",
+      "logical_sha256": "22042c0914eae66a27b139227e0d203476a73cc50b0189fa01e5ae033498844e",
+      "logical_size": 3494,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -166,9 +227,9 @@
     },
     "audit_source_result": {
       "name": "audit-source-result.json",
-      "sha256": "174319285f6cd10f345e9174187a1b1edb2c53c8e105965ea62781676bfc4138",
-      "logical_sha256": "174319285f6cd10f345e9174187a1b1edb2c53c8e105965ea62781676bfc4138",
-      "logical_size": 14640,
+      "sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+      "logical_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+      "logical_size": 15103,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -176,9 +237,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "d899c27123969b8075d5ded80fbf56210cd2dabfc4c7fe63db66c747e702fc16",
-      "logical_sha256": "d899c27123969b8075d5ded80fbf56210cd2dabfc4c7fe63db66c747e702fc16",
-      "logical_size": 12227,
+      "sha256": "271da5d4366db7c1eeebf8c51169a1492155b7f3dbbe760a10fa7666c95f3d29",
+      "logical_sha256": "271da5d4366db7c1eeebf8c51169a1492155b7f3dbbe760a10fa7666c95f3d29",
+      "logical_size": 10441,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -186,9 +247,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "ce166c65bddfd1908f30aceecc1d5bb44712175bc99dd0b842d1577134f595ca",
-      "logical_sha256": "ce166c65bddfd1908f30aceecc1d5bb44712175bc99dd0b842d1577134f595ca",
-      "logical_size": 1641,
+      "sha256": "6def45f3fe2277fbc4bd2ae7cabc8a26c22652a7dbed9f21fc857959e20f7e1b",
+      "logical_sha256": "6def45f3fe2277fbc4bd2ae7cabc8a26c22652a7dbed9f21fc857959e20f7e1b",
+      "logical_size": 2408,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -205,11 +266,13 @@
     "source_locations": {
       "applicable": true,
       "status": "passed",
-      "checked": 2,
-      "subject_sha": "6faa75259168ab01ffde20bf1212c98090546244",
+      "checked": 28,
+      "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
       "evidence_artifacts": [
         "requirement_closure",
-        "standard_evidence"
+        "requirement_attack_matrix",
+        "risk_saturation",
+        "inherited_controls"
       ]
     }
   },

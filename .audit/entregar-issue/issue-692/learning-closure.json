@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
+    "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+    "finding_ids": [
+      "A-001",
+      "A-002",
+      "A-003"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Each finding is an issue-local export PDF/layout, missing cross-format test oracle or result-only handoff. There is no evidence of a recurring systemic Skill control failure requiring a global rule."
+  },
+  "skill_changes": []
+}

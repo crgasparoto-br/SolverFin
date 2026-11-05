@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
+    "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+    "audited_head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75"
+  },
+  "candidate_head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/issue-692/requirement-closure.json"
+      ],
+      "evidence": [
+        "Exact target-bound certificate for issue 692/PR 761 will replace inherited #728 only in a direct result-only child of material SHA; certificate is built and checked by official skill against immutable develop base.",
+        "The inherited #728 handoff is identical in the PR base and head before this handoff, classified inherited-base-artifact."
+      ],
+      "validations": [
+        "python entregar-issue/scripts/build_handoff_certificate.py --repository crgasparoto-br/SolverFin --issue-number 692 --pull-request-number 761 --head-sha f2e28ed4bdd54bc457ece5e88e2c102429fee2ca ...; terminal validation of the published result-only child required"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/reports-export-pdf.ts",
+        "apps/web/src/dev-server/reports-export.test.ts"
+      ],
+      "evidence": [
+        "reports-export-pdf.ts calculates Helvetica glyph widths with constrained pageTextWidth; wraps at whitespace where possible while preserving every original character",
+        "CI dedicated case \"preserves wide descriptions across PDF line wrapping without dropping characters\" passed; PDF bbox independent 100 Ws inside A4."
+      ],
+      "validations": [
+        "Repository CI run 42021258945, CRITICAL job 127224621257: npm run test success, PDF long-string test reached/passed",
+        "Local exact-head pdftotext bbox reproducer: 100 of 100 W glyphs within 595pt A4 width"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/reports-export.test.ts",
+        "apps/web/src/dev-server/reports-export-parity.test-helpers.ts",
+        "apps/web/src/dev-server/reports-export-serializers.ts"
+      ],
+      "evidence": [
+        "CSV/XLSX/PDF independent table parsers compare every table, row, column, currency and typed cell with the same canonical snapshot.",
+        "Deliberately swapped BRL/USD monetary cells, dropped USD row and null-vs-empty drift each trigger a failed parity assertion on all three formats."
+      ],
+      "validations": [
+        "Repository CI run 42021258945, CRITICAL job 127224621257: new exact-head tests executed and passed",
+        "Test uses assert.throws() to ensure a false semantic match cannot be reported as equivalent"
+      ]
+    }
+  ],
+  "status": "closed"
+}

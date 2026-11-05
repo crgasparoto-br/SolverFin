@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75",
+  "controls": [],
+  "retired_controls": [],
+  "source_audits": [],
+  "unresolved_controls": [],
+  "description": "No inherited controls artifact for this target existed at audited head; it is an explicitly empty lineage baseline."
+}

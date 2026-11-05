@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75",
+  "escapes": [],
+  "description": "No prior issue-specific certified escape controls at audited head; previous report is the immutable source of all three findings."
+}
