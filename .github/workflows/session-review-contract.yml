@@ -35,6 +35,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
           persist-credentials: false
       - name: Python 3.12
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
@@ -44,3 +45,25 @@ jobs:
         run: python -m pip install --disable-pip-version-check pytest==9.0.2
       - name: Validate source contract and collector (no review check emitted)
         run: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py
+      - name: Checkout immutable official Skill for CODE-GROWTH-001
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: crgasparoto-br/skill
+          ref: a28be10db466631cd5e5e4dbe0429da250cd8b42
+          path: .trusted-code-growth-skill
+          persist-credentials: false
+      - name: Execute CODE-GROWTH-001 against exact base and HEAD
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          python .trusted-code-growth-skill/entregar-issue/scripts/check_code_growth.py \
+            --repo . --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA" \
+            --out "$RUNNER_TEMP/code-growth-762.json"
+      - name: Upload genuine CODE-GROWTH-001 evidence
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: session-review-code-growth-${{ github.event.pull_request.head.sha }}
+          path: ${{ runner.temp }}/code-growth-762.json
+          if-no-files-found: error
+          retention-days: 14

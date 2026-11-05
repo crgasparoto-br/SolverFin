@@ -181,3 +181,13 @@ def test_junit_builder_runs_governance_and_documentary_suites():
     assert 'python -m pytest -q' in source_text
     assert "tests/test_session_review_certificate.py" in source_text
     assert "checks: write" not in source_text
+
+
+def test_code_growth_check_uses_official_pinned_tool_and_exact_pr_sha():
+    workflow = (Path(__file__).resolve().parents[1] /
+                ".github/workflows/session-review-contract.yml").read_text()
+    assert "fetch-depth: 0" in workflow
+    assert "entregar-issue/scripts/check_code_growth.py" in workflow
+    assert '--base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"' in workflow
+    assert "a28be10db466631cd5e5e4dbe0429da250cd8b42" in workflow
+    assert "session-review-code-growth-" in workflow

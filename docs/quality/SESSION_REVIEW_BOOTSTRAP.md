@@ -70,3 +70,7 @@ A evidência JUnit executa agora os testes Python de governança e os testes vis
 sem privilégios de escrita, reunindo apenas suites realmente concluídas com sucesso.
 O verificador reage ao término do workflow de proveniência, sem tornar o check
 de CI ou o artifact uma aprovação independente.
+
+O check de contrato executa o verificador oficial `CODE-GROWTH-001` no SHA
+material exato, com politica da base protegida, e anexa o JSON emitido pelo
+runner como artifact, sem forjar certificado de handoff.
