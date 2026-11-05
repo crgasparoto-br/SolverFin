@@ -1,0 +1,134 @@
+"""Adversarial controls for freshness and authenticated certificate provenance."""
+import io
+import json
+import sys
+import zipfile
+from pathlib import Path
+from unittest.mock import patch
+
+import pytest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+import session_review_certificate as source
+import session_review_evidence as evidence
+
+REPO = "owner/repo"
+BASE, HEAD, MATERIAL = "b" * 40, "a" * 40, "c" * 40
+DIGEST = "d" * 64
+
+
+def zip_data(fact):
+    out = io.BytesIO()
+    with zipfile.ZipFile(out, "w") as archive:
+        archive.writestr(source.ATTESTATION_NAME, json.dumps(fact))
+    return out.getvalue()
+
+
+def successful_run(number=10):
+    return {"id": 10, "name": source.RUN_NAME, "path": source.WORKFLOW,
+            "head_sha": HEAD, "event": "pull_request",
+            "status": "completed", "conclusion": "success",
+            "pull_requests": [{"number": number}]}
+
+
+def facts():
+    return {"schema_version": 1, "repository": REPO, "pull_request": 10,
+            "base_sha": BASE, "head_sha": HEAD,
+            "material_head_sha": MATERIAL, "certificate_sha256": DIGEST,
+            "run_id": 10}
+
+
+def api(path, newer=None):
+    if path == f"/repos/{REPO}":
+        return {"default_branch": "main"}
+    if path == f"/repos/{REPO}/branches/main":
+        return {"commit": {"sha": "e" * 40}}
+    if path.startswith(f"/repos/{REPO}/actions/runs?"):
+        runs = [successful_run()]
+        if newer:
+            runs.append(newer)
+        return {"total_count": len(runs), "workflow_runs": runs}
+    if path.endswith("/actions/runs/10/jobs?per_page=100"):
+        return {"total_count": 1, "jobs": [{"name": "provenance", "conclusion": "success"}]}
+    if path.endswith("/actions/runs/10/artifacts?per_page=100"):
+        return {"total_count": 1, "artifacts": [{
+            "id": 33, "name": source.ARTIFACT_PREFIX + HEAD,
+            "expired": False, "digest": "sha256:" + source.digest(zip_data(facts()))}]}
+    raise AssertionError(path)
+
+
+def trusted_file(repo, path, sha):
+    assert path in source.TRUSTED_PATHS
+    return "trusted", "a" * 64
+
+
+def verify(**kw):
+    return source.verify_attestation(
+        REPO, 10, BASE, HEAD, MATERIAL, DIGEST,
+        api=lambda path: api(path, **kw),
+        file_at=trusted_file, download=lambda repo, aid: zip_data(facts()))
+
+
+def test_provenance_positive_and_exact_identity():
+    assert verify()["run_id"] == 10
+    with patch.object(source, "parse_artifact", return_value={
+            **facts(), "pull_request": 11}):
+        with pytest.raises(ValueError, match="foreign"):
+            verify()
+
+
+@pytest.mark.parametrize("state", ["failure", "cancelled", "pending"])
+def test_newer_failed_or_pending_producer_revokes_old_green(state):
+    newer = {**successful_run(), "id": 11,
+             "conclusion": state, "status": "completed" if state != "pending" else "in_progress"}
+    with pytest.raises(ValueError, match="newest trusted certificate producer"):
+        verify(newer=newer)
+
+
+def test_modified_candidate_producer_fails_before_green_status():
+    refs = []
+    def file_at(repo, path, sha):
+        refs.append(sha)
+        return ("tampered" if sha == HEAD else "trusted", "a" * 64)
+    with pytest.raises(ValueError, match="differs from protected base"):
+        source.verify_attestation(
+            REPO, 10, BASE, HEAD, MATERIAL, DIGEST,
+            api=lambda path: api(path), file_at=file_at)
+    assert HEAD in refs
+
+
+def test_forged_artifact_digest_and_foreign_zip_path_rejected():
+    wrong = zip_data({**facts(), "certificate_sha256": "0" * 64})
+    with pytest.raises(ValueError, match="transport digest mismatch"):
+        source.verify_attestation(
+            REPO, 10, BASE, HEAD, MATERIAL, DIGEST, api=api,
+            file_at=trusted_file, download=lambda _repo, _id: wrong)
+    payload = io.BytesIO()
+    with zipfile.ZipFile(payload, "w") as archive:
+        archive.writestr(source.ATTESTATION_NAME, json.dumps(facts()))
+        archive.writestr("../escape", "bad")
+    with pytest.raises(ValueError, match="foreign or unsafe"):
+        source.parse_artifact(payload.getvalue())
+
+
+def test_evidence_latest_failed_or_running_never_reuses_older_green():
+    old = {"id": 21, "name": evidence.RUN_NAME, "path": evidence.WORKFLOW,
+           "head_sha": HEAD, "event": "pull_request", "status": "completed",
+           "conclusion": "success", "pull_requests": [{"number": 10}]}
+    for state, conclusion in (("completed", "failure"), ("in_progress", None)):
+        new = {**old, "id": 22, "status": state, "conclusion": conclusion}
+        with patch.object(evidence, "authenticate_ci_workflows"), \
+             patch.object(evidence, "prove_ci", return_value={}), \
+             patch.object(evidence, "api", return_value={
+                 "total_count": 2, "workflow_runs": [old, new]}):
+            with pytest.raises(ValueError, match="newest exact-SHA evidence workflow"):
+                evidence.collect_verified(REPO, 10, BASE, HEAD, MATERIAL, DIGEST)
+
+
+def test_workflow_is_read_only_and_uses_base_producer_and_pinned_skill():
+    source_text = (Path(__file__).resolve().parents[1] / source.WORKFLOW).read_text()
+    assert "checks: write" not in source_text
+    assert "persist-credentials: false" in source_text
+    assert "trusted/scripts/session_review_certificate.py" in source_text
+    assert "candidate/scripts/session_review_certificate.py" not in source_text
+    assert "a28be10db466631cd5e5e4dbe0429da250cd8b42" in source_text

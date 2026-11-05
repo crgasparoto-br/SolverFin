@@ -47,7 +47,6 @@ def strict_json(raw: str) -> dict:
         raise ValueError("JSON object required")
     return value
 
-
 def require(condition: bool, reason: str) -> None:
     if not condition:
         raise ValueError(reason)
@@ -79,7 +78,6 @@ def validate_policy(policy: dict) -> None:
                 and isinstance(u["login"], str) and re.fullmatch(r"[A-Za-z0-9-]+", u["login"])
                 for u in users), "invalid operator identity")
     require(len({u["id"] for u in users}) == len(users), "duplicate operator identity")
-
 
 def allowed(comment: dict, policy: dict) -> bool:
     user = comment.get("user") or {}

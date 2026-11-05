@@ -56,3 +56,12 @@ Antes da instalacao, preservar snapshot de rulesets e plano de rollback, mantend
 - **A-763-07:** conteudo gzip e descomprimido sob limite antes de alocacao excessiva; entrada malformada e rejeitada.
 
 Os testes cobrem controles negativos de watermark, base de destino, aliases e JSON falso, drift de identidade e expansao gzip. A politica permanece `mode=disabled`: codigo candidato nao substitui auditoria independente nem ativa checks ou rulesets nas branches protegidas. A ativacao M2 continua dependente de instalacao confiavel e ensaios reais.
+
+## Remediação A-763-08..11 (05/11/2026)
+
+- **A-763-08:** o coletor passa a exigir o run mais recente, recusando evidência anterior se o último run falhou, foi cancelado ou continua em execução.
+- **A-763-09:** certificado com hashes autodeclarados não autoriza aprovação. Um novo workflow somente-leitura valida o certificado com código da base protegida e a Skill oficial pinada. O consumidor autentica run, job, PR, SHA e digest do artifact, exigindo bytes de workflow/código idênticos na base, default e HEAD.
+- **A-763-11:** extraído o módulo de verificação de artefatos e filho result-only; os arquivos de produção permanecem dentro do limite de 300 linhas de `CODE-GROWTH-001`.
+- **A-763-10:** a certificação própria da issue #762 depende da instalação real do produtor confiável. O handoff herdado de #728 não é aceito; não fabricar prova ou approval. O workflow novo falha fechado antes do bootstrap.
+
+A política permanece `mode=disabled`, PR draft. Não houve merge, ativação, alteração de rulesets ou aprovação independente. Testes mockados não substituem ensaios M2 reais.

@@ -163,12 +163,19 @@ def collect_verified(repo: str, number: int, base: str, head: str, material: str
     published_runs = prove_ci(repo, head, required)
     material_runs = prove_ci(repo, material, required)
     rows = api(f"/repos/{repo}/actions/runs?head_sha={head}&event=pull_request&per_page=100")
-    runs = [r for r in rows.get("workflow_runs", []) if r.get("name") == RUN_NAME
+    require(isinstance(rows, dict) and type(rows.get("total_count")) is int
+            and rows["total_count"] <= 100
+            and len(rows.get("workflow_runs", [])) == rows["total_count"],
+            "incomplete exact-SHA evidence workflow history")
+    runs = [r for r in rows["workflow_runs"] if r.get("name") == RUN_NAME
             and r.get("path") == WORKFLOW and r.get("head_sha") == head
-            and r.get("event") == "pull_request" and r.get("status") == "completed"
-            and r.get("conclusion") == "success"]
-    require(len(runs) >= 1, "trusted exact-SHA evidence workflow is missing")
+            and r.get("event") == "pull_request"]
+    require(bool(runs), "trusted exact-SHA evidence workflow is missing")
     chosen = max(runs, key=lambda r: r["id"])
+    require(chosen.get("status") == "completed" and chosen.get("conclusion") == "success",
+            "newest exact-SHA evidence workflow failed or is not complete")
+    require(any(row.get("number") == number for row in chosen.get("pull_requests", [])),
+            "exact-SHA evidence workflow belongs to another PR")
     listing = api(f"/repos/{repo}/actions/runs/{chosen['id']}/artifacts?per_page=100")
     require(listing.get("total_count") == len(listing.get("artifacts", [])),
             "artifact list incomplete")
