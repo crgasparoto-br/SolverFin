@@ -23,14 +23,15 @@ def fixture():
     check = {"id": 111, "name": "Delivery V2 gate", "head_sha": HEAD,
              "status": "completed", "conclusion": "success",
              "details_url": f"https://github.com/{REPO}/actions/runs/444/job/555",
-             "app": {"id": solo.ACTIONS_APP_ID}}
+             "app": {"id": solo.ACTIONS_APP_ID}, "check_suite": {"id": 999}}
     job = {"id": 555, "run_id": 444, "name": "Delivery V2 gate",
            "status": "completed", "conclusion": "success", "head_sha": HEAD,
            "check_run_url": f"https://api.github.com/repos/{REPO}/check-runs/111"}
     run = {"id": 444, "event": "pull_request", "status": "completed",
            "conclusion": "success", "head_sha": HEAD, "name": "Repository CI",
            "path": ".github/workflows/delivery-v2-ci.yml",
-           "workflow_id": 777, "head_repository": {"full_name": REPO},
+           "workflow_id": 777, "check_suite_id": 999,
+           "head_repository": {"full_name": REPO},
            "pull_requests": [{"number": 761,
                               "base": {"ref": "develop", "sha": BASE},
                               "head": {"sha": HEAD}}]}
@@ -127,6 +128,29 @@ class ExactShaDeliveryGateTests(unittest.TestCase):
             f"https://api.github.com/repos/{REPO}/check-runs/112")
         with self.assertRaisesRegex(ValueError, "not bound"):
             validate(target, checks, responses)
+
+    def test_reject_mismatched_check_suite(self):
+        target, checks, responses = fixture()
+        responses[f"/repos/{REPO}/actions/runs/444"]["check_suite_id"] = 1000
+        with self.assertRaisesRegex(ValueError, "suite differs"):
+            validate(target, checks, responses)
+
+    def test_reject_candidate_modified_workflow(self):
+        from types import SimpleNamespace
+        from unittest.mock import Mock
+        target, checks, responses = fixture()
+        api = lambda route: responses[route]
+        official = SimpleNamespace(
+            session=SimpleNamespace(pages=lambda *args, **kwargs: checks, api=api),
+            github=SimpleNamespace(github_token=lambda: "trusted-read-token"),
+            native=SimpleNamespace(verify_trusted_workflow_source=Mock(
+                side_effect=ValueError("required workflow differs from trusted base"))),
+        )
+        with self.assertRaisesRegex(ValueError, "differs from trusted base"):
+            solo.evidence_ids(REPO, target, official)
+        official.native.verify_trusted_workflow_source.assert_called_once_with(
+            REPO, solo.CI_WORKFLOW, BASE, HEAD, "trusted-read-token",
+        )
 
     def test_reject_wrong_job_result(self):
         for field, value in (("run_id", 111), ("name", "Fake Gate"),

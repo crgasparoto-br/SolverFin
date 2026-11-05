@@ -110,6 +110,9 @@ def validate_delivery_gate(
     require(isinstance(workflow, dict) and run.get("workflow_id") == workflow.get("id")
             and workflow.get("path") == CI_WORKFLOW,
             "delivery workflow identity differs from the trusted CI workflow")
+    suite_id = (check.get("check_suite") or {}).get("id")
+    require(type(suite_id) is int and suite_id > 0 and run.get("check_suite_id") == suite_id,
+            "delivery Check Run suite differs from CI run")
     return check["id"]
 
 
@@ -118,6 +121,12 @@ def evidence_ids(repo: str, identity: dict[str, Any], official: Any) -> list[int
         repo, f"commits/{identity['head_sha']}/check-runs?filter=all", field="check_runs"
     )
     gate_id = validate_delivery_gate(repo, identity, checks, official.session.api)
+    # The Actions app can publish a genuine green run from candidate-modified CI YAML.
+    # Reuse the Skill verifier to authenticate complete workflow bytes against base.
+    official.native.verify_trusted_workflow_source(
+        repo, CI_WORKFLOW, identity["base_sha"], identity["head_sha"],
+        official.github.github_token(),
+    )
     reviews = official.github.page_all(repo, f"pulls/{identity['pull_request']}/reviews",
                                        official.github.github_token())
     active = official.checks.latest_reviews(reviews)
@@ -185,11 +194,12 @@ def load_official(skill_root: Path) -> Any:
     import solo_audit_events as events
     import solo_audit_github as github
     import solo_audit_source as source
+    import verify_independent_pr_audit as native
     import verify_session_review as session
     import verify_solo_audit_attestation as gate
     from types import SimpleNamespace
     return SimpleNamespace(checks=checks, events=events, github=github,
-                           source=source, session=session, gate=gate)
+                           source=source, session=session, native=native, gate=gate)
 
 
 def evaluate(repo: str, number: int, issue: int | None, workflow_sha: str,

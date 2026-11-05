@@ -12,7 +12,7 @@ A implementação M1 é optativa, não modifica rulesets, contagem de aprovaçõ
 - Workflow: `.github/workflows/solo-audit-attestation.yml` em base protegida e na branch default `main`.
 - Adaptador do SolverFin: `scripts/audit/verify_solo_attestation.py`, comparado byte a byte à base imutável da PR. O checkout usa o `github.workflow_sha`, nunca o HEAD candidato.
 - Assinatura, schema v3, registro público de chaves, comentário único/imutável, identidade PR/issue, hash do corpo da issue, HEAD/base/preview, permissão do autor e resolução de eventos são validados pelo código oficial fixado da Skill.
-- Para o SolverFin, o adaptador exige o job verdadeiro `Repository CI / Delivery V2 gate`, ligado a um run GitHub Actions do mesmo repositório, PR, base e HEAD exatos. Confere a associação entre job e Check Run; não confia apenas em um status verde de mesmo nome.
+- Para o SolverFin, o adaptador exige o job verdadeiro `Repository CI / Delivery V2 gate`, ligado a um run GitHub Actions do mesmo repositório, PR, base e HEAD exatos. Confere o Check Suite e a associação entre job e Check Run; não confia apenas em um status verde de mesmo nome. A definição do workflow de CI deve corresponder aos bytes autenticados da base protegida, pelo verificador oficial: uma definição alterada pela PR falha fechada.
 - Antes de publicar sucesso, relê comentários, permissão, configuração de chave, check exato, issue/PR, preview, HEAD único e identidade da fonte protegida.
 
 ## Bootstrap único
