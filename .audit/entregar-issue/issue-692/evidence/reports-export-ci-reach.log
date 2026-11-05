@@ -1,0 +1,8 @@
+HEAD: f2e28ed4bdd54bc457ece5e88e2c102429fee2ca
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/reports-export.test.ts
+SOURCE: GitHub Actions run 42021258945, CRITICAL validation job 127224621257, completed/success.
+SOURCE_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/42021258945/job/127224621257
+OBSERVED: report exports - canonical snapshot: 3 tests passed; wide descriptions PDF 1 test passed; isolation, validation and injection suite passed; npm run test step completed successfully.
+PROVENANCE: authenticated remote job log checked before recording this local index; original log remains at SOURCE_URL.

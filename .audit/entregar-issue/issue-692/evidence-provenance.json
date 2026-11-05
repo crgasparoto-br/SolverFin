@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "evidence": [
+    {
+      "evidence_id": "EVID-692-QUANT-001",
+      "kind": "quantitative",
+      "path": ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
+      "sha256": "93aab083b1575b4154a4f8e0406fc419252acd5cdc43bbe16d0bb351abce7f38",
+      "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Repository CI CRITICAL validation job 127224621257",
+      "status": "passed",
+      "claim": "Exact integer monetary fixture values 12345/99887 matched independently decoded CSV/XLSX/PDF cells; no benchmark claimed."
+    }
+  ]
+}

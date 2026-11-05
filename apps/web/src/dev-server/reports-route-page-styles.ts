@@ -13,6 +13,10 @@ export function reportPageStyles(): string {
     .report-view-tabs a { border-bottom:2px solid transparent; color:var(--muted); font-size:var(--sf-font-size-sm); font-weight:600; min-height:var(--sf-density-interactive-target-min); padding:11px 5px 9px; text-decoration:none; transition:color var(--sf-motion-fast),border-color var(--sf-motion-fast); } 
     .report-view-tabs a:hover { color:var(--primary); }
     .report-view-tabs a[aria-current="page"] { border-bottom-color:var(--primary); color:var(--primary); }
+    .report-export-actions { align-items:center; display:flex; flex-wrap:wrap; gap:8px; margin:-4px 0 0; }
+    .report-export-link { background:var(--surface); border:1px solid var(--sf-color-border); border-radius:var(--sf-radius-md); color:var(--primary); display:inline-flex; align-items:center; font-size:var(--sf-font-size-sm); font-weight:650; justify-content:center; min-height:var(--sf-density-interactive-target-min); padding:7px 12px; text-decoration:none; }
+    .report-export-link:hover { background:var(--sf-color-neutral-control-hover); border-color:var(--sf-color-neutral-control-border-hover); color:var(--sf-color-neutral-control-text-hover); }
+    .report-export-link:focus-visible { outline:3px solid color-mix(in srgb,var(--primary) 40%,transparent); outline-offset:2px; }
     .report-filter-panel { background:var(--surface); border:1px solid var(--line); border-radius:var(--sf-radius-lg); box-shadow:none; min-width:0; padding:12px 14px; }
     .report-filter-panel:focus-within { border-color:var(--sf-color-neutral-control-border-hover); }
     .report-filters { align-items:end; display:grid; gap:10px; min-width:0; }
