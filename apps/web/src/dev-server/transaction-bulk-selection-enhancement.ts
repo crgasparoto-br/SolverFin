@@ -1,4 +1,5 @@
 import { icon as renderIcon } from "./icons.js";
+import { renderStatementStatusActionIcon } from "./statement-status.js";
 
 const STYLE_MARKER = "data-transaction-bulk-selection-enhancement";
 const SCRIPT_MARKER = "data-transaction-bulk-selection-controller";
@@ -10,6 +11,14 @@ export function enhanceTransactionBulkSelection(html: string): string {
     <style ${STYLE_MARKER}>
       .selection-bar .bulk-selection-actions{display:flex;flex-wrap:wrap;gap:7px}
       .selection-bar .bulk-selection-action{align-items:center;display:inline-flex;gap:6px;min-height:34px;white-space:nowrap}
+      .selection-bar .bulk-selection-actions button.bulk-reconciliation-action[data-button-variant="neutral"]{background:transparent;border:0;border-radius:999px;box-sizing:border-box;flex:0 0 44px;gap:0;height:44px;justify-content:center;min-height:44px;min-width:44px;padding:0;width:44px}
+      .selection-bar .bulk-reconciliation-action>.statement-status{box-sizing:border-box;flex:0 0 26px;height:26px;width:26px}
+      .selection-bar .bulk-reconciliation-action>.statement-status svg{display:block;height:15px;width:15px}
+      .selection-bar .bulk-reconciliation-action>.statement-status-ok{background:var(--sf-color-success-surface);border-color:var(--sf-color-success-border);color:var(--sf-color-success)}
+      .selection-bar .bulk-reconciliation-action>.statement-status-posted{background:var(--sf-color-neutral-control-hover);border-color:var(--sf-color-line);color:var(--sf-color-muted-text)}
+      .selection-bar .bulk-selection-actions button.bulk-reconciliation-action[data-button-variant="neutral"]:hover:not(:disabled)>.statement-status,.selection-bar .bulk-selection-actions button.bulk-reconciliation-action[data-button-variant="neutral"]:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
+      .selection-bar .bulk-reconciliation-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+      .selection-bar .bulk-reconciliation-action:disabled{cursor:not-allowed;opacity:.55}
       .selection-bar .bulk-selection-action.danger{background:var(--surface);border:1px solid var(--danger);color:var(--danger)}
       .selection-bar .bulk-selection-action.danger:hover,.selection-bar .bulk-selection-action.danger:focus-visible{background:var(--danger-bg)}
       .selection-bar .bulk-selection-help{color:var(--muted);flex-basis:100%;font-size:.8125rem;line-height:1.35;text-align:right}
@@ -39,8 +48,8 @@ export function enhanceTransactionBulkSelection(html: string): string {
         selectionBar.dataset.bulkSelectionEnhanced = "true";
 
         const icon = ${JSON.stringify({
-          check: renderIcon("check", 16),
-          undo: renderIcon("refresh-cw", 16),
+          reconcile: renderStatementStatusActionIcon("reconciled"),
+          unreconcile: renderStatementStatusActionIcon("posted"),
           trash: renderIcon("trash-2", 16),
           group: renderIcon("layers", 16),
         })};
@@ -48,8 +57,8 @@ export function enhanceTransactionBulkSelection(html: string): string {
         const actions = document.createElement("span");
         actions.className = "bulk-selection-actions";
         actions.innerHTML =
-          '<button type="button" class="ghost-btn bulk-selection-action" data-button-variant="neutral" data-bulk-selection-action="reconcile">' + icon.check + '<span>Marcar como conciliado</span></button>' +
-          '<button type="button" class="ghost-btn bulk-selection-action" data-button-variant="neutral" data-bulk-selection-action="unreconcile">' + icon.undo + '<span>Desmarcar conciliado</span></button>' +
+          '<button type="button" class="statement-status-option bulk-selection-action bulk-reconciliation-action" data-button-variant="neutral" data-bulk-selection-action="reconcile" aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado">' + icon.reconcile + '</button>' +
+          '<button type="button" class="statement-status-option bulk-selection-action bulk-reconciliation-action" data-button-variant="neutral" data-bulk-selection-action="unreconcile" aria-label="Desmarcar conciliado" title="Desmarcar conciliado" data-tooltip="Desmarcar conciliado">' + icon.unreconcile + '</button>' +
           '<button type="button" class="bulk-selection-action danger" data-bulk-selection-action="void">' + icon.trash + '<span>Excluir selecionados</span></button>';
         selectionBar.insertBefore(actions, groupOpen || null);
 
@@ -196,16 +205,21 @@ export function enhanceTransactionBulkSelection(html: string): string {
           reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconcileTarget;
           unreconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconciled;
           voidButton.disabled = items.length === 0;
-          reconcileButton.title = hasProtected
+          function updateTooltip(button, label, reason) {
+            const tooltip = reason ? label + ": " + reason : label;
+            button.title = tooltip;
+            button.setAttribute("data-tooltip", tooltip);
+          }
+          updateTooltip(reconcileButton, "Marcar como conciliado", hasProtected
             ? "Conciliação de remuneração automática exige seu fluxo próprio."
             : !eligibleStatuses
               ? "Sugestões não confirmadas e lançamentos excluídos não podem ser conciliados."
-              : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.";
-          unreconcileButton.title = hasProtected
+              : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.");
+          updateTooltip(unreconcileButton, "Desmarcar conciliado", hasProtected
             ? "Conciliação de remuneração automática exige seu fluxo próprio."
             : !eligibleStatuses
               ? "Esta seleção contém lançamentos com situação indisponível."
-              : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.";
+              : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.");
           reconcileButton.setAttribute("aria-describedby", helpNode.id);
           unreconcileButton.setAttribute("aria-describedby", helpNode.id);
           voidButton.setAttribute("aria-describedby", helpNode.id);

@@ -431,3 +431,19 @@ com `{ status }`, afetando uma única ocorrência.
 ### Contratos de regressao vigentes apos PR #720
 
 A coluna **Situacao** tem icone com descricao acessivel e tooltip; o acionador de teclado e o `summary`, nao o `span` ilustrativo. Agrupadores diarios preservam a sequencia financeira sem tornar `article` irmao direto de outro `article`. Em desktop largo, **Valor** e **Saldo** sao colunas independentes e alinhadas a direita, com **Valor** maior; em mobile, o saldo continua na linha secundaria. Os testes nao devem recuperar texto oculto do status nem exigir saldo abaixo do valor no layout desktop.
+
+## Seleção múltipla: ações por ícones no quadro do Extrato — issue #768
+
+Na barra de seleção do Extrato, **Marcar como conciliado** e **Desmarcar conciliado**
+utilizam somente um ícone circular por ação, reutilizado do menu da coluna
+Situação (check de conciliação e círculo de não conciliado). Cada ícone possui
+SVG de 15 px, círculo de 26 px e alvo nativo de 44 × 44 px, com aparência
+neutra, hover/foco visíveis e a mesma semântica visual da Golden Screen.
+O texto permanece somente no `aria-label`, no `title` e em `data-tooltip`;
+quando uma ação está indisponível, o tooltip explica o motivo sem esconder o
+nome da ação. A ajuda acessível da seleção continua apresentando as restrições.
+
+O quadro mantém as ações de **Excluir selecionados**, **Unificar lançamentos**
+e **Limpar**, sem modificação de regras financeiras, autorizações, confirmações
+ou endpoints. A validação Chrome cobre os dois ícones em desktop/mobile,
+acionamento por teclado e seleções com estados mistos.

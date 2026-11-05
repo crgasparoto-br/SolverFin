@@ -117,6 +117,8 @@ try {
   assert.equal(mixedSelection.voidDisabled, false);
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
   assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
+  const desktopIcons = await readReconciliationIcons(browser.cdp);
+  assertReconciliationIcons(desktopIcons, "desktop");
 
   await evaluate(
     browser.cdp,
@@ -171,6 +173,8 @@ try {
   assert.equal(mobile.visibleInViewport, true);
   assert.equal(mobile.actionCount, 3);
   assert.equal(mobile.helpVisible, true);
+  const mobileIcons = await readReconciliationIcons(browser.cdp);
+  assertReconciliationIcons(mobileIcons, "mobile");
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-390x844.png"));
 
   await setViewport(browser.cdp, 1366, 900);
@@ -256,7 +260,9 @@ try {
         tagName: button.tagName,
         type: button.type,
         tabIndex: button.tabIndex,
-        accessibleText: button.textContent.trim()
+        accessibleText: button.getAttribute("aria-label"),
+        visibleText: button.textContent.trim(),
+        tooltip: button.getAttribute("data-tooltip")
       };
     })()`,
   );
@@ -264,6 +270,8 @@ try {
   assert.equal(keyboardPrepared.tagName, "BUTTON");
   assert.equal(keyboardPrepared.type, "button");
   assert.equal(keyboardPrepared.tabIndex, 0);
+  assert.equal(keyboardPrepared.visibleText, "");
+  assert.equal(keyboardPrepared.tooltip, keyboardPrepared.accessibleText);
   assert.match(keyboardPrepared.accessibleText, /Marcar como conciliado/);
   const reconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await browser.cdp.send("Page.bringToFront");
@@ -580,6 +588,8 @@ try {
       {
         initial,
         mixedSelection,
+        desktopIcons,
+        mobileIcons,
         desktop,
         shortDesktop,
         mobile,
@@ -690,4 +700,55 @@ async function readRenderedStatuses(cdp, created) {
       };
     })()`,
   );
+}
+
+async function readReconciliationIcons(cdp) {
+  return evaluate(
+    cdp,
+    `(() => Array.from(document.querySelectorAll(
+      '[data-bulk-selection-action="reconcile"], [data-bulk-selection-action="unreconcile"]'
+    )).map((button) => {
+      const circle = button.querySelector(".statement-status");
+      const svg = circle?.querySelector("svg");
+      const target = button.getBoundingClientRect();
+      const shape = circle?.getBoundingClientRect();
+      const glyph = svg?.getBoundingClientRect();
+      return {
+        action: button.dataset.bulkSelectionAction,
+        label: button.getAttribute("aria-label"),
+        title: button.getAttribute("title"),
+        tooltip: button.getAttribute("data-tooltip"),
+        text: button.textContent.trim(),
+        iconCount: button.querySelectorAll("svg").length,
+        circleClass: circle?.className || "",
+        targetWidth: Math.round(target.width),
+        targetHeight: Math.round(target.height),
+        circleWidth: Math.round(shape?.width || 0),
+        circleHeight: Math.round(shape?.height || 0),
+        glyphWidth: Math.round(glyph?.width || 0),
+        glyphHeight: Math.round(glyph?.height || 0)
+      };
+    }))()`,
+  );
+}
+
+function assertReconciliationIcons(items, viewport) {
+  assert.equal(items.length, 2, `${viewport}: action count`);
+  for (const item of items) {
+    assert.equal(item.text, "", `${viewport}: no visible label on ${item.action}`);
+    assert.equal(item.iconCount, 1, `${viewport}: single SVG on ${item.action}`);
+    assert.equal(item.targetWidth, 44);
+    assert.equal(item.targetHeight, 44);
+    assert.equal(item.circleWidth, 26);
+    assert.equal(item.circleHeight, 26);
+    assert.equal(item.glyphWidth, 15);
+    assert.equal(item.glyphHeight, 15);
+    assert.ok(item.label, `${viewport}: accessible label`);
+    assert.equal(item.title, item.tooltip);
+    assert.match(item.tooltip, new RegExp(item.label));
+    assert.match(
+      item.circleClass,
+      item.action === "reconcile" ? /statement-status-ok/ : /statement-status-posted/,
+    );
+  }
 }
