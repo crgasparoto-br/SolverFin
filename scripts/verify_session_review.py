@@ -163,12 +163,14 @@ def evaluate(repo: str, number: int, issue_number: int, run_id: str) -> int:
     pr = collector.api(f"/repos/{repo}/pulls/{number}")
     head = (pr.get("head") or {}).get("sha")
     require(isinstance(head, str) and collector.SHA_RE.fullmatch(head), "PR HEAD missing")
-    watermark = review_watermark(repo, head)
+    # Establish the blocking check before any fallible history read.
     check_id = begin_check(repo, head, number, run_id)
-    receipt = {"minimum_comment_id": watermark, "third_party_identity_proven": False,
+    receipt = {"minimum_comment_id": 0, "third_party_identity_proven": False,
                "assurance": ASSURANCE, "identity": {"repository": repo, "pull_request": number,
                                                    "head_sha": head}}
     try:
+        watermark = review_watermark(repo, head)
+        receipt["minimum_comment_id"] = watermark
         require(type(issue_number) is int and issue_number > 0, "unambiguous canonical issue required")
         initial_policy_text, _ = collector.file_at(repo, POLICY_PATH, pr["base"]["sha"])
         initial = live_identity(repo, number, issue_number, initial_policy_text.encode())
