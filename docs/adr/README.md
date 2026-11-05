@@ -29,3 +29,4 @@ Use ADR quando uma decisão muda stack, boundary, privacidade, tenant, auditoria
 - [0014 - Arquitetura incremental de interface por componentes e view-models](./0014-incremental-component-ui-architecture.md)
 - [0015 - Faixa segura para valores monetários em minor units](./0015-safe-monetary-minor-unit-range.md)
 - [0016 - Fila acionável de insights com ciclo de vida por snapshot](./0016-actionable-financial-insight-lifecycle.md)\n- [0017 - Armazenamento privado transacional para anexos operacionais](./0017-private-operational-attachment-storage.md)
+- [0019 - Revisao de sessao atestada em projeto de operador unico](./0019-operator-attested-session-review.md)
