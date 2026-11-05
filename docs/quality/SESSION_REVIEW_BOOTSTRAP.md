@@ -47,7 +47,6 @@ nao pode produzir prova valida apenas por manter o nome do check.
 
 Antes da instalacao, preservar snapshot de rulesets e plano de rollback, mantendo `Delivery V2 gate`, PR obrigatoria e bloqueios de exclusao/force-push. Esta PR nao altera rulesets, nao faz merge e nao encerra a #714.
 
-
 ## Correcoes da auditoria A-763-03 a A-763-07 (05/11/2026)
 
 - **A-763-03:** referencia da PR atualizada para `Refs #762;`, sem relaxar o parser canonico.
