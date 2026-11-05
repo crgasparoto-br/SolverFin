@@ -182,11 +182,12 @@ try {
   assertSelectionActionIcons(mobileIcons, "mobile");
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-390x844.png"));
 
-  // Chrome's mobile viewport emulation does not consistently synthesize
-  // keyboard activation for focused buttons. Verify the native Enter contract
-  // in the desktop viewport, as in the dedicated keyboard scenario.
+  // Re-establish the desktop page/selection after viewport emulation so
+  // Chrome sends the native Enter key to the focused Clear button reliably.
   await setViewport(browser.cdp, 1366, 900);
-  await sleep(120);
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await sleep(150);
+  await selectMixed(browser.cdp, created);
   const clearReady = await evaluate(
     browser.cdp,
     `(() => {
