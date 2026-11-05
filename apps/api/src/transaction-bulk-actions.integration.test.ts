@@ -266,7 +266,7 @@ async function main(): Promise<void> {
   for (const member of members) {
     assert.equal((await getTransactionForContext(context, member.id)).status, "voided");
   }
-  assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "posted");
+  assert.equal((await getTransactionForContext(context, directReconciled.id)).status, "reconciled");
 
   const audits = await query<{ action: string; redactedChanges: unknown }>(
     `select "action", "redactedChanges" from "AuditLogEntry" where "entityId"=$1 order by "occurredAt"`,
