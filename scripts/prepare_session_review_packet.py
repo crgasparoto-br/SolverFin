@@ -11,6 +11,7 @@ import argparse
 import base64
 import difflib
 import gzip
+import io
 import hashlib
 import json
 import os
@@ -129,6 +130,20 @@ def checked_preview(repo: str, sha: str, base: str, head: str) -> dict:
     return {"sha": sha, "tree_sha": raw["tree"]["sha"], "parents": parents}
 
 
+def bounded_gzip_decompress(raw: bytes, *, limit: int = MAX_TOTAL) -> bytes:
+    """Reject gzip bombs during bounded reads, never after full expansion."""
+    require(isinstance(raw, bytes) and type(limit) is int and limit > 0,
+            "invalid gzip input or size budget")
+    try:
+        with gzip.GzipFile(fileobj=io.BytesIO(raw), mode="rb") as stream:
+            result = stream.read(limit + 1)
+            require(len(result) <= limit, "sharded artifact inflation exceeds budget")
+            require(stream.read(1) == b"", "sharded artifact has trailing output")
+            return result
+    except (OSError, EOFError) as exc:
+        raise ValueError("malformed sharded gzip artifact") from exc
+
+
 def _verified_certificate_artifacts(repo: str, cert: dict, head: str) -> None:
     """Authenticate artifact bytes; metadata or a hand-written READY flag is not proof."""
     sub = cert["subject"]
@@ -177,7 +192,7 @@ def _verified_certificate_artifacts(repo: str, cert: dict, head: str) -> None:
                 "sharded artifact aggregate digest mismatch")
         content = base64.b64decode(base64_text, validate=True)
         require(len(content) <= MAX_TOTAL, "compressed artifact exceeds budget")
-        decoded = gzip.decompress(content) if manifest.get("compression") == "gzip" else content
+        decoded = bounded_gzip_decompress(content) if manifest.get("compression") == "gzip" else content
         require(len(decoded) <= MAX_TOTAL and manifest.get("decoded_sha256") == digest(decoded)
                 and artifact.get("logical_sha256") == digest(decoded),
                 "sharded artifact logical bytes mismatch")
