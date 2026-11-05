@@ -81,16 +81,55 @@ def test_sharded_or_malicious_zip_is_never_accepted():
 
 def test_successful_ci_must_be_newest_and_use_canonical_workflow_path():
     ok = {"id": 10, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
-          "head_sha": HEAD, "event": "pull_request", "status": "completed", "conclusion": "success"}
+          "head_sha": HEAD, "event": "pull_request", "status": "completed", "conclusion": "success",
+          "pull_requests": [{"number": 10, "head": {"sha": HEAD}, "base": {"sha": BASE}}]}
     with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [ok]}):
-        assert evidence.prove_ci(REPO, HEAD, ("Repository CI",))["Repository CI"]["id"] == 10
+        assert evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)["Repository CI"]["id"] == 10
     newer_failure = {**ok, "id": 11, "conclusion": "failure"}
     with patch.object(evidence, "api", return_value={"total_count": 2, "workflow_runs": [ok, newer_failure]}):
         with pytest.raises(ValueError, match="latest technical workflow"):
-            evidence.prove_ci(REPO, HEAD, ("Repository CI",))
+            evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
     with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [{**ok, "path": "forged.yml"}]}):
         with pytest.raises(ValueError, match="missing"):
-            evidence.prove_ci(REPO, HEAD, ("Repository CI",))
+            evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
+
+
+@pytest.mark.parametrize("identity_change", [
+    {"number": 99}, {"head": {"sha": MATERIAL}}, {"base": {"sha": MATERIAL}},
+    {"number": 10, "head": {"sha": HEAD}, "base": {"sha": MATERIAL}},
+])
+def test_foreign_pr_or_stale_base_cannot_reuse_green_technical_ci(identity_change):
+    old = {"number": 10, "head": {"sha": HEAD}, "base": {"sha": BASE}}
+    old.update(identity_change)
+    run = {"id": 7, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
+           "head_sha": HEAD, "event": "pull_request", "status": "completed",
+           "conclusion": "success", "pull_requests": [old]}
+    with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [run]}):
+        with pytest.raises(ValueError, match="exact PR/base/HEAD"):
+            evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
+
+
+@pytest.mark.parametrize("history", [
+    {"total_count": 2, "workflow_runs": []},
+    {"total_count": -1, "workflow_runs": []},
+    {"total_count": "1", "workflow_runs": []},
+    {"workflow_runs": []},
+])
+def test_partial_or_malformed_technical_ci_inventory_fails_closed(history):
+    with patch.object(evidence, "api", return_value=history):
+        with pytest.raises(ValueError, match="incomplete CI history"):
+            evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
+
+
+def test_ci_from_same_pr_with_foreign_newer_run_does_not_shadow_actual_last_run():
+    def record(id, number, status):
+        return {"id": id, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
+                "head_sha": HEAD, "event": "pull_request", "status": "completed",
+                "conclusion": status, "pull_requests": [{"number": number, "head": {"sha": HEAD},
+                                                         "base": {"sha": BASE}}]}
+    runs = [record(10, 10, "success"), record(11, 99, "failure")]
+    with patch.object(evidence, "api", return_value={"total_count": 2, "workflow_runs": runs}):
+        assert evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)["Repository CI"]["id"] == 10
 
 
 def test_check_mutation_transport_does_not_allow_issue_or_branch_writes():

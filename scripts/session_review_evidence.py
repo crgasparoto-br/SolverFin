@@ -136,16 +136,39 @@ def authenticate_ci_workflows(repo: str, base: str, material: str, head: str,
                     f"technical CI workflow differs from protected base: {path}")
 
 
-def prove_ci(repo: str, head: str, required: tuple[str, ...]) -> dict[str, dict]:
+def prove_ci(repo: str, head: str, required: tuple[str, ...],
+             number: int, base: str) -> dict[str, dict]:
+    """Accept only complete, exact-base CI history for this authenticated PR.
+
+    A green run from another PR sharing an immutable commit cannot certify this
+    delivery; the run must name the same PR, base SHA and candidate head SHA.
+    """
+    require(type(number) is int and number > 0 and SHA.fullmatch(base),
+            "invalid technical CI PR/base identity")
     rows = api(f"/repos/{repo}/actions/runs?head_sha={head}&event=pull_request&per_page=100")
-    require(isinstance(rows, dict) and isinstance(rows.get("workflow_runs"), list)
-            and rows.get("total_count", 0) <= 100, "unbounded or incomplete CI history")
+    require(isinstance(rows, dict) and type(rows.get("total_count")) is int
+            and 0 <= rows["total_count"] <= 100
+            and isinstance(rows.get("workflow_runs"), list)
+            and len(rows["workflow_runs"]) == rows["total_count"],
+            "unbounded or incomplete CI history")
+
+    def belongs_to_target(run: dict) -> bool:
+        prs = run.get("pull_requests")
+        return isinstance(prs, list) and any(
+            isinstance(pr, dict) and pr.get("number") == number
+            and (pr.get("base") or {}).get("sha") == base
+            and (pr.get("head") or {}).get("sha") == head
+            for pr in prs
+        )
+
     good: dict[str, dict] = {}
     for name in required:
-        matches = [r for r in rows["workflow_runs"] if r.get("name") == name
-                   and r.get("path") == CI_WORKFLOWS[name] and r.get("head_sha") == head
-                   and r.get("event") == "pull_request"]
-        require(bool(matches), f"required technical workflow {name} missing at exact SHA")
+        matches = [r for r in rows["workflow_runs"] if isinstance(r, dict)
+                   and r.get("name") == name
+                   and r.get("path") == CI_WORKFLOWS[name]
+                   and r.get("head_sha") == head and r.get("event") == "pull_request"
+                   and belongs_to_target(r)]
+        require(bool(matches), f"required technical workflow {name} missing for exact PR/base/HEAD")
         newest = max(matches, key=lambda r: r["id"])
         require(newest.get("status") == "completed" and newest.get("conclusion") == "success",
                 f"latest technical workflow {name} not terminal green")
@@ -160,8 +183,8 @@ def collect_verified(repo: str, number: int, base: str, head: str, material: str
     if visual_required:
         required += ("Statement visual validation",)
     authenticate_ci_workflows(repo, base, material, head, required)
-    published_runs = prove_ci(repo, head, required)
-    material_runs = prove_ci(repo, material, required)
+    published_runs = prove_ci(repo, head, required, number, base)
+    material_runs = prove_ci(repo, material, required, number, base)
     rows = api(f"/repos/{repo}/actions/runs?head_sha={head}&event=pull_request&per_page=100")
     require(isinstance(rows, dict) and type(rows.get("total_count")) is int
             and rows["total_count"] <= 100
