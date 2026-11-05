@@ -94,19 +94,10 @@
     },
     "source_context_proof": {
       "type": "object",
-      "required": [
-        "kind",
-        "value",
-        "issuer",
-        "issued_at"
-      ],
+      "required": ["kind", "value", "issuer", "issued_at"],
       "properties": {
         "kind": {
-          "enum": [
-            "chatgpt-conversation-id",
-            "agent-run-id",
-            "tool-attestation"
-          ]
+          "enum": ["chatgpt-conversation-id", "agent-run-id", "tool-attestation"]
         },
         "value": {
           "type": "string",
@@ -130,9 +121,7 @@
       "type": "boolean"
     },
     "assurance_mode": {
-      "enum": [
-        "single-operator-separate-context"
-      ]
+      "enum": ["single-operator-separate-context"]
     },
     "operator_github_id": {
       "type": "integer",
@@ -150,11 +139,7 @@
       "minLength": 20
     },
     "verdict": {
-      "enum": [
-        "approved",
-        "approved-with-reservations",
-        "rejected"
-      ]
+      "enum": ["approved", "approved-with-reservations", "rejected"]
     },
     "findings": {
       "type": "array",
@@ -179,12 +164,7 @@
             "minLength": 1
           },
           "severity": {
-            "enum": [
-              "blocker",
-              "high",
-              "medium",
-              "low"
-            ]
+            "enum": ["blocker", "high", "medium", "low"]
           },
           "description": {
             "type": "string",
@@ -231,16 +211,10 @@
             "type": "boolean"
           },
           "reusable_control_requirement": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "remediation_mode": {
-            "enum": [
-              "targeted-remediation",
-              "systemic-remediation"
-            ]
+            "enum": ["targeted-remediation", "systemic-remediation"]
           },
           "failed_gate": {
             "oneOf": [
@@ -296,12 +270,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "claim",
-          "source",
-          "observed_at"
-        ],
+        "required": ["id", "claim", "source", "observed_at"],
         "properties": {
           "id": {
             "type": "string",
@@ -336,13 +305,7 @@
     },
     "signature": {
       "type": "object",
-      "required": [
-        "algorithm",
-        "key_id",
-        "signed_payload_sha256",
-        "value_base64",
-        "signed_at"
-      ],
+      "required": ["algorithm", "key_id", "signed_payload_sha256", "value_base64", "signed_at"],
       "properties": {
         "algorithm": {
           "const": "ed25519"
@@ -403,12 +366,7 @@
       "oneOf": [
         {
           "type": "object",
-          "required": [
-            "head_sha",
-            "report_sha256",
-            "assurance_level",
-            "approved_at"
-          ],
+          "required": ["head_sha", "report_sha256", "assurance_level", "approved_at"],
           "properties": {
             "head_sha": {
               "type": "string",
@@ -418,10 +376,7 @@
               "$ref": "#/$defs/sha256"
             },
             "assurance_level": {
-              "enum": [
-                "controller-adversarial",
-                "isolated-within-run"
-              ]
+              "enum": ["controller-adversarial", "isolated-within-run"]
             },
             "approved_at": {
               "type": "string",
@@ -436,23 +391,14 @@
       ]
     },
     "rejection_id": {
-      "type": [
-        "string",
-        "null"
-      ],
+      "type": ["string", "null"],
       "pattern": "^audit-rejection:[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
     },
     "recommendations": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "description",
-          "evidence",
-          "actionable",
-          "remediation_mode"
-        ],
+        "required": ["id", "description", "evidence", "actionable", "remediation_mode"],
         "properties": {
           "id": {
             "type": "string",
@@ -474,16 +420,10 @@
             "type": "boolean"
           },
           "remediation_mode": {
-            "enum": [
-              "targeted-remediation",
-              "systemic-remediation"
-            ]
+            "enum": ["targeted-remediation", "systemic-remediation"]
           },
           "requirement_id": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "rationale": {
             "type": "string"
@@ -499,21 +439,13 @@
         },
         {
           "type": "object",
-          "required": [
-            "mode"
-          ],
+          "required": ["mode"],
           "properties": {
             "mode": {
-              "enum": [
-                "new",
-                "continuation"
-              ]
+              "enum": ["new", "continuation"]
             },
             "previous_rejection_id": {
-              "type": [
-                "string",
-                "null"
-              ],
+              "type": ["string", "null"],
               "pattern": "^audit-rejection:[A-Za-z0-9][A-Za-z0-9._:-]{7,127}$"
             },
             "continued_finding_ids": {
@@ -543,16 +475,10 @@
   "allOf": [
     {
       "if": {
-        "required": [
-          "assurance_mode"
-        ]
+        "required": ["assurance_mode"]
       },
       "then": {
-        "required": [
-          "operator_github_id",
-          "pull_request",
-          "issue_body_sha256"
-        ],
+        "required": ["operator_github_id", "pull_request", "issue_body_sha256"],
         "properties": {
           "assurance_mode": {
             "const": "single-operator-separate-context"
@@ -586,19 +512,13 @@
         "not": {
           "anyOf": [
             {
-              "required": [
-                "operator_github_id"
-              ]
+              "required": ["operator_github_id"]
             },
             {
-              "required": [
-                "pull_request"
-              ]
+              "required": ["pull_request"]
             },
             {
-              "required": [
-                "issue_body_sha256"
-              ]
+              "required": ["issue_body_sha256"]
             }
           ]
         }
@@ -611,9 +531,7 @@
             "const": "rejected"
           }
         },
-        "required": [
-          "verdict"
-        ]
+        "required": ["verdict"]
       },
       "then": {
         "properties": {
