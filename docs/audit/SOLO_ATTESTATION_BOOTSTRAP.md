@@ -9,7 +9,7 @@ Fonte normativa: [crgasparoto-br/skill, branch develop](https://github.com/crgas
 ## Estado de implantação
 
 - Os arquivos do controlador, a cadeia de validação, os esquemas e a lista `TRUSTED_PATHS` foram copiados da skill oficial, sem reduzir requisitos.
-- **O fluxo ainda não está operacional.** O código oficial exige os checks de CI do repositório `skill` (`Structure and tests`, `Offline authorization tests`, `collect / Require certified semantic handoff (exact SHA)`), enquanto o SolverFin usa outras verificações, inclusive `Delivery V2 gate`. É necessário criar e testar um adaptador de evidências **sem dispensar checks** ou aceitar fontes não autenticadas.
+- **O fluxo ainda não está operacional nas branches protegidas.** O adaptador exige os jobs autenticados `Delivery V2 gate` e `Repository CI gate` (`.github/workflows/delivery-v2-ci.yml`) e, para a `develop`, também `export` (`.github/workflows/delivery-audit-workspace.yml`). A origem dos jobs deve coincidir com a base imutável e o HEAD; uma falha ou novo rerun invalida o sucesso anterior. O job `export` disponibiliza pacotes de auditoria, **não equivale, por si só, a certificado semântico**. A validação viva desse vínculo e a comprovação de handoff certificado quando exigido ainda são obrigatórias.
 - A execução também exige os arquivos confiáveis nas bases protegidas `develop` e `main`; a implantação não pode declarar aprovação enquanto a árvore de origem não for publicada e validada nas duas bases.
 - **Não incluir o check nas rulesets** enquanto a comprovação do escopo por PR, da proteção de branches e dos cenários adversariais não estiver concluída.
 
@@ -29,10 +29,16 @@ Fonte normativa: [crgasparoto-br/skill, branch develop](https://github.com/crgas
 
 ## Condições de aceite antes do uso
 
-- Adaptador de CI autenticado do SolverFin validado em HEAD exato e em falhas/reenfileiramentos.
+- Adaptador de CI autenticado do SolverFin validado em HEAD exato e em falhas/reenfileiramentos, com execução autenticada viva (os 9 testes unitários apenas simulam respostas e não substituem prova real).
 - Proteção de `develop` e `main` confirmada por leitura confiável; ramo de execução protegido.
 - Eventos de comentário, alterações de issue, mudanças de HEAD/base e revogação exercitados.
 - PRs compartilhando HEAD rejeitadas; reconsulta imediatamente antes do sucesso.
 - Nenhuma alteração automática de ruleset, nenhuma assinatura falsa e nenhum merge sem aviso.
 
 A importação dos arquivos por si só não equivale à aprovação técnica nem à aprovação externa.
+
+## Evidências do bootstrap
+
+- Validação CI específica: [Solo audit bootstrap verification](https://github.com/crgasparoto-br/SolverFin/actions/runs/42062328188) — 9/9 testes unitários passaram no commit `598be6015b294d4b6dc909a5076dab9d4c6fa4eb`, sem credenciais de escrita.
+- Os testes cobrem mapeamento de workflow, ausência de check, rerun mais recente falho, app/head incorretos, inventário truncado, IDs de evidência e revisão `CHANGES_REQUESTED`.
+- O código foi compilado pelo Python 3.12 com dependências instaladas por hashes. A aprovação funcional de ponta a ponta ainda depende de execução protegida e configuração pública da chave.
