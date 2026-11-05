@@ -1,0 +1,346 @@
+{
+  "schema_version": 2,
+  "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "creations": [
+    {
+      "path": "scripts/prepare_session_review_packet.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_certificate.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_checks.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_evidence.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_github.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_packet_handoff.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/session_review_specification.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    },
+    {
+      "path": "scripts/verify_session_review.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/",
+          "git grep -n -E \"session_review|audit|certificate\" 534c492fc2d852ea1b3153eac346c8c0d4a8f29b -- scripts/ || true"
+        ],
+        "scope": "Reutilizacao de contratos existentes de CI e Skill oficial; modulo novo isola responsabilidade de controle de trusted exact-SHA.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/coverage-contract.mjs",
+            "reason_not_reused": "O candidato de CI existente nao possui este contrato Python de certificado ou verificador de comentario; novo modulo nao duplica logica financeira."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separacao modular necessaria ao controle de autenticidade de GitHub Actions e limite CODE-GROWTH-001, reuso de script da Skill oficial quando aplicavel."
+    }
+  ],
+  "references": [],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "tests/test_session_review.py",
+      "operation": "added",
+      "scenario": "Contratos de revisao por sessao, parser, pacote neutro, verificador e procedencia de certificado com casos positivos, negativos e regressao.",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..163223af7204f1dae6948a4c68980dd0e569f063 -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review.py"
+        ],
+        "scope": "Runner pytest oficial instalado em Session review contract tests, cobrindo testes da PR.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review.py",
+            "case": "Casos de teste reais na nova suite da issue #762",
+            "oracle": "pytest exits 0 e imprime 121 passed, controles negativos assert pytest.raises",
+            "comparison": "Arquivo inexistente no base; nova suite executada no SHA material."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Cobrir fronteira de confianca e regressao sem remover testes legados.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "Contratos positivo/negativo/regressao da revisao por sessao",
+        "Run de CI pertence a PR/base/head e historico completo"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "exit_code": 0,
+        "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "reached_tests": [
+          "tests/test_session_review.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+      }
+    },
+    {
+      "path": "tests/test_session_review_certificate.py",
+      "operation": "added",
+      "scenario": "Contratos de revisao por sessao, parser, pacote neutro, verificador e procedencia de certificado com casos positivos, negativos e regressao.",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..163223af7204f1dae6948a4c68980dd0e569f063 -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review_certificate.py"
+        ],
+        "scope": "Runner pytest oficial instalado em Session review contract tests, cobrindo testes da PR.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_certificate.py",
+            "case": "Casos de teste reais na nova suite da issue #762",
+            "oracle": "pytest exits 0 e imprime 121 passed, controles negativos assert pytest.raises",
+            "comparison": "Arquivo inexistente no base; nova suite executada no SHA material."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Cobrir fronteira de confianca e regressao sem remover testes legados.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "Contratos positivo/negativo/regressao da revisao por sessao",
+        "Run de CI pertence a PR/base/head e historico completo"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "exit_code": 0,
+        "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "reached_tests": [
+          "tests/test_session_review_certificate.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+      }
+    },
+    {
+      "path": "tests/test_session_review_packet.py",
+      "operation": "added",
+      "scenario": "Contratos de revisao por sessao, parser, pacote neutro, verificador e procedencia de certificado com casos positivos, negativos e regressao.",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..163223af7204f1dae6948a4c68980dd0e569f063 -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review_packet.py"
+        ],
+        "scope": "Runner pytest oficial instalado em Session review contract tests, cobrindo testes da PR.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_packet.py",
+            "case": "Casos de teste reais na nova suite da issue #762",
+            "oracle": "pytest exits 0 e imprime 121 passed, controles negativos assert pytest.raises",
+            "comparison": "Arquivo inexistente no base; nova suite executada no SHA material."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Cobrir fronteira de confianca e regressao sem remover testes legados.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "Contratos positivo/negativo/regressao da revisao por sessao",
+        "Run de CI pertence a PR/base/head e historico completo"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "exit_code": 0,
+        "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "reached_tests": [
+          "tests/test_session_review_packet.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+      }
+    },
+    {
+      "path": "tests/test_session_review_verifier.py",
+      "operation": "added",
+      "scenario": "Contratos de revisao por sessao, parser, pacote neutro, verificador e procedencia de certificado com casos positivos, negativos e regressao.",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..163223af7204f1dae6948a4c68980dd0e569f063 -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review_verifier.py"
+        ],
+        "scope": "Runner pytest oficial instalado em Session review contract tests, cobrindo testes da PR.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_verifier.py",
+            "case": "Casos de teste reais na nova suite da issue #762",
+            "oracle": "pytest exits 0 e imprime 121 passed, controles negativos assert pytest.raises",
+            "comparison": "Arquivo inexistente no base; nova suite executada no SHA material."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Cobrir fronteira de confianca e regressao sem remover testes legados.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "Contratos positivo/negativo/regressao da revisao por sessao",
+        "Run de CI pertence a PR/base/head e historico completo"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "exit_code": 0,
+        "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "reached_tests": [
+          "tests/test_session_review_verifier.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+      }
+    }
+  ]
+}

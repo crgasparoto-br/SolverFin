@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "evidence": [
+    {
+      "evidence_id": "EVID-762-PYTEST",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+      "sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+      "subject_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+      "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+      "freshness_policy": "exact-material-head",
+      "producer": "local-python-pytest-9.0.2",
+      "status": "passed"
+    }
+  ]
+}

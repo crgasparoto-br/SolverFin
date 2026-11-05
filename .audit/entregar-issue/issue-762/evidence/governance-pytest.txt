@@ -1,0 +1,12 @@
+HEAD: 163223af7204f1dae6948a4c68980dd0e569f063
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review.py
+REACHED: tests/test_session_review_certificate.py
+REACHED: tests/test_session_review_packet.py
+REACHED: tests/test_session_review_verifier.py
+
+RUN STDOUT:
+........................................................................ [ 59%]
+.................................................                        [100%]
+121 passed in 0.25s

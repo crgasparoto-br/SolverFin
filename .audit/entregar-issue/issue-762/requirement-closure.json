@@ -1,0 +1,326 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/pr763-work/solverfin-source/.audit/entregar-issue/issue-762/specification-snapshot.json",
+    "sha256": "16935c4f76ad4b4e46139677b9caf6df72d78bf60aeb468f64e1c4ca100f8c10"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-762",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "173a30dfd5deba07b1247fad098bbdb29303ed093b23dff2acbfdf26b408c4f7",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 5,
+      "source_text": "Adotar o modo `operator-attested-session-review` para **operador único** com `third_party_identity_proven=false`, reconhecendo explicitamente que duas sessões declaradas não constituem dois auditores humanos independentes. A #714 só poderá considerar esse modo suficiente após aceitação explícita desta equivalência governamental e ativação verificável dos checks nas branches protegidas.",
+      "flags": [
+        "negative",
+        "temporal",
+        "atomicity",
+        "aftermath"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "Adotar o modo `operator-attested-session-review` para **operador único** com `third_party_identity_proven=false`, reconhecendo explicitamente que duas sessões declaradas não constituem dois auditores humanos independentes. A #714 só poderá considerar esse modo suficiente após aceitação explícita desta equivalência governamental e ativação verificável dos checks nas branches protegidas.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Decisão proposta de equivalência do operador único ainda exige aceitação administrativa explícita; política mantém mode=disabled e esta fonte não representa aceite."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "c2e15d128fb39ea7d7cb92d8bea764826c63101c7077813de5048494236cb48d",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 8,
+      "source_text": "[ ] Implementar os contratos/validadores e testes adversariais sem executar código de PR em workflow privilegiado.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Testes 121/121 incluem adversariais; workflow privilegiado consulta apenas source de protected base e nao executa scripts da branch candidata; .github/workflows/session-review.yml e tests/test_session_review_verifier.py."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "69496a277fefd9f7e47a06b771fa1645251e9d090db060655a0da56b32b3e53f",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 9,
+      "source_text": "[ ] Implementar pacote neutro com issue, diff/blob, base/HEAD/merge preview, evidência CI material e vínculo do certificado `critical`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "scripts/prepare_session_review_packet.py implementa fontes neutras, Git blobs, base/HEAD/preview e validacao do certificate critical; verificacoes tests/test_session_review_packet.py."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "9080e808cbf5c578a37d7087a440c6eec32afcde09169c8549fe124781580651",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 10,
+      "source_text": "[ ] Permitir emissão de `SOLVERIT_SESSION_REVIEW_V1` por conta autenticada `crgasparoto-br`, com revisão efetuada em **conversa realmente separada**, referência real e cobertura por obrigação.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Permitir emissão de `SOLVERIT_SESSION_REVIEW_V1` por conta autenticada `crgasparoto-br`, com revisão efetuada em **conversa realmente separada**, referência real e cobertura por obrigação.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Contrato permite o formato SOLVERIT_SESSION_REVIEW_V1, mas a emissão real depende de sessão distinta e de produtores confiáveis ainda não instalados nas branches protegidas."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "60fd3ac6df330e308d70977657e7acfb071795e0f2dd1d6f8df574ec592ddc09",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 11,
+      "source_text": "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "scripts/session_review.py, verify_session_review.py, session_review_checks.py e session_review_evidence.py rejeitam watermark, comentario stale, SHA, usuario, historico CI e artificios; suite de contrato 121/121."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "f5d8ac9b6042264c3235c99e25674254ea031a8b77e2883afc371315bb273bda",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 12,
+      "source_text": "[ ] Instalar código/workflows idênticos nas branches protegidas `develop` e `main`, com bootstrap que **não exige a própria aprovação**.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Instalar código/workflows idênticos nas branches protegidas `develop` e `main`, com bootstrap que **não exige a própria aprovação**.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Instalação em develop e main depende de merge/release e é expressamente vedada antes de auditoria e autorização; nenhuma branch protegida foi alterada."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "febced78173719b94af24acb2d1b70d5b02efa925ee683413b616082e280d190",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 13,
+      "source_text": "[ ] Ler as proteções efetivas e comprovar checks `exact SHA`, sem eliminar `Delivery V2 gate`, proteção contra force-push/exclusão ou revisão obrigatória.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Ler as proteções efetivas e comprovar checks `exact SHA`, sem eliminar `Delivery V2 gate`, proteção contra force-push/exclusão ou revisão obrigatória.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Regras atuais foram lidas no GitHub e preservam Delivery V2 gate, porém ainda não exigem o novo check exact-SHA até a homologação M2 real."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "07e23a2b124a6170b2a1bb0ce5ecd84bde842851d4670266b0482585113f1e58",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 14,
+      "source_text": "[ ] Ensaio positivo e testes negativos reais; aprovação em sessão distinta; publicação de recibo confiável; vincular #714/#760 e fechar F-714-06 somente com evidência válida.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Ensaio positivo e testes negativos reais; aprovação em sessão distinta; publicação de recibo confiável; vincular #714/#760 e fechar F-714-06 somente com evidência válida.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Sem bootstrap protegido não existe ensaio operacional positivo/negativo nem recibo confiável; a PR #760 e a issue #714 permanecem abertas."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "a4763514e7874440780681a78063f3021951e8289a334485a5a518701f06cf99",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 15,
+      "source_text": "[ ] A PR #760, a issue #714 e a épica #702 ficam abertas enquanto a revisão formal não ocorrer.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Leitura autenticada da PR #760, issue #714 e epica #702 em 05/11/2026: ainda abertas; sem evento de merge ou fechamento."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "86003a4bb6e8f0c453b70656486aa8267d2fcda806d8c41b7ad144a0d0fdf9f5",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 18,
+      "source_text": "Nenhuma alteração de ruleset, merge, exclusão, simulação de identidade de auditor, assinatura falsa ou autoaprovação GitHub. Implementar primeiro em branch `develop` com política fail-closed, ativar somente depois de instalação/revisão e read-back.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "temporal",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Politica mode=disabled; PR #763 draft; nenhum merge, ruleset, exclusao ou approval; workflows readonly na producao de evidencia e check writer protegido em branch confiavel."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "candidate_count": 10,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Mudancas exclusivamente de automacao GitHub Actions, governanca e scripts Python; nenhum read model de negocio ou API financeira.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "A politica e validada a partir de base/default e blobs do GitHub, sem segunda fonte de autoridade em HEAD candidato.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Comparados AGENTS.md, ADR 0019, docs/quality/SESSION_REVIEW_BOOTSTRAP.md e regras de crgasparoto-br/skill; a politica continua desabilitada e etapas M2 nao sao declaradas concluídas.",
+    "old_contract_terms": [
+      "auditoria humana de terceiro",
+      "certificado self attested"
+    ],
+    "new_contract_terms": [
+      "operator-attested-session-review",
+      "third_party_identity_proven=false"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "AGENTS.md",
+      "docs/quality/SESSION_REVIEW_BOOTSTRAP.md",
+      "docs/adr/0019-operator-attested-session-review.md",
+      ".github/session-review-policy.json"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-762-002",
+      "REQ-762-003",
+      "REQ-762-005",
+      "REQ-762-009",
+      "REQ-762-010"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010"
+    ],
+    "evidence": [
+      "Local pytest 121 passed at Git tree 429e96bd and CI material predecessor 7ebc4285 was fully green; M2 deferred explicitly.",
+      "GitHub certified code growth 7ebc and official local code growth 429e passed; note: no new remote M2 attestation exists.",
+      "Git diff only includes governance scripts, workflows and tests; no financial domain code."
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

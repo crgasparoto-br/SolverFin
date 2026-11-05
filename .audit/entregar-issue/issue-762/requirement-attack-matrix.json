@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+  "requirements": [
+    {
+      "requirement_id": "REQ-762-002",
+      "obligation_ids": [
+        "OBL-002"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Implementar os contratos/validadores e testes adversariais sem executar código de PR em workflow privilegiado."
+      ],
+      "plausible_wrong_implementation": "Executar o codigo candidato no contexto privilegiado de checks:write, produzindo aprovacao autoinduzida.",
+      "positive_control": {
+        "id": "POS-002",
+        "status": "passed",
+        "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
+        "observed": "121 passed, exit 0, Python pytest em checkout de arvore Git exata.",
+        "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-762-PYTEST"
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-002",
+          "risk_family": "semantic-effect",
+          "surface": "trusted-runner-boundary",
+          "dimension": "exact-identity-or-security-boundary",
+          "failure_mode": "Executar o codigo candidato no contexto privilegiado de checks:write, produzindo aprovacao autoinduzida.",
+          "plausible_wrong_implementation": "Executar o codigo candidato no contexto privilegiado de checks:write, produzindo aprovacao autoinduzida.",
+          "control_type": "test",
+          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py; conferir test_workflow_never_checkout_candidate_under_writable_token e casos similares no arquivo de testes.",
+          "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
+          "observed": "Suite local executada no HEAD 163223af7204f1dae6948a4c68980dd0e569f063: 121 testes aprovados; codigo de teste contem afirmacoes discriminantes.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "behavioral",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-002-S1",
+              "surface": "trusted-runner-boundary",
+              "dimension": "alternate-exact-identity-or-security-boundary",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-002",
+          "status": "passed",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+          "observed": "121 passed em SHA 163223af7204f1dae6948a4c68980dd0e569f063",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "NEG-002"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "trusted-runner-boundary",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 121/121."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-762-003",
+      "obligation_ids": [
+        "OBL-003"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Implementar pacote neutro com issue, diff/blob, base/HEAD/merge preview, evidência CI material e vínculo do certificado `critical`."
+      ],
+      "plausible_wrong_implementation": "Aceitar certificado autodeclarado por SHA de arquivo sem validar o produtor trusted na base protegida.",
+      "positive_control": {
+        "id": "POS-003",
+        "status": "passed",
+        "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
+        "observed": "121 passed, exit 0, Python pytest em checkout de arvore Git exata.",
+        "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-762-PYTEST"
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-003",
+          "risk_family": "semantic-effect",
+          "surface": "critical-certificate-provenance",
+          "dimension": "exact-identity-or-security-boundary",
+          "failure_mode": "Aceitar certificado autodeclarado por SHA de arquivo sem validar o produtor trusted na base protegida.",
+          "plausible_wrong_implementation": "Aceitar certificado autodeclarado por SHA de arquivo sem validar o produtor trusted na base protegida.",
+          "control_type": "test",
+          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py; conferir test_trusted_producer_runs_official_validator_or_fails_closed e casos similares no arquivo de testes.",
+          "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
+          "observed": "Suite local executada no HEAD 163223af7204f1dae6948a4c68980dd0e569f063: 121 testes aprovados; codigo de teste contem afirmacoes discriminantes.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "behavioral",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-003-S1",
+              "surface": "critical-certificate-provenance",
+              "dimension": "alternate-exact-identity-or-security-boundary",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-003",
+          "status": "passed",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+          "observed": "121 passed em SHA 163223af7204f1dae6948a4c68980dd0e569f063",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "NEG-003"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "critical-certificate-provenance",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 121/121."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-762-005",
+      "obligation_ids": [
+        "OBL-005"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente."
+      ],
+      "plausible_wrong_implementation": "Reutilizar CI verde de outra PR ou base anterior com o mesmo HEAD, ignorando um inventario parcial.",
+      "positive_control": {
+        "id": "POS-005",
+        "status": "passed",
+        "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
+        "observed": "121 passed, exit 0, Python pytest em checkout de arvore Git exata.",
+        "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-762-PYTEST"
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-005",
+          "risk_family": "semantic-effect",
+          "surface": "stale-ci-run-selection",
+          "dimension": "exact-identity-or-security-boundary",
+          "failure_mode": "Reutilizar CI verde de outra PR ou base anterior com o mesmo HEAD, ignorando um inventario parcial.",
+          "plausible_wrong_implementation": "Reutilizar CI verde de outra PR ou base anterior com o mesmo HEAD, ignorando um inventario parcial.",
+          "control_type": "test",
+          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py; conferir test_foreign_pr_or_stale_base_cannot_reuse_green_technical_ci e casos similares no arquivo de testes.",
+          "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
+          "observed": "Suite local executada no HEAD 163223af7204f1dae6948a4c68980dd0e569f063: 121 testes aprovados; codigo de teste contem afirmacoes discriminantes.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "behavioral",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-005-S1",
+              "surface": "stale-ci-run-selection",
+              "dimension": "alternate-exact-identity-or-security-boundary",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-005",
+          "status": "passed",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+          "observed": "121 passed em SHA 163223af7204f1dae6948a4c68980dd0e569f063",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-005",
+          "primary_negative_control_id": "NEG-005"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "stale-ci-run-selection",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 121/121."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-762-009",
+      "obligation_ids": [
+        "OBL-009"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] A PR #760, a issue #714 e a épica #702 ficam abertas enquanto a revisão formal não ocorrer."
+      ],
+      "plausible_wrong_implementation": "Fechar F-714-06 e PR #760 apenas porque scripts estao presentes, sem atestacao real.",
+      "positive_control": {
+        "id": "POS-009",
+        "status": "passed",
+        "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
+        "observed": "121 passed, exit 0, Python pytest em checkout de arvore Git exata.",
+        "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-762-PYTEST"
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-009",
+          "risk_family": "semantic-effect",
+          "surface": "open-issue-guard",
+          "dimension": "exact-identity-or-security-boundary",
+          "failure_mode": "Fechar F-714-06 e PR #760 apenas porque scripts estao presentes, sem atestacao real.",
+          "plausible_wrong_implementation": "Fechar F-714-06 e PR #760 apenas porque scripts estao presentes, sem atestacao real.",
+          "control_type": "test",
+          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py; conferir test_disabled_or_missing_policy_can_only_publish_failure e casos similares no arquivo de testes.",
+          "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
+          "observed": "Suite local executada no HEAD 163223af7204f1dae6948a4c68980dd0e569f063: 121 testes aprovados; codigo de teste contem afirmacoes discriminantes.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "behavioral",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-009-S1",
+              "surface": "open-issue-guard",
+              "dimension": "alternate-exact-identity-or-security-boundary",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-009",
+          "status": "passed",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+          "observed": "121 passed em SHA 163223af7204f1dae6948a4c68980dd0e569f063",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-009",
+          "primary_negative_control_id": "NEG-009"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "open-issue-guard",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 121/121."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-762-010",
+      "obligation_ids": [
+        "OBL-010"
+      ],
+      "risk_families": [
+        "documentation",
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "Nenhuma alteração de ruleset, merge, exclusão, simulação de identidade de auditor, assinatura falsa ou autoaprovação GitHub. Implementar primeiro em branch `develop` com política fail-closed, ativar somente depois de instalação/revisão e read-back."
+      ],
+      "plausible_wrong_implementation": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
+      "positive_control": {
+        "id": "POS-010",
+        "status": "passed",
+        "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+        "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
+        "observed": "121 passed, exit 0, Python pytest em checkout de arvore Git exata.",
+        "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+        "evidence_kind": "behavioral",
+        "evidence_id": "EVID-762-PYTEST"
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-010",
+          "risk_family": "temporal-consistency",
+          "surface": "bootstrap-policy-safety",
+          "dimension": "exact-identity-or-security-boundary",
+          "failure_mode": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
+          "plausible_wrong_implementation": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
+          "control_type": "test",
+          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py; conferir test_disabled_or_missing_policy_can_only_publish_failure e casos similares no arquivo de testes.",
+          "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
+          "observed": "Suite local executada no HEAD 163223af7204f1dae6948a4c68980dd0e569f063: 121 testes aprovados; codigo de teste contem afirmacoes discriminantes.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "behavioral",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-010-S1",
+              "surface": "bootstrap-policy-safety",
+              "dimension": "alternate-exact-identity-or-security-boundary",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-762-DOCS",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "policy-is-disabled",
+          "failure_mode": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
+          "plausible_wrong_implementation": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
+          "control_type": "procedure",
+          "procedure": "Inspecionar .github/session-review-policy.json e ADR 0019 no HEAD 163223af7204f1dae6948a4c68980dd0e569f063",
+          "expected": "A politica permanece disabled e a documentacao nao declara aprovacao M2.",
+          "observed": "JSON de politica no candidate HEAD declara mode=disabled; ADR propõe mas nao habilita o mecanismo.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6",
+          "evidence_kind": "documentation",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-762-DOCS-S1",
+              "surface": "canonical-claims",
+              "dimension": "alternate-policy-is-disabled",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "id": "REG-010",
+          "status": "passed",
+          "head_sha": "163223af7204f1dae6948a4c68980dd0e569f063",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py",
+          "observed": "121 passed em SHA 163223af7204f1dae6948a4c68980dd0e569f063",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "7543967e7fc2c9869909058adde38fb4c6cd0aa651a0981d730f4300ab1df7a6"
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-010",
+          "primary_negative_control_id": "NEG-010"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "bootstrap-policy-safety",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 121/121."
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "reason": "ADR 0019 e manual declaram mode=disabled e nao afirmam M2 como executado."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}
