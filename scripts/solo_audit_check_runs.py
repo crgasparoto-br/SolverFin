@@ -65,9 +65,9 @@ def required_evidence(repo: str, identity: dict[str, Any]) -> list[int]:
     active = latest_reviews(reviews)
     require(not any(review.get("state") == "CHANGES_REQUESTED" for review in active.values()),
             "an outstanding GitHub request for changes blocks the solo check")
-    required_names = {"Structure and tests", "Offline authorization tests"}
+    required_names = {"Delivery V2 gate", "Repository CI gate"}
     if identity["base_ref"] == "develop":
-        required_names.add("collect / Require certified semantic handoff (exact SHA)")
+        required_names.add("export")
     matching = [item for item in checks if item.get("name") in required_names
                 and item.get("head_sha") == identity["head_sha"] and (item.get("app") or {}).get("id") == APP_ID]
     return sorted(item["id"] for item in matching if type(item.get("id")) is int)
