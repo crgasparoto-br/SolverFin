@@ -24,29 +24,41 @@ assert.match(enhanced, /statement-status transaction-group-state/);
 assert.match(enhanced, /Agrupamento com/);
 assert.match(enhanced, /grouped-status/);
 assert.match(enhanced, /Marcar como conciliado/);
-assert.match(enhanced, /data-button-variant="neutral" data-bulk-selection-action="reconcile"/);
-assert.match(enhanced, /data-button-variant="neutral" data-bulk-selection-action="unreconcile"/);
-assert.match(enhanced, /statement-status-option bulk-selection-action bulk-reconciliation-action/);
+assert.match(enhanced, /function decorateIconButton\(button, label, glyph, danger\)/);
+assert.match(enhanced, /function createIconButton\(action, label, glyph, danger\)/);
+assert.match(enhanced, /button\.dataset\.bulkSelectionAction = action/);
+assert.match(enhanced, /button\.setAttribute\("data-button-variant", "neutral"\)/);
+assert.match(enhanced, /button\.setAttribute\("aria-label", label\)/);
+assert.match(enhanced, /button\.setAttribute\("data-tooltip", tooltip\)/);
+assert.match(enhanced, /button\.innerHTML = glyph/);
 assert.match(
   enhanced,
-  /aria-label="Marcar como conciliado" title="Marcar como conciliado" data-tooltip="Marcar como conciliado"/,
+  /createIconButton\("reconcile", "Marcar como conciliado", icon\.reconcile, false\)/,
 );
 assert.match(
   enhanced,
-  /aria-label="Desmarcar conciliado" title="Desmarcar conciliado" data-tooltip="Desmarcar conciliado"/,
+  /createIconButton\("unreconcile", "Desmarcar conciliado", icon\.unreconcile, false\)/,
 );
-assert.match(enhanced, /icon\.reconcile \+ '<\/button>'/);
-assert.match(enhanced, /icon\.unreconcile \+ '<\/button>'/);
+assert.match(
+  enhanced,
+  /decorateIconButton\(groupOpen, "Unificar lançamentos", icon\.groupAction, false\)/,
+);
+assert.match(
+  enhanced,
+  /decorateIconButton\(clearButton, "Limpar seleção", icon\.clear, false\)/,
+);
+assert.match(enhanced, /createIconButton\("void", "Excluir selecionados", icon\.trash, true\)/);
+assert.match(enhanced, /actions\.setAttribute\("role", "group"\)/);
+assert.match(enhanced, /Ações dos lançamentos selecionados/);
 assert.match(enhanced, /statement-status statement-status-ok/);
 assert.match(enhanced, /statement-status statement-status-posted/);
+assert.match(enhanced, /statement-status bulk-icon-neutral/);
+assert.match(enhanced, /statement-status bulk-icon-danger/);
 assert.match(enhanced, /44px/);
 assert.match(enhanced, /26px/);
 assert.match(enhanced, /15px/);
-assert.match(enhanced, /button\.setAttribute\("data-tooltip", tooltip\)/);
-assert.doesNotMatch(
-  enhanced,
-  /<span>Marcar como conciliado<\/span>|<span>Desmarcar conciliado<\/span>/,
-);
+assert.match(enhanced, /updateTooltip\(groupOpen/);
+assert.doesNotMatch(enhanced, /<span>Excluir selecionados<\/span>|<span>Desmarcar conciliado<\/span>/);
 assert.doesNotMatch(enhanced, /refresh-cw/);
 assert.match(enhanced, /item\.dataset\.status === "planned"/);
 assert.match(enhanced, /item\.dataset\.status === "posted"/);
