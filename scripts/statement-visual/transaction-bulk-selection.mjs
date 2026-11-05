@@ -199,12 +199,18 @@ try {
   assert.equal(clearReady.label, "Limpar seleção");
   assert.equal(clearReady.tooltip, clearReady.label);
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown", key: "Enter", code: "Enter",
-    windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13,
+    type: "rawKeyDown",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
   });
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp", key: "Enter", code: "Enter",
-    windowsVirtualKeyCode: 13, nativeVirtualKeyCode: 13,
+    type: "keyUp",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
   });
   const cleared = await evaluate(
     browser.cdp,
@@ -778,9 +784,11 @@ async function readSelectionActionIcons(cdp) {
 }
 
 function assertSelectionActionIcons(items, viewport) {
-  assert.deepEqual(items.map((item) => item.action), [
-    "reconcile", "unreconcile", "group", "clear", "void",
-  ], `${viewport}: toolbar order`);
+  assert.deepEqual(
+    items.map((item) => item.action),
+    ["reconcile", "unreconcile", "group", "clear", "void"],
+    `${viewport}: toolbar order`,
+  );
   assert.equal(items.length, 5, `${viewport}: action count`);
   for (const item of items) {
     assert.equal(item.insideToolbar, true, `${viewport}: unified toolbar`);
@@ -797,10 +805,13 @@ function assertSelectionActionIcons(items, viewport) {
     assert.match(item.tooltip, new RegExp(item.label));
     assert.match(
       item.circleClass,
-      item.action === "reconcile" ? /statement-status-ok/
-        : item.action === "unreconcile" ? /statement-status-posted/
-        : item.action === "void" ? /bulk-icon-danger/
-        : /bulk-icon-neutral/,
+      item.action === "reconcile"
+        ? /statement-status-ok/
+        : item.action === "unreconcile"
+          ? /statement-status-posted/
+          : item.action === "void"
+            ? /bulk-icon-danger/
+            : /bulk-icon-neutral/,
     );
   }
 }

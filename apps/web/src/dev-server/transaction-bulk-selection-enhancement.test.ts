@@ -43,10 +43,7 @@ assert.match(
   enhanced,
   /decorateIconButton\(groupOpen, "Unificar lançamentos", icon\.groupAction, false\)/,
 );
-assert.match(
-  enhanced,
-  /decorateIconButton\(clearButton, "Limpar seleção", icon\.clear, false\)/,
-);
+assert.match(enhanced, /decorateIconButton\(clearButton, "Limpar seleção", icon\.clear, false\)/);
 assert.match(enhanced, /createIconButton\("void", "Excluir selecionados", icon\.trash, true\)/);
 assert.match(enhanced, /actions\.setAttribute\("role", "group"\)/);
 assert.match(enhanced, /Ações dos lançamentos selecionados/);
@@ -58,7 +55,10 @@ assert.match(enhanced, /44px/);
 assert.match(enhanced, /26px/);
 assert.match(enhanced, /15px/);
 assert.match(enhanced, /updateTooltip\(groupOpen/);
-assert.doesNotMatch(enhanced, /<span>Excluir selecionados<\/span>|<span>Desmarcar conciliado<\/span>/);
+assert.doesNotMatch(
+  enhanced,
+  /<span>Excluir selecionados<\/span>|<span>Desmarcar conciliado<\/span>/,
+);
 assert.doesNotMatch(enhanced, /refresh-cw/);
 assert.match(enhanced, /item\.dataset\.status === "planned"/);
 assert.match(enhanced, /item\.dataset\.status === "posted"/);
