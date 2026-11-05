@@ -5,8 +5,11 @@ on a protected workflow run before adopting the check in branch protection.
 """
 from __future__ import annotations
 
+import hashlib
 import sys
 import unittest
+from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from pathlib import Path
 from unittest.mock import patch
 
@@ -14,6 +17,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "entregar-issue" / "scripts"))
 import solo_audit_check_runs as solo_checks
+sys.path.insert(0, str(ROOT / "auditar-issue" / "scripts"))
+from audit_signature import sign_report, verify_report
 import verify_independent_pr_audit as trusted_checks
 
 HEAD = "a" * 40
@@ -127,6 +132,69 @@ class SolverFinTrustedChecks(unittest.TestCase):
               patch.object(solo_checks, "trusted_workflow_check", return_value=True)):
             with self.assertRaisesRegex(ValueError, "request for changes"):
                 solo_checks.required_evidence("crgasparoto-br/SolverFin", identity)
+
+
+    def test_workflow_runs_on_solverfin_sources_without_candidate_checkout(self):
+        text = (ROOT / ".github/workflows/solo-audit-attestation.yml").read_text()
+        self.assertIn(
+            'workflows: ["Repository CI", "Delivery audit workspace", "Statement visual validation"]',
+            text,
+        )
+        self.assertIn("ref: ${{ github.workflow_sha }}", text)
+        self.assertNotIn("workflow_dispatch:", text)
+        self.assertIn("github.ref_protected", text)
+
+
+class SigningContract(unittest.TestCase):
+    def setUp(self):
+        self.private = Ed25519PrivateKey.generate()
+        public = self.private.public_key().public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+        self.private_pem = self.private.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.PKCS8,
+            encryption_algorithm=serialization.NoEncryption(),
+        )
+        self.registry = {
+            "schema_version": 1,
+            "auditors": [{
+                "key_id": "solverfin-test-key",
+                "enabled": True,
+                "repositories": ["crgasparoto-br/SolverFin"],
+                "public_key_pem": public.decode("ascii"),
+                "public_key_sha256": hashlib.sha256(public).hexdigest(),
+            }],
+        }
+        self.report = {
+            "repository": "crgasparoto-br/SolverFin", "issue": 692,
+            "pull_request": 761,
+            "head_sha": HEAD, "base_sha": BASE,
+            "assurance_mode": "single-operator-separate-context",
+            "independent": False, "same_conversation": False,
+            "operator_github_id": 1,
+        }
+        sign_report(
+            self.report, self.private_pem, None, "solverfin-test-key",
+            "2026-11-05T13:00:00+00:00",
+        )
+
+    def test_valid_ed25519_report_verifies_against_exact_repository(self):
+        self.assertEqual(verify_report(self.report, self.registry, exact_repository_only=True), [])
+
+    def test_mutated_signed_payload_is_rejected(self):
+        self.report["head_sha"] = BASE
+        self.assertTrue(verify_report(self.report, self.registry, exact_repository_only=True))
+
+    def test_wildcard_registry_scope_is_rejected(self):
+        self.registry["auditors"][0]["repositories"] = ["crgasparoto-br/*"]
+        self.assertTrue(verify_report(self.report, self.registry, exact_repository_only=True))
+
+    def test_forged_public_key_fingerprint_is_rejected(self):
+        self.registry["auditors"][0]["public_key_sha256"] = "0" * 64
+        self.assertTrue(verify_report(self.report, self.registry, exact_repository_only=True))
+
 
 
 if __name__ == "__main__":
