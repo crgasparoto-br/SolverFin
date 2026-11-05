@@ -197,5 +197,141 @@ class SigningContract(unittest.TestCase):
 
 
 
+
+class AuthenticatedActionsJobTests(unittest.TestCase):
+    """Carry forward unique #765 provenance attacks against the #766 controller."""
+
+    REPOSITORY = "crgasparoto-br/SolverFin"
+    PR = 765
+
+    def setUp(self):
+        repo = self.REPOSITORY
+        self.check = {
+            "id": 111, "name": "Delivery V2 gate",
+            "head_sha": HEAD, "status": "completed", "conclusion": "success",
+            "details_url": f"https://github.com/{repo}/actions/runs/444/job/555",
+            "app": {"id": APP_ID}, "check_suite": {"id": 999},
+        }
+        self.run = {
+            "path": ".github/workflows/delivery-v2-ci.yml",
+            "name": "Repository CI", "event": "pull_request",
+            "head_sha": HEAD, "head_repository": {"full_name": repo},
+            "check_suite_id": 999,
+            "status": "completed", "conclusion": "success",
+            "pull_requests": [{"number": self.PR, "base": {"sha": BASE}}],
+        }
+        self.job = {
+            "id": 555, "run_id": 444, "name": "Delivery V2 gate",
+            "head_sha": HEAD, "status": "completed", "conclusion": "success",
+            "check_run_url": f"https://api.github.com/repos/{repo}/check-runs/111",
+        }
+
+    def verify(self):
+        repo = self.REPOSITORY
+        api = {
+            f"/repos/{repo}/actions/runs/444": self.run,
+            f"/repos/{repo}/actions/jobs/555": self.job,
+        }
+        with (patch.object(trusted_checks, "github", side_effect=lambda p, _token: api[p]),
+              patch.object(trusted_checks, "verify_trusted_workflow_source") as source):
+            result = trusted_checks.trusted_workflow_check(
+                repo, self.PR, "Delivery V2 gate", self.check, HEAD, BASE,
+                "test-token",
+            )
+            if result:
+                source.assert_called_once_with(
+                    repo, ".github/workflows/delivery-v2-ci.yml", BASE,
+                    HEAD, "test-token",
+                )
+            return result
+
+    def test_valid_authenticated_run_job_and_check(self):
+        self.assertTrue(self.verify())
+
+    def test_reject_malicious_details_url_without_querying(self):
+        original = self.check["details_url"]
+        for forged in (
+            original.replace("github.com/", "github.com.evil.test/"),
+            original + "?redirect=1",
+            original.replace("/actions/runs/444/", "/actions/runs/0/"),
+            original.replace("/actions/runs/444/", "/actions/runs/444/evil/"),
+        ):
+            with self.subTest(forged=forged):
+                self.check["details_url"] = forged
+                self.assertFalse(self.verify())
+        self.check["details_url"] = original
+
+    def test_reject_forged_run_workflow_identity_and_origin(self):
+        variations = (
+            ("path", ".github/workflows/other.yml"),
+            ("name", "Fake CI"),
+            ("event", "push"),
+            ("head_sha", BASE),
+        )
+        for field, forged in variations:
+            with self.subTest(field=field):
+                self.setUp()
+                self.run[field] = forged
+                self.assertFalse(self.verify())
+        self.setUp()
+        self.run["head_repository"]["full_name"] = "attacker/SolverFin"
+        self.assertFalse(self.verify())
+
+    def test_reject_wrong_pr_base_and_check_suite(self):
+        self.run["pull_requests"][0]["number"] = 999
+        self.assertFalse(self.verify())
+        self.setUp()
+        self.run["pull_requests"][0]["base"]["sha"] = HEAD
+        self.assertFalse(self.verify())
+        self.setUp()
+        self.run["check_suite_id"] = 998
+        self.assertFalse(self.verify())
+
+    def test_reject_wrong_job_identity_head_and_check_binding(self):
+        variations = (
+            ("id", 556), ("run_id", 445),
+            ("name", "Fake job"), ("head_sha", BASE),
+            ("check_run_url",
+             "https://api.github.com/repos/crgasparoto-br/SolverFin/check-runs/999"),
+        )
+        for field, forged in variations:
+            with self.subTest(field=field):
+                self.setUp()
+                self.job[field] = forged
+                self.assertFalse(self.verify())
+
+    def test_reject_false_success_or_stale_job_result(self):
+        self.job["status"] = "in_progress"
+        with self.assertRaisesRegex(ValueError, "outcome mismatch"):
+            self.verify()
+        self.setUp()
+        self.run["conclusion"] = "failure"
+        with self.assertRaisesRegex(ValueError, "not green"):
+            self.verify()
+
+    def test_reject_candidate_modified_ci_workflow(self):
+        from unittest.mock import Mock
+        repo = self.REPOSITORY
+        api = {
+            f"/repos/{repo}/actions/runs/444": self.run,
+            f"/repos/{repo}/actions/jobs/555": self.job,
+        }
+        with (patch.object(trusted_checks, "github", side_effect=lambda p, _token: api[p]),
+              patch.object(trusted_checks, "verify_trusted_workflow_source",
+                           side_effect=ValueError("required workflow differs from trusted base"))):
+            with self.assertRaisesRegex(ValueError, "differs from trusted base"):
+                trusted_checks.trusted_workflow_check(
+                    repo, self.PR, "Delivery V2 gate", self.check, HEAD, BASE,
+                    "test-token",
+                )
+
+    def test_single_trusted_controller_not_a_second_parallel_gate(self):
+        workflow = (ROOT / ".github/workflows/solo-audit-attestation.yml").read_text()
+        self.assertIn("scripts/verify_solo_audit_attestation.py", workflow)
+        self.assertNotIn("scripts/audit/verify_solo_attestation.py", workflow)
+        self.assertFalse((ROOT / "scripts/audit/verify_solo_attestation.py").exists())
+        self.assertFalse((ROOT / "scripts/audit/test_verify_solo_attestation.py").exists())
+
+
 if __name__ == "__main__":
     unittest.main()

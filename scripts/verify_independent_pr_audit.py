@@ -34,6 +34,13 @@ EXPECTED_WORKFLOWS = {
     HANDOFF: ".github/workflows/delivery-audit-workspace.yml",
 }
 
+# Authenticate the original Actions workflow identity, not only a same-name job.
+EXPECTED_WORKFLOW_NAMES = {
+    TECHNICAL[0]: "Repository CI",
+    TECHNICAL[1]: "Repository CI",
+    HANDOFF: "Delivery audit workspace",
+}
+
 
 def page_all(repo: str, suffix: str, token: str, max_pages: int = 25) -> list[dict]:
     """Refuse truncated inventories rather than omitting a contributor or review."""
@@ -213,6 +220,8 @@ def official_job_matches(
     pr_links = run.get("pull_requests")
     return (
         workflow_path.split("@", 1)[0] == EXPECTED_WORKFLOWS[name]
+        and run.get("name") == EXPECTED_WORKFLOW_NAMES[name]
+        and (run.get("head_repository") or {}).get("full_name") == repo
         and run.get("check_suite_id") == check["check_suite"]["id"]
         and run.get("head_sha") == head
         and run.get("event") == "pull_request"
@@ -226,6 +235,7 @@ def official_job_matches(
         and job.get("id") == job_id
         and job.get("run_id") == run_id
         and job.get("name") == name
+        and job.get("head_sha") == head
         and job.get("check_run_url") ==
         f"{api_root}/repos/{repo}/check-runs/{check_id}"
     )
