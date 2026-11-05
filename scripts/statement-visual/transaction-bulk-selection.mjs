@@ -390,7 +390,6 @@ try {
   assert.equal(deleted.directPresent, false);
   assert.equal(deleted.selectionBarHidden, true);
 
-
   // Regression #768: the Golden Screen offers both operations for mixed eligible statuses.
   const mixedStatuses = await evaluate(
     browser.cdp,
@@ -500,10 +499,13 @@ try {
   await screenshot(browser.cdp, join(outputDir, "issue-768-mixed-statuses-390x844.png"));
 
   const unreconcileLoadedForMixed = browser.cdp.once("Page.loadEventFired", 20_000);
-  await evaluate(browser.cdp, `(() => {
+  await evaluate(
+    browser.cdp,
+    `(() => {
     window.confirm = () => true;
     document.querySelector('[data-bulk-selection-action="unreconcile"]').click();
-  })()`);
+  })()`,
+  );
   await unreconcileLoadedForMixed;
   await sleep(120);
   const afterMixedUnreconcile = await evaluate(
@@ -543,10 +545,13 @@ try {
   );
   assert.equal(readyToReconcile, true);
   const reconcileLoadedForMixed = browser.cdp.once("Page.loadEventFired", 20_000);
-  await evaluate(browser.cdp, `(() => {
+  await evaluate(
+    browser.cdp,
+    `(() => {
     window.confirm = () => true;
     document.querySelector('[data-bulk-selection-action="reconcile"]').click();
-  })()`);
+  })()`,
+  );
   await reconcileLoadedForMixed;
   await sleep(120);
   const afterMixedReconcile = await evaluate(
@@ -560,10 +565,14 @@ try {
         .map((id) => body.transactions.find((transaction) => transaction.id === id));
     })()`,
   );
-  assert.deepEqual(afterMixedReconcile.map((item) => item.status), [
-    "reconciled", "reconciled", "reconciled"
-  ]);
-  assert.ok(afterMixedReconcile[0].effectiveOn, "Planned reconciliation must create an effective date");
+  assert.deepEqual(
+    afterMixedReconcile.map((item) => item.status),
+    ["reconciled", "reconciled", "reconciled"],
+  );
+  assert.ok(
+    afterMixedReconcile[0].effectiveOn,
+    "Planned reconciliation must create an effective date",
+  );
 
   await writeFile(
     join(outputDir, "issue-530-bulk-selection.json"),
@@ -597,7 +606,10 @@ try {
   );
 } finally {
   for (const id of additionalIds) {
-    await evaluate(browser.cdp, `fetch("/api/transactions/" + encodeURIComponent(${JSON.stringify(id)}) + "/void", { method: "POST" })`).catch(() => undefined);
+    await evaluate(
+      browser.cdp,
+      `fetch("/api/transactions/" + encodeURIComponent(${JSON.stringify(id)}) + "/void", { method: "POST" })`,
+    ).catch(() => undefined);
   }
   if (groupId) {
     await evaluate(

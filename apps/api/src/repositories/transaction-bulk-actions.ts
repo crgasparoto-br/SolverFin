@@ -204,7 +204,12 @@ function validateAction(action: TransactionBulkAction, selected: SelectedTransac
     );
   }
 
-  if (selected.some((transaction) => transaction.cardId || transaction.invoiceId || transaction.isAccountRemuneration)) {
+  if (
+    selected.some(
+      (transaction) =>
+        transaction.cardId || transaction.invoiceId || transaction.isAccountRemuneration,
+    )
+  ) {
     throw bulkError(
       "TRANSACTION_BULK_PROTECTED",
       "Este lançamento exige seu fluxo próprio de conciliação.",
