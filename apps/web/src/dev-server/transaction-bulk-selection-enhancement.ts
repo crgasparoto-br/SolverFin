@@ -178,7 +178,10 @@ export function enhanceTransactionBulkSelection(html: string): string {
             groupOpen.setAttribute("aria-describedby", helpNode.id);
           }
 
-          const eligibleStatuses = items.every(function (item) {
+          const hasProtected = items.some(function (item) {
+            return item.dataset.reconcileProtected === "true";
+          });
+          const eligibleStatuses = !hasProtected && items.every(function (item) {
             return item.dataset.status === "planned" ||
               item.dataset.status === "posted" ||
               item.dataset.status === "reconciled";
@@ -193,12 +196,16 @@ export function enhanceTransactionBulkSelection(html: string): string {
           reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconcileTarget;
           unreconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconciled;
           voidButton.disabled = items.length === 0;
-          reconcileButton.title = !eligibleStatuses
-            ? "Sugestões não confirmadas e lançamentos excluídos não podem ser conciliados."
-            : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.";
-          unreconcileButton.title = !eligibleStatuses
-            ? "Esta seleção contém lançamentos com situação indisponível."
-            : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.";
+          reconcileButton.title = hasProtected
+            ? "Conciliação de remuneração automática exige seu fluxo próprio."
+            : !eligibleStatuses
+              ? "Sugestões não confirmadas e lançamentos excluídos não podem ser conciliados."
+              : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.";
+          unreconcileButton.title = hasProtected
+            ? "Conciliação de remuneração automática exige seu fluxo próprio."
+            : !eligibleStatuses
+              ? "Esta seleção contém lançamentos com situação indisponível."
+              : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.";
           reconcileButton.setAttribute("aria-describedby", helpNode.id);
           unreconcileButton.setAttribute("aria-describedby", helpNode.id);
           voidButton.setAttribute("aria-describedby", helpNode.id);
@@ -209,7 +216,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
           } else if (simple.length > 1 && !compatibleForGrouping(simple)) {
             explanations.push("Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação.");
           }
-          if (items.length > 0 && !eligibleStatuses) {
+          if (items.length > 0 && hasProtected) {
+            explanations.push("Conciliação indisponível: remuneração automática exige seu fluxo próprio.");
+          } else if (items.length > 0 && !eligibleStatuses) {
             explanations.push("Conciliação indisponível: a seleção contém sugestões não confirmadas ou lançamentos excluídos.");
           } else if (items.length > 0) {
             if (!hasReconcileTarget) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");

@@ -29,6 +29,8 @@ assert.match(enhanced, /data-button-variant="neutral" data-bulk-selection-action
 assert.match(enhanced, /item\.dataset\.status === "planned"/);
 assert.match(enhanced, /item\.dataset\.status === "posted"/);
 assert.match(enhanced, /hasReconcileTarget/);
+assert.match(enhanced, /item\.dataset\.reconcileProtected === "true"/);
+assert.match(enhanced, /Conciliação indisponível: remuneração automática exige seu fluxo próprio/);
 assert.match(enhanced, /!eligibleStatuses \|\| !hasReconcileTarget/);
 assert.match(enhanced, /!eligibleStatuses \|\| !hasReconciled/);
 assert.match(enhanced, /Todos os lançamentos selecionados já estão conciliados/);
