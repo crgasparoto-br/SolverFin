@@ -2,7 +2,11 @@ import { apiGet } from "./api.js";
 import { buildEvolutionApiPath } from "./reports-evolution-routing-helpers.js";
 import { readEvolutionFilters, type CategoryEvolutionReport } from "./reports-route-page.js";
 import { asSourceError, ReportExportError, selectedTables } from "./reports-export-common.js";
-import type { CanonicalReportExport, ExportCell, ExportTable } from "./reports-export-serializers.js";
+import type {
+  CanonicalReportExport,
+  ExportCell,
+  ExportTable,
+} from "./reports-export-serializers.js";
 
 function categoryTable(
   currency: string,
@@ -136,4 +140,3 @@ export async function loadEvolutionExport(
     tables: [periods, ...selectedTables(tables, currency)],
   };
 }
-

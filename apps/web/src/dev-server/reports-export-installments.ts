@@ -1,10 +1,24 @@
 import { apiGet } from "./api.js";
-import { buildInstallmentAnalysisViewModel, type InstallmentCurrencyViewModel } from "./reports-analysis-view-model.js";
+import {
+  buildInstallmentAnalysisViewModel,
+  type InstallmentCurrencyViewModel,
+} from "./reports-analysis-view-model.js";
 import { formatMonthYear, normalizeMonth, todayDateOnly } from "./reports-installments-format.js";
-import { buildInstallmentsPath, readInstallmentFilters, type InstallmentRecord } from "./reports-installments-view.js";
-import { parseReportCurrencyFilter, selectReportCurrencyBlocks } from "./reports-route-page-shared.js";
+import {
+  buildInstallmentsPath,
+  readInstallmentFilters,
+  type InstallmentRecord,
+} from "./reports-installments-view.js";
+import {
+  parseReportCurrencyFilter,
+  selectReportCurrencyBlocks,
+} from "./reports-route-page-shared.js";
 import { asSourceError, ReportExportError, selectedTables } from "./reports-export-common.js";
-import type { CanonicalReportExport, ExportCell, ExportTable } from "./reports-export-serializers.js";
+import type {
+  CanonicalReportExport,
+  ExportCell,
+  ExportTable,
+} from "./reports-export-serializers.js";
 
 function installmentTables(block: InstallmentCurrencyViewModel<InstallmentRecord>): ExportTable[] {
   const summary = block.summary;
@@ -65,7 +79,10 @@ function installmentTables(block: InstallmentCurrencyViewModel<InstallmentRecord
   ];
 }
 
-export async function loadInstallmentsExport(token: string, url: URL): Promise<CanonicalReportExport> {
+export async function loadInstallmentsExport(
+  token: string,
+  url: URL,
+): Promise<CanonicalReportExport> {
   const month = url.searchParams.get("month");
   if (month !== null && !normalizeMonth(month)) {
     throw new ReportExportError(400, "REPORT_EXPORT_FILTER_INVALID", "Mês inválido.");
@@ -114,4 +131,3 @@ export async function loadInstallmentsExport(token: string, url: URL): Promise<C
     tables: selectedTables(tables, selection.currency),
   };
 }
-

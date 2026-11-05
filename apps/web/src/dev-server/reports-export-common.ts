@@ -31,4 +31,3 @@ export function selectedTables(tables: readonly ExportTable[], currency: string)
         },
       ];
 }
-
