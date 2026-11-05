@@ -44,12 +44,12 @@ A implementação M1 é optativa, não modifica rulesets, contagem de aprovaçõ
 
 5. Em **SolverFin → Settings → Secrets and variables → Actions → Variables**, estabelecer fora da branch candidata:
 
-   | Variável | Valor |
-   | --- | --- |
-   | `SOLVERIT_SOLO_AUDIT_OPERATOR_ID` | ID numérico real da conta GitHub autorizada |
-   | `SOLVERIT_SOLO_AUDIT_KEY_ID` | `solverfin-solo-2026` (ou o identificador escolhido) |
-   | `SOLVERIT_TRUSTED_AUDITORS_JSON` | JSON público integral do registro, com escopo literal `crgasparoto-br/SolverFin`; sem wildcard |
-   | `SOLVERIT_SOLO_AUDIT_ENABLED` | Literal `true` **somente após** o bootstrap validado |
+   | Variável                          | Valor                                                                                          |
+   | --------------------------------- | ---------------------------------------------------------------------------------------------- |
+   | `SOLVERIT_SOLO_AUDIT_OPERATOR_ID` | ID numérico real da conta GitHub autorizada                                                    |
+   | `SOLVERIT_SOLO_AUDIT_KEY_ID`      | `solverfin-solo-2026` (ou o identificador escolhido)                                           |
+   | `SOLVERIT_TRUSTED_AUDITORS_JSON`  | JSON público integral do registro, com escopo literal `crgasparoto-br/SolverFin`; sem wildcard |
+   | `SOLVERIT_SOLO_AUDIT_ENABLED`     | Literal `true` **somente após** o bootstrap validado                                           |
 
 Sem opt-in, o job não executa e não emite aprovação. Alterar variáveis **não** dispara uma nova execução de Actions.
 
@@ -82,6 +82,7 @@ Sem opt-in, o job não executa e não emite aprovação. Alterar variáveis **n�
    ```
 
    Não usar cercas Markdown no comentário real, nem acrescentar título ou narrativa. Limites de 48 KiB no comentário e 32 KiB no registro público. A própria PR deve continuar aberta e fora do estado draft.
+
 7. Verificar a nova execução de Actions e o check `Verify solo audit attestation (exact SHA)`. A conclusão positiva **não libera merge/release por si só**.
 
 ## Revogação e segurança operacional
