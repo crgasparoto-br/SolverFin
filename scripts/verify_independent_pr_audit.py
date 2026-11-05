@@ -24,14 +24,14 @@ if TYPE_CHECKING:
 SHA = re.compile(r"[0-9a-f]{40}\Z")
 REPO = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+\Z")
 APP_ID = 15368  # GitHub Actions
-TECHNICAL = ("Structure and tests", "Offline authorization tests")
-HANDOFF = "collect / Require certified semantic handoff (exact SHA)"
+TECHNICAL = ("Delivery V2 gate", "Repository CI gate")
+HANDOFF = "export"  # Export of certified-audit source bundles, not a semantic approval
 AUTHORIZED_PERMISSIONS = frozenset({"write", "maintain", "admin"})
 # Only these repository-owned workflow entrypoints may supply these check jobs.
 EXPECTED_WORKFLOWS = {
-    TECHNICAL[0]: ".github/workflows/validate.yml",
-    TECHNICAL[1]: ".github/workflows/github-audit-mcp.yml",
-    HANDOFF: ".github/workflows/handoff-evidence.yml",
+    TECHNICAL[0]: ".github/workflows/delivery-v2-ci.yml",
+    TECHNICAL[1]: ".github/workflows/delivery-v2-ci.yml",
+    HANDOFF: ".github/workflows/delivery-audit-workspace.yml",
 }
 
 
