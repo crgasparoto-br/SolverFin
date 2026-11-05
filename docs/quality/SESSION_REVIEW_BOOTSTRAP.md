@@ -74,3 +74,9 @@ de CI ou o artifact uma aprovação independente.
 O check de contrato executa o verificador oficial `CODE-GROWTH-001` no SHA
 material exato, com politica da base protegida, e anexa o JSON emitido pelo
 runner como artifact, sem forjar certificado de handoff.
+
+## Identidade obrigatoria da CI tecnica — reforco posterior (#762)
+
+O verificador em `scripts/session_review_evidence.py` nao aceita mais um workflow tecnico verde apenas por nome e SHA. Cada run elegivel precisa estar no inventario completo autenticado de GitHub Actions (`total_count` exato), pertencer a mesma PR, ao mesmo `base.sha` e ao mesmo `head.sha`, alem de corresponder ao workflow imutavel esperado. O run mais recente **da PR correta** deve terminar em `completed/success`. Runs de outra PR com o mesmo commit, inventarios truncados e bases antigas sao rejeitados. Os testes adversariais direcionados elevaram a suite local de 112 para 121 casos aprovados no commit `429e96bd944120c24b58cfa03299da1a93bafd9b`.
+
+A verificacao local nao e CI certificada no SHA publicado posterior, nem instalacao M2. Politica permanece `mode=disabled`; produtores confiaveis, certificado proprio, ensaios operacionais reais e revisao em contexto distinto continuam condicionados ao bootstrap autorizado em bases protegidas. Nenhum check de aprovacao foi habilitado por essa mudanca.
