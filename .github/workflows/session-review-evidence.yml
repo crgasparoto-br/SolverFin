@@ -48,29 +48,51 @@ jobs:
         working-directory: candidate
         run: |
           node --test --test-reporter=junit scripts/statement-visual/*.test.mjs > "$RUNNER_TEMP/session-review-visual.xml"
-      - name: Combine only successfully executed JUnit suites
+      - name: Combine only actually executed JUnit cases (Node and pytest)
         run: |
           python - <<'PY'
           import os
           from pathlib import Path
           from xml.etree import ElementTree as ET
 
-          root = ET.Element("testsuites")
           temp = Path(os.environ["RUNNER_TEMP"])
-          for name in ("session-review-governance.xml", "session-review-visual.xml"):
-              source = ET.parse(temp / name).getroot()
-              suites = [source] if source.tag == "testsuite" else list(source.findall("testsuite"))
-              if not suites:
-                  raise SystemExit("BLOCK: no executed JUnit suites in " + name)
-              for suite in suites:
-                  cases = list(suite.iter("testcase"))
-                  if not cases or any(
-                      child.tag in {"failure", "error", "skipped"}
-                      for case in cases for child in case
+          result = ET.Element("testsuites")
+
+          def tag(element):
+              return str(element.tag).rsplit("}", 1)[-1]
+
+          for source_name in ("session-review-governance.xml", "session-review-visual.xml"):
+              raw = ET.parse(temp / source_name).getroot()
+              if tag(raw) not in {"testsuites", "testsuite"}:
+                  raise SystemExit("BLOCK: invalid JUnit root in " + source_name)
+              for node in raw.iter():
+                  if tag(node) in {"failure", "error", "skipped"}:
+                      raise SystemExit("BLOCK: failed or skipped JUnit in " + source_name)
+                  if tag(node) in {"testsuites", "testsuite"}:
+                      if any(node.get(field) not in (None, "0") for field in
+                             ("errors", "failures", "skipped")):
+                          raise SystemExit("BLOCK: failing JUnit counts in " + source_name)
+
+              cases = [node for node in raw.iter() if tag(node) == "testcase"]
+              if not cases:
+                  raise SystemExit("BLOCK: no executed JUnit cases in " + source_name)
+              suite = ET.SubElement(result, "testsuite", {
+                  "name": source_name, "tests": str(len(cases)),
+                  "errors": "0", "failures": "0", "skipped": "0",
+              })
+              for case in cases:
+                  if not case.get("name") or any(
+                      key in case.attrib for key in ("failure", "error", "skipped")
                   ):
-                      raise SystemExit("BLOCK: missing or failing JUnit cases in " + name)
-                  root.append(suite)
-          ET.ElementTree(root).write(
+                      raise SystemExit("BLOCK: invalid testcase in " + source_name)
+                  if not case.get("classname"):
+                      case.set("classname", "node-test-reporter" if "visual" in source_name
+                               else "pytest-reporter")
+                  for descendant in case.iter():
+                      descendant.tag = tag(descendant)
+                  suite.append(case)
+              print(f"Validated {len(cases)} JUnit cases in {source_name}")
+          ET.ElementTree(result).write(
               temp / "session-review-junit.xml", encoding="utf-8", xml_declaration=True
           )
           PY
