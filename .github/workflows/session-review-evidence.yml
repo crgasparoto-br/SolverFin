@@ -36,10 +36,44 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+      - name: Install pinned governance test runner
+        run: python -m pip install --disable-pip-version-check pytest==9.0.2
+      - name: Run real governance positive, negative and regression controls
+        working-directory: candidate
+        run: |
+          python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py \
+            tests/test_session_review_verifier.py tests/test_session_review_certificate.py \
+            --junitxml="$RUNNER_TEMP/session-review-governance.xml"
       - name: Run real documentary, negative and regression controls
         working-directory: candidate
         run: |
-          node --test --test-reporter=junit scripts/statement-visual/*.test.mjs > "$RUNNER_TEMP/session-review-junit.xml"
+          node --test --test-reporter=junit scripts/statement-visual/*.test.mjs > "$RUNNER_TEMP/session-review-visual.xml"
+      - name: Combine only successfully executed JUnit suites
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+
+          root = ET.Element("testsuites")
+          temp = Path(os.environ["RUNNER_TEMP"])
+          for name in ("session-review-governance.xml", "session-review-visual.xml"):
+              source = ET.parse(temp / name).getroot()
+              suites = [source] if source.tag == "testsuite" else list(source.findall("testsuite"))
+              if not suites:
+                  raise SystemExit("BLOCK: no executed JUnit suites in " + name)
+              for suite in suites:
+                  cases = list(suite.iter("testcase"))
+                  if not cases or any(
+                      child.tag in {"failure", "error", "skipped"}
+                      for case in cases for child in case
+                  ):
+                      raise SystemExit("BLOCK: missing or failing JUnit cases in " + name)
+                  root.append(suite)
+          ET.ElementTree(root).write(
+              temp / "session-review-junit.xml", encoding="utf-8", xml_declaration=True
+          )
+          PY
       - name: Bind test execution to immutable certificate and exact SHA
         env:
           REPO: ${{ github.repository }}

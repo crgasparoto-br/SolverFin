@@ -132,3 +132,52 @@ def test_workflow_is_read_only_and_uses_base_producer_and_pinned_skill():
     assert "trusted/scripts/session_review_certificate.py" in source_text
     assert "candidate/scripts/session_review_certificate.py" not in source_text
     assert "a28be10db466631cd5e5e4dbe0429da250cd8b42" in source_text
+
+
+def test_trusted_producer_runs_official_validator_or_fails_closed(tmp_path, monkeypatch):
+    import prepare_session_review_packet as collector
+    import session_review_packet_handoff as handoff
+    from types import SimpleNamespace
+
+    monkeypatch.chdir(tmp_path)
+    path = Path("candidate/.audit/entregar-issue/handoff-ready.json")
+    path.parent.mkdir(parents=True)
+    path.write_text('{"schema_version":2}')
+    proof = {"certificate_sha256": source.digest(path.read_bytes()),
+             "material_head_sha": MATERIAL,
+             "result_only_changed_paths": [".audit/entregar-issue/handoff-ready.json"],
+             "certificate": {"scope": {"issue_changed_paths": ["scripts/foo.py"]}}}
+    pr = {"state": "open", "base": {"sha": BASE, "ref": "develop"},
+          "head": {"sha": HEAD, "ref": "feature/governance"}}
+    with patch.object(collector, "api", return_value=pr), \
+         patch.object(collector, "issue_reference", return_value=9), \
+         patch.object(handoff, "inspect_handoff", return_value=proof), \
+         patch.object(source.subprocess, "run", return_value=SimpleNamespace(
+             returncode=0, stdout="PASS", stderr="")) as runner:
+        source.produce(REPO, 10, BASE, HEAD, 42, Path("skill"),
+                       Path("out/session-review-handoff-attestation.json"))
+    args = runner.call_args.args[0]
+    assert "validate_handoff_certificate.py" in args[1]
+    assert "--candidate-parent-sha" in args
+    assert "--candidate-changed-path" in args
+    attested = json.loads(Path("out/session-review-handoff-attestation.json").read_text())
+    assert attested["run_id"] == 42 and attested["material_head_sha"] == MATERIAL
+
+    with patch.object(collector, "api", return_value=pr), \
+         patch.object(collector, "issue_reference", return_value=9), \
+         patch.object(handoff, "inspect_handoff", return_value=proof), \
+         patch.object(source.subprocess, "run", return_value=SimpleNamespace(
+             returncode=2, stdout="BLOCK: invalid certified closure", stderr="")):
+        with pytest.raises(ValueError, match="official Skill certificate validation failed"):
+            source.produce(REPO, 10, BASE, HEAD, 43, Path("skill"), Path("failed.json"))
+    assert not Path("failed.json").exists()
+
+
+def test_junit_builder_runs_governance_and_documentary_suites():
+    source_text = (Path(__file__).resolve().parents[1] /
+                   ".github/workflows/session-review-evidence.yml").read_text()
+    assert "session-review-governance.xml" in source_text
+    assert "session-review-visual.xml" in source_text
+    assert 'python -m pytest -q' in source_text
+    assert "tests/test_session_review_certificate.py" in source_text
+    assert "checks: write" not in source_text

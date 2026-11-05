@@ -17,6 +17,7 @@ on:
         "Statement visual validation",
         "Delivery audit workspace",
         "Session review evidence (exact SHA)",
+        "Verify certified handoff provenance",
       ]
     types: [completed]
   push:

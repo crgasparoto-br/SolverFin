@@ -65,3 +65,8 @@ Os testes cobrem controles negativos de watermark, base de destino, aliases e JS
 - **A-763-10:** a certificação própria da issue #762 depende da instalação real do produtor confiável. O handoff herdado de #728 não é aceito; não fabricar prova ou approval. O workflow novo falha fechado antes do bootstrap.
 
 A política permanece `mode=disabled`, PR draft. Não houve merge, ativação, alteração de rulesets ou aprovação independente. Testes mockados não substituem ensaios M2 reais.
+
+A evidência JUnit executa agora os testes Python de governança e os testes visuais
+sem privilégios de escrita, reunindo apenas suites realmente concluídas com sucesso.
+O verificador reage ao término do workflow de proveniência, sem tornar o check
+de CI ou o artifact uma aprovação independente.
