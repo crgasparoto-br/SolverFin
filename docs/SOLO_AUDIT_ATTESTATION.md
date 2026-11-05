@@ -8,16 +8,16 @@ A implementação M1 é optativa, não modifica rulesets, contagem de aprovaçõ
 
 ## Fonte confiável
 
-- Catálogo normativo: [crgasparoto-br/skill](https://github.com/crgasparoto-br/skill/tree/develop), commit fixado `a28be10db466631cd5e5e4dbe0429da250cd8b42`.
+- Catálogo normativo: [crgasparoto-br/skill](https://github.com/crgasparoto-br/skill/tree/develop). Os módulos oficiais foram integrados ao SolverFin pela PR #766 e têm identidade autenticada contra a base protegida; a execução não baixa nem executa código da PR candidata.
 - Workflow: `.github/workflows/solo-audit-attestation.yml` em base protegida e na branch default `main`.
-- Adaptador do SolverFin: `scripts/audit/verify_solo_attestation.py`, comparado byte a byte à base imutável da PR. O checkout usa o `github.workflow_sha`, nunca o HEAD candidato.
+- Controlador canônico: `scripts/verify_solo_audit_attestation.py` e módulos `scripts/solo_audit_*.py`, conforme o inventário `TRUSTED_PATHS` em `scripts/solo_audit_source.py`. A execução compara todos os bytes com a base imutável da PR e usa `github.workflow_sha`, nunca o HEAD candidato. Não manter adaptador ou workflow concorrente.
 - Assinatura, schema v3, registro público de chaves, comentário único/imutável, identidade PR/issue, hash do corpo da issue, HEAD/base/preview, permissão do autor e resolução de eventos são validados pelo código oficial fixado da Skill.
-- Para o SolverFin, o adaptador exige o job verdadeiro `Repository CI / Delivery V2 gate`, ligado a um run GitHub Actions do mesmo repositório, PR, base e HEAD exatos. Confere o Check Suite e a associação entre job e Check Run; não confia apenas em um status verde de mesmo nome. A definição do workflow de CI deve corresponder aos bytes autenticados da base protegida, pelo verificador oficial: uma definição alterada pela PR falha fechada.
+- O adaptador do SolverFin exige os jobs autenticados `Repository CI / Delivery V2 gate`, `Repository CI / Repository CI gate` e, para a base `develop`, `Delivery audit workspace / export`. Cada job precisa estar associado ao workflow esperado, Check Suite, Check Run, PR, base e HEAD exatos; conferir `head_repository` e `job.head_sha`. A definição de cada workflow deve corresponder à base protegida: uma definição alterada pela PR falha fechada. O job `export` é transporte de evidências, **não** certificado semântico.
 - Antes de publicar sucesso, relê comentários, permissão, configuração de chave, check exato, issue/PR, preview, HEAD único e identidade da fonte protegida.
 
 ## Bootstrap único
 
-1. Integrar a PR de infraestrutura primeiro na `develop` e depois na default `main`, com aviso prévio para cada merge e sem flexibilizar as proteções. O workflow só executa código confiável dessas branches. Enquanto não estiver em ambas, **não há atestação válida**.
+1. A PR #766 já integrou o código na `develop` protegida. Falta publicá-lo na default `main` protegida, com aviso prévio e sem flexibilizar as proteções. Enquanto os bytes confiáveis não estiverem instalados e autenticados em ambas, **não há atestação válida**.
 2. Conferir proteção das bases e testar ausência de comentário, alteração/exclusão do comentário, assinatura errada, base/HEAD divergente, usuário não autorizado e duas PRs no mesmo HEAD.
 3. Em sua **máquina local segura** (não no repositório, em Actions ou na conversa de implementação), obter a Skill no commit fixado e gerar chaves com senha local obtida por canal seguro:
 
@@ -95,7 +95,13 @@ Sem opt-in, o job não executa e não emite aprovação. Alterar variáveis **n�
 ## Testes
 
 ```bash
-python -m unittest discover -s scripts/audit -p 'test_*.py' -v
+python -m unittest discover -s tests -p 'test_solverfin_solo_audit_bootstrap.py' -v
 ```
 
 Referências normativas: `auditar-issue/references/external-audit-contract.md` e `docs/WEB_INDEPENDENT_AUDIT.md` no repositório `skill`.
+
+## Conciliação das PRs #765 e #766
+
+A PR #766 incorporou o workflow e o controlador canônicos de atestação. A PR #765 **não** instala outro controlador: mantém este runbook e migra os ataques adicionais de proveniência para `tests/test_solverfin_solo_audit_bootstrap.py`, junto à validação do job na implementação canônica. Os arquivos experimentais `scripts/audit/verify_solo_attestation.py` e `scripts/audit/test_verify_solo_attestation.py` não permanecem no resultado integrado, evitando dois validadores e dois caminhos de aprovação.
+
+Uma CI verde demonstra apenas testes do candidato. Ativação, assinatura com chave do operador, read-back da proteção das branches, origem confiável na `main`, tratamento de PRs com HEAD compartilhado e aprovação externa real continuam exigindo evidências próprias, sem alteração automática de rulesets.
