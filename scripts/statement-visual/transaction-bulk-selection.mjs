@@ -361,7 +361,11 @@ try {
     })()`,
   );
   assert.equal(keyboardActivation.enterReceived, true);
-  assert.equal(keyboardActivation.nativeActivation, true, "Enter must activate reconciliation natively.");
+  assert.equal(
+    keyboardActivation.nativeActivation,
+    true,
+    "Enter must activate reconciliation natively.",
+  );
   await sleep(40);
   const loading = await evaluate(
     browser.cdp,
