@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool, query } from "./db.js";
+import { closePool, getPool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
@@ -10,7 +10,6 @@ import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest } from "./router.js";
 import type { ApiRequest } from "./router.js";
 import {
-  cancelRecurrenceForContext,
   createRecurrenceForContext,
   generateInstallmentsForContext,
   getRecurrenceForContext,
@@ -263,11 +262,33 @@ async function assertUnreconciledAccountRecurrenceEdit(
     ordinary.description,
   );
 
-  await cancelRecurrenceForContext(CONTEXT, recurrence.id);
+  // Negative control: an in-flight cancellation must win over an editor that
+  // has already locked the selected transaction and is waiting for the rule.
   const cancelledSnapshot = await readOccurrences(recurrence.id);
-  const cancelled = await authenticatedPatch(token, path + "/current-only", { amountMinor: 5_000 });
-  assert.equal(cancelled.statusCode, 409, "cancelled recurrence must remain locked");
-  assert.deepEqual(await readOccurrences(recurrence.id), cancelledSnapshot);
+  const blocker = await getPool().connect();
+  let committed = false;
+  try {
+    await blocker.query("BEGIN");
+    await blocker.query(
+      `update "Recurrence" set "status" = 'CANCELLED'
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [recurrence.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+    );
+    const inFlight = authenticatedPatch(token, path + "/current-only", { amountMinor: 5_000 });
+    const completedBeforeCommit = await Promise.race([
+      inFlight.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 80)),
+    ]);
+    await blocker.query("COMMIT");
+    committed = true;
+    const cancelled = await inFlight;
+    assert.equal(completedBeforeCommit, false, "editor must wait for locked cancellation");
+    assert.equal(cancelled.statusCode, 409, "cancelled recurrence must remain locked");
+    assert.deepEqual(await readOccurrences(recurrence.id), cancelledSnapshot);
+  } finally {
+    if (!committed) await blocker.query("ROLLBACK");
+    blocker.release();
+  }
 }
 
 async function assertRecurringEditGuards(
