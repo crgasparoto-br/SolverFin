@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "material_head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "material_head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
   "source": {
-    "workflow_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908",
-    "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920",
-    "artifact_sha256": "f96eb50413b600cabdf62c7cdde2aba28e1fb70571dca24e7e9fcbbe4a2f9dbc",
-    "artifact_name": "statement-visual-evidence-5d567e4919f6698891bfc82c5d22d96ba34cb229",
-    "visual_gate_index_commit": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+    "workflow_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812",
+    "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777",
+    "artifact_sha256": "7ef59b17c29c9e8c03d47299f5842463d1c17ed20a108d879d7278bd51ea502f",
+    "artifact_name": "statement-visual-evidence-056d8ae2124538b78fb70289189985647a5e731a",
+    "visual_gate_index_commit": "056d8ae2124538b78fb70289189985647a5e731a",
     "visual_gate_failures": [],
     "record_files": [
       "issue-530-bulk-selection.json",
@@ -220,8 +220,8 @@
     ]
   },
   "github_ci": {
-    "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855",
-    "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+    "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881",
+    "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
     "run_conclusion": "success",
     "critical_steps": [
       "Enforce complete repository formatting",
@@ -231,6 +231,6 @@
       "Run npm run test:integration --workspace @solverfin/api",
       "Run npm run build"
     ],
-    "evidence_source": "GitHub authenticated CRITICAL validation job run 42265245855; test invocation names observed in job log."
+    "evidence_source": "GitHub authenticated CRITICAL validation job run 42280792881; test invocation names observed in job log."
   }
 }

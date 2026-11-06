@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
   "requirements": [
     {
       "requirement_id": "REQ-768-01",
@@ -22,8 +22,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
       },
       "negative_controls": [
         {
@@ -38,9 +38,9 @@
           "observed": "Chrome plannedAndPosted enabled reconciliation for planned+posted, and allStatuses also enabled.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-01-001-S1",
@@ -62,9 +62,9 @@
           "observed": "The button is enabled in real Chrome for planned + posted.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-01-003-S1",
@@ -86,9 +86,9 @@
           "observed": "Both actions enabled on allStatuses, and API leaves already reconciled members unchanged.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-01-011-S1",
@@ -110,9 +110,9 @@
           "observed": "Chrome persisted planned+posted as reconciled with correct expected effectiveOn, dates and states.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-01-016-S1",
@@ -126,8 +126,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
         }
       ],
       "obligation_control_map": [
@@ -177,8 +177,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
       },
       "negative_controls": [
         {
@@ -193,9 +193,9 @@
           "observed": "Both Chrome and integration keep planned unchanged when selected alongside reconciled.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-02-004-S1",
@@ -217,9 +217,9 @@
           "observed": "Only reconciled transitions to posted; posted remains posted in Chrome post-action readback.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-02-010-S1",
@@ -241,9 +241,9 @@
           "observed": "Disabled unreconcile with accessible explanatory help, without no-op request.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-02-012-S1",
@@ -265,9 +265,9 @@
           "observed": "Both controls enabled in mixed planned+reconciled, planned remains planned after unreconcile.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-02-017-S1",
@@ -281,8 +281,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
         }
       ],
       "obligation_control_map": [
@@ -329,8 +329,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
       },
       "negative_controls": [
         {
@@ -345,9 +345,9 @@
           "observed": "PostgreSQL integration passed and verifies every group member remains posted, attached, with unchanged audit count.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-03-005-S1",
@@ -375,9 +375,9 @@
           "observed": "The legacy POSTED fixture receives occurredOn=2028-08-11, not current UTC, and both origin/planning dates persist.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-03-009-S1",
@@ -405,9 +405,9 @@
           "observed": "PLANNED receives UTC today, preserves occurredOn and plannedOn.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-03-X01-S1",
@@ -435,9 +435,9 @@
           "observed": "Injected database exception rolls back status and related membership.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-03-X02-S1",
@@ -457,8 +457,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
         }
       ],
       "obligation_control_map": [
@@ -505,8 +505,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
       },
       "negative_controls": [
         {
@@ -521,9 +521,9 @@
           "observed": "Repeated already-reconciled item appears in unchangedTransactionIds and has no duplicate financial transition.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-04-006-S1",
@@ -551,9 +551,9 @@
           "observed": "Direct repository API rejects invalid suggested state and leaves the other eligible target unchanged.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-04-014-S1",
@@ -581,9 +581,9 @@
           "observed": "Group remains linked after status transitions; removedGroupIds length zero under reconciliation.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-04-018-S1",
@@ -611,9 +611,9 @@
           "observed": "Direct member mutation rejected by server outside grouped transaction.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-04-X01-S1",
@@ -641,9 +641,9 @@
           "observed": "Already reconciled target remains unchanged rather than generating second effect.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-04-X02-S1",
@@ -663,8 +663,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
         }
       ],
       "obligation_control_map": [
@@ -721,8 +721,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
       },
       "negative_controls": [
         {
@@ -737,9 +737,9 @@
           "observed": "Direct API rejects protected suggested and partial group selections with no partial mutation.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-013-S1",
@@ -767,9 +767,9 @@
           "observed": "Cross-tenant and cross-profile mutation denied, original records stay in their original tenant.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-020-S1",
@@ -797,9 +797,9 @@
           "observed": "Canonical repository producer reads linked AccountRemuneration, emits protected group projection and API rejects reconcile/unreconcile without mutation.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-024-S1",
@@ -827,9 +827,9 @@
           "observed": "Both actions rejected server-side for linked remuneration member.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-X01-S1",
@@ -857,9 +857,9 @@
           "observed": "Another tenant and another financial profile are excluded; server rejects cross-tenant request with TENANT_RESOURCE_NOT_FOUND, no leak.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-X02-S1",
@@ -887,9 +887,9 @@
           "observed": "Canonical repository producer detects linked relationship and server rejects both mutations; projected group becomes protected.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-X03-S1",
@@ -917,9 +917,9 @@
           "observed": "Unprotected group initially false; linked record changes projection to protected and blocks actions.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-05-X04-S1",
@@ -939,8 +939,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
         }
       ],
       "obligation_control_map": [
@@ -997,8 +997,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
       },
       "negative_controls": [
         {
@@ -1013,9 +1013,9 @@
           "observed": "The regression asserts origin and planning dates unchanged, while SQL touches only lifecycle columns.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-06-015-S1",
@@ -1037,9 +1037,9 @@
           "observed": "Cancelled delete performed zero bulk API calls and retained group and direct rows.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-06-023-S1",
@@ -1053,8 +1053,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
         }
       ],
       "obligation_control_map": [
@@ -1094,8 +1094,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
       },
       "negative_controls": [
         {
@@ -1110,9 +1110,9 @@
           "observed": "Native keyboard Enter triggers reconcile; button is icon-only with accessible title and busy state.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-07-002-S1",
@@ -1134,9 +1134,9 @@
           "observed": "Real Chrome confirms 5 icon-only buttons, accessible tooltips, keyboard feedback and no mobile horizontal overflow.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-07-007-S1",
@@ -1158,9 +1158,9 @@
           "observed": "Disabled state explains absent targets, and HTTP failure keeps selection and accessible error message.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-07-019-S1",
@@ -1174,8 +1174,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
         }
       ],
       "obligation_control_map": [
@@ -1218,8 +1218,8 @@
       "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
       },
       "negative_controls": [
         {
@@ -1234,9 +1234,9 @@
           "observed": "Changed API/Golden Screen docs describe the real UI statuses and group guards, corroborated by Chrome and API tests.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-08-008-S1",
@@ -1253,14 +1253,14 @@
           "dimension": "stale CI from predecessor",
           "failure_mode": "Omissão da validação de stale CI from predecessor faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
           "plausible_wrong_implementation": "Ignorar stale CI from predecessor no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
-          "procedure": "GitHub Repository CI run 42265245855 and Chrome run 42265245908 both completed success on exact material SHA 5d567e49, not previous fb41260",
+          "procedure": "GitHub Repository CI run 42280792881 and Chrome run 42280792812 both completed success on exact material SHA 5d567e49, not previous fb41260",
           "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para stale CI from predecessor.",
-          "observed": "CI and Chrome complete success on exactly 5d567e4919f6698891bfc82c5d22d96ba34cb229.",
+          "observed": "CI and Chrome complete success on exactly 056d8ae2124538b78fb70289189985647a5e731a.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-08-021-S1",
@@ -1282,9 +1282,9 @@
           "observed": "New Golden Screen documentation reflects status and tooltip behavior observed in real Chrome.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-08-X01-S1",
@@ -1301,14 +1301,14 @@
           "dimension": "chrome artifact exact sha",
           "failure_mode": "Omissão da validação de chrome artifact exact sha faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
           "plausible_wrong_implementation": "Ignorar chrome artifact exact sha no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
-          "procedure": "Chrome visual-gate-index.json commit_sha=5d567e49, failure array empty, workflow run 42265245908 completed success",
+          "procedure": "Chrome visual-gate-index.json commit_sha=5d567e49, failure array empty, workflow run 42280792812 completed success",
           "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para chrome artifact exact sha.",
           "observed": "Chrome recorded 5d567e49, matching Repository CI material SHA 5d567e49.",
           "control_type": "test",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-          "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
           "sibling_cases": [
             {
               "id": "NEG-08-X02-S1",
@@ -1322,8 +1322,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
         }
       ],
       "obligation_control_map": [
@@ -1368,8 +1368,8 @@
       "plausible_wrong_implementation": "Um produtor poderia reutilizar certificado histórico da issue #728/PR #759, misturar identidades vinculadas divergentes e anunciar auditoria aprovada para a issue #768 antes de revisão independente.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
       },
       "negative_controls": [
         {
@@ -1384,9 +1384,9 @@
           "observed": "Current issue #768 and PR #769 are target, skill develop@a28be10, product base develop@1bf1f84; inherited #728 certificate is excluded.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-09-022-S1",
@@ -1409,14 +1409,14 @@
           "dimension": "premature approval declaration",
           "failure_mode": "Omissão da validação de premature approval declaration faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
           "plausible_wrong_implementation": "Ignorar premature approval declaration no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
-          "procedure": "GitHub PR #769 remains open, no merge; Repository CI #42265245855 is evidence only and independent auditor approval remains explicitly unclaimed",
+          "procedure": "GitHub PR #769 remains open, no merge; Repository CI #42280792881 is evidence only and independent auditor approval remains explicitly unclaimed",
           "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para premature approval declaration.",
           "observed": "Implementation has not issued independent approval or merged PR; audit is intentionally a separate required gate.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-09-025-S1",
@@ -1444,9 +1444,9 @@
           "observed": "Reference liveness verified for issue #768, PR #769 and develop base at production material SHA.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-09-X01-S1",
@@ -1474,9 +1474,9 @@
           "observed": "Related record mismatch: inherited issue #728 + PR #759 vs canonical new producer issue #768 + PR #769. Reject foreign identity in current certificate projection, without publishing as current.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-09-X02-S1",
@@ -1504,9 +1504,9 @@
           "observed": "Correct canonical source repo skill and develop branch; current work item binding is issue #768.",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "Git SHA 5d567e4919f6698891bfc82c5d22d96ba34cb229 vs immutable base 1bf1f84deffda4faea201d5501c0055aba21224b; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
-          "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
           "sibling_cases": [
             {
               "id": "NEG-09-X03-S1",
@@ -1526,8 +1526,8 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
         }
       ],
       "obligation_control_map": [

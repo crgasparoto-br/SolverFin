@@ -1,7 +1,102 @@
 {
   "schema_version": 1,
-  "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
   "families": [
+    {
+      "family": "semantic-effect",
+      "applicable": true,
+      "reason": "Os requisitos normativos do Extrato alteram o efeito financeiro das ações em massa, a integridade de grupos e a acessibilidade Golden Screen; cada superfície tem controle negativo já executado no SHA material e ligado à matriz de ataques.",
+      "control_ids": [
+        "NEG-01-001",
+        "NEG-01-003",
+        "NEG-01-011",
+        "NEG-01-016",
+        "NEG-02-004",
+        "NEG-02-010",
+        "NEG-02-012",
+        "NEG-02-017",
+        "NEG-04-018",
+        "NEG-05-013",
+        "NEG-05-020",
+        "NEG-05-X04",
+        "NEG-06-015",
+        "NEG-06-023",
+        "NEG-07-002",
+        "NEG-07-007",
+        "NEG-07-019",
+        "NEG-09-025"
+      ],
+      "dimensions": [
+        {
+          "surface": "bulk-action-eligibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-01-001",
+            "NEG-01-003",
+            "NEG-01-011",
+            "NEG-01-016"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "bulk-unreconcile-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-02-004",
+            "NEG-02-010",
+            "NEG-02-012",
+            "NEG-02-017"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "golden-screen-accessibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-07-002",
+            "NEG-07-007",
+            "NEG-07-019"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "group-member-integrity",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-04-018"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "independent-review-separation",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-09-025"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "protected-financial-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-05-013",
+            "NEG-05-020",
+            "NEG-05-X04"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "unrelated-fields-immutability",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-06-015",
+            "NEG-06-023"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
     {
       "family": "authorization",
       "applicable": true,

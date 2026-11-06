@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
   "requirements": [
     {
       "requirement_id": "REQ-768-01",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
       ],
       "primary_negative_control": {
         "id": "NEG-01-001",
@@ -16,13 +16,13 @@
         "observed": "Chrome plannedAndPosted enabled reconciliation for planned+posted, and allStatuses also enabled."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
       ]
     },
     {
       "requirement_id": "REQ-768-02",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
       ],
       "primary_negative_control": {
         "id": "NEG-02-004",
@@ -32,13 +32,13 @@
         "observed": "Both Chrome and integration keep planned unchanged when selected alongside reconciled."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
       ]
     },
     {
       "requirement_id": "REQ-768-03",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
       ],
       "primary_negative_control": {
         "id": "NEG-03-005",
@@ -48,13 +48,13 @@
         "observed": "PostgreSQL integration passed and verifies every group member remains posted, attached, with unchanged audit count."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
       ]
     },
     {
       "requirement_id": "REQ-768-04",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
       ],
       "primary_negative_control": {
         "id": "NEG-04-006",
@@ -64,13 +64,13 @@
         "observed": "Repeated already-reconciled item appears in unchangedTransactionIds and has no duplicate financial transition."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
       ]
     },
     {
       "requirement_id": "REQ-768-05",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
       ],
       "primary_negative_control": {
         "id": "NEG-05-013",
@@ -80,13 +80,13 @@
         "observed": "Direct API rejects protected suggested and partial group selections with no partial mutation."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
       ]
     },
     {
       "requirement_id": "REQ-768-06",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
       ],
       "primary_negative_control": {
         "id": "NEG-06-015",
@@ -96,13 +96,13 @@
         "observed": "The regression asserts origin and planning dates unchanged, while SQL touches only lifecycle columns."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
       ]
     },
     {
       "requirement_id": "REQ-768-07",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
       ],
       "primary_negative_control": {
         "id": "NEG-07-002",
@@ -112,13 +112,13 @@
         "observed": "Native keyboard Enter triggers reconcile; button is icon-only with accessible title and busy state."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
       ]
     },
     {
       "requirement_id": "REQ-768-08",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
       ],
       "primary_negative_control": {
         "id": "NEG-08-008",
@@ -128,13 +128,13 @@
         "observed": "Changed API/Golden Screen docs describe the real UI statuses and group guards, corroborated by Chrome and API tests."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
       ]
     },
     {
       "requirement_id": "REQ-768-09",
       "positive_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
       ],
       "primary_negative_control": {
         "id": "NEG-09-022",
@@ -144,7 +144,7 @@
         "observed": "Current issue #768 and PR #769 are target, skill develop@a28be10, product base develop@1bf1f84; inherited #728 certificate is excluded."
       },
       "regression_evidence": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
       ]
     }
   ]

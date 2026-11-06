@@ -1,14 +1,14 @@
 {
   "schema_version": 2,
-  "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
-  "base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
+  "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "creations": [
     {
       "path": "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
         ],
         "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
@@ -31,7 +31,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
         ],
         "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
@@ -87,11 +87,11 @@
       "requirement": "REQUIRED-768-03+04+05",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"bulk|reconcile|group|date\" apps/api/src/transaction-bulk-actions.integration.test.ts"
         ],
         "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
-        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42265245855.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
         "candidates": [
           {
             "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
@@ -115,12 +115,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
         "reached_tests": [
           "apps/api/src/transaction-bulk-actions.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-        "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835"
+        "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303"
       }
     },
     {
@@ -130,11 +130,11 @@
       "requirement": "REQUIRED-768-01+02",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
         ],
         "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
-        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42265245855.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
@@ -158,12 +158,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-        "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835"
+        "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303"
       }
     },
     {
@@ -173,11 +173,11 @@
       "requirement": "REQUIRED-768-07",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
         ],
         "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
-        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42265245855.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
@@ -201,12 +201,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-        "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835"
+        "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303"
       }
     },
     {
@@ -216,11 +216,11 @@
       "requirement": "REQUIRED-768-05",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
         ],
         "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
-        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42265245855.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
@@ -244,12 +244,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-        "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835"
+        "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303"
       }
     },
     {
@@ -259,11 +259,11 @@
       "requirement": "REQUIRED-768-04",
       "search": {
         "queries": [
-          "git diff --name-status 1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229",
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
           "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transactions-groups.test.ts"
         ],
         "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
-        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42265245855.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/transactions-groups.test.ts",
@@ -287,12 +287,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
         "reached_tests": [
           "apps/web/src/dev-server/transactions-groups.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-        "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835"
+        "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303"
       }
     }
   ]

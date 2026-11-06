@@ -41,7 +41,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13526858920."
+      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13535328777."
     },
     {
       "id": "OBL-003",
@@ -129,7 +129,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13526858920."
+      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13535328777."
     },
     {
       "id": "OBL-008",
@@ -146,7 +146,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Repository CI #42265245855 passed formatting, lint, types, unit tests, integration, build; Chrome #42265245908 passed; docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md updated."
+      "rationale": "Repository CI #42280792881 passed formatting, lint, types, unit tests, integration, build; Chrome #42280792812 passed; docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md updated."
     },
     {
       "id": "OBL-009",
@@ -357,7 +357,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13526858920."
+      "rationale": "Five icon-only toolbar actions, accessible labels/help, keyboard Enter, error feedback and mobile no overflow; scripts/statement-visual/transaction-bulk-selection-helpers.mjs:139-169; exact-head Chrome artifact #13535328777."
     },
     {
       "id": "OBL-020",
@@ -393,7 +393,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Repository CI #42265245855 passed formatting, lint, types, unit tests, integration, build; Chrome #42265245908 passed; docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md updated."
+      "rationale": "Repository CI #42280792881 passed formatting, lint, types, unit tests, integration, build; Chrome #42280792812 passed; docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md updated."
     },
     {
       "id": "OBL-022",
@@ -550,7 +550,7 @@
         ],
         "visible_surface_evidence": [
           "Golden Screen selected-group reconciliation buttons disabled with accessible tooltip for protected group; exact-head unit/browser test",
-          "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908: transaction-bulk-selection passed"
+          "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812: transaction-bulk-selection passed"
         ],
         "scenario_ids": [
           "SCN-768-GROUP-PROTECTED",
@@ -644,9 +644,9 @@
       "OBL-025"
     ],
     "evidence": [
-      "Git immutable diff: develop@1bf1f84deffda4faea201d5501c0055aba21224b..5d567e4919f6698891bfc82c5d22d96ba34cb229 contains 20 paths, no out-of-scope SQL data field changes.",
-      "Repository CI critical checks: https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855",
-      "Real Chrome screenshot/mobile/status API results: https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920",
+      "Git immutable diff: develop@5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a contains 20 paths, no out-of-scope SQL data field changes.",
+      "Repository CI critical checks: https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881",
+      "Real Chrome screenshot/mobile/status API results: https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777",
       "Derivation from source issue text and API/domain/SSR source, not the PR author description; separate independent auditor still required."
     ],
     "rederived_without_pr_description": true,
