@@ -372,9 +372,9 @@ async function main(): Promise<void> {
     await assert.rejects(
       () =>
         executeTransactionBulkActionForContext(context, {
-        action: "reconcile",
-        groupIds: [remunerationGroup.id],
-      }),
+          action: "reconcile",
+          groupIds: [remunerationGroup.id],
+        }),
       hasCode("TRANSACTION_BULK_PROTECTED"),
     );
     assert.ok(
@@ -394,9 +394,9 @@ async function main(): Promise<void> {
     await assert.rejects(
       () =>
         executeTransactionBulkActionForContext(context, {
-        action: "unreconcile",
-        groupIds: [remunerationGroup.id],
-      }),
+          action: "unreconcile",
+          groupIds: [remunerationGroup.id],
+        }),
       hasCode("TRANSACTION_BULK_PROTECTED"),
     );
     assert.ok(

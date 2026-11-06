@@ -400,7 +400,10 @@ try {
   assert.equal(reconciled.directStatus, "Conciliado");
 
   await selectMixed(browser.cdp, created);
-  const protectedReconciledGroup = await inspectProtectedGroupSelection(browser.cdp, created.groupId);
+  const protectedReconciledGroup = await inspectProtectedGroupSelection(
+    browser.cdp,
+    created.groupId,
+  );
   assert.equal(protectedReconciledGroup.reconcileDisabled, true);
   assert.equal(protectedReconciledGroup.unreconcileDisabled, true);
   assert.match(protectedReconciledGroup.unreconcileTooltip, /remuneração automática/i);
