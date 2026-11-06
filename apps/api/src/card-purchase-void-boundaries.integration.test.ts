@@ -392,17 +392,17 @@ async function main(): Promise<void> {
           }),
         hasCode("CARD_REVERSAL_EDIT_ROUTE_REQUIRED"),
       );
-      assert.equal(await readInvoiceTotal(expense.invoice.id), balanceBeforeReversal - 800);
+      assert.equal(await readInvoiceTotal(expense.invoice.id), positiveTotal);
       await updateCardReversalForContext(CONTEXT, card.id, credit.transactionId, {
         amountMinor: 650,
         occurredOn: "2032-05-08",
         description: "Estorno editado na rota canônica",
       });
-      assert.equal(await readInvoiceTotal(expense.invoice.id), balanceBeforeReversal - 650);
+      assert.equal(await readInvoiceTotal(expense.invoice.id), positiveTotal + 150);
       await voidTransactionForContext(CONTEXT, credit.transactionId);
       assert.equal(
         (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id)).totalExpensesMinor,
-        balanceBeforeReversal,
+        positiveTotal + 800,
       );
       assert.equal(await countSoftDelete(credit.transactionId), 1);
       await assert.rejects(
