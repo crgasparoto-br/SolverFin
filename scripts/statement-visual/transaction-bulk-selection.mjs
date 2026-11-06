@@ -452,4 +452,3 @@ try {
   }
   await browser.close(outputDir);
 }
-

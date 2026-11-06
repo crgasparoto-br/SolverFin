@@ -226,4 +226,3 @@ export async function verifyFailureFeedback(browser) {
 
   return { serverFailure, networkFailure };
 }
-
