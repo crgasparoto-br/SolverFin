@@ -284,6 +284,7 @@ async function main(): Promise<void> {
       });
       const balanceBeforeReversal = (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id))
         .totalExpensesMinor;
+      assert.equal(balanceBeforeReversal, 800);
       const credit = await reverseCardPurchaseForContext(
         CONTEXT,
         card.id,
