@@ -391,6 +391,26 @@ export function operationalInstallmentsController(): string {
           }
           const editButton = row.querySelector('[data-edit="' + transactionId + '"]');
           if (!editButton) return;
+          // A posted account recurrence (including after unreconciliation) is
+          // edited by the transaction's current-only scope modal. Finite
+          // installments and locked occurrences retain the restricted editor.
+          const recurringAccountOccurrence = Boolean(
+            installment.recurrenceId &&
+            installment.transaction?.recurrenceId === installment.recurrenceId &&
+            installment.transaction?.status === "posted" &&
+            ["planned", "posted"].includes(installment.status) &&
+            installment.recurrence &&
+            installment.recurrence.status !== "cancelled" &&
+            !installment.invoice &&
+            !installment.card &&
+            !installment.cardInstrument &&
+            !installment.transaction.cardId &&
+            !installment.transaction.invoiceId
+          );
+          if (recurringAccountOccurrence) {
+            editButton.title = "Editar lançamento recorrente";
+            return;
+          }
           editButton.dataset.installmentEdit = installment.id;
           editButton.dataset.installmentEditable = String(installment.editable === true || installment.amountEditable === true);
           const label = editButton.querySelector("span");

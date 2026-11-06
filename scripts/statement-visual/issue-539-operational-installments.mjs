@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { validateUnreconciledRecurringAccountEdit } from "./issue-774-recurring-unreconcile-edit.mjs";
 import {
   validateRecurringScopeDesktop,
   validateRecurringScopeViewports,
@@ -41,6 +42,11 @@ try {
   await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
   await validateCardMobile(fixture);
+  await validateUnreconciledRecurringAccountEdit({
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+  });
 } finally {
   await browser.close(outputDir);
 }

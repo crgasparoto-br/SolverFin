@@ -45,6 +45,8 @@ async function main(): Promise<void> {
   assert.deepEqual(harness.form.values, originalValues);
 
   const current = createHarness();
+  current.form.values.categoryId = "";
+  current.form.values.accountId = "account-reassigned";
   await current.submit(fakeSubmitEvent(current.form));
   await current.currentButton.dispatch("click", fakeEvent(current.currentButton));
   assert.equal(current.requests.length, 1);
@@ -54,6 +56,22 @@ async function main(): Promise<void> {
     (current.requests[0]?.body as Record<string, unknown>)?.applyToFuturePlanned,
     undefined,
   );
+  assert.equal((current.requests[0]?.body as Record<string, unknown>)?.categoryId, null);
+  assert.equal(
+    (current.requests[0]?.body as Record<string, unknown>)?.accountId,
+    "account-reassigned",
+  );
+
+  const future = createHarness();
+  future.form.values.categoryId = "";
+  await future.submit(fakeSubmitEvent(future.form));
+  await future.futureButton.dispatch("click", fakeEvent(future.futureButton));
+  assert.equal(future.requests[0]?.path, "/api/transactions/transaction-1");
+  assert.equal(
+    (future.requests[0]?.body as Record<string, unknown>)?.applyToFuturePlanned,
+    true,
+  );
+  assert.equal((future.requests[0]?.body as Record<string, unknown>)?.categoryId, undefined);
 }
 
 function createHarness() {
@@ -173,6 +191,7 @@ function createHarness() {
     form,
     modal,
     currentButton,
+    futureButton,
     backButton,
     closeButton,
     submitButton,

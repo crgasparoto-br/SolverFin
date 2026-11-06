@@ -278,7 +278,9 @@ export function recurringCardScopeControllerScript(): string {
           if (destinationAccountId && payload.kind === "transfer") {
             payload.destinationAccountId = destinationAccountId;
           }
-          if (categoryId) payload.categoryId = categoryId;
+          if (categoryId || scope === "current_only") {
+            payload.categoryId = categoryId || null;
+          }
           if (scope === "current_and_future") payload.applyToFuturePlanned = true;
           return payload;
         }

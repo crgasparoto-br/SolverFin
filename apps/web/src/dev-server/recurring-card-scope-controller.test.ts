@@ -25,6 +25,16 @@ async function main(): Promise<void> {
     expectedPath: "/api/transactions/transaction-1",
     expectedApplyToFuture: true,
   });
+  await assertScopeRequest("account", "current", {
+    expectedPath: "/api/transactions/transaction-1/current-only",
+    categoryValue: "",
+    accountValue: "account-reassigned",
+  });
+  await assertScopeRequest("account", "current_and_future", {
+    expectedPath: "/api/transactions/transaction-1",
+    expectedApplyToFuture: true,
+    categoryValue: "",
+  });
 }
 
 function assertCompactLayoutContract(): void {
@@ -82,6 +92,8 @@ async function assertScopeRequest(
     expectedPath: string;
     expectedScope?: string;
     expectedApplyToFuture?: boolean;
+    categoryValue?: string;
+    accountValue?: string;
   },
 ): Promise<void> {
   const requests: Array<{ path: string; init: { body?: string } }> = [];
@@ -131,9 +143,9 @@ async function assertScopeRequest(
         note: "Observação",
         kind: "expense",
         status: "planned",
-        accountId: "account-1",
+        accountId: expected.accountValue ?? "account-1",
         destinationAccountId: "",
-        categoryId: "category-1",
+        categoryId: expected.categoryValue ?? "category-1",
         cardInstrumentId: "instrument-1",
         recurrenceId: "recurrence-1",
       };
@@ -206,7 +218,18 @@ async function assertScopeRequest(
   const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<string, unknown>;
   assert.equal(payload.editScope, expected.expectedScope);
   assert.equal(payload.applyToFuturePlanned, expected.expectedApplyToFuture);
-  if (targetKind === "account") assert.equal(payload.accountId, "account-1");
+  if (targetKind === "account") {
+    assert.equal(payload.accountId, expected.accountValue ?? "account-1");
+    assert.equal(
+      payload.categoryId,
+      expected.categoryValue === "" && buttonKind === "current_and_future"
+        ? undefined
+        : (expected.categoryValue ?? "category-1") || null,
+    );
+    if (buttonKind === "current" && expected.categoryValue === "") {
+      assert.equal(Object.hasOwn(payload, "categoryId"), true);
+    }
+  }
   assert.equal(currentButton.disabled, true);
   assert.equal(futureButton.disabled, true);
   assert.equal(backButton.disabled, true);

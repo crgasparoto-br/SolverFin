@@ -420,7 +420,9 @@ export function recurrencesSectionScript(): string {
             const destinationAccountId = String(data.get("destinationAccountId") || "");
             const categoryId = String(data.get("categoryId") || "");
             if (destinationAccountId) result.destinationAccountId = destinationAccountId;
-            if (categoryId) result.categoryId = categoryId;
+            if (categoryId || (!applyToFuturePlanned && form.dataset.recurrenceId)) {
+              result.categoryId = categoryId || null;
+            }
             return result;
           }
           function plannedAndEffectiveOn(monthOffset) {

@@ -255,4 +255,6 @@ a operação já existente, que alcança somente as futuras elegíveis. A
 alteração individual sincroniza a parcela selecionada sem alterar outras
 ocorrências nem a definição da recorrência. Ocorrências ainda conciliadas,
 recorrências canceladas, parcelas sem recorrência e compras de cartão
-continuam sujeitas a bloqueios do backend.
+continuam sujeitas a bloqueios do backend. Escolher **Sem categoria** na edição
+individual envia `categoryId: null` e remove o vínculo somente da ocorrência
+selecionada; a conta pode ser alterada sem modificar a regra recorrente.

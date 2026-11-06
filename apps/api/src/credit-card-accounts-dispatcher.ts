@@ -92,7 +92,9 @@ export async function handleCreditCardAccountsApiRequest(
           ...(body.destinationAccountId !== undefined
             ? { destinationAccountId: String(body.destinationAccountId) }
             : {}),
-          ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+          ...(body.categoryId !== undefined
+            ? { categoryId: readOptionalString(body.categoryId) }
+            : {}),
           ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
         });
       });

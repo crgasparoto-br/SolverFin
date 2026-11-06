@@ -21,6 +21,18 @@ test("installment editing has one managed primary submit and suppresses create-o
   assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
 });
 
+test("posted account recurrences use current-only scope, without unlocking ordinary installments", () => {
+  const script = operationalInstallmentsController();
+  assert.match(script, /installment\.transaction\?\.status === "posted"/);
+  assert.match(
+    script,
+    /installment\.recurrence\.status !== "cancelled"/,
+  );
+  assert.match(script, /recurringAccountOccurrence/);
+  assert.match(script, /if \(recurringAccountOccurrence\) \{/);
+  assert.match(script, /editButton\.dataset\.installmentEdit = installment\.id/);
+});
+
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),

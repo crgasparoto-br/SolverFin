@@ -5,6 +5,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool, getPool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
+import { createCategoryForContext } from "./repositories/categories.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleMvpApiRequest } from "./mvp.js";
 import { handleApiRequest } from "./router.js";
@@ -166,6 +167,19 @@ async function assertUnreconciledAccountRecurrenceEdit(
     kind: "checking",
     openingBalanceMinor: 0,
   });
+  const destinationAccount = await createAccountForContext(CONTEXT, {
+    name: `Conta de destino após desconciliação ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 0,
+  });
+  const originalCategory = await createCategoryForContext(CONTEXT, {
+    name: `Categoria original da ocorrência ${suffix}`,
+    kind: "expense",
+  });
+  const replacementCategory = await createCategoryForContext(CONTEXT, {
+    name: `Categoria corrigida da ocorrência ${suffix}`,
+    kind: "expense",
+  });
   const recurrence = await createRecurrenceForContext(CONTEXT, {
     kind: "expense",
     frequency: "monthly",
@@ -173,11 +187,14 @@ async function assertUnreconciledAccountRecurrenceEdit(
     amountMinor: 3_500,
     description: `Recorrência original ${suffix}`,
     accountId: account.id,
+    categoryId: originalCategory.id,
   });
   await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-09-08", 3);
   const before = await readOccurrences(recurrence.id);
   assert.equal(before.length, 3);
   const selected = before[1]!;
+  assert.equal(selected.transactionAccountId, account.id);
+  assert.equal(selected.transactionCategoryId, originalCategory.id);
   const path = `/api/transactions/${selected.transactionId}`;
 
   const reconciled = await authenticatedPatch(token, path, { status: "reconciled" });
@@ -218,7 +235,8 @@ async function assertUnreconciledAccountRecurrenceEdit(
     editScope: "current_only",
     status: "posted",
     kind: "expense",
-    accountId: account.id,
+    accountId: destinationAccount.id,
+    categoryId: replacementCategory.id,
     amountMinor: 4_200,
     occurredOn: "2028-08-12",
     plannedOn: "2028-08-12",
@@ -236,13 +254,73 @@ async function assertUnreconciledAccountRecurrenceEdit(
   assert.equal(after[1]?.transactionOccurredOn, "2028-08-12");
   assert.equal(after[1]?.installmentDueOn, "2028-08-12");
   assert.equal(after[1]?.transactionDescription, `Ocorrência editada após desconciliar ${suffix}`);
+  assert.equal(after[1]?.transactionAccountId, destinationAccount.id);
+  assert.equal(after[1]?.transactionCategoryId, replacementCategory.id);
   const selectedUpdated = await getTransactionForContext(CONTEXT, selected.transactionId);
   assert.equal(selectedUpdated.status, "posted");
+  assert.equal(selectedUpdated.accountId, destinationAccount.id);
+  assert.equal(selectedUpdated.categoryId, replacementCategory.id);
   assert.equal(selectedUpdated.recurrenceId, recurrence.id);
   assert.ok(selectedUpdated.installmentId);
   const rule = await getRecurrenceForContext(CONTEXT, recurrence.id);
   assert.equal(rule.amountMinor, 3_500);
   assert.equal(rule.description, `Recorrência original ${suffix}`);
+  assert.equal(rule.accountId, account.id);
+  assert.equal(rule.categoryId, originalCategory.id);
+
+  // The selection explicitly clears a previously saved category, without
+  // clearing the recurrence rule or any other occurrence.
+  const clearCategory = await authenticatedPatch(token, path + "/current-only", {
+    categoryId: null,
+  });
+  assert.equal(clearCategory.statusCode, 200, JSON.stringify(clearCategory.body));
+  const withoutCategory = await readOccurrences(recurrence.id);
+  assertOccurrenceUnchanged(before[0], withoutCategory[0]);
+  assertOccurrenceUnchanged(before[2], withoutCategory[2]);
+  assert.equal(withoutCategory[1]?.transactionCategoryId, null);
+  assert.equal(withoutCategory[1]?.transactionAccountId, destinationAccount.id);
+  assert.equal(withoutCategory[1]?.transactionAmountMinor, 4_200);
+  assert.equal(
+    (await getTransactionForContext(CONTEXT, selected.transactionId)).categoryId,
+    undefined,
+  );
+  assert.equal(
+    (await getRecurrenceForContext(CONTEXT, recurrence.id)).categoryId,
+    originalCategory.id,
+  );
+
+  // A concurrent status-only request must see the row after it acquires the
+  // lock; otherwise it can overwrite newer data with a pre-lock snapshot.
+  const concurrentDescription = `Concorrência preservada ${suffix}`;
+  const editingConnection = await getPool().connect();
+  let edited = false;
+  try {
+    await editingConnection.query("BEGIN");
+    await editingConnection.query(
+      `update "Transaction" set "description" = $3
+         where "id" = $1 and "organizationId" = $2`,
+      [selected.transactionId, CONTEXT.organizationId, concurrentDescription],
+    );
+    const reconciliationInFlight = authenticatedPatch(token, path, { status: "reconciled" });
+    const completedBeforeCommit = await Promise.race([
+      reconciliationInFlight.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 80)),
+    ]);
+    assert.equal(completedBeforeCommit, false, "reconciliation must wait for the row lock");
+    await editingConnection.query("COMMIT");
+    edited = true;
+    const reconciliationResult = await reconciliationInFlight;
+    assert.equal(reconciliationResult.statusCode, 200);
+    assert.equal(
+      (await getTransactionForContext(CONTEXT, selected.transactionId)).description,
+      concurrentDescription,
+    );
+    const reverted = await authenticatedPatch(token, path, { status: "posted" });
+    assert.equal(reverted.statusCode, 200);
+  } finally {
+    if (!edited) await editingConnection.query("ROLLBACK");
+    editingConnection.release();
+  }
 
   const ordinary = await createTransactionForContext(CONTEXT, {
     accountId: account.id,
@@ -446,6 +524,8 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
        i."sequenceNumber",
        t."amountMinor" as "transactionAmountMinor",
        i."amountMinor" as "installmentAmountMinor",
+       t."accountId" as "transactionAccountId",
+       t."categoryId" as "transactionCategoryId",
        t."description" as "transactionDescription",
        to_char(t."occurredOn", 'YYYY-MM-DD') as "transactionOccurredOn",
        to_char(i."dueOn", 'YYYY-MM-DD') as "installmentDueOn"
@@ -481,6 +561,8 @@ interface OccurrenceRow {
   sequenceNumber: number;
   transactionAmountMinor: number;
   installmentAmountMinor: number;
+  transactionAccountId: string | null;
+  transactionCategoryId: string | null;
   transactionDescription: string;
   transactionOccurredOn: string;
   installmentDueOn: string;
