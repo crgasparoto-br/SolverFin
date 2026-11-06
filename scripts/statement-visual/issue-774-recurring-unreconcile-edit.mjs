@@ -218,25 +218,34 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
   assert.equal(persisted.recurrence.categoryId, fixture.categoryId);
   assert.equal(persisted.recurrence.amountMinor, 3500);
   assert.equal(persisted.siblingTransactions.length, 2);
-  assert.ok(persisted.siblingTransactions.every((item) =>
-    item.accountId === fixture.sourceId && item.categoryId === fixture.categoryId &&
-    item.amountMinor === 3500));
+  assert.ok(
+    persisted.siblingTransactions.every(
+      (item) =>
+        item.accountId === fixture.sourceId &&
+        item.categoryId === fixture.categoryId &&
+        item.amountMinor === 3500,
+    ),
+  );
 
   await writeFile(
     join(outputDir, "issue-774-recurring-unreconcile-edit.json"),
-    `${JSON.stringify({
-      subjectSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
-      route,
-      scenario: "reconciled -> posted -> current-only UI edit -> persisted readback",
-      reconciledState,
-      editState,
-      modalState,
-      prepared,
-      patch,
-      persisted,
-      screenshot: "issue-774-after-unreconcile-edit-dialog.png",
-      result: "passed",
-    }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        subjectSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
+        route,
+        scenario: "reconciled -> posted -> current-only UI edit -> persisted readback",
+        reconciledState,
+        editState,
+        modalState,
+        prepared,
+        patch,
+        persisted,
+        screenshot: "issue-774-after-unreconcile-edit-dialog.png",
+        result: "passed",
+      },
+      null,
+      2,
+    )}\n`,
   );
   console.log("[issue-774] Real Chrome reconciliation and current-only edit passed");
 }

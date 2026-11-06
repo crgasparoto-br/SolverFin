@@ -67,10 +67,7 @@ async function main(): Promise<void> {
   await future.submit(fakeSubmitEvent(future.form));
   await future.futureButton.dispatch("click", fakeEvent(future.futureButton));
   assert.equal(future.requests[0]?.path, "/api/transactions/transaction-1");
-  assert.equal(
-    (future.requests[0]?.body as Record<string, unknown>)?.applyToFuturePlanned,
-    true,
-  );
+  assert.equal((future.requests[0]?.body as Record<string, unknown>)?.applyToFuturePlanned, true);
   assert.equal((future.requests[0]?.body as Record<string, unknown>)?.categoryId, undefined);
 }
 
