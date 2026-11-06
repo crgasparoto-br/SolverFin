@@ -337,9 +337,14 @@ async function main(): Promise<void> {
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
       await assert.rejects(
         () =>
-          moveCardPurchaseInvoicePeriodForContext(CONTEXT, reversalCard.id, expense.transaction.id, {
-            invoicePeriod: "2032-06",
-          }),
+          moveCardPurchaseInvoicePeriodForContext(
+            CONTEXT,
+            reversalCard.id,
+            expense.transaction.id,
+            {
+              invoicePeriod: "2032-06",
+            },
+          ),
         hasCode("CARD_PURCHASE_INVOICE_LOCKED"),
       );
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
@@ -361,9 +366,14 @@ async function main(): Promise<void> {
       );
       await assert.rejects(
         () =>
-          moveCardPurchaseInvoicePeriodForContext(CONTEXT, reversalCard.id, expense.transaction.id, {
-            invoicePeriod: "2032-06",
-          }),
+          moveCardPurchaseInvoicePeriodForContext(
+            CONTEXT,
+            reversalCard.id,
+            expense.transaction.id,
+            {
+              invoicePeriod: "2032-06",
+            },
+          ),
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
       );
       const [sourceInvoice] = await query<{ invoiceId: string }>(
