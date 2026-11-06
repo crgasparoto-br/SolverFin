@@ -32,6 +32,7 @@ export async function deleteSimpleCardPurchaseForContext(
         where t."id" = $1 and t."cardId" = $2 and
           t."organizationId" = $3 and t."financialProfileId" = $4
           and t."accountId" is null and t."transactionGroupId" is null
+          and t."status" <> 'VOIDED'
           and (t."kind" = 'EXPENSE' or
             (t."kind" = 'INCOME' and t."description" like '%[estorno:%'))
         for update of t, inv`,
