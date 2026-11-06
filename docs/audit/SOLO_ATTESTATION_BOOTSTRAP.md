@@ -29,7 +29,7 @@ Fonte normativa: [crgasparoto-br/skill, branch develop](https://github.com/crgas
 
 ## Condições de aceite antes do uso
 
-- Adaptador de CI autenticado do SolverFin validado em HEAD exato e em falhas/reenfileiramentos, com execução autenticada viva (os 9 testes unitários apenas simulam respostas e não substituem prova real).
+- Adaptador de CI autenticado do SolverFin validado em HEAD exato e em falhas/reenfileiramentos, com execução autenticada viva (os testes de integração unitária apenas simulam respostas e não substituem prova real).
 - Proteção de `develop` e `main` confirmada por leitura confiável; ramo de execução protegido.
 - Eventos de comentário, alterações de issue, mudanças de HEAD/base e revogação exercitados.
 - PRs compartilhando HEAD rejeitadas; reconsulta imediatamente antes do sucesso.
@@ -42,3 +42,7 @@ A importação dos arquivos por si só não equivale à aprovação técnica nem
 - Validação CI específica: [Solo audit bootstrap verification](https://github.com/crgasparoto-br/SolverFin/actions/runs/42062328188) — 9/9 testes unitários passaram no commit `598be6015b294d4b6dc909a5076dab9d4c6fa4eb`, sem credenciais de escrita.
 - Os testes cobrem mapeamento de workflow, ausência de check, rerun mais recente falho, app/head incorretos, inventário truncado, IDs de evidência e revisão `CHANGES_REQUESTED`.
 - O código foi compilado pelo Python 3.12 com dependências instaladas por hashes. A aprovação funcional de ponta a ponta ainda depende de execução protegida e configuração pública da chave.
+
+## Reconciliação da PR #765
+
+A PR #765 reaproveita exclusivamente o controlador oficial incorporado pela PR #766; integra ataques de autenticidade do workflow/job à suíte existente e publica um runbook de operação em `docs/SOLO_AUDIT_ATTESTATION.md`. Adaptadores concorrentes não são executados nem mantidos. Nenhuma mudança automática de ruleset ou chave privada está autorizada por esta consolidação.
