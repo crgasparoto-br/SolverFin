@@ -94,9 +94,7 @@ async function assertInstallmentPurchaseEdit(
   await assert.rejects(
     () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
     (error: unknown) =>
-      error instanceof Error &&
-      "code" in error &&
-      error.code === "CARD_PURCHASE_DELETE_RESTRICTED",
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_DELETE_RESTRICTED",
   );
   assert.equal(await readInvoiceTotal(purchase.invoice.id), linkedTotal);
   assert.deepEqual(
@@ -640,7 +638,6 @@ async function assertLockedInvoiceRejectsCardPurchaseEdit(suffix: string): Promi
   }
 }
 
-
 async function assertSimplePurchaseSoftDelete(
   cardId: string,
   cardInstrumentId: string,
@@ -659,7 +656,8 @@ async function assertSimplePurchaseSoftDelete(
   assert.ok(previousLimit !== undefined);
 
   await assert.rejects(
-    () => deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
+    () =>
+      deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
     (error: unknown) =>
       error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
   );
@@ -711,7 +709,8 @@ async function assertSimplePurchaseSoftDelete(
       error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
   );
   await assert.rejects(
-    () => updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, { description: "X" }),
+    () =>
+      updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, { description: "X" }),
     (error: unknown) =>
       error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
   );

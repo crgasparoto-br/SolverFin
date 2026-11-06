@@ -33,10 +33,20 @@ async function main(): Promise<void> {
       const similarName = randomUUID();
       const fixtures = [
         { id: manualPrefix, name: "Preenchimento: Mercado", explanation: null, status: "ACTIVE" },
-        { id: manualExplanation, name: "Regra anterior", explanation: MANUAL_EXPLANATION, status: "ACTIVE" },
+        {
+          id: manualExplanation,
+          name: "Regra anterior",
+          explanation: MANUAL_EXPLANATION,
+          status: "ACTIVE",
+        },
         { id: regularActive, name: "Mercado automático", explanation: null, status: "ACTIVE" },
         { id: regularInactive, name: "Aluguel pausado", explanation: null, status: "INACTIVE" },
-        { id: similarName, name: "Classificar Preenchimento: manual", explanation: null, status: "ACTIVE" },
+        {
+          id: similarName,
+          name: "Classificar Preenchimento: manual",
+          explanation: null,
+          status: "ACTIVE",
+        },
       ] as const;
       const organizationId = randomUUID();
       const financialProfileId = randomUUID();
@@ -44,7 +54,14 @@ async function main(): Promise<void> {
         await executeQuery(
           'insert into "AutomationRule" ("id", "organizationId", "financialProfileId", ' +
             '"name", "explanation", "status") values ($1, $2, $3, $4, $5, $6)',
-          [fixture.id, organizationId, financialProfileId, fixture.name, fixture.explanation, fixture.status],
+          [
+            fixture.id,
+            organizationId,
+            financialProfileId,
+            fixture.name,
+            fixture.explanation,
+            fixture.status,
+          ],
         );
       }
 
@@ -80,10 +97,10 @@ async function main(): Promise<void> {
       await assert.rejects(
         () =>
           withTransaction(async (nested) => {
-            await nested(
-              'update "AutomationRule" set "purpose" = $2 where "id" = $1',
-              [manualPrefix, "automation"],
-            );
+            await nested('update "AutomationRule" set "purpose" = $2 where "id" = $1', [
+              manualPrefix,
+              "automation",
+            ]);
           }),
         /purpose is immutable/,
       );

@@ -107,7 +107,6 @@ PATCH /api/credit-card-accounts/:cardId/default-instrument
 
 As respostas de leitura e atualização de compras expõem `kind` (`expense` ou `income`) a partir de `Transaction.kind`. Em `/cartoes`, `expense` é débito positivo e `income` é crédito negativo, independentemente da descrição. A totalização da fatura usa a mesma direção no banco, inclusive quando uma descrição de despesa contiver texto semelhante a `[estorno:...]`; o marcador não é indicador de sinal financeiro.
 
-
 ### Exclusão lógica de compra simples
 
 A ação **Excluir** no menu de uma compra simples de fatura aberta aplica anulação lógica:
