@@ -7,6 +7,7 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
+import { withSharedTransaction, type QueryExecutor } from "./db.js";
 import { auth } from "./auth-service.js";
 import { handleCreditCardAccountsApiRequest as handleBaseCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
@@ -65,24 +66,33 @@ export async function handleCreditCardAccountsApiRequest(
 
     if (isCurrentOnlyAccountEdit && currentOnlyTransactionMatch && body) {
       const transactionId = decodeURIComponent(currentOnlyTransactionMatch[1] ?? "");
-      await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body);
-      const transaction = await updateTransactionForContext(context, transactionId, {
-        ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
-        ...(body.status !== undefined ? { status: String(body.status) as TransactionStatus } : {}),
-        ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-        ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
-        ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
-        ...(body.effectiveOn !== undefined
-          ? { effectiveOn: readOptionalString(body.effectiveOn) }
-          : {}),
-        ...(body.description !== undefined ? { description: String(body.description) } : {}),
-        ...(body.note !== undefined ? { note: readOptionalString(body.note) } : {}),
-        ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-        ...(body.destinationAccountId !== undefined
-          ? { destinationAccountId: String(body.destinationAccountId) }
-          : {}),
-        ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-        ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+      const transaction = await withSharedTransaction(async (executeQuery) => {
+        // Serialize status changes, recurrence cancellation and installment edits.
+        await executeQuery(
+          `select "id" from "Transaction"
+             where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+             for update`,
+          [transactionId, context.organizationId, context.financialProfileId],
+        );
+        await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body, executeQuery);
+        return updateTransactionForContext(context, transactionId, {
+          ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
+          ...(body.status !== undefined ? { status: String(body.status) as TransactionStatus } : {}),
+          ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+          ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+          ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+          ...(body.effectiveOn !== undefined
+            ? { effectiveOn: readOptionalString(body.effectiveOn) }
+            : {}),
+          ...(body.description !== undefined ? { description: String(body.description) } : {}),
+          ...(body.note !== undefined ? { note: readOptionalString(body.note) } : {}),
+          ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+          ...(body.destinationAccountId !== undefined
+            ? { destinationAccountId: String(body.destinationAccountId) }
+            : {}),
+          ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+          ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+        });
       });
 
       return json(200, { transaction, editScope: "current_only" });
@@ -151,6 +161,7 @@ async function assertCurrentOnlyRecurringAccountEdit(
   context: TenantContext,
   transactionId: string,
   body: Record<string, unknown>,
+  executeQuery: QueryExecutor,
 ): Promise<void> {
   const blocked = (): never => {
     throw Object.assign(
@@ -174,10 +185,22 @@ async function assertCurrentOnlyRecurringAccountEdit(
   )
     blocked();
 
+  await executeQuery(
+    `select "id" from "Recurrence"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       for update`,
+    [recurrenceId, context.organizationId, context.financialProfileId],
+  );
   const recurrence = await getRecurrenceForContext(context, recurrenceId);
   if (!recurrence.accountId || recurrence.cardId || recurrence.status === "cancelled") blocked();
 
   if (transaction.installmentId) {
+    await executeQuery(
+      `select "id" from "Installment"
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         for update`,
+      [transaction.installmentId, context.organizationId, context.financialProfileId],
+    );
     const [installment] = await listInstallmentsForContext(context, {
       installmentId: transaction.installmentId,
     });
