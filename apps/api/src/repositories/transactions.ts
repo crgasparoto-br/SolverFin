@@ -255,7 +255,10 @@ export async function updateTransactionForContext(
   options: UpdateTransactionOptions = {},
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
-  if (isInvoiceLinkedCardTransaction(currentTransaction) && currentTransaction.status === "voided") {
+  if (
+    isInvoiceLinkedCardTransaction(currentTransaction) &&
+    currentTransaction.status === "voided"
+  ) {
     throw Object.assign(new Error("Lançamento de cartão anulado não pode ser editado."), {
       code: "CARD_PURCHASE_NOT_FOUND",
       statusCode: 404,

@@ -83,8 +83,14 @@ async function main(): Promise<void> {
       const after = await summarizeInvoiceForContext(CONTEXT, single.invoice.id);
       assert.equal(after.purchasesCount, 0);
       assert.equal(after.totalExpensesMinor, before.totalExpensesMinor - 1_200);
-      assert.equal(after.cardTotals[0]?.limitUsedMinor, before.cardTotals[0]!.limitUsedMinor - 1_200);
-      assert.deepEqual(await listCardPurchasesForContext(CONTEXT, { invoiceId: single.invoice.id }), []);
+      assert.equal(
+        after.cardTotals[0]?.limitUsedMinor,
+        before.cardTotals[0]!.limitUsedMinor - 1_200,
+      );
+      assert.deepEqual(
+        await listCardPurchasesForContext(CONTEXT, { invoiceId: single.invoice.id }),
+        [],
+      );
       assert.equal(await countSoftDelete(single.transaction.id), 1);
       await assert.rejects(
         () => voidTransactionForContext(CONTEXT, single.transaction.id),
@@ -198,7 +204,10 @@ async function main(): Promise<void> {
         status: "all",
       });
       assert.ok(occurrence);
-      assert.equal((await summarizeInvoiceForContext(CONTEXT, installments.invoice.id)).purchasesCount, 1);
+      assert.equal(
+        (await summarizeInvoiceForContext(CONTEXT, installments.invoice.id)).purchasesCount,
+        1,
+      );
 
       // Reproduce an already-VOIDED parent left by a legacy generic endpoint.
       await query('update "Transaction" set "status" = $2, "voidedAt" = now() where "id" = $1', [
@@ -209,7 +218,10 @@ async function main(): Promise<void> {
       assert.equal(hidden.purchasesCount, 0);
       assert.equal(hidden.unreconciledExpensesMinor, 0);
       assert.deepEqual(
-        await listInstallmentsForContext(CONTEXT, { invoiceId: installments.invoice.id, status: "all" }),
+        await listInstallmentsForContext(CONTEXT, {
+          invoiceId: installments.invoice.id,
+          status: "all",
+        }),
         [],
       );
       const totalBeforeGuard = await readInvoiceTotal(installments.invoice.id);

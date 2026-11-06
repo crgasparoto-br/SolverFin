@@ -105,11 +105,7 @@ export async function voidSimpleCardPurchaseInTransaction(
     [transactionId, context.organizationId, context.financialProfileId, now, context.userId],
   );
   if (deleted.length !== 1)
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_DELETE_FAILED",
-      "Não foi possível excluir.",
-      409,
-    );
+    throw new InvoiceContractError("CARD_PURCHASE_DELETE_FAILED", "Não foi possível excluir.", 409);
   await insertAuditLogEntry(executeQuery, {
     organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
@@ -123,4 +119,3 @@ export async function voidSimpleCardPurchaseInTransaction(
   });
   return { transactionId, invoiceId: source.invoiceId };
 }
-

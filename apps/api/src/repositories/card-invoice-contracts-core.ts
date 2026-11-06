@@ -450,14 +450,12 @@ export async function updateCardPurchaseForContext(
         current.updatedAt,
       ],
     );
-    if (updated.length !== 1) {
+    if (updated.length !== 1)
       throw new InvoiceContractError(
         "CARD_PURCHASE_CONCURRENT_CHANGE",
         "A compra foi alterada ou anulada durante a edição.",
         409,
       );
-    }
-
     if (current.installmentId !== null) {
       await executeQuery(
         `update "Installment" set
