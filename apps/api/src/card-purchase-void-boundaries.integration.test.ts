@@ -275,19 +275,33 @@ async function main(): Promise<void> {
       );
       assert.equal(await readInvoiceTotal(installments.invoice.id), totalBeforeGuard);
 
+      // Isolate reversal balances from the installments materialized in May
+      // for the primary card earlier in this transaction.
+      const reversalCard = await createCreditCardAccountForContext(CONTEXT, {
+        name: "Cartão para estorno isolado " + suffix,
+        closingDay: 20,
+        dueDay: 10,
+        currency: "BRL",
+        creditLimitMinor: 120_000,
+        instruments: [
+          { type: "physical", holder: "primary", name: "Estorno", maskedIdentifier: "**** 9393" },
+        ],
+      });
+      const reversalInstrumentId = reversalCard.instruments[0]?.id;
+      assert.ok(reversalInstrumentId);
       // Reversal credits also use their invoice-specific void contract.
-      const expense = await registerCardPurchaseForContext(CONTEXT, card.id, {
+      const expense = await registerCardPurchaseForContext(CONTEXT, reversalCard.id, {
         occurredOn: "2032-05-08",
         amountMinor: 800,
         description: "Compra para estorno " + suffix,
-        cardInstrumentId: instrumentId,
+        cardInstrumentId: reversalInstrumentId,
       });
       const balanceBeforeReversal = (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id))
         .totalExpensesMinor;
       assert.equal(balanceBeforeReversal, 800);
       const credit = await reverseCardPurchaseForContext(
         CONTEXT,
-        card.id,
+        reversalCard.id,
         expense.transaction.id,
         expense.invoice.id,
       );
@@ -323,7 +337,7 @@ async function main(): Promise<void> {
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
       await assert.rejects(
         () =>
-          moveCardPurchaseInvoicePeriodForContext(CONTEXT, card.id, expense.transaction.id, {
+          moveCardPurchaseInvoicePeriodForContext(CONTEXT, reversalCard.id, expense.transaction.id, {
             invoicePeriod: "2032-06",
           }),
         hasCode("CARD_PURCHASE_INVOICE_LOCKED"),
@@ -332,11 +346,11 @@ async function main(): Promise<void> {
 
       // Also reject when another purchase keeps the invoice balance positive:
       // a non-negative total alone cannot prove absence of an orphaned credit.
-      const sibling = await registerCardPurchaseForContext(CONTEXT, card.id, {
+      const sibling = await registerCardPurchaseForContext(CONTEXT, reversalCard.id, {
         occurredOn: "2032-05-09",
         amountMinor: 1_200,
         description: "Outra compra na fatura " + suffix,
-        cardInstrumentId: instrumentId,
+        cardInstrumentId: reversalInstrumentId,
       });
       assert.equal(sibling.invoice.id, expense.invoice.id);
       const positiveTotal = await readInvoiceTotal(expense.invoice.id);
@@ -347,7 +361,7 @@ async function main(): Promise<void> {
       );
       await assert.rejects(
         () =>
-          moveCardPurchaseInvoicePeriodForContext(CONTEXT, card.id, expense.transaction.id, {
+          moveCardPurchaseInvoicePeriodForContext(CONTEXT, reversalCard.id, expense.transaction.id, {
             invoicePeriod: "2032-06",
           }),
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
@@ -394,7 +408,7 @@ async function main(): Promise<void> {
         hasCode("CARD_REVERSAL_EDIT_ROUTE_REQUIRED"),
       );
       assert.equal(await readInvoiceTotal(expense.invoice.id), positiveTotal);
-      await updateCardReversalForContext(CONTEXT, card.id, credit.transactionId, {
+      await updateCardReversalForContext(CONTEXT, reversalCard.id, credit.transactionId, {
         amountMinor: 650,
         occurredOn: "2032-05-08",
         description: "Estorno editado na rota canônica",
