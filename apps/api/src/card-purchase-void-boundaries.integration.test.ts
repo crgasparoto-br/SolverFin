@@ -321,12 +321,10 @@ async function main(): Promise<void> {
       assert.equal(await countSoftDelete(expense.transaction.id), 0);
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
       await assert.rejects(
-        () => moveCardPurchaseInvoicePeriodForContext(
-          CONTEXT,
-          card.id,
-          expense.transaction.id,
-          { invoicePeriod: "2032-06" },
-        ),
+        () =>
+          moveCardPurchaseInvoicePeriodForContext(CONTEXT, card.id, expense.transaction.id, {
+            invoicePeriod: "2032-06",
+          }),
         hasCode("CARD_PURCHASE_INVOICE_LOCKED"),
       );
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
@@ -347,12 +345,10 @@ async function main(): Promise<void> {
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
       );
       await assert.rejects(
-        () => moveCardPurchaseInvoicePeriodForContext(
-          CONTEXT,
-          card.id,
-          expense.transaction.id,
-          { invoicePeriod: "2032-06" },
-        ),
+        () =>
+          moveCardPurchaseInvoicePeriodForContext(CONTEXT, card.id, expense.transaction.id, {
+            invoicePeriod: "2032-06",
+          }),
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
       );
       const [sourceInvoice] = await query<{ invoiceId: string }>(
@@ -373,10 +369,11 @@ async function main(): Promise<void> {
         description: "Conta protegida do lote " + suffix,
       });
       await assert.rejects(
-        () => executeTransactionBulkActionForContext(CONTEXT, {
-          action: "void",
-          transactionIds: [bankForRollback.id, expense.transaction.id],
-        }),
+        () =>
+          executeTransactionBulkActionForContext(CONTEXT, {
+            action: "void",
+            transactionIds: [bankForRollback.id, expense.transaction.id],
+          }),
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
       );
       assert.equal((await getTransactionForContext(CONTEXT, bankForRollback.id)).status, "posted");
