@@ -19,10 +19,10 @@ export async function updateActiveGenericTransaction(
   transactionParams: readonly unknown[],
   expectedUpdatedAt: string | undefined,
 ): Promise<void> {
-  const updated = await executeQuery<{ id: string }>(
-    buildUpdateTransactionSql(),
-    [...transactionParams, expectedUpdatedAt ?? null],
-  );
+  const updated = await executeQuery<{ id: string }>(buildUpdateTransactionSql(), [
+    ...transactionParams,
+    expectedUpdatedAt ?? null,
+  ]);
   if (updated.length !== 1) {
     throw new InvoiceContractError(
       "TRANSACTION_CONCURRENT_CHANGE",
