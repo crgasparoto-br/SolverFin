@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 
-import type { TenantContext } from "@solverfin/domain";
+import { TenantAuthorizationError, type TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
@@ -660,8 +660,7 @@ async function assertSimplePurchaseSoftDelete(
   await assert.rejects(
     () =>
       deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
-    (error: unknown) =>
-      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+    (error: unknown) => error instanceof TenantAuthorizationError,
   );
   assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
 
