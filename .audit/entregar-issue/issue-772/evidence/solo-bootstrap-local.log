@@ -23,10 +23,10 @@ test_truncated_inventory_cannot_be_approved (test_solverfin_solo_audit_bootstrap
 test_workflow_runs_on_solverfin_sources_without_candidate_checkout (test_solverfin_solo_audit_bootstrap.SolverFinTrustedChecks.test_workflow_runs_on_solverfin_sources_without_candidate_checkout) ... ok
 
 ----------------------------------------------------------------------
-Ran 23 tests in 0.068s
+Ran 23 tests in 0.053s
 
 OK
-HEAD: 9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba
+HEAD: 32e8f460693da372637fcf3b00346b17cbaffa94
 COMMAND: python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
 EXIT_CODE: 0
 REACHED: tests/test_solverfin_solo_audit_bootstrap.py

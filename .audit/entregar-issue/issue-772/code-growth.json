@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+  "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
   "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "comparison_base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "policy": {
@@ -29,9 +29,14 @@
       "lines_after": 117
     },
     {
+      "path": "apps/api/src/repositories/card-invoice-installment-amount.ts",
+      "lines_before": 168,
+      "lines_after": 168
+    },
+    {
       "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
       "lines_before": 112,
-      "lines_after": 119
+      "lines_after": 121
     },
     {
       "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
@@ -47,6 +52,21 @@
       "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
       "lines_before": 500,
       "lines_after": 500
+    },
+    {
+      "path": "apps/api/src/repositories/installments.ts",
+      "lines_before": 741,
+      "lines_after": 745
+    },
+    {
+      "path": "apps/api/src/repositories/transaction-bulk-actions.ts",
+      "lines_before": 363,
+      "lines_after": 411
+    },
+    {
+      "path": "apps/api/src/repositories/transactions.ts",
+      "lines_before": 879,
+      "lines_after": 899
     },
     {
       "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",

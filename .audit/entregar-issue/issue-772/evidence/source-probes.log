@@ -1,27 +1,31 @@
-source_probes_sha 9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba
-PASS delete-void-persisted apps/api/src/repositories/card-invoice-purchase-delete.ts 328d88552b0c45bd436b checks 3
-PASS delete-eligibility apps/api/src/repositories/card-invoice-purchase-delete.ts 328d88552b0c45bd436b checks 4
-PASS voided-listing apps/api/src/repositories/card-invoice-contracts-core.ts 3a287e94082a9a6e81ea checks 2
-PASS concurrent-edit-guard apps/api/src/repositories/card-invoice-contracts-core.ts 3a287e94082a9a6e81ea checks 4
-PASS reversal-guard apps/api/src/repositories/card-invoice-purchase-reverse.ts 6111037afb466e693536 checks 1
-PASS credit-edit-guard apps/api/src/repositories/card-invoice-reversal-edit.ts 708525e25aca34aca5f2 checks 1
-PASS period-move-guard apps/api/src/repositories/card-purchase-invoice-period-move-core.ts e55c481f25e8aae60dcc checks 2
-PASS concurrent-postgres-test apps/api/src/card-purchase-edit-contract.integration.test.ts 1e898953e71475bbbd20 checks 4
-PASS isolate-postgres-fixtures apps/api/src/card-purchase-edit-contract.integration.test.ts 1e898953e71475bbbd20 checks 3
-PASS legacy-migration-control apps/api/src/manual-entry-fill-rules-migration.integration.test.ts 67f64796aa128ccaa2af checks 4
-PASS solo-shared-head-test tests/test_solverfin_solo_audit_bootstrap.py d4b0d2ebbe6311035f8d checks 2
-PASS ui-confirmation apps/web/src/dev-server/cards-page-v2-script-purchases.ts 94fc28701205a70d02aa checks 1
-PASS api-documentation docs/API_CREDIT_CARDS_INVOICES.md f5810a39b2f820b491cc checks 3
+source_probes_sha 32e8f460693da372637fcf3b00346b17cbaffa94
+PASS apps/api/src/repositories/card-invoice-purchase-delete.ts git_blob=71fa1622d2a7c6c3b72317f6876263af89f54847 predicates=4
+PASS apps/api/src/repositories/transactions.ts git_blob=d09f3c2e5e12cb69d44a6feae25109a7882057da predicates=3
+PASS apps/api/src/repositories/transaction-bulk-actions.ts git_blob=b7dee23ddf7cf8913fd00d2ce94c1930bda9c907 predicates=4
+PASS apps/api/src/repositories/card-invoice-contracts-core.ts git_blob=090d6d5765d8d75c0fab67fd53311dee2c891d2d predicates=3
+PASS apps/api/src/repositories/card-invoice-installment-amount.ts git_blob=426caa506b9540058c14bd46d731879d5c3eb645 predicates=2
+PASS apps/api/src/repositories/installments.ts git_blob=c29a75fbac169e3492ecceb4be038912f5763cbe predicates=2
+PASS apps/api/src/card-purchase-void-boundaries.integration.test.ts git_blob=cf25e443c99a4169ded326718c826e23690e75d6 predicates=5
+PASS apps/api/src/card-purchase-edit-contract.integration.test.ts git_blob=5fc2cc4229ead15570437fc38416dc5ef188c4a1 predicates=2
+PASS apps/api/src/manual-entry-fill-rules-migration.integration.test.ts git_blob=aa2c722f03dba888d50e8254016850db4575ea3d predicates=1
+PASS tests/test_solverfin_solo_audit_bootstrap.py git_blob=c40ff7f2deadc25af8be6da6bb82087839464580 predicates=1
+PASS apps/web/src/dev-server/cards-page-v2-script-purchases.ts git_blob=8b904ab93d7b8f93e8eddef7a1fa57831cc03f3d predicates=1
+PASS docs/API_CREDIT_CARDS_INVOICES.md git_blob=cd39dbea85dbb9043655c58f8d94966d5e5c1210 predicates=2
 changed_paths:
 M	apps/api/src/card-purchase-edit-contract.integration.test.ts
+A	apps/api/src/card-purchase-void-boundaries.integration.test.ts
 A	apps/api/src/manual-entry-fill-rules-migration.integration.test.ts
 M	apps/api/src/repositories/card-invoice-contracts-core.ts
 M	apps/api/src/repositories/card-invoice-contracts.ts
+M	apps/api/src/repositories/card-invoice-installment-amount.ts
 M	apps/api/src/repositories/card-invoice-purchase-delete.ts
 M	apps/api/src/repositories/card-invoice-purchase-reverse.ts
 M	apps/api/src/repositories/card-invoice-reversal-edit.ts
 M	apps/api/src/repositories/card-purchase-invoice-period-move-core.ts
+M	apps/api/src/repositories/installments.ts
+M	apps/api/src/repositories/transaction-bulk-actions.ts
+M	apps/api/src/repositories/transactions.ts
 M	apps/web/src/dev-server/cards-page-v2-script-purchases.ts
 M	docs/API_CREDIT_CARDS_INVOICES.md
 M	tests/test_solverfin_solo_audit_bootstrap.py
-PASS no deleted files/no migration/workflow/secret changes; material descends from develop base
+PASS no deletions / applied migration / secret / workflow changes; BASE is ancestor of HEAD

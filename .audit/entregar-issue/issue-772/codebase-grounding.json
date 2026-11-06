@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+  "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
   "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "creations": [],
   "references": [
@@ -80,12 +80,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
         "reached_tests": [
           "apps/api/src/card-purchase-edit-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "64328e62dddda76ec53151f9086f4d84b5a009f1073a5e0a2944d7139501576d"
+        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
       }
     },
     {
@@ -128,12 +128,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
         "reached_tests": [
           "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "64328e62dddda76ec53151f9086f4d84b5a009f1073a5e0a2944d7139501576d"
+        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
       }
     },
     {
@@ -170,12 +170,61 @@
         "status": "passed",
         "command": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
         "exit_code": 0,
-        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
         "reached_tests": [
           "tests/test_solverfin_solo_audit_bootstrap.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-        "evidence_sha256": "b768f497ed22ebf7a2685bb0ddabef157b676e6691b7b30cc6c8442d3f63d1be"
+        "evidence_sha256": "c69c6b04610f932986bb905fc3721bd00f0283faa69324d2694fc3e49c3924d5"
+      }
+    },
+    {
+      "path": "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+      "operation": "added",
+      "scenario": "Generic single void, bulk mixed transaction, status VOIDED installment parent, reversal credit and negative tenant/rollback cases in real PostgreSQL.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n voidTransactionForContext apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git diff --name-status 5ad67cab..32e8f460 -- apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+          "git grep -n reconcileInvoiceInstallmentForContext -- apps/api/src"
+        ],
+        "scope": "Repository API transaction routes, card invoice summary, installment reconciliation and PostgreSQL existing purchase contract on both base and HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+            "case": "Existing invoice-specific deletion and edit paths, with optimistic concurrency and tenant guard.",
+            "oracle": "Confirms specialized purchase deletion only; does not invoke general void or mixed bulk route.",
+            "comparison": "Separate generic/bulk entrypoints and prior-VOIDED installment parent cannot be proven by invoice-specific test."
+          },
+          {
+            "path": "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+            "case": "New scenario exercising actual void entrypoints, stored totals and parent VOIDED guards.",
+            "oracle": "PostgreSQL persisted balances, audit count and rejection/rollback of mutations; real tenant and invoice scoping.",
+            "comparison": "Dedicated new integration regression covers separate entrypoint and dependent read surfaces in one rolled-back fixture."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Previous integration test covers only invoice-specific delete. General single, mixed-batch and installment VOIDED-parent routes have distinct financial side effects; independent test protects the two newly discovered escapes.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Invoice-specific simple purchase delete, recurring/installment restrictions and edit concurrency."
+      ],
+      "coverage_after": [
+        "Single generic VOIDED updates invoice and limit, foreign-profile rejection, duplicate idempotency and audit; mixed bulk atomicity, blocked purchase rollback; parent installment hidden/reconciliation blocked and no invoice change; reversal credit delta."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+        "reached_tests": [
+          "apps/api/src/card-purchase-void-boundaries.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
       }
     }
   ]
