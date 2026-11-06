@@ -45,6 +45,13 @@ export function renderStatementStatus(
   return `<span class="statement-status statement-status-${presentation.tone} col-status" role="img" tabindex="0" aria-label="${presentation.label}" title="${presentation.label}" data-tooltip="${presentation.label}">${presentation.iconHtml}<span class="statement-status-label" aria-hidden="true">${presentation.label}</span></span>`;
 }
 
+/** Canonical action glyphs for the individual and bulk Golden Screen controls. */
+export function renderStatementStatusActionIcon(target: "reconciled" | "posted"): string {
+  const tone = target === "reconciled" ? "ok" : "posted";
+  const iconHtml = target === "reconciled" ? icon("check", 15) : POSTED_ICON;
+  return `<span class="statement-status statement-status-${tone}" aria-hidden="true">${iconHtml}</span>`;
+}
+
 /** Inline reconciliation control using the same neutral menu behavior as Cards. */
 export function renderStatementStatusControl(
   transaction: Pick<TransactionRecord, "id" | "status" | "effectiveOn">,
