@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool, query } from "./db.js";
+import { closePool, query, withTransaction } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { executeTransactionBulkActionForContext } from "./repositories/transaction-bulk-actions.js";
 import {
@@ -382,11 +382,29 @@ async function main(): Promise<void> {
         (member) => member.status === "planned" && member.effectiveOn === undefined,
       ),
     );
-    await query(
-      `update "Transaction" set "status"='RECONCILED', "effectiveOn"="occurredOn",
-         "reconciledAt"=now() where "id"=any($1::uuid[])`,
-      [protectedMembers.map((member) => member.id)],
-    );
+    // Prepare the reconciled fixture through the same detach/update/restore lifecycle
+    // used by the bulk API. The database forbids changing status on attached members.
+    await withTransaction(async (executeQuery) => {
+      const memberIds = protectedMembers.map((member) => member.id);
+      await executeQuery(
+        `update "Transaction" set "transactionGroupId"=null
+           where "organizationId"=$1 and "financialProfileId"=$2 and "transactionGroupId"=$3`,
+        [context.organizationId, context.financialProfileId, remunerationGroup.id],
+      );
+      await executeQuery(
+        `update "Transaction" set "status"='RECONCILED',
+           "effectiveOn"="occurredOn", "reconciledAt"=now()
+           where "organizationId"=$1 and "financialProfileId"=$2
+             and "id"=any($3::uuid[])`,
+        [context.organizationId, context.financialProfileId, memberIds],
+      );
+      await executeQuery(
+        `update "Transaction" set "transactionGroupId"=$1
+           where "organizationId"=$2 and "financialProfileId"=$3
+             and "id"=any($4::uuid[])`,
+        [remunerationGroup.id, context.organizationId, context.financialProfileId, memberIds],
+      );
+    });
     assert.equal(
       (await getTransactionGroupForContext(context, remunerationGroup.id)).reconcileProtected,
       true,
