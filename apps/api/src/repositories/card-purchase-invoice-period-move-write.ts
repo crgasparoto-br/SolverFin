@@ -2,6 +2,7 @@ import type { EntityId, TenantContext } from "@solverfin/domain";
 
 import type { QueryExecutor } from "../db.js";
 import { InvoiceContractError } from "./card-invoice-contracts-core.js";
+import { assertNoActiveCardPurchaseReversalInTransaction } from "./card-invoice-purchase-delete.js";
 
 /** Keep both invoice adjustments in the caller's transaction; rollback both on a stale invoice. */
 export async function moveInvoiceTotalsInTransaction(
@@ -13,6 +14,7 @@ export async function moveInvoiceTotalsInTransaction(
   destinationInvoiceId: EntityId,
   amountMinor: number,
   now: string,
+  transactionId: EntityId,
 ): Promise<void> {
   await updateOpenInvoiceTotal(
     executeQuery,
@@ -35,6 +37,12 @@ export async function moveInvoiceTotalsInTransaction(
     now,
     "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED",
     "A fatura de destino mudou durante a transferência.",
+  );
+  await assertNoActiveCardPurchaseReversalInTransaction(
+    executeQuery,
+    context,
+    cardId,
+    transactionId,
   );
 }
 
