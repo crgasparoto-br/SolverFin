@@ -160,7 +160,10 @@ export async function moveCardPurchaseInvoicePeriodForContext(
          "invoiceId" = $4, "occurredOn" = $5, "plannedOn" = $5,
          "updatedAt" = $6, "updatedByUserId" = $7
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-         and "status" <> 'VOIDED' returning "id"`,
+         and "cardId" = $8 and "invoiceId" = $9 and "accountId" is null
+         and "kind" = 'EXPENSE' and "status" = $10 and "status" <> 'VOIDED'
+         and "amountMinor" = $11 and "updatedAt" = $12
+       returning "id"`,
       [
         current.id,
         context.organizationId,
@@ -169,9 +172,20 @@ export async function moveCardPurchaseInvoicePeriodForContext(
         destinationOccurredOn,
         now,
         context.userId,
+        cardId,
+        originInvoice.id,
+        current.status,
+        current.amountMinor,
+        current.updatedAt,
       ],
     );
-    if (updatedPurchase.length !== 1) throw notFoundError();
+    if (updatedPurchase.length !== 1) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CONCURRENT_CHANGE",
+        "A compra foi alterada ou anulada durante a transferência.",
+        409,
+      );
+    }
 
     if (current.installmentId !== null) {
       await executeQuery(
@@ -187,29 +201,51 @@ export async function moveCardPurchaseInvoicePeriodForContext(
       );
     }
 
-    await executeQuery(
-      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4, "updatedAt" = $5
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    const debited = await executeQuery<{ id: string }>(
+      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $6, "updatedAt" = $7
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $4 and "status" = 'OPEN' and "currency" = $5
+       returning "id"`,
       [
         originInvoice.id,
         context.organizationId,
         context.financialProfileId,
+        cardId,
+        current.currency,
         invoiceMoveAmountMinor,
         now,
       ],
     );
+    if (debited.length !== 1) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_INVOICE_LOCKED",
+        "A fatura de origem mudou durante a transferência.",
+        409,
+      );
+    }
 
-    await executeQuery(
-      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    const credited = await executeQuery<{ id: string }>(
+      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $6, "updatedAt" = $7
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $4 and "status" = 'OPEN' and "currency" = $5
+       returning "id"`,
       [
         destinationInvoice.id,
         context.organizationId,
         context.financialProfileId,
+        cardId,
+        current.currency,
         invoiceMoveAmountMinor,
         now,
       ],
     );
+    if (credited.length !== 1) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED",
+        "A fatura de destino mudou durante a transferência.",
+        409,
+      );
+    }
 
     await insertAuditLogEntry(executeQuery, {
       organizationId: context.organizationId,

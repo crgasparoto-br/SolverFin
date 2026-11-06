@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool, query } from "./db.js";
+import { closePool, getPool, query } from "./db.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
@@ -59,6 +59,8 @@ async function main(): Promise<void> {
   await assertLockedOriginAndDestinationInvoices(account.id, physicalInstrument, suffix);
   await assertRejectInstallmentPurchaseMove(account.id, physicalInstrument, suffix);
   await assertMoveRecurringMaterializedOccurrence(account.id, physicalInstrument, suffix);
+  await assertConcurrentMovesPreserveTotals(account.id, physicalInstrument, suffix);
+  await assertConcurrentInvoiceClosureRollsBack(account.id, physicalInstrument, suffix);
 }
 
 async function assertMoveCommonPurchase(
@@ -268,6 +270,152 @@ async function assertMoveRecurringMaterializedOccurrence(
   assert.equal(refreshed.invoiceId, result.destinationInvoice.invoiceId);
   assert.equal(refreshed.installmentDueOn, result.destinationInvoice.dueOn);
   assert.equal(await readInvoiceTotal(original.invoiceId), originalInvoiceTotal - 3_000);
+}
+
+type MoveAttempt =
+  | { ok: true; destinationId: string }
+  | { ok: false; error: unknown };
+
+async function assertConcurrentMovesPreserveTotals(
+  cardId: string,
+  instrument: ApiCardInstrument,
+  suffix: string,
+): Promise<void> {
+  const firstDestination = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2033-08-05",
+    amountMinor: 110,
+    description: `Primeira fatura concorrente ${suffix}`,
+    cardInstrumentId: instrument.id,
+  });
+  const secondDestination = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2033-09-05",
+    amountMinor: 220,
+    description: `Segunda fatura concorrente ${suffix}`,
+    cardInstrumentId: instrument.id,
+  });
+  const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2033-07-10",
+    amountMinor: 2_500,
+    description: `Compra concorrente ${suffix}`,
+    cardInstrumentId: instrument.id,
+  });
+
+  const client = await getPool().connect();
+  let locked = false;
+  let attempts: Promise<MoveAttempt>[] = [];
+  try {
+    await client.query("BEGIN");
+    locked = true;
+    await client.query('select "id" from "Transaction" where "id" = $1 for update', [
+      purchase.transaction.id,
+    ]);
+
+    // Both requests read the same origin before their writes can acquire the row lock.
+    attempts = ["2033-08", "2033-09"].map((invoicePeriod) =>
+      moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
+        invoicePeriod,
+      }).then(
+        (value) => ({ ok: true as const, destinationId: value.destinationInvoice.invoiceId }),
+        (error: unknown) => ({ ok: false as const, error }),
+      ),
+    );
+    await waitForBlockedMoves('update "Transaction" set', 2);
+    await client.query("COMMIT");
+    locked = false;
+  } finally {
+    if (locked) await client.query("ROLLBACK");
+    client.release();
+  }
+
+  const results = await Promise.all(attempts);
+  const accepted = results.filter((result) => result.ok);
+  const rejected = results.filter((result) => !result.ok);
+  assert.equal(accepted.length, 1, "Only one competing move may debit the origin.");
+  assert.equal(rejected.length, 1, "The stale origin must fail closed.");
+  const failed = rejected[0];
+  if (failed && !failed.ok) {
+    assert.equal((failed.error as { code?: string }).code, "CARD_PURCHASE_CONCURRENT_CHANGE");
+  }
+  const winningInvoiceId = accepted[0]?.ok ? accepted[0].destinationId : undefined;
+  assert.ok(winningInvoiceId);
+  assert.equal((await readTransaction(purchase.transaction.id)).invoiceId, winningInvoiceId);
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), 0);
+  assert.equal(
+    await readInvoiceTotal(firstDestination.invoice.id),
+    110 + (winningInvoiceId === firstDestination.invoice.id ? 2_500 : 0),
+  );
+  assert.equal(
+    await readInvoiceTotal(secondDestination.invoice.id),
+    220 + (winningInvoiceId === secondDestination.invoice.id ? 2_500 : 0),
+  );
+}
+
+async function assertConcurrentInvoiceClosureRollsBack(
+  cardId: string,
+  instrument: ApiCardInstrument,
+  suffix: string,
+): Promise<void> {
+  const destination = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2033-11-05",
+    amountMinor: 100,
+    description: `Destino durante fechamento ${suffix}`,
+    cardInstrumentId: instrument.id,
+  });
+  const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2033-10-10",
+    amountMinor: 900,
+    description: `Origem durante fechamento ${suffix}`,
+    cardInstrumentId: instrument.id,
+  });
+
+  const client = await getPool().connect();
+  let locked = false;
+  let move: Promise<{ ok: true } | { ok: false; error: unknown }> | undefined;
+  try {
+    await client.query("BEGIN");
+    locked = true;
+    await client.query(`update "Invoice" set "status" = 'CLOSED' where "id" = $1`, [
+      purchase.invoice.id,
+    ]);
+    // The move still reads OPEN until the concurrent closing transaction commits.
+    move = moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
+      invoicePeriod: "2033-11",
+    }).then(
+      () => ({ ok: true as const }),
+      (error: unknown) => ({ ok: false as const, error }),
+    );
+    await waitForBlockedMoves('update "Invoice" set "totalAmountMinor"', 1);
+    await client.query("COMMIT");
+    locked = false;
+  } finally {
+    if (locked) await client.query("ROLLBACK");
+    client.release();
+  }
+
+  assert.ok(move);
+  const result = await move;
+  assert.equal(result.ok, false, "Closing the origin must roll back the entire move.");
+  if (!result.ok) {
+    assert.equal((result.error as { code?: string }).code, "CARD_PURCHASE_INVOICE_LOCKED");
+  }
+  assert.equal((await readTransaction(purchase.transaction.id)).invoiceId, purchase.invoice.id);
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), 900);
+  assert.equal(await readInvoiceTotal(destination.invoice.id), 100);
+}
+
+async function waitForBlockedMoves(sqlFragment: string, minimum: number): Promise<void> {
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const [row] = await query<{ waiting: number }>(
+      `select count(*)::int as "waiting"
+         from pg_stat_activity
+        where "datname" = current_database() and "pid" <> pg_backend_pid()
+          and "wait_event_type" = 'Lock' and "query" ilike $1`,
+      ["%" + sqlFragment + "%"],
+    );
+    if ((row?.waiting ?? 0) >= minimum) return;
+    await new Promise<void>((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error("Expected database contention was not observed: " + sqlFragment);
 }
 
 async function readInvoiceTotal(invoiceId: string): Promise<number> {

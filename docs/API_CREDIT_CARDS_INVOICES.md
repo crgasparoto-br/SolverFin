@@ -125,6 +125,11 @@ Os caminhos de estorno, edição de crédito e movimentação entre faturas recu
 lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
 Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
 mudado antes da persistência, inclusive quando anulada por outra requisição.
+A movimentação entre faturas confirma novamente, na gravação, o vínculo à
+fatura de origem, o estado e a versão da compra. Débito e crédito da movimentação
+exigem faturas ainda abertas, do mesmo cartão e moeda; qualquer disputa com
+outra movimentação, anulação ou fechamento provoca rollback completo e HTTP 409,
+sem duplicar impacto nos totais.
 
 As rotas gerais `POST /api/transactions/:transactionId/void` e
 `POST /api/transactions/bulk-actions` (`action: "void"`) reutilizam a exclusão
