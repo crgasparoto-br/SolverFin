@@ -418,12 +418,17 @@ export async function updateCardPurchaseForContext(
       }
       assertPurchaseInstallmentsEditable(lockedRows);
     }
-    await executeQuery(
+    // Guard the write using the snapshot read before this transaction.
+    const updated = await executeQuery<{ id: string }>(
       `update "Transaction" set
         "categoryId" = $4, "cardInstrumentId" = $5, "status" = $6, "amountMinor" = $7,
         "occurredOn" = $8, "plannedOn" = $8, "description" = $9, "reconciledAt" = $10,
         "updatedAt" = $11, "updatedByUserId" = $12
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $13 and "invoiceId" = $14 and "accountId" is null
+         and "status" = $15 and "status" <> 'VOIDED'
+         and "amountMinor" = $16 and "updatedAt" = $17
+       returning "id"`,
       [
         current.id,
         context.organizationId,
@@ -437,8 +442,20 @@ export async function updateCardPurchaseForContext(
         nextReconciledAt,
         now,
         context.userId,
+        cardId,
+        invoice.id,
+        current.status,
+        current.amountMinor,
+        current.updatedAt,
       ],
     );
+    if (updated.length !== 1) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CONCURRENT_CHANGE",
+        "A compra foi alterada ou anulada durante a edição.",
+        409,
+      );
+    }
 
     if (current.installmentId !== null) {
       await executeQuery(

@@ -123,6 +123,8 @@ fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão fís
 A rota e o envelope de resposta existentes são mantidos para compatibilidade.
 Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
 lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
+Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
+mudado antes da persistência, inclusive quando anulada por outra requisição.
 
 ### Ajuste pontual ou futuro de valores de parcelas (#742)
 
