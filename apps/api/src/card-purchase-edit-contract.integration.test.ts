@@ -4,6 +4,7 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
+import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move-core.js";
 import {
   adjustInvoiceInstallmentAmountForContext,
   deleteSimpleCardPurchaseForContext,
@@ -11,6 +12,7 @@ import {
   reconcileInvoiceInstallmentForContext,
   reverseCardPurchaseForContext,
   summarizeInvoiceForContext,
+  updateCardReversalForContext,
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
@@ -716,6 +718,21 @@ async function assertSimplePurchaseSoftDelete(
   );
   assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
+  await assert.rejects(
+    () => reverseCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, invoiceId),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_INVALID_SOURCE",
+  );
+  await assert.rejects(
+    () =>
+      moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
+        invoicePeriod: "2031-03",
+      }),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "TENANT_RESOURCE_NOT_FOUND",
+  );
+  assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
+
   const reconciled = await registerCardPurchaseForContext(CONTEXT, cardId, {
     occurredOn: "2031-02-09",
     amountMinor: 700,
@@ -737,6 +754,32 @@ async function assertSimplePurchaseSoftDelete(
     [reconciled.transaction.id],
   );
   assert.equal(protectedRow[0]?.status, "RECONCILED");
+
+  const another = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2031-02-10",
+    amountMinor: 400,
+    description: "Compra para estorno anulado " + suffix,
+    cardInstrumentId,
+  });
+  const reversal = await reverseCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    another.transaction.id,
+    another.invoice.id,
+  );
+  await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId);
+  const beforeBlockedReversalEdit = await readInvoiceTotal(invoiceId);
+  await assert.rejects(
+    () =>
+      updateCardReversalForContext(CONTEXT, cardId, reversal.transactionId, {
+        description: "Estorno alterado indevidamente",
+        occurredOn: "2031-02-10",
+        amountMinor: 500,
+      }),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_EDIT_LOCKED",
+  );
+  assert.equal(await readInvoiceTotal(invoiceId), beforeBlockedReversalEdit);
 }
 
 async function readInvoiceTotal(invoiceId: string): Promise<number> {

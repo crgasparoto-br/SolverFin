@@ -158,11 +158,12 @@ export async function moveCardPurchaseInvoicePeriodForContext(
       );
     }
 
-    await executeQuery(
+    const updatedPurchase = await executeQuery<{ id: string }>(
       `update "Transaction" set
          "invoiceId" = $4, "occurredOn" = $5, "plannedOn" = $5,
          "updatedAt" = $6, "updatedByUserId" = $7
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "status" <> 'VOIDED' returning "id"`,
       [
         current.id,
         context.organizationId,
@@ -173,6 +174,7 @@ export async function moveCardPurchaseInvoicePeriodForContext(
         context.userId,
       ],
     );
+    if (updatedPurchase.length !== 1) throw notFoundError();
 
     if (current.installmentId !== null) {
       await executeQuery(
@@ -267,7 +269,8 @@ async function findPurchaseForMove(
             "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
        from "Transaction"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
+        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null
+        and "kind" = 'EXPENSE' and "status" <> 'VOIDED'`,
     [transactionId, context.organizationId, context.financialProfileId, cardId],
   );
   const row = rows[0];
