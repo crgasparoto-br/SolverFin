@@ -77,12 +77,39 @@ export async function voidSimpleCardPurchaseInTransaction(
       409,
     );
   }
+  // A purchase with a live credit cannot be voided independently: doing so
+  // would leave its reversal orphaned and may make the invoice total negative.
+  if (source.kind === "EXPENSE") {
+    const activeReversals = await executeQuery<{ id: string }>(
+      `select "id" from "Transaction"
+        where "organizationId" = $1 and "financialProfileId" = $2
+          and "cardId" = $3 and "invoiceId" = $4
+          and "kind" = 'INCOME' and "status" <> 'VOIDED'
+          and "description" like $5
+        limit 1`,
+      [
+        context.organizationId,
+        context.financialProfileId,
+        cardId,
+        source.invoiceId,
+        `%[estorno:${transactionId}:unico]`,
+      ],
+    );
+    if (activeReversals.length > 0) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_ACTIVE_REVERSAL",
+        "Anule primeiro o estorno ativo antes de excluir a compra.",
+        409,
+      );
+    }
+  }
   const now = new Date().toISOString();
   const invoice = await executeQuery<{ id: string }>(
     `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4,
        "updatedAt" = $5
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-        and "status" = 'OPEN'
+        and "cardId" = $6 and "currency" = $7 and "status" = 'OPEN'
+        and "totalAmountMinor" + $4 >= 0
       returning "id"`,
     [
       source.invoiceId,
@@ -90,10 +117,16 @@ export async function voidSimpleCardPurchaseInTransaction(
       context.financialProfileId,
       source.kind === "INCOME" ? Number(source.amountMinor) : -Number(source.amountMinor),
       now,
+      cardId,
+      source.currency,
     ],
   );
   if (invoice.length !== 1)
-    throw new InvoiceContractError("CARD_PURCHASE_DELETE_LOCKED", "Fatura bloqueada.", 409);
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_DELETE_LOCKED",
+      "Fatura bloqueada ou saldo incompatível com a exclusão.",
+      409,
+    );
   const deleted = await executeQuery<{ id: string }>(
     `update "Transaction"
        set "status" = 'VOIDED', "voidedAt" = $4,
