@@ -15,7 +15,10 @@ import {
   generateInstallmentsForContext,
   getRecurrenceForContext,
 } from "./repositories/recurrences.js";
-import { createTransactionForContext, getTransactionForContext } from "./repositories/transactions.js";
+import {
+  createTransactionForContext,
+  getTransactionForContext,
+} from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -255,7 +258,10 @@ async function assertUnreconciledAccountRecurrenceEdit(
     { description: "tentativa sem recorrência" },
   );
   assert.equal(bypassOrdinary.statusCode, 409, "manual transaction cannot use recurring route");
-  assert.equal((await getTransactionForContext(CONTEXT, ordinary.id)).description, ordinary.description);
+  assert.equal(
+    (await getTransactionForContext(CONTEXT, ordinary.id)).description,
+    ordinary.description,
+  );
 
   await cancelRecurrenceForContext(CONTEXT, recurrence.id);
   const cancelledSnapshot = await readOccurrences(recurrence.id);
@@ -396,8 +402,8 @@ async function authenticatedPatch(token: string, path: string, body: unknown) {
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const response = (await handleCreditCardAccountsApiRequest(request)) ??
-    (await handleApiRequest(request));
+  const response =
+    (await handleCreditCardAccountsApiRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(response, `Expected response for ${path}`);
   return response;
 }

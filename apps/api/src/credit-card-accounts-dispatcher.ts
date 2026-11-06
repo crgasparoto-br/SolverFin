@@ -15,7 +15,10 @@ import { listInstallmentsForContext } from "./repositories/installments.js";
 import { getRecurrenceForContext } from "./repositories/recurrences.js";
 import { updateRecurringAccountTransactionForContext } from "./repositories/recurring-account-transaction-edit.js";
 import { updateRecurringCardPurchaseForContext } from "./repositories/recurring-card-purchase-edit.js";
-import { getTransactionForContext, updateTransactionForContext } from "./repositories/transactions.js";
+import {
+  getTransactionForContext,
+  updateTransactionForContext,
+} from "./repositories/transactions.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const RECURRING_PURCHASE_PATH = /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
@@ -63,30 +66,24 @@ export async function handleCreditCardAccountsApiRequest(
     if (isCurrentOnlyAccountEdit && currentOnlyTransactionMatch && body) {
       const transactionId = decodeURIComponent(currentOnlyTransactionMatch[1] ?? "");
       await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body);
-      const transaction = await updateTransactionForContext(
-        context,
-        transactionId,
-        {
-          ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
-          ...(body.status !== undefined
-            ? { status: String(body.status) as TransactionStatus }
-            : {}),
-          ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-          ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
-          ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
-          ...(body.effectiveOn !== undefined
-            ? { effectiveOn: readOptionalString(body.effectiveOn) }
-            : {}),
-          ...(body.description !== undefined ? { description: String(body.description) } : {}),
-          ...(body.note !== undefined ? { note: readOptionalString(body.note) } : {}),
-          ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-          ...(body.destinationAccountId !== undefined
-            ? { destinationAccountId: String(body.destinationAccountId) }
-            : {}),
-          ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-          ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-        },
-      );
+      const transaction = await updateTransactionForContext(context, transactionId, {
+        ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
+        ...(body.status !== undefined ? { status: String(body.status) as TransactionStatus } : {}),
+        ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+        ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+        ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+        ...(body.effectiveOn !== undefined
+          ? { effectiveOn: readOptionalString(body.effectiveOn) }
+          : {}),
+        ...(body.description !== undefined ? { description: String(body.description) } : {}),
+        ...(body.note !== undefined ? { note: readOptionalString(body.note) } : {}),
+        ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+        ...(body.destinationAccountId !== undefined
+          ? { destinationAccountId: String(body.destinationAccountId) }
+          : {}),
+        ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+        ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+      });
 
       return json(200, { transaction, editScope: "current_only" });
     }
@@ -157,7 +154,9 @@ async function assertCurrentOnlyRecurringAccountEdit(
 ): Promise<void> {
   const blocked = (): never => {
     throw Object.assign(
-      new Error("Desconcilie a ocorrência recorrente antes de editar; outras parcelas exigem manutenção própria."),
+      new Error(
+        "Desconcilie a ocorrência recorrente antes de editar; outras parcelas exigem manutenção própria.",
+      ),
       { code: "RECURRING_ACCOUNT_CURRENT_ONLY_EDIT_BLOCKED", statusCode: 409 },
     );
   };
@@ -172,7 +171,8 @@ async function assertCurrentOnlyRecurringAccountEdit(
     body.applyToFuturePlanned === true ||
     (body.editScope !== undefined && body.editScope !== "current_only") ||
     (body.status !== undefined && body.status !== transaction.status)
-  ) blocked();
+  )
+    blocked();
 
   const recurrence = await getRecurrenceForContext(context, recurrenceId);
   if (!recurrence.accountId || recurrence.cardId || recurrence.status === "cancelled") blocked();
@@ -188,7 +188,8 @@ async function assertCurrentOnlyRecurringAccountEdit(
       installment.invoice ||
       installment.card ||
       installment.cardInstrument
-    ) blocked();
+    )
+      blocked();
   }
 }
 
