@@ -1,0 +1,151 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "requirements": [
+    {
+      "requirement_id": "REQ-768-01",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-01-001",
+        "status": "passed",
+        "procedure": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs:110-176 shows selection with planned+posted+reconciled and enabled reconcile; Chrome plannedAndPosted.reconcileDisabled=false",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para planned and reconciled mixed selection.",
+        "observed": "Chrome plannedAndPosted enabled reconciliation for planned+posted, and allStatuses also enabled."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-02",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-02-004",
+        "status": "passed",
+        "procedure": "Chrome afterMixedUnreconcile planned.status=planned; API integration:144-165 checks unchangedTransactionIds",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para nonreconciled planned omission.",
+        "observed": "Both Chrome and integration keep planned unchanged when selected alongside reconciled."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-03",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-03-005",
+        "status": "passed",
+        "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:224-267 injects AuditLogEntry trigger exception during group reconcile, then verifies unchanged member statuses/membership and audit count",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para audit insertion failure rollback.",
+        "observed": "PostgreSQL integration passed and verifies every group member remains posted, attached, with unchanged audit count."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-04",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-04-006",
+        "status": "passed",
+        "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:166-175 idempotentMixed checks unchangedTransactionIds for already reconciled and affects only planned/posted; same file:77-104 group membership",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para duplicate reconciliation target.",
+        "observed": "Repeated already-reconciled item appears in unchangedTransactionIds and has no duplicate financial transition."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-05",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-05-013",
+        "status": "passed",
+        "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:203-222 rejects suggested item with valid one; :101-111 rejects a grouped member without groupIds",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para suggested and grouped member rejected.",
+        "observed": "Direct API rejects protected suggested and partial group selections with no partial mutation."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-06",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-06-015",
+        "status": "passed",
+        "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:178-201 ensures occurredOn and plannedOn are preserved across the update, and row update SQL changes only status/effectiveOn",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para dates and financial fields preserved.",
+        "observed": "The regression asserts origin and planning dates unchanged, while SQL touches only lifecycle columns."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-07",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-07-002",
+        "status": "passed",
+        "procedure": "Chrome nativeKeyboard.activation.clickObserved=true, processingAriaBusy=true, currentStatus updated, in exact artifact; scripts/statement-visual/transaction-bulk-selection-keyboard.mjs",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para keyboard Enter activation.",
+        "observed": "Native keyboard Enter triggers reconcile; button is icon-only with accessible title and busy state."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-08",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-08-008",
+        "status": "passed",
+        "procedure": "docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md changed in 1bf1..5d Git diff, describing planned reconciliation and protected groups",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para API docs vs new statuses.",
+        "observed": "Changed API/Golden Screen docs describe the real UI statuses and group guards, corroborated by Chrome and API tests."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
+      ]
+    },
+    {
+      "requirement_id": "REQ-768-09",
+      "positive_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
+      ],
+      "primary_negative_control": {
+        "id": "NEG-09-022",
+        "status": "passed",
+        "procedure": "Canonical skill Git bundle commit a28be10 and SolverFin material bundle 5d567e49 verified against immutable develop base 1bf1f84, no foreign certificate selected",
+        "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para wrong skill or branch link.",
+        "observed": "Current issue #768 and PR #769 are target, skill develop@a28be10, product base develop@1bf1f84; inherited #728 certificate is excluded."
+      },
+      "regression_evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
+      ]
+    }
+  ]
+}

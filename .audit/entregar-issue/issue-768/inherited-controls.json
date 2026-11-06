@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "source_audits": [],
+  "controls": [
+    {
+      "id": "IC-768-GROUP-PROTECTION",
+      "title": "Group-based remuneration protection",
+      "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "status": "passed",
+      "control_type": "test",
+      "attack_control_id": "NEG-05-024",
+      "risk_family": "structural-contract",
+      "surface": "relational-semantic-integrity",
+      "dimension": "linked AccountRemuneration vs editable transaction source",
+      "evidence": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+      "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+      "procedure": "API integration:313-423 constructs a linked AccountRemuneration with a group; repository hydrate calculates protection, server rejects both reconcile and unreconcile.",
+      "expected": "Linked remuneration must block group reconciliation, regardless of source field.",
+      "observed": "Group computed reconcileProtected=true; both bulk commands rejected TRANSACTION_BULK_PROTECTED; unprotected control stays false."
+    },
+    {
+      "id": "IC-768-GROUP-TOOLTIP",
+      "title": "Golden Screen protected tooltip",
+      "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "status": "passed",
+      "control_type": "test",
+      "attack_control_id": "NEG-07-019",
+      "risk_family": "semantic-effect",
+      "surface": "golden-screen-accessibility",
+      "dimension": "disabled no-target help",
+      "evidence": ".audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+      "evidence_sha256": "4a9b266d5b0536c298de40d060944186e22ea6b21ffae1f1fb649faa4e1f91a1",
+      "procedure": "Chrome statement flow checks a disabled action with explanation; grouped protection is derived by API and UI data-reconcile-protected.",
+      "expected": "Disabled actions must explain why no eligible target is available.",
+      "observed": "Chrome records disabled unreconcile with tooltip and explanatory help; code maps protected group dataset to disabled controls."
+    },
+    {
+      "id": "IC-768-LEGACY-EFFECTIVE",
+      "title": "Legacy posted effectiveOn fallback",
+      "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "subject_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+      "status": "passed",
+      "control_type": "test",
+      "attack_control_id": "NEG-03-009",
+      "risk_family": "temporal-destination",
+      "surface": "effective-date-fallback",
+      "dimension": "legacy posted null effectiveOn",
+      "evidence": ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+      "evidence_sha256": "06a4ea51a5f3dcdd483e53edc3bbeb109f0ecce298bfe1320b23e54fb7da7835",
+      "procedure": "PostgreSQL integration:178-201 clears effectiveOn on POSTED and reconciles, then asserts effectiveOn equals 2028-08-11 occurredOn not UTC today.",
+      "expected": "POSTED with NULL effectiveOn must use original occurredOn and preserve plannedOn.",
+      "observed": "Integration asserts effectiveOn=2028-08-11, occurredOn=2028-08-11, plannedOn=2028-08-09."
+    }
+  ],
+  "retired_controls": [],
+  "unresolved_controls": []
+}

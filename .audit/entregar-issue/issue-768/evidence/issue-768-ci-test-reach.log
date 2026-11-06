@@ -1,0 +1,17 @@
+HEAD: 5d567e4919f6698891bfc82c5d22d96ba34cb229
+COMMAND: npm run test
+EXIT_CODE: 0
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855
+JOB: CRITICAL validation
+SOURCE: GitHub Actions exact SHA, authenticated CI run; this file is a derived reached-tests index, not a raw GitHub job log.
+REACHED: apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts
+REACHED: apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts
+REACHED: apps/web/src/dev-server/transaction-group-installment-guard.test.ts
+REACHED: apps/web/src/dev-server/transactions-groups.test.ts
+HEAD: 5d567e4919f6698891bfc82c5d22d96ba34cb229
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855
+JOB: CRITICAL validation
+SOURCE: GitHub Actions exact SHA, authenticated CI run; this file is a derived reached-tests index, not a raw GitHub job log.
+REACHED: apps/api/src/transaction-bulk-actions.integration.test.ts

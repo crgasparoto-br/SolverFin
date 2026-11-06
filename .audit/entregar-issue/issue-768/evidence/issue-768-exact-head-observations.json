@@ -1,0 +1,236 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+  "source": {
+    "workflow_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908",
+    "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245908/artifacts/13526858920",
+    "artifact_sha256": "f96eb50413b600cabdf62c7cdde2aba28e1fb70571dca24e7e9fcbbe4a2f9dbc",
+    "artifact_name": "statement-visual-evidence-5d567e4919f6698891bfc82c5d22d96ba34cb229",
+    "visual_gate_index_commit": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+    "visual_gate_failures": [],
+    "record_files": [
+      "issue-530-bulk-selection.json",
+      "issue-530-keyboard-activation.json",
+      "visual-gate-index.json"
+    ]
+  },
+  "chrome": {
+    "plannedAndPosted": {
+      "visible": true,
+      "reconcileDisabled": false,
+      "unreconcileDisabled": true,
+      "variant": "neutral",
+      "help": "Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação. Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado."
+    },
+    "allStatuses": {
+      "count": "3",
+      "reconcileDisabled": false,
+      "unreconcileDisabled": false
+    },
+    "plannedAndReconciled": {
+      "count": "2",
+      "reconcileDisabled": false,
+      "unreconcileDisabled": false
+    },
+    "selectionGroup": {
+      "hidden": false,
+      "count": "2 itens · 3 lançamentos",
+      "total": "R$ 350,00",
+      "groupDisabled": true,
+      "reconcileDisabled": false,
+      "unreconcileDisabled": true,
+      "voidDisabled": false,
+      "help": "Unificar lançamentos indisponível: desmarque os agrupamentos para unificar somente lançamentos simples. Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado."
+    },
+    "mobile": {
+      "bodyOverflow": false,
+      "visibleInViewport": true
+    },
+    "nativeKeyboard": {
+      "prepared": {
+        "focused": true,
+        "disabled": false,
+        "accessibleText": "Marcar como conciliado",
+        "visibleText": "",
+        "title": "Marcar como conciliado",
+        "tooltip": "Marcar como conciliado"
+      },
+      "activation": {
+        "clickObserved": true,
+        "processingObserved": true,
+        "processingAriaBusy": "true",
+        "processingStatus": "Processando...",
+        "processingActionsDisabled": true,
+        "currentStatus": "Lançamentos conciliados. Atualizando..."
+      },
+      "persisted": {
+        "groupPresent": true,
+        "status": "Conciliado"
+      }
+    },
+    "negativeServerFailure": {
+      "selectedCount": 2,
+      "status": "Falha controlada para manter a seleção.",
+      "ariaBusy": "false"
+    },
+    "negativeNetworkFailure": {
+      "selectedCount": 2,
+      "status": "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente.",
+      "ariaBusy": "false"
+    },
+    "negativeCancelDeletion": {
+      "bulkCalls": 0,
+      "selectedCount": 2,
+      "groupPresent": true,
+      "directPresent": true,
+      "ariaBusy": null
+    },
+    "afterMixedUnreconcile": {
+      "planned": {
+        "status": "planned",
+        "plannedOn": "2026-07-26",
+        "occurredOn": "2026-07-26"
+      },
+      "posted": {
+        "status": "posted",
+        "plannedOn": "2026-07-27",
+        "occurredOn": "2026-07-27"
+      },
+      "reconciled": {
+        "status": "posted",
+        "plannedOn": "2026-07-28",
+        "occurredOn": "2026-07-28"
+      }
+    },
+    "afterMixedReconcile": [
+      {
+        "status": "reconciled",
+        "plannedOn": "2026-07-26",
+        "occurredOn": "2026-07-26",
+        "effectiveOn": "2026-11-06"
+      },
+      {
+        "status": "reconciled",
+        "plannedOn": "2026-07-27",
+        "occurredOn": "2026-07-27",
+        "effectiveOn": "2026-07-27"
+      },
+      {
+        "status": "reconciled",
+        "plannedOn": "2026-07-28",
+        "occurredOn": "2026-07-28",
+        "effectiveOn": "2026-07-28"
+      }
+    ],
+    "toolbar": [
+      {
+        "action": "reconcile",
+        "disabled": false,
+        "insideToolbar": true,
+        "label": "Marcar como conciliado",
+        "title": "Marcar como conciliado",
+        "tooltip": "Marcar como conciliado",
+        "text": "",
+        "iconCount": 1,
+        "targetWidth": 44,
+        "targetHeight": 44,
+        "circleWidth": 26,
+        "circleHeight": 26,
+        "glyphWidth": 15,
+        "glyphHeight": 15
+      },
+      {
+        "action": "unreconcile",
+        "disabled": true,
+        "insideToolbar": true,
+        "label": "Desmarcar conciliado",
+        "title": "Desmarcar conciliado: Nenhum lançamento selecionado está conciliado.",
+        "tooltip": "Desmarcar conciliado: Nenhum lançamento selecionado está conciliado.",
+        "text": "",
+        "iconCount": 1,
+        "targetWidth": 44,
+        "targetHeight": 44,
+        "circleWidth": 26,
+        "circleHeight": 26,
+        "glyphWidth": 15,
+        "glyphHeight": 15
+      },
+      {
+        "action": "group",
+        "disabled": true,
+        "insideToolbar": true,
+        "label": "Unificar lançamentos",
+        "title": "Unificar lançamentos: Desmarque os agrupamentos para unificar somente lançamentos simples.",
+        "tooltip": "Unificar lançamentos: Desmarque os agrupamentos para unificar somente lançamentos simples.",
+        "text": "",
+        "iconCount": 1,
+        "targetWidth": 44,
+        "targetHeight": 44,
+        "circleWidth": 26,
+        "circleHeight": 26,
+        "glyphWidth": 15,
+        "glyphHeight": 15
+      },
+      {
+        "action": "clear",
+        "disabled": false,
+        "insideToolbar": true,
+        "label": "Limpar seleção",
+        "title": "Limpar seleção",
+        "tooltip": "Limpar seleção",
+        "text": "",
+        "iconCount": 1,
+        "targetWidth": 44,
+        "targetHeight": 44,
+        "circleWidth": 26,
+        "circleHeight": 26,
+        "glyphWidth": 15,
+        "glyphHeight": 15
+      },
+      {
+        "action": "void",
+        "disabled": false,
+        "insideToolbar": true,
+        "label": "Excluir selecionados",
+        "title": "Excluir selecionados",
+        "tooltip": "Excluir selecionados",
+        "text": "",
+        "iconCount": 1,
+        "targetWidth": 44,
+        "targetHeight": 44,
+        "circleWidth": 26,
+        "circleHeight": 26,
+        "glyphWidth": 15,
+        "glyphHeight": 15
+      }
+    ],
+    "scenario_results": [
+      {
+        "scenarioId": "transaction-bulk-selection",
+        "result": "passed"
+      },
+      {
+        "scenarioId": "transaction-bulk-selection-keyboard",
+        "result": "passed"
+      },
+      {
+        "scenarioId": "transaction-bulk-selection-clearance",
+        "result": "passed"
+      }
+    ]
+  },
+  "github_ci": {
+    "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42265245855",
+    "head_sha": "5d567e4919f6698891bfc82c5d22d96ba34cb229",
+    "run_conclusion": "success",
+    "critical_steps": [
+      "Enforce complete repository formatting",
+      "Run npm run lint",
+      "Run npm run typecheck",
+      "Run npm run test",
+      "Run npm run test:integration --workspace @solverfin/api",
+      "Run npm run build"
+    ],
+    "evidence_source": "GitHub authenticated CRITICAL validation job run 42265245855; test invocation names observed in job log."
+  }
+}
