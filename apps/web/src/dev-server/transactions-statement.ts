@@ -54,7 +54,8 @@ export interface TransactionGroupRecord {
   status: string;
   currency: string;
   totalAmountMinor: number;
-  members: TransactionRecord[];
+  reconcileProtected?: boolean;
+  members: Array<TransactionRecord & { reconcileProtected?: boolean }>;
 }
 
 export function projectTransactionGroups(

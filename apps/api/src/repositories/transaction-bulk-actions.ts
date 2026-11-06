@@ -25,6 +25,7 @@ interface LockedTransactionRow {
   cardId: string | null;
   invoiceId: string | null;
   accountId: string | null;
+  isAccountRemuneration: boolean;
 }
 
 interface SelectedTransaction extends LockedTransactionRow {
@@ -143,11 +144,14 @@ async function loadGroupMembers(
 ): Promise<SelectedTransaction[]> {
   if (groupIds.length === 0) return [];
   const rows = await executeQuery<LockedTransactionRow>(
-    `select "id", "status", "effectiveOn", "transactionGroupId", "cardId", "invoiceId", "accountId"
-       from "Transaction"
-      where "organizationId"=$1 and "financialProfileId"=$2
-        and "transactionGroupId"=any($3::uuid[])
-      order by "transactionGroupId", "id" for update`,
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
+            exists(select 1 from "AccountRemuneration" ar
+                   where ar."transactionId"=t."id" and ar."organizationId"=$1
+                     and ar."financialProfileId"=$2) as "isAccountRemuneration"
+       from "Transaction" t
+      where t."organizationId"=$1 and t."financialProfileId"=$2
+        and t."transactionGroupId"=any($3::uuid[])
+      order by t."transactionGroupId", t."id" for update of t`,
     [context.organizationId, context.financialProfileId, groupIds],
   );
   return rows.map((row) => ({ ...row, selectedGroupId: row.transactionGroupId ?? undefined }));
@@ -160,10 +164,13 @@ async function loadTransactions(
 ): Promise<LockedTransactionRow[]> {
   if (transactionIds.length === 0) return [];
   return executeQuery<LockedTransactionRow>(
-    `select "id", "status", "effectiveOn", "transactionGroupId", "cardId", "invoiceId", "accountId"
-       from "Transaction"
-      where "organizationId"=$1 and "financialProfileId"=$2 and "id"=any($3::uuid[])
-      order by "id" for update`,
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
+            exists(select 1 from "AccountRemuneration" ar
+                   where ar."transactionId"=t."id" and ar."organizationId"=$1
+                     and ar."financialProfileId"=$2) as "isAccountRemuneration"
+       from "Transaction" t
+      where t."organizationId"=$1 and t."financialProfileId"=$2 and t."id"=any($3::uuid[])
+      order by t."id" for update of t`,
     [context.organizationId, context.financialProfileId, transactionIds],
   );
 }
@@ -198,23 +205,28 @@ function validateAction(action: TransactionBulkAction, selected: SelectedTransac
   if (action === "void") return;
 
   const invalid = selected.find(
-    (transaction) => transaction.status !== "POSTED" && transaction.status !== "RECONCILED",
+    (transaction) =>
+      transaction.status !== "PLANNED" &&
+      transaction.status !== "POSTED" &&
+      transaction.status !== "RECONCILED",
   );
   if (invalid) {
     throw bulkError(
       "TRANSACTION_BULK_STATUS_INVALID",
-      "Efetive os lançamentos previstos antes de alterar a conciliação.",
+      "Sugestões não confirmadas e lançamentos excluídos não podem ter a conciliação alterada.",
       409,
     );
   }
 
   if (
-    action === "reconcile" &&
-    selected.some((transaction) => transaction.status === "POSTED" && !transaction.effectiveOn)
+    selected.some(
+      (transaction) =>
+        transaction.cardId || transaction.invoiceId || transaction.isAccountRemuneration,
+    )
   ) {
     throw bulkError(
-      "TRANSACTION_BULK_RECONCILE_REQUIRES_EFFECTIVE",
-      "Efetive os lançamentos previstos antes de conciliá-los.",
+      "TRANSACTION_BULK_PROTECTED",
+      "Este lançamento exige seu fluxo próprio de conciliação.",
       409,
     );
   }
@@ -244,10 +256,13 @@ async function applyAction(
   if (action === "reconcile") {
     const rows = await executeQuery<{ id: string }>(
       `update "Transaction"
-          set "status"='RECONCILED', "reconciledAt"=coalesce("reconciledAt",now()),
+          set "status"='RECONCILED',
+              "effectiveOn"=coalesce("effectiveOn", case when "status"='PLANNED'
+                then (now() at time zone 'UTC')::date else "occurredOn" end),
+              "reconciledAt"=coalesce("reconciledAt",now()),
               "updatedByUserId"=$1, "updatedAt"=now()
         where "organizationId"=$2 and "financialProfileId"=$3
-          and "id"=any($4::uuid[]) and "status"='POSTED'
+          and "id"=any($4::uuid[]) and "status" in ('PLANNED','POSTED')
         returning "id"`,
       [context.userId, context.organizationId, context.financialProfileId, transactionIds],
     );

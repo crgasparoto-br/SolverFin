@@ -125,6 +125,20 @@ async function main(): Promise<void> {
         cardInstrumentId: instrumentId,
       });
       const batchBefore = await summarizeInvoiceForContext(CONTEXT, bulkPurchase.invoice.id);
+      // Reconciliation must reject mixed card/account batches before mutating either row.
+      await assert.rejects(
+        () =>
+          executeTransactionBulkActionForContext(CONTEXT, {
+            action: "reconcile",
+            transactionIds: [bankTransaction.id, bulkPurchase.transaction.id],
+          }),
+        hasCode("TRANSACTION_BULK_PROTECTED"),
+      );
+      assert.equal((await getTransactionForContext(CONTEXT, bankTransaction.id)).status, "posted");
+      assert.equal((await readTransaction(bulkPurchase.transaction.id)).status, "POSTED");
+      assert.equal(await readInvoiceTotal(bulkPurchase.invoice.id), batchBefore.totalExpensesMinor);
+      assert.equal(await countSoftDelete(bulkPurchase.transaction.id), 0);
+
       const batch = await executeTransactionBulkActionForContext(CONTEXT, {
         action: "void",
         transactionIds: [bulkPurchase.transaction.id, bankTransaction.id],
@@ -165,6 +179,16 @@ async function main(): Promise<void> {
         status: "reconciled",
       });
       const lockedBefore = await summarizeInvoiceForContext(CONTEXT, eligible.invoice.id);
+      await assert.rejects(
+        () =>
+          executeTransactionBulkActionForContext(CONTEXT, {
+            action: "unreconcile",
+            transactionIds: [locked.transaction.id],
+          }),
+        hasCode("TRANSACTION_BULK_PROTECTED"),
+      );
+      assert.equal((await readTransaction(locked.transaction.id)).status, "RECONCILED");
+      assert.equal(await readInvoiceTotal(eligible.invoice.id), lockedBefore.totalExpensesMinor);
       await assert.rejects(
         () =>
           executeTransactionBulkActionForContext(CONTEXT, {
