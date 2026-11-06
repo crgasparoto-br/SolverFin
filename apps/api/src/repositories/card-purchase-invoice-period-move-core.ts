@@ -93,7 +93,6 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   const originInvoice = current.invoiceId
     ? await findInvoiceForMove(context, current.invoiceId)
     : undefined;
-
   if (!originInvoice || originInvoice.cardId !== cardId || current.invoiceId === null) {
     throw new InvoiceContractError(
       "CARD_PURCHASE_INVOICE_INVALID",
@@ -103,7 +102,6 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   }
 
   assertInvoiceEditable(originInvoice, "CARD_PURCHASE_INVOICE_LOCKED");
-
   const destinationPeriod = resolveDestinationPeriod(card, payload.invoicePeriod);
 
   if (
@@ -126,7 +124,6 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   if (existingDestinationInvoice !== undefined) {
     assertInvoiceEditable(existingDestinationInvoice, "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED");
   }
-
   const destinationInvoice =
     existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
   const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(
