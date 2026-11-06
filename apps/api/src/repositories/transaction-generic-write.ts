@@ -34,7 +34,16 @@ export async function updateActiveGenericTransaction(
   statusOnlyReconciliation = false,
 ): Promise<void> {
   const params = statusOnlyReconciliation
-    ? transactionParams
+    ? [
+        transactionParams[0],
+        transactionParams[1],
+        transactionParams[2],
+        transactionParams[8],
+        transactionParams[16],
+        transactionParams[19],
+        transactionParams[22],
+        transactionParams[24],
+      ]
     : [...transactionParams, expectedUpdatedAt ?? null];
   const updated = await executeQuery<{ id: string }>(
     statusOnlyReconciliation ? buildReconciliationStatusSql() : buildUpdateTransactionSql(),
@@ -52,13 +61,13 @@ export async function updateActiveGenericTransaction(
 /** Update only reconciliation fields after the row lock releases, never stale category/amount data. */
 function buildReconciliationStatusSql(): string {
   return `update "Transaction" set
-      "status" = $9, "effectiveOn" = $17, "reconciledAt" = $20,
-      "updatedAt" = $23, "updatedByUserId" = $25
+      "status" = $4, "effectiveOn" = $5, "reconciledAt" = $6,
+      "updatedAt" = $7, "updatedByUserId" = $8
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
       and "status" <> 'VOIDED' and "cardId" is null and "invoiceId" is null
       and (
-        ($9 = 'RECONCILED' and "status" in ('PLANNED', 'POSTED'))
-        or ($9 = 'POSTED' and "status" = 'RECONCILED')
+        ($4 = 'RECONCILED' and "status" in ('PLANNED', 'POSTED'))
+        or ($4 = 'POSTED' and "status" = 'RECONCILED')
       )
     returning "id"`;
 }
