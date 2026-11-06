@@ -940,9 +940,16 @@ async function assertConcurrentInvoiceClosureRejectsPurchaseEdit(
       if (locked) await client.query("ROLLBACK");
       client.release();
     }
-    const persisted = await readTransaction(purchase.transaction.id);
-    assert.equal(persisted.amountMinor, 550);
-    assert.equal(persisted.status, "POSTED");
+    const [persisted] = await query<{ amountMinor: number; status: string; description: string }>(
+      'select "amountMinor", "status", "description" from "Transaction" where "id" = $1',
+      [purchase.transaction.id],
+    );
+    assert.equal(persisted?.amountMinor, 550);
+    assert.equal(persisted?.status, "POSTED");
+    assert.equal(
+      persisted?.description,
+      `Compra para fechamento concorrente ${change.label} ${suffix}`,
+    );
     assert.equal(await readInvoiceTotal(purchase.invoice.id), beforeTotal);
     const invoice = await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id);
     assert.equal(invoice.status, "closed");
