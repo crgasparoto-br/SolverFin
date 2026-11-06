@@ -11,6 +11,7 @@ import {
   reconcileInvoiceInstallmentForContext,
   reverseCardPurchaseForContext,
   summarizeInvoiceForContext,
+  updateCardReversalForContext,
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
@@ -263,6 +264,24 @@ async function main(): Promise<void> {
         expense.transaction.id,
         expense.invoice.id,
       );
+      // The generic endpoint cannot redirect a card credit into a bank account
+      // or bypass the reversal-specific invoice recalculation.
+      await assert.rejects(
+        () =>
+          updateTransactionForContext(CONTEXT, credit.transactionId, {
+            amountMinor: 950,
+            accountId: bankAccount.id,
+            status: "posted",
+          }),
+        hasCode("CARD_REVERSAL_EDIT_ROUTE_REQUIRED"),
+      );
+      assert.equal(await readInvoiceTotal(expense.invoice.id), balanceBeforeReversal - 800);
+      await updateCardReversalForContext(CONTEXT, card.id, credit.transactionId, {
+        amountMinor: 650,
+        occurredOn: "2032-05-08",
+        description: "Estorno editado na rota canônica",
+      });
+      assert.equal(await readInvoiceTotal(expense.invoice.id), balanceBeforeReversal - 650);
       await voidTransactionForContext(CONTEXT, credit.transactionId);
       assert.equal(
         (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id)).totalExpensesMinor,

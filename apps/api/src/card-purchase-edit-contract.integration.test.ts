@@ -16,6 +16,10 @@ import {
   updateCardPurchaseForContext,
 } from "./repositories/card-invoice-contracts.js";
 import { registerCardPurchaseForContext } from "./repositories/cards.js";
+import {
+  updateTransactionForContext,
+  voidTransactionForContext,
+} from "./repositories/transactions.js";
 import { listInstallmentsForContext } from "./repositories/installments.js";
 import {
   createRecurrenceForContext,
@@ -79,6 +83,7 @@ async function main(): Promise<void> {
   await assertLockedInvoiceRejectsCardPurchaseEdit(suffix);
   await assertSimplePurchaseSoftDelete(account.id, physicalInstrument.id, suffix);
   await assertConcurrentPurchaseEditCannotResurrect(account.id, physicalInstrument.id, suffix);
+  await assertConcurrentReversalEditCannotResurrect(account.id, physicalInstrument.id, suffix);
 }
 
 async function assertInstallmentPurchaseEdit(
@@ -867,6 +872,100 @@ async function assertConcurrentPurchaseEditCannotResurrect(
     (await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id)).totalExpensesMinor,
     0,
   );
+}
+
+async function assertConcurrentReversalEditCannotResurrect(
+  cardId: string,
+  cardInstrumentId: string,
+  suffix: string,
+): Promise<void> {
+  const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2031-02-14",
+    amountMinor: 640,
+    description: "Compra para corrida com estorno " + suffix,
+    cardInstrumentId,
+  });
+  const credit = await reverseCardPurchaseForContext(
+    CONTEXT,
+    cardId,
+    purchase.transaction.id,
+    purchase.invoice.id,
+  );
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), 0);
+
+  // The generic path must fail while the reversal is still active.
+  await assert.rejects(
+    () => updateTransactionForContext(CONTEXT, credit.transactionId, { amountMinor: 100 }),
+    (error: unknown) =>
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "CARD_REVERSAL_EDIT_ROUTE_REQUIRED",
+  );
+
+  const client = await getPool().connect();
+  let locked = false;
+  try {
+    await client.query("BEGIN");
+    locked = true;
+    await client.query('select "id" from "Transaction" where "id" = $1 for update', [
+      credit.transactionId,
+    ]);
+    // Two independent PostgreSQL writers race on the same credit. The void
+    // acquires the row lock first; editing must recheck status after waiting.
+    const voiding = voidTransactionForContext(CONTEXT, credit.transactionId).then(
+      (value) => ({ success: true as const, value }),
+      (error: unknown) => ({ success: false as const, error }),
+    );
+    await waitForBlockedSql("for update of t, inv");
+    const editing = updateCardReversalForContext(CONTEXT, cardId, credit.transactionId, {
+      amountMinor: 990,
+      occurredOn: "2031-02-14",
+      description: "Estorno concorrente indevido",
+    }).then(
+      () => ({ success: true as const }),
+      (error: unknown) => ({ success: false as const, error }),
+    );
+    await waitForBlockedSql('select t."invoiceId", t."amountMinor"');
+
+    await client.query("COMMIT");
+    locked = false;
+    const voided = await voiding;
+    if (!voided.success) throw voided.error;
+    const editResult = await editing;
+    assert.equal(editResult.success, false, "A reversal edit cannot write after VOIDED");
+    if (!editResult.success) {
+      assert.ok(editResult.error instanceof Error);
+      assert.equal(
+        (editResult.error as Error & { code?: string }).code,
+        "CARD_REVERSAL_EDIT_LOCKED",
+      );
+    }
+  } finally {
+    if (locked) await client.query("ROLLBACK");
+    client.release();
+  }
+
+  const [persisted] = await query<{
+    status: string;
+    amountMinor: number;
+    voidedAt: Date | null;
+    accountId: string | null;
+  }>(
+    'select "status", "amountMinor", "voidedAt", "accountId" from "Transaction" where "id" = $1',
+    [credit.transactionId],
+  );
+  assert.equal(persisted?.status, "VOIDED");
+  assert.equal(persisted.amountMinor, 640);
+  assert.ok(persisted.voidedAt instanceof Date);
+  assert.equal(persisted.accountId, null);
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), 640);
+  await assert.rejects(
+    () => updateTransactionForContext(CONTEXT, credit.transactionId, { status: "posted" }),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+  );
+  await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id);
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), 0);
 }
 
 async function waitForBlockedSql(needle: string): Promise<void> {
