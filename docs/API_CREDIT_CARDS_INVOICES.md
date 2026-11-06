@@ -120,11 +120,25 @@ da fatura nem no limite utilizado. Um segundo pedido de exclusão ou edição n�
 altera o registro. Compras conciliadas, com parcelas, recorrências ou membros de
 agrupamentos não podem ser excluídas por esse endpoint; a API valida tenant, perfil,
 fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão física.
+
+Uma compra com **estorno ativo** na mesma fatura não pode ser anulada isoladamente,
+mesmo quando outras compras deixam o total da fatura positivo: a API retorna
+`CARD_PURCHASE_ACTIVE_REVERSAL` (HTTP 409) sem alterar compra, crédito, total
+ou auditoria. Primeiro deve-se anular o crédito pelo fluxo especializado de
+estorno; depois é possível anular a compra original, se continuar elegível.
+O cálculo de exclusão também exige saldo de fatura não negativo na própria
+gravação SQL; saldos incompatíveis são recusados com erro de contrato HTTP 409,
+sem expor a violação de constraint do banco.
 A rota e o envelope de resposta existentes são mantidos para compatibilidade.
 Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
 lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
 Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
 mudado antes da persistência, inclusive quando anulada por outra requisição.
+A edição também revalida o estado da fatura sob lock transacional, após o
+UPDATE condicional da compra, inclusive em mudanças sem efeito monetário:
+fechamento, pagamento ou cancelamento concorrente causa HTTP 409 e rollback
+integral da edição. Ajustes no total exigem fatura e moeda correspondentes e
+saldo não negativo, com conferência do UPDATE antes de registrar auditoria.
 A movimentação entre faturas confirma novamente, na gravação, o vínculo à
 fatura de origem, o estado e a versão da compra. Débito e crédito da movimentação
 exigem faturas ainda abertas, do mesmo cartão e moeda; qualquer disputa com
