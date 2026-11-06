@@ -255,9 +255,8 @@ async function main(): Promise<void> {
         description: "Compra para estorno " + suffix,
         cardInstrumentId: instrumentId,
       });
-      const balanceBeforeReversal = (
-        await summarizeInvoiceForContext(CONTEXT, expense.invoice.id)
-      ).totalExpensesMinor;
+      const balanceBeforeReversal = (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id))
+        .totalExpensesMinor;
       const credit = await reverseCardPurchaseForContext(
         CONTEXT,
         card.id,
