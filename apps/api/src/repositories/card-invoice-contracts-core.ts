@@ -5,6 +5,7 @@ import { insertAuditLogEntry } from "./audit.js";
 import {
   applyEditableCardPurchaseInvoiceChangeInTransaction,
   assertCardPurchaseInvoiceStatusEditable,
+  LOCKED_CARD_PURCHASE_INVOICE_STATUSES,
 } from "./card-invoice-purchase-edit-write.js";
 import {
   checkRecurringEdit,
