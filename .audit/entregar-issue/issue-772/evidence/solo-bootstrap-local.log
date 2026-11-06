@@ -1,6 +1,8 @@
-local_exact_head=178753add211f7e84d3bd15aea475320ba56b9ce
+local_exact_head=af883c5d82b0dcd306193350ddbeaf9549cea8ee
 command=python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
 exit_code=0
+remote_solo_bootstrap_run=https://github.com/crgasparoto-br/SolverFin/actions/runs/42295533476
+remote_solo_bootstrap_conclusion=success
 test_reject_candidate_modified_ci_workflow (test_solverfin_solo_audit_bootstrap.AuthenticatedActionsJobTests.test_reject_candidate_modified_ci_workflow) ... ok
 test_reject_false_success_or_stale_job_result (test_solverfin_solo_audit_bootstrap.AuthenticatedActionsJobTests.test_reject_false_success_or_stale_job_result) ... ok
 test_reject_forged_run_workflow_identity_and_origin (test_solverfin_solo_audit_bootstrap.AuthenticatedActionsJobTests.test_reject_forged_run_workflow_identity_and_origin) ... ok
@@ -26,10 +28,10 @@ test_truncated_inventory_cannot_be_approved (test_solverfin_solo_audit_bootstrap
 test_workflow_runs_on_solverfin_sources_without_candidate_checkout (test_solverfin_solo_audit_bootstrap.SolverFinTrustedChecks.test_workflow_runs_on_solverfin_sources_without_candidate_checkout) ... ok
 
 ----------------------------------------------------------------------
-Ran 23 tests in 0.078s
+Ran 23 tests in 0.075s
 
 OK
-HEAD: 178753add211f7e84d3bd15aea475320ba56b9ce
+HEAD: af883c5d82b0dcd306193350ddbeaf9549cea8ee
 COMMAND: python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
 EXIT_CODE: 0
 REACHED: tests/test_solverfin_solo_audit_bootstrap.py

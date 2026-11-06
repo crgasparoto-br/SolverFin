@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+  "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
   "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "creations": [
     {
@@ -40,6 +40,52 @@
       },
       "decision": "create",
       "justification": "Explicit atomic balance mutation helper preserves withTransaction scope, status/card/tenant/currency restrictions and rollback for both invoices."
+    },
+    {
+      "path": "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
+        ],
+        "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/transaction-bulk-selection.mjs",
+            "reason_not_reused": "Original oversized entrypoint remains the orchestrator; extracted helper prevents further monolithic growth and duplication."
+          },
+          {
+            "path": "scripts/statement-visual/cdp.mjs",
+            "reason_not_reused": "Generic browser CDP driver is already reused by the new module; it cannot own issue-specific assertions."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract reusable Chrome toolbar assertion and failure-handling probes from the existing browser entrypoint; preserve the shared CDP driver and original tests."
+    },
+    {
+      "path": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
+        ],
+        "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/transaction-bulk-selection.mjs",
+            "reason_not_reused": "Original oversized entrypoint remains the orchestrator; extracted helper prevents further monolithic growth and duplication."
+          },
+          {
+            "path": "scripts/statement-visual/cdp.mjs",
+            "reason_not_reused": "Generic browser CDP driver is already reused by the new module; it cannot own issue-specific assertions."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract deterministic grouped deletion and mixed-status browser scenarios to limit single-file growth; reuse existing navigation/fixture and capture helpers."
     }
   ],
   "references": [
@@ -81,10 +127,251 @@
         "command": "git grep -n deleteSimpleCardPurchaseForContext -- apps/api/src/repositories/card-invoice-purchase-delete.ts",
         "exit_code": 0
       }
+    },
+    {
+      "symbol": "inspectProtectedGroupSelection",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/transaction-bulk-selection.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
+        "line": 5
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "verifyDeletionAndMixedStatuses",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/transaction-bulk-selection.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
+        "line": 8
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
     }
   ],
   "replacements": [],
   "test_decisions": [
+    {
+      "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
+      "operation": "modified",
+      "scenario": "legacy posted effectiveOn, remuneration groups, transaction rollback and audit",
+      "requirement": "REQUIRED-768-03+04+05",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/api/src/transaction-bulk-actions.integration.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "legacy posted effectiveOn, remuneration groups, transaction rollback and audit"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "reached_tests": [
+          "apps/api/src/transaction-bulk-actions.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "reconciliation eligibility and Golden Screen icon affordance",
+      "requirement": "REQUIRED-768-01+02",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "reconciliation eligibility and Golden Screen icon affordance"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "selection toolbar responsive layout",
+      "requirement": "REQUIRED-768-07",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "selection toolbar responsive layout"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
+      "operation": "modified",
+      "scenario": "group installment protections",
+      "requirement": "REQUIRED-768-05",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "group installment protections"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transactions-groups.test.ts",
+      "operation": "modified",
+      "scenario": "group projection and server protection propagation",
+      "requirement": "REQUIRED-768-04",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transactions-groups.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transactions-groups.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "group projection and server protection propagation"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "reached_tests": [
+          "apps/web/src/dev-server/transactions-groups.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+      }
+    },
     {
       "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
       "operation": "modified",
@@ -119,12 +406,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "apps/api/src/card-purchase-edit-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
       }
     },
     {
@@ -167,12 +454,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
       }
     },
     {
@@ -209,18 +496,18 @@
         "status": "passed",
         "command": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "tests/test_solverfin_solo_audit_bootstrap.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-        "evidence_sha256": "3b45d5cae1c4a90469260207450245963d6de801fb5ef1df4117a9c80d98f423"
+        "evidence_sha256": "68f385d0509bb01921b592495094e305e7df9866fdc0c21238410ce90f12c9f3"
       }
     },
     {
       "path": "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
       "operation": "added",
-      "scenario": "Generic single void, bulk mixed transaction, status VOIDED installment parent, reversal credit and negative tenant/rollback cases in real PostgreSQL.",
+      "scenario": "Generic single void, bulk mixed transaction, status VOIDED installment parent, reversal credit and negative tenant/rollback cases in real PostgreSQL. Merged develop PR #769: card/bank mixed reconciliation and card unreconciliation deny atomically with no invoice mutation.",
       "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
       "search": {
         "queries": [
@@ -258,12 +545,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "apps/api/src/card-purchase-void-boundaries.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
       }
     },
     {
@@ -300,12 +587,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "apps/api/src/card-purchase-invoice-period-move.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
       }
     },
     {
@@ -341,12 +628,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
         "reached_tests": [
           "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
       }
     }
   ]
