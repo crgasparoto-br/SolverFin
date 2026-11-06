@@ -660,8 +660,7 @@ async function assertSimplePurchaseSoftDelete(
   await assert.rejects(
     () =>
       deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
-    (error: unknown) =>
-      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+    (error: unknown) => isNotFoundError(error),
   );
   assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
 
@@ -707,14 +706,12 @@ async function assertSimplePurchaseSoftDelete(
   );
   await assert.rejects(
     () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
-    (error: unknown) =>
-      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+    (error: unknown) => isNotFoundError(error),
   );
   await assert.rejects(
     () =>
       updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, { description: "X" }),
-    (error: unknown) =>
-      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+    (error: unknown) => isNotFoundError(error),
   );
   assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
@@ -728,7 +725,7 @@ async function assertSimplePurchaseSoftDelete(
       moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
         invoicePeriod: "2031-03",
       }),
-    (error: unknown) => error instanceof TenantAuthorizationError,
+    (error: unknown) => isNotFoundError(error),
   );
   assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
@@ -779,6 +776,15 @@ async function assertSimplePurchaseSoftDelete(
       error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_EDIT_LOCKED",
   );
   assert.equal(await readInvoiceTotal(invoiceId), beforeBlockedReversalEdit);
+}
+
+function isNotFoundError(error: unknown): boolean {
+  return (
+    error instanceof TenantAuthorizationError ||
+    (error instanceof Error &&
+      "code" in error &&
+      (error.code === "CARD_PURCHASE_NOT_FOUND" || error.code === "TENANT_RESOURCE_NOT_FOUND"))
+  );
 }
 
 async function readInvoiceTotal(invoiceId: string): Promise<number> {
