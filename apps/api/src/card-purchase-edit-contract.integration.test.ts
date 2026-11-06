@@ -660,7 +660,8 @@ async function assertSimplePurchaseSoftDelete(
   await assert.rejects(
     () =>
       deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
-    (error: unknown) => error instanceof TenantAuthorizationError,
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
   );
   assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
 
@@ -727,8 +728,7 @@ async function assertSimplePurchaseSoftDelete(
       moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
         invoicePeriod: "2031-03",
       }),
-    (error: unknown) =>
-      error instanceof Error && "code" in error && error.code === "TENANT_RESOURCE_NOT_FOUND",
+    (error: unknown) => error instanceof TenantAuthorizationError,
   );
   assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
