@@ -71,7 +71,9 @@ async function assertConcurrentReconciliationPreservesPatch(
     const reconciliation = apiRequest(token, "PATCH", `/api/transactions/${transactionId}`, {
       status: "reconciled",
     });
-    await waitForBlockedQuery('update "Transaction" set%');
+    // Both requests now wait at the same row-lock boundary: the installment
+    // editor was queued first, then the status-only reconciliation.
+    await waitForBlockedQuery('%from "Transaction"%for update%', 2);
 
     await blocker.query("COMMIT");
     blockerOpen = false;
@@ -137,7 +139,7 @@ async function assertBulkLogicalVoidKeepsInstallmentHistory(
   assert.equal(current.editBlockedReason, "transaction_status_locked");
 }
 
-async function waitForBlockedQuery(pattern: string): Promise<void> {
+async function waitForBlockedQuery(pattern: string, minimumCount = 1): Promise<void> {
   const deadline = Date.now() + 5_000;
   while (Date.now() < deadline) {
     const result = await getPool().query<{ count: string }>(
@@ -149,11 +151,11 @@ async function waitForBlockedQuery(pattern: string): Promise<void> {
           and query ilike $1`,
       [pattern],
     );
-    if (Number(result.rows[0]?.count ?? 0) > 0) return;
+    if (Number(result.rows[0]?.count ?? 0) >= minimumCount) return;
     await delay(25);
   }
 
-  assert.fail(`Timed out waiting for blocked query matching ${pattern}.`);
+  assert.fail(`Timed out waiting for ${minimumCount} blocked queries matching ${pattern}.`);
 }
 
 async function createAccount(token: string, suffix: string): Promise<{ id: string }> {
