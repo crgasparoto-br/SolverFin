@@ -650,137 +650,149 @@ async function assertSimplePurchaseSoftDelete(
 ): Promise<void> {
   try {
     await withSharedTransaction(async () => {
-    const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
-      occurredOn: "2031-02-08",
-      amountMinor: 1_200,
-      description: "Compra simples para anular " + suffix,
-      cardInstrumentId,
-    });
-    const invoiceId = purchase.invoice.id;
-    const before = await summarizeInvoiceForContext(CONTEXT, invoiceId);
-    assert.equal(before.purchasesCount, 1);
-    const previousLimit = before.cardTotals[0]?.limitUsedMinor;
-    assert.ok(previousLimit !== undefined);
+      const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+        occurredOn: "2031-02-08",
+        amountMinor: 1_200,
+        description: "Compra simples para anular " + suffix,
+        cardInstrumentId,
+      });
+      const invoiceId = purchase.invoice.id;
+      const before = await summarizeInvoiceForContext(CONTEXT, invoiceId);
+      assert.equal(before.purchasesCount, 1);
+      const previousLimit = before.cardTotals[0]?.limitUsedMinor;
+      assert.ok(previousLimit !== undefined);
 
-    await assert.rejects(
-      () =>
-        deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
-      (error: unknown) => isNotFoundError(error),
-    );
-    assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
+      await assert.rejects(
+        () =>
+          deleteSimpleCardPurchaseForContext(
+            OTHER_PROFILE_CONTEXT,
+            cardId,
+            purchase.transaction.id,
+          ),
+        (error: unknown) => isNotFoundError(error),
+      );
+      assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
 
-    const result = await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id);
-    assert.deepEqual(result, { transactionId: purchase.transaction.id, invoiceId });
-    const persisted = await query<{
-      id: string;
-      status: string;
-      amountMinor: number;
-      voidedAt: Date | null;
-      updatedByUserId: string | null;
-    }>(
-      'select "id", "status", "amountMinor", "voidedAt", "updatedByUserId" ' +
-        'from "Transaction" where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3',
-      [purchase.transaction.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
-    );
-    assert.equal(persisted.length, 1, "Soft deletion must preserve the financial row");
-    assert.equal(persisted[0]?.status, "VOIDED");
-    assert.equal(persisted[0]?.amountMinor, 1_200);
-    assert.ok(persisted[0]?.voidedAt instanceof Date);
-    assert.equal(persisted[0]?.updatedByUserId, CONTEXT.userId);
+      const result = await deleteSimpleCardPurchaseForContext(
+        CONTEXT,
+        cardId,
+        purchase.transaction.id,
+      );
+      assert.deepEqual(result, { transactionId: purchase.transaction.id, invoiceId });
+      const persisted = await query<{
+        id: string;
+        status: string;
+        amountMinor: number;
+        voidedAt: Date | null;
+        updatedByUserId: string | null;
+      }>(
+        'select "id", "status", "amountMinor", "voidedAt", "updatedByUserId" ' +
+          'from "Transaction" where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3',
+        [purchase.transaction.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+      );
+      assert.equal(persisted.length, 1, "Soft deletion must preserve the financial row");
+      assert.equal(persisted[0]?.status, "VOIDED");
+      assert.equal(persisted[0]?.amountMinor, 1_200);
+      assert.ok(persisted[0]?.voidedAt instanceof Date);
+      assert.equal(persisted[0]?.updatedByUserId, CONTEXT.userId);
 
-    const audit = await query<{ action: string; redactedChanges: unknown }>(
-      'select "action", "redactedChanges" from "AuditLogEntry" ' +
-        'where "organizationId" = $1 and "financialProfileId" = $2 and "entityId" = $3 ' +
-        'order by "occurredAt" desc limit 1',
-      [CONTEXT.organizationId, CONTEXT.financialProfileId, purchase.transaction.id],
-    );
-    assert.equal(audit.length, 1);
-    assert.equal(audit[0]?.action, "SOFT_DELETE");
-    assert.deepEqual(audit[0]?.redactedChanges, { status: "changed", voidedAt: "added" });
+      const audit = await query<{ action: string; redactedChanges: unknown }>(
+        'select "action", "redactedChanges" from "AuditLogEntry" ' +
+          'where "organizationId" = $1 and "financialProfileId" = $2 and "entityId" = $3 ' +
+          'order by "occurredAt" desc limit 1',
+        [CONTEXT.organizationId, CONTEXT.financialProfileId, purchase.transaction.id],
+      );
+      assert.equal(audit.length, 1);
+      assert.equal(audit[0]?.action, "SOFT_DELETE");
+      assert.deepEqual(audit[0]?.redactedChanges, { status: "changed", voidedAt: "added" });
 
-    const after = await summarizeInvoiceForContext(CONTEXT, invoiceId);
-    assert.equal(after.totalExpensesMinor, before.totalExpensesMinor - 1_200);
-    assert.equal(after.unreconciledExpensesMinor, before.unreconciledExpensesMinor - 1_200);
-    assert.equal(after.purchasesCount, before.purchasesCount - 1);
-    assert.equal(after.cardTotals[0]?.limitUsedMinor, previousLimit - 1_200);
-    assert.equal(
-      (await listCardPurchasesForContext(CONTEXT, { invoiceId })).some(
-        (row) => row.id === purchase.transaction.id,
-      ),
-      false,
-    );
-    await assert.rejects(
-      () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
-      (error: unknown) => isNotFoundError(error),
-    );
-    await assert.rejects(
-      () =>
-        updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, { description: "X" }),
-      (error: unknown) => isNotFoundError(error),
-    );
-    assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
+      const after = await summarizeInvoiceForContext(CONTEXT, invoiceId);
+      assert.equal(after.totalExpensesMinor, before.totalExpensesMinor - 1_200);
+      assert.equal(after.unreconciledExpensesMinor, before.unreconciledExpensesMinor - 1_200);
+      assert.equal(after.purchasesCount, before.purchasesCount - 1);
+      assert.equal(after.cardTotals[0]?.limitUsedMinor, previousLimit - 1_200);
+      assert.equal(
+        (await listCardPurchasesForContext(CONTEXT, { invoiceId })).some(
+          (row) => row.id === purchase.transaction.id,
+        ),
+        false,
+      );
+      await assert.rejects(
+        () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
+        (error: unknown) => isNotFoundError(error),
+      );
+      await assert.rejects(
+        () =>
+          updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, {
+            description: "X",
+          }),
+        (error: unknown) => isNotFoundError(error),
+      );
+      assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
-    await assert.rejects(
-      () => reverseCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, invoiceId),
-      (error: unknown) =>
-        error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_INVALID_SOURCE",
-    );
-    await assert.rejects(
-      () =>
-        moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
-          invoicePeriod: "2031-03",
-        }),
-      (error: unknown) => isNotFoundError(error),
-    );
-    assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
+      await assert.rejects(
+        () => reverseCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, invoiceId),
+        (error: unknown) =>
+          error instanceof Error &&
+          "code" in error &&
+          error.code === "CARD_REVERSAL_INVALID_SOURCE",
+      );
+      await assert.rejects(
+        () =>
+          moveCardPurchaseInvoicePeriodForContext(CONTEXT, cardId, purchase.transaction.id, {
+            invoicePeriod: "2031-03",
+          }),
+        (error: unknown) => isNotFoundError(error),
+      );
+      assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
 
-    const reconciled = await registerCardPurchaseForContext(CONTEXT, cardId, {
-      occurredOn: "2031-02-09",
-      amountMinor: 700,
-      description: "Compra conciliada preservada " + suffix,
-      cardInstrumentId,
-    });
-    await updateCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id, {
-      status: "reconciled",
-    });
-    const protectedTotal = await readInvoiceTotal(invoiceId);
-    await assert.rejects(
-      () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id),
-      (error: unknown) =>
-        error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_DELETE_LOCKED",
-    );
-    assert.equal(await readInvoiceTotal(invoiceId), protectedTotal);
-    const protectedRow = await query<{ status: string }>(
-      'select "status" from "Transaction" where "id" = $1',
-      [reconciled.transaction.id],
-    );
-    assert.equal(protectedRow[0]?.status, "RECONCILED");
+      const reconciled = await registerCardPurchaseForContext(CONTEXT, cardId, {
+        occurredOn: "2031-02-09",
+        amountMinor: 700,
+        description: "Compra conciliada preservada " + suffix,
+        cardInstrumentId,
+      });
+      await updateCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id, {
+        status: "reconciled",
+      });
+      const protectedTotal = await readInvoiceTotal(invoiceId);
+      await assert.rejects(
+        () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id),
+        (error: unknown) =>
+          error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_DELETE_LOCKED",
+      );
+      assert.equal(await readInvoiceTotal(invoiceId), protectedTotal);
+      const protectedRow = await query<{ status: string }>(
+        'select "status" from "Transaction" where "id" = $1',
+        [reconciled.transaction.id],
+      );
+      assert.equal(protectedRow[0]?.status, "RECONCILED");
 
-    const another = await registerCardPurchaseForContext(CONTEXT, cardId, {
-      occurredOn: "2031-02-10",
-      amountMinor: 400,
-      description: "Compra para estorno anulado " + suffix,
-      cardInstrumentId,
-    });
-    const reversal = await reverseCardPurchaseForContext(
-      CONTEXT,
-      cardId,
-      another.transaction.id,
-      another.invoice.id,
-    );
-    await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId);
-    const beforeBlockedReversalEdit = await readInvoiceTotal(invoiceId);
-    await assert.rejects(
-      () =>
-        updateCardReversalForContext(CONTEXT, cardId, reversal.transactionId, {
-          description: "Estorno alterado indevidamente",
-          occurredOn: "2031-02-10",
-          amountMinor: 500,
-        }),
-      (error: unknown) =>
-        error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_EDIT_LOCKED",
-    );
-    assert.equal(await readInvoiceTotal(invoiceId), beforeBlockedReversalEdit);
+      const another = await registerCardPurchaseForContext(CONTEXT, cardId, {
+        occurredOn: "2031-02-10",
+        amountMinor: 400,
+        description: "Compra para estorno anulado " + suffix,
+        cardInstrumentId,
+      });
+      const reversal = await reverseCardPurchaseForContext(
+        CONTEXT,
+        cardId,
+        another.transaction.id,
+        another.invoice.id,
+      );
+      await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reversal.transactionId);
+      const beforeBlockedReversalEdit = await readInvoiceTotal(invoiceId);
+      await assert.rejects(
+        () =>
+          updateCardReversalForContext(CONTEXT, cardId, reversal.transactionId, {
+            description: "Estorno alterado indevidamente",
+            occurredOn: "2031-02-10",
+            amountMinor: 500,
+          }),
+        (error: unknown) =>
+          error instanceof Error && "code" in error && error.code === "CARD_REVERSAL_EDIT_LOCKED",
+      );
+      assert.equal(await readInvoiceTotal(invoiceId), beforeBlockedReversalEdit);
       // Do not leave active purchases that contaminate report integration cases.
       throw new RollbackSoftDeleteFixtures();
     });
@@ -851,7 +863,10 @@ async function assertConcurrentPurchaseEditCannotResurrect(
   assert.equal(rows[0]?.status, "VOIDED");
   assert.equal(rows[0]?.amountMinor, 550);
   assert.ok(rows[0]?.voidedAt instanceof Date);
-  assert.equal((await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id)).totalExpensesMinor, 0);
+  assert.equal(
+    (await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id)).totalExpensesMinor,
+    0,
+  );
 }
 
 async function waitForBlockedSql(needle: string): Promise<void> {
