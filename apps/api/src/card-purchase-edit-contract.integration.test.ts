@@ -950,10 +950,9 @@ async function assertConcurrentReversalEditCannotResurrect(
     amountMinor: number;
     voidedAt: Date | null;
     accountId: string | null;
-  }>(
-    'select "status", "amountMinor", "voidedAt", "accountId" from "Transaction" where "id" = $1',
-    [credit.transactionId],
-  );
+  }>('select "status", "amountMinor", "voidedAt", "accountId" from "Transaction" where "id" = $1', [
+    credit.transactionId,
+  ]);
   assert.ok(persisted, "O crédito deve permanecer persistido após VOIDED.");
   assert.equal(persisted.status, "VOIDED");
   assert.equal(persisted.amountMinor, 640);
