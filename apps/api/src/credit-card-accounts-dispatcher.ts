@@ -77,7 +77,9 @@ export async function handleCreditCardAccountsApiRequest(
         await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body, executeQuery);
         return updateTransactionForContext(context, transactionId, {
           ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
-          ...(body.status !== undefined ? { status: String(body.status) as TransactionStatus } : {}),
+          ...(body.status !== undefined
+            ? { status: String(body.status) as TransactionStatus }
+            : {}),
           ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
           ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
           ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
