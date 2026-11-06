@@ -61,13 +61,13 @@ export async function updateActiveGenericTransaction(
 /** Update only reconciliation fields after the row lock releases, never stale category/amount data. */
 function buildReconciliationStatusSql(): string {
   return `update "Transaction" set
-      "status" = $4, "effectiveOn" = $5, "reconciledAt" = $6,
+      "status" = $4::"TransactionStatus", "effectiveOn" = $5, "reconciledAt" = $6,
       "updatedAt" = $7, "updatedByUserId" = $8
     where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
       and "status" <> 'VOIDED' and "cardId" is null and "invoiceId" is null
       and (
-        ($4 = 'RECONCILED' and "status" in ('PLANNED', 'POSTED'))
-        or ($4 = 'POSTED' and "status" = 'RECONCILED')
+        ($4::"TransactionStatus" = 'RECONCILED' and "status" in ('PLANNED', 'POSTED'))
+        or ($4::"TransactionStatus" = 'POSTED' and "status" = 'RECONCILED')
       )
     returning "id"`;
 }
