@@ -23,10 +23,13 @@ import {
   TransactionGroupError,
 } from "@solverfin/domain";
 
-import { query, withTransaction, type QueryExecutor } from "../db.js";
+import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
-import { InvoiceContractError } from "./card-invoice-contracts-core.js";
+import {
+  assertGenericCardEditAllowed,
+  updateActiveGenericTransaction,
+} from "./transaction-generic-write.js";
 import { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
@@ -293,13 +296,7 @@ export async function updateTransactionForContext(
     );
   }
 
-  if (isInvoiceLinkedCardTransaction(currentTransaction) && currentTransaction.kind === "income") {
-    throw new InvoiceContractError(
-      "CARD_REVERSAL_EDIT_ROUTE_REQUIRED",
-      "Edite o estorno pela ação específica do cartão.",
-      409,
-    );
-  }
+  assertGenericCardEditAllowed(currentTransaction);
 
   if (isCardInvoicePurchase(currentTransaction)) {
     await updateCardPurchaseForContext(context, currentTransaction.cardId, transactionId, {
@@ -344,7 +341,11 @@ export async function updateTransactionForContext(
   }
 
   await withTransaction(async (executeQuery) => {
-    await updateActiveGenericTransaction(executeQuery, transaction, currentTransaction?.updatedAt);
+    await updateActiveGenericTransaction(
+      executeQuery,
+      buildTransactionParams(transaction),
+      currentTransaction?.updatedAt,
+    );
     await syncInstallmentById(
       executeQuery,
       context,
@@ -432,30 +433,15 @@ export async function voidTransactionForContext(
   const transaction = attachNote(result.transaction, getTransactionNote(currentTransaction));
 
   await withTransaction(async (executeQuery) => {
-    await updateActiveGenericTransaction(executeQuery, transaction, currentTransaction?.updatedAt);
+    await updateActiveGenericTransaction(
+      executeQuery,
+      buildTransactionParams(transaction),
+      currentTransaction?.updatedAt,
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
   return transaction;
-}
-
-/** Prevent stale writes and bypasses of invoice-specific financial contracts. */
-async function updateActiveGenericTransaction(
-  executeQuery: QueryExecutor,
-  transaction: TransactionWithNote,
-  expectedUpdatedAt: string | undefined,
-): Promise<void> {
-  const updated = await executeQuery<{ id: string }>(buildUpdateTransactionSql(), [
-    ...buildTransactionParams(transaction),
-    expectedUpdatedAt ?? null,
-  ]);
-  if (updated.length !== 1) {
-    throw new InvoiceContractError(
-      "TRANSACTION_CONCURRENT_CHANGE",
-      "O lançamento foi alterado ou anulado durante a operação.",
-      409,
-    );
-  }
 }
 
 function buildInsertTransactionSql(): string {
@@ -464,19 +450,6 @@ function buildInsertTransactionSql(): string {
      "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "destinationAmountMinor", "destinationCurrency",
      "occurredOn", "plannedOn", "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`;
-}
-
-function buildUpdateTransactionSql(): string {
-  return `update "Transaction" set
-      "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
-      "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
-      "destinationAmountMinor" = $13, "destinationCurrency" = $14,
-      "occurredOn" = $15, "plannedOn" = $16, "effectiveOn" = $17, "description" = $18,
-      "note" = $19, "reconciledAt" = $20, "voidedAt" = $21, "createdAt" = $22, "updatedAt" = $23,
-      "createdByUserId" = $24, "updatedByUserId" = $25
-    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-      and "status" <> 'VOIDED' and "cardId" is null and "invoiceId" is null
-      and "updatedAt" = $26 returning "id"`;
 }
 
 function buildTransactionParams(transaction: TransactionWithNote): unknown[] {
@@ -638,11 +611,7 @@ function mapTransactionRow(row: TransactionRow): Transaction {
 function isInvoiceLinkedCardTransaction(
   transaction: Transaction | undefined,
 ): transaction is Transaction & { cardId: EntityId; invoiceId: EntityId } {
-  return (
-    transaction !== undefined &&
-    transaction.cardId !== undefined &&
-    transaction.invoiceId !== undefined
-  );
+  return Boolean(transaction?.cardId && transaction?.invoiceId);
 }
 
 function isCardInvoicePurchase(transaction: Transaction | undefined): transaction is Transaction & {
