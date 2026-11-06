@@ -6,6 +6,7 @@ import { closePool, query } from "./db.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
   adjustInvoiceInstallmentAmountForContext,
+  deleteSimpleCardPurchaseForContext,
   listCardPurchasesForContext,
   reconcileInvoiceInstallmentForContext,
   reverseCardPurchaseForContext,
@@ -72,6 +73,7 @@ async function main(): Promise<void> {
   await assertInstallmentPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertRecurringCardPurchaseEdit(account.id, physicalInstrument, virtualInstrument, suffix);
   await assertLockedInvoiceRejectsCardPurchaseEdit(suffix);
+  await assertSimplePurchaseSoftDelete(account.id, physicalInstrument.id, suffix);
 }
 
 async function assertInstallmentPurchaseEdit(
@@ -88,6 +90,15 @@ async function assertInstallmentPurchaseEdit(
     totalInstallments: 3,
   });
   const invoices = [purchase.invoice, ...purchase.futureInvoices];
+  const linkedTotal = await readInvoiceTotal(purchase.invoice.id);
+  await assert.rejects(
+    () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
+    (error: unknown) =>
+      error instanceof Error &&
+      "code" in error &&
+      error.code === "CARD_PURCHASE_DELETE_RESTRICTED",
+  );
+  assert.equal(await readInvoiceTotal(purchase.invoice.id), linkedTotal);
   assert.deepEqual(
     await listInstallmentsForContext(OTHER_PROFILE_CONTEXT, {
       transactionId: purchase.transaction.id,
@@ -627,6 +638,106 @@ async function assertLockedInvoiceRejectsCardPurchaseEdit(suffix: string): Promi
     const invoiceTotal = await readInvoiceTotal(purchase.invoice.id);
     assert.equal(invoiceTotal, purchase.invoice.totalAmountMinor);
   }
+}
+
+
+async function assertSimplePurchaseSoftDelete(
+  cardId: string,
+  cardInstrumentId: string,
+  suffix: string,
+): Promise<void> {
+  const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2031-02-08",
+    amountMinor: 1_200,
+    description: "Compra simples para anular " + suffix,
+    cardInstrumentId,
+  });
+  const invoiceId = purchase.invoice.id;
+  const before = await summarizeInvoiceForContext(CONTEXT, invoiceId);
+  assert.equal(before.purchasesCount, 1);
+  const previousLimit = before.cardTotals[0]?.limitUsedMinor;
+  assert.ok(previousLimit !== undefined);
+
+  await assert.rejects(
+    () => deleteSimpleCardPurchaseForContext(OTHER_PROFILE_CONTEXT, cardId, purchase.transaction.id),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+  );
+  assert.equal(await readInvoiceTotal(invoiceId), before.totalExpensesMinor);
+
+  const result = await deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id);
+  assert.deepEqual(result, { transactionId: purchase.transaction.id, invoiceId });
+  const persisted = await query<{
+    id: string;
+    status: string;
+    amountMinor: number;
+    voidedAt: Date | null;
+    updatedByUserId: string | null;
+  }>(
+    'select "id", "status", "amountMinor", "voidedAt", "updatedByUserId" ' +
+      'from "Transaction" where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3',
+    [purchase.transaction.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  assert.equal(persisted.length, 1, "Soft deletion must preserve the financial row");
+  assert.equal(persisted[0]?.status, "VOIDED");
+  assert.equal(persisted[0]?.amountMinor, 1_200);
+  assert.ok(persisted[0]?.voidedAt instanceof Date);
+  assert.equal(persisted[0]?.updatedByUserId, CONTEXT.userId);
+
+  const audit = await query<{ action: string; redactedChanges: unknown }>(
+    'select "action", "redactedChanges" from "AuditLogEntry" ' +
+      'where "organizationId" = $1 and "financialProfileId" = $2 and "entityId" = $3 ' +
+      'order by "occurredAt" desc limit 1',
+    [CONTEXT.organizationId, CONTEXT.financialProfileId, purchase.transaction.id],
+  );
+  assert.equal(audit.length, 1);
+  assert.equal(audit[0]?.action, "SOFT_DELETE");
+  assert.deepEqual(audit[0]?.redactedChanges, { status: "changed", voidedAt: "added" });
+
+  const after = await summarizeInvoiceForContext(CONTEXT, invoiceId);
+  assert.equal(after.totalExpensesMinor, before.totalExpensesMinor - 1_200);
+  assert.equal(after.unreconciledExpensesMinor, before.unreconciledExpensesMinor - 1_200);
+  assert.equal(after.purchasesCount, before.purchasesCount - 1);
+  assert.equal(after.cardTotals[0]?.limitUsedMinor, previousLimit - 1_200);
+  assert.equal(
+    (await listCardPurchasesForContext(CONTEXT, { invoiceId })).some(
+      (row) => row.id === purchase.transaction.id,
+    ),
+    false,
+  );
+  await assert.rejects(
+    () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+  );
+  await assert.rejects(
+    () => updateCardPurchaseForContext(CONTEXT, cardId, purchase.transaction.id, { description: "X" }),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_NOT_FOUND",
+  );
+  assert.equal(await readInvoiceTotal(invoiceId), after.totalExpensesMinor);
+
+  const reconciled = await registerCardPurchaseForContext(CONTEXT, cardId, {
+    occurredOn: "2031-02-09",
+    amountMinor: 700,
+    description: "Compra conciliada preservada " + suffix,
+    cardInstrumentId,
+  });
+  await updateCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id, {
+    status: "reconciled",
+  });
+  const protectedTotal = await readInvoiceTotal(invoiceId);
+  await assert.rejects(
+    () => deleteSimpleCardPurchaseForContext(CONTEXT, cardId, reconciled.transaction.id),
+    (error: unknown) =>
+      error instanceof Error && "code" in error && error.code === "CARD_PURCHASE_DELETE_LOCKED",
+  );
+  assert.equal(await readInvoiceTotal(invoiceId), protectedTotal);
+  const protectedRow = await query<{ status: string }>(
+    'select "status" from "Transaction" where "id" = $1',
+    [reconciled.transaction.id],
+  );
+  assert.equal(protectedRow[0]?.status, "RECONCILED");
 }
 
 async function readInvoiceTotal(invoiceId: string): Promise<number> {

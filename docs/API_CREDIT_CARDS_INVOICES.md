@@ -107,6 +107,22 @@ PATCH /api/credit-card-accounts/:cardId/default-instrument
 
 As respostas de leitura e atualização de compras expõem `kind` (`expense` ou `income`) a partir de `Transaction.kind`. Em `/cartoes`, `expense` é débito positivo e `income` é crédito negativo, independentemente da descrição. A totalização da fatura usa a mesma direção no banco, inclusive quando uma descrição de despesa contiver texto semelhante a `[estorno:...]`; o marcador não é indicador de sinal financeiro.
 
+
+### Exclusão lógica de compra simples
+
+A ação **Excluir** no menu de uma compra simples de fatura aberta aplica anulação lógica:
+`Transaction.status = VOIDED`, `voidedAt` e `updatedByUserId` são registrados, enquanto
+identidade, valor e vínculos financeiros são preservados para auditoria. A operação é
+atômica com a correção do total da fatura e o evento `AuditLogEntry.SOFT_DELETE`.
+Não há `DELETE FROM Transaction` neste fluxo.
+
+Compras anuladas não aparecem na lista operacional, no número/valor de ocorrências
+da fatura nem no limite utilizado. Um segundo pedido de exclusão ou edição não
+altera o registro. Compras conciliadas, com parcelas, recorrências ou membros de
+agrupamentos não podem ser excluídas por esse endpoint; a API valida tenant, perfil,
+fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão física.
+A rota e o envelope de resposta existentes são mantidos para compatibilidade.
+
 ### Ajuste pontual ou futuro de valores de parcelas (#742)
 
 `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` é o endpoint operacional para corrigir o valor exibido de parcelas **finitas** de compras de cartão. Exige sessão/tenant/perfil, `amountMinor` inteiro seguro e positivo e `scope` igual a `current` ou `current_and_future`. O segundo escopo atualiza a parcela indicada e as posteriores elegíveis do mesmo cronograma; responde `updatedCount` e `skippedCount`. A resposta inclui a fatura escolhida atualizada.

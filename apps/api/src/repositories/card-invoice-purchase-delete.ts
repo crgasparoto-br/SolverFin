@@ -3,7 +3,7 @@ import { withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { InvoiceContractError } from "./card-invoice-contracts-core.js";
 
-/** Remove only an eligible unlinked transaction and update its invoice atomically. */
+/** Logically void an eligible unlinked transaction and adjust its invoice atomically. */
 export async function deleteSimpleCardPurchaseForContext(
   context: TenantContext,
   cardId: EntityId,
@@ -31,7 +31,8 @@ export async function deleteSimpleCardPurchaseForContext(
           and inv."financialProfileId" = t."financialProfileId"
         where t."id" = $1 and t."cardId" = $2 and
           t."organizationId" = $3 and t."financialProfileId" = $4
-          and t."accountId" is null and (t."kind" = 'EXPENSE' or
+          and t."accountId" is null and t."transactionGroupId" is null
+          and (t."kind" = 'EXPENSE' or
             (t."kind" = 'INCOME' and t."description" like '%[estorno:%'))
         for update of t, inv`,
       [transactionId, cardId, context.organizationId, context.financialProfileId],
@@ -39,7 +40,7 @@ export async function deleteSimpleCardPurchaseForContext(
     const source = rows[0];
     if (!source)
       throw new InvoiceContractError("CARD_PURCHASE_NOT_FOUND", "Lançamento não encontrado.", 404);
-    if (source.invoiceStatus !== "OPEN" || source.status === "RECONCILED") {
+    if (source.invoiceStatus !== "OPEN" || ["RECONCILED", "VOIDED"].includes(source.status)) {
       throw new InvoiceContractError(
         "CARD_PURCHASE_DELETE_LOCKED",
         "Não é possível excluir uma compra conciliada ou de fatura bloqueada.",
@@ -83,9 +84,14 @@ export async function deleteSimpleCardPurchaseForContext(
     if (invoice.length !== 1)
       throw new InvoiceContractError("CARD_PURCHASE_DELETE_LOCKED", "Fatura bloqueada.", 409);
     const deleted = await executeQuery<{ id: string }>(
-      `delete from "Transaction" where "id" = $1 and "organizationId" = $2
-         and "financialProfileId" = $3 returning "id"`,
-      [transactionId, context.organizationId, context.financialProfileId],
+      `update "Transaction"
+         set "status" = 'VOIDED', "voidedAt" = $4,
+             "updatedAt" = $4, "updatedByUserId" = $5
+        where "id" = $1 and "organizationId" = $2
+          and "financialProfileId" = $3
+          and "status" not in ('VOIDED', 'RECONCILED')
+        returning "id"`,
+      [transactionId, context.organizationId, context.financialProfileId, now, context.userId],
     );
     if (deleted.length !== 1)
       throw new InvoiceContractError(
@@ -102,7 +108,7 @@ export async function deleteSimpleCardPurchaseForContext(
       action: "soft_delete",
       entityKind: "transaction",
       entityId: transactionId,
-      redactedChanges: { purchase: "removed" },
+      redactedChanges: { status: "changed", voidedAt: "added" },
     });
     invoiceId = source.invoiceId;
   });

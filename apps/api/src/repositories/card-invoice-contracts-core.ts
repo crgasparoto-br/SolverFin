@@ -174,6 +174,7 @@ export async function summarizeInvoiceForContext(
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
+          and t."status" <> 'VOIDED'
           and not exists (
             select 1 from "Installment" pi
              where pi."transactionId" = t."id"
@@ -260,6 +261,7 @@ export async function listCardPurchasesForContext(
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
     `"accountId" is null`,
+    `"status" <> 'VOIDED'`,
     `("kind" = 'EXPENSE' or ("kind" = 'INCOME' and "description" like '%[estorno:%'))`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
@@ -681,7 +683,8 @@ async function findCardPurchase(
             "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-         and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
+         and "cardId" = $4 and "invoiceId" is not null and "accountId" is null
+         and "kind" = 'EXPENSE' and "status" <> 'VOIDED'`,
     [transactionId, context.organizationId, context.financialProfileId, cardId],
   );
   const row = rows[0];
@@ -723,7 +726,7 @@ async function calculateLimitUsedForCard(
        join "Invoice" i on i."id" = t."invoiceId"
        where t."organizationId" = $1 and t."financialProfileId" = $2 and t."cardId" = $3
          and t."accountId" is null and t."kind" = 'EXPENSE'
-         and i."status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
+         and t."status" <> 'VOIDED' and i."status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
     [context.organizationId, context.financialProfileId, cardId],
   );
 
