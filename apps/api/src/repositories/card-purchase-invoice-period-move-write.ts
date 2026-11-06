@@ -53,6 +53,7 @@ async function updateOpenInvoiceTotal(
     `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $6, "updatedAt" = $7
      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
        and "cardId" = $4 and "status" = 'OPEN' and "currency" = $5
+       and "totalAmountMinor" + $6 >= 0
      returning "id"`,
     [
       invoiceId,
