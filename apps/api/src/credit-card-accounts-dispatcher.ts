@@ -163,8 +163,8 @@ async function assertCurrentOnlyRecurringAccountEdit(
   };
   const transaction = await getTransactionForContext(context, transactionId);
   const recurrenceId = transaction.recurrenceId;
+  if (!recurrenceId) return blocked();
   if (
-    !recurrenceId ||
     transaction.cardId ||
     transaction.invoiceId ||
     transaction.accountRemuneration ||
