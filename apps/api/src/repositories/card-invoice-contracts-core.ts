@@ -464,18 +464,9 @@ export async function updateCardPurchaseForContext(
         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
           and "cardId" = $4 and "currency" = $5
         for update`,
-      [
-        invoice.id,
-        context.organizationId,
-        context.financialProfileId,
-        cardId,
-        current.currency,
-      ],
+      [invoice.id, context.organizationId, context.financialProfileId, cardId, current.currency],
     );
-    if (
-      !lockedInvoice[0] ||
-      LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(lockedInvoice[0].status)
-    ) {
+    if (!lockedInvoice[0] || LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(lockedInvoice[0].status)) {
       throw new InvoiceContractError(
         "CARD_PURCHASE_INVOICE_LOCKED",
         "A fatura foi fechada ou alterada durante a edição.",
