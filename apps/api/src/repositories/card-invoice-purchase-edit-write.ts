@@ -3,7 +3,7 @@ import type { EntityId, TenantContext } from "@solverfin/domain";
 import type { QueryExecutor } from "../db.js";
 import { InvoiceContractError } from "./card-invoice-contracts-core.js";
 
-const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
+export const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 
 export function assertCardPurchaseInvoiceStatusEditable(status: string): void {
   if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(status)) {
