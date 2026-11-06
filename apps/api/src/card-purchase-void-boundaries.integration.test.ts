@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { TenantAuthorizationError, type TenantContext } from "@solverfin/domain";
 
 import { closePool, query, withSharedTransaction } from "./db.js";
+import { buildApiErrorResponse } from "./errors.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import {
@@ -288,6 +289,75 @@ async function main(): Promise<void> {
         expense.transaction.id,
         expense.invoice.id,
       );
+      // Full reimbursement: the invoice balance is zero, but the purchase and
+      // credit are still active. Reject void with a public 409 (not a DB 500).
+      assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
+      const reversalVoidError = await voidTransactionForContext(
+        CONTEXT,
+        expense.transaction.id,
+      ).then(
+        () => null,
+        (error: unknown) => error,
+      );
+      assert.ok(hasCode("CARD_PURCHASE_ACTIVE_REVERSAL")(reversalVoidError));
+      assert.deepEqual(
+        buildApiErrorResponse({
+          error: reversalVoidError,
+          correlationId: "corr-active-reversal-void",
+        }),
+        {
+          statusCode: 409,
+          body: {
+            error: {
+              code: "CARD_PURCHASE_ACTIVE_REVERSAL",
+              message: "Anule primeiro o estorno ativo antes de excluir a compra.",
+              correlationId: "corr-active-reversal-void",
+            },
+          },
+        },
+      );
+      assert.equal((await readTransaction(expense.transaction.id)).status, "POSTED");
+      assert.equal(await countSoftDelete(expense.transaction.id), 0);
+      assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
+
+      // Also reject when another purchase keeps the invoice balance positive:
+      // a non-negative total alone cannot prove absence of an orphaned credit.
+      const sibling = await registerCardPurchaseForContext(CONTEXT, card.id, {
+        occurredOn: "2032-05-09",
+        amountMinor: 1_200,
+        description: "Outra compra na fatura " + suffix,
+        cardInstrumentId: instrumentId,
+      });
+      assert.equal(sibling.invoice.id, expense.invoice.id);
+      const positiveTotal = await readInvoiceTotal(expense.invoice.id);
+      assert.equal(positiveTotal, 1_200);
+      await assert.rejects(
+        () => voidTransactionForContext(CONTEXT, expense.transaction.id),
+        hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
+      );
+
+      // A mixed card/bank batch must roll back the entire selection.
+      const bankForRollback = await createTransactionForContext(CONTEXT, {
+        accountId: bankAccount.id,
+        kind: "expense",
+        status: "posted",
+        amountMinor: 250,
+        occurredOn: "2032-05-09",
+        effectiveOn: "2032-05-09",
+        description: "Conta protegida do lote " + suffix,
+      });
+      await assert.rejects(
+        () => executeTransactionBulkActionForContext(CONTEXT, {
+          action: "void",
+          transactionIds: [bankForRollback.id, expense.transaction.id],
+        }),
+        hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
+      );
+      assert.equal((await getTransactionForContext(CONTEXT, bankForRollback.id)).status, "posted");
+      assert.equal((await readTransaction(expense.transaction.id)).status, "POSTED");
+      assert.equal((await readTransaction(credit.transactionId)).status, "POSTED");
+      assert.equal(await readInvoiceTotal(expense.invoice.id), positiveTotal);
+      assert.equal(await countSoftDelete(expense.transaction.id), 0);
       // The generic endpoint cannot redirect a card credit into a bank account
       // or bypass the reversal-specific invoice recalculation.
       await assert.rejects(
@@ -316,6 +386,11 @@ async function main(): Promise<void> {
         () => updateTransactionForContext(CONTEXT, credit.transactionId, { amountMinor: 900 }),
         hasCode("CARD_PURCHASE_NOT_FOUND"),
       );
+      await voidTransactionForContext(CONTEXT, expense.transaction.id);
+      assert.equal((await readTransaction(expense.transaction.id)).status, "VOIDED");
+      assert.equal((await readTransaction(sibling.transaction.id)).status, "POSTED");
+      assert.equal(await countSoftDelete(expense.transaction.id), 1);
+      assert.equal(await readInvoiceTotal(expense.invoice.id), 1_200);
 
       throw new FixtureRollback();
     });
