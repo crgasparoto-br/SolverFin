@@ -8,6 +8,7 @@ import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-pur
 import {
   adjustInvoiceInstallmentAmountForContext,
   deleteSimpleCardPurchaseForContext,
+  closeInvoiceForContext,
   listCardPurchasesForContext,
   reconcileInvoiceInstallmentForContext,
   reverseCardPurchaseForContext,
@@ -83,6 +84,7 @@ async function main(): Promise<void> {
   await assertLockedInvoiceRejectsCardPurchaseEdit(suffix);
   await assertSimplePurchaseSoftDelete(account.id, physicalInstrument.id, suffix);
   await assertConcurrentPurchaseEditCannotResurrect(account.id, physicalInstrument.id, suffix);
+  await assertConcurrentInvoiceClosureRejectsPurchaseEdit(account.id, physicalInstrument.id, suffix);
   await assertConcurrentReversalEditCannotResurrect(account.id, physicalInstrument.id, suffix);
 }
 
@@ -872,6 +874,79 @@ async function assertConcurrentPurchaseEditCannotResurrect(
     (await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id)).totalExpensesMinor,
     0,
   );
+}
+
+async function assertConcurrentInvoiceClosureRejectsPurchaseEdit(
+  cardId: string,
+  cardInstrumentId: string,
+  suffix: string,
+): Promise<void> {
+  // Exercise both a monetary edit and a status-only edit. Both must fail
+  // after an invoice closes even if preflight observed OPEN.
+  const changes = [
+    { label: "amount", payload: { amountMinor: 900 } },
+    { label: "status", payload: { status: "reconciled" } },
+  ];
+  for (const [index, change] of changes.entries()) {
+    const purchase = await registerCardPurchaseForContext(CONTEXT, cardId, {
+      occurredOn: `2031-0${index + 2}-15`,
+      amountMinor: 550,
+      description: `Compra para fechamento concorrente ${change.label} ${suffix}`,
+      cardInstrumentId,
+    });
+    const beforeTotal = await readInvoiceTotal(purchase.invoice.id);
+    const client = await getPool().connect();
+    let locked = false;
+    try {
+      await client.query("BEGIN");
+      locked = true;
+      await client.query('select "id" from "Invoice" where "id" = $1 for update', [
+        purchase.invoice.id,
+      ]);
+
+      const closing = closeInvoiceForContext(CONTEXT, purchase.invoice.id).then(
+        (value) => ({ success: true as const, value }),
+        (error: unknown) => ({ success: false as const, error }),
+      );
+      await waitForBlockedSql('update "Invoice" set "status"');
+
+      const editing = updateCardPurchaseForContext(
+        CONTEXT,
+        cardId,
+        purchase.transaction.id,
+        change.payload,
+      ).then(
+        () => ({ success: true as const }),
+        (error: unknown) => ({ success: false as const, error }),
+      );
+      await waitForBlockedSql('select "id", "status" from "Invoice"');
+
+      await client.query("COMMIT");
+      locked = false;
+
+      const closingResult = await closing;
+      if (!closingResult.success) throw closingResult.error;
+      assert.equal(closingResult.value.status, "closed");
+      const editResult = await editing;
+      assert.equal(editResult.success, false, "An edit cannot commit after invoice closure");
+      if (!editResult.success) {
+        assert.ok(editResult.error instanceof Error);
+        assert.equal(
+          (editResult.error as Error & { code?: string }).code,
+          "CARD_PURCHASE_INVOICE_LOCKED",
+        );
+      }
+    } finally {
+      if (locked) await client.query("ROLLBACK");
+      client.release();
+    }
+    const persisted = await readTransaction(purchase.transaction.id);
+    assert.equal(persisted.amountMinor, 550);
+    assert.equal(persisted.status, "POSTED");
+    assert.equal(await readInvoiceTotal(purchase.invoice.id), beforeTotal);
+    const invoice = await summarizeInvoiceForContext(CONTEXT, purchase.invoice.id);
+    assert.equal(invoice.status, "closed");
+  }
 }
 
 async function assertConcurrentReversalEditCannotResurrect(
