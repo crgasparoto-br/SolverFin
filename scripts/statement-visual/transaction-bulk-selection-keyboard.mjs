@@ -96,12 +96,17 @@ try {
       return {
         focused: document.activeElement === button,
         disabled: button.disabled,
-        accessibleText: button.textContent.trim()
+        accessibleText: button.getAttribute("aria-label"),
+        visibleText: button.textContent.trim(),
+        title: button.getAttribute("title"),
+        tooltip: button.getAttribute("data-tooltip")
       };
     })()`,
   );
   assert.equal(prepared.focused, true);
   assert.equal(prepared.disabled, false);
+  assert.equal(prepared.visibleText, "");
+  assert.equal(prepared.title, prepared.tooltip);
   assert.match(prepared.accessibleText, /Marcar como conciliado/);
 
   const loaded = browser.cdp.once("Page.loadEventFired", 20_000);

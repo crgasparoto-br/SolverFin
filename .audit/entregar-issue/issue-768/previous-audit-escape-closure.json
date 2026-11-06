@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 768,
+    "pull_request_number": 769,
+    "material_head_sha": "056d8ae2124538b78fb70289189985647a5e731a"
+  },
+  "escapes": [
+    {
+      "escape_id": "escape-768-a-003",
+      "escape_class": "shared-certificate-merge-conflict",
+      "status": "passed",
+      "revalidated_head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:3e45d0e6-1b44-4d81-9e02-aa0d5eddfde9",
+        "audited_head_sha": "b2946d7637f7f4227b4fcf43cfc42b35fd08b958",
+        "finding_id": "A-003",
+        "audit_report_sha256": "18306ba58a8a458ed1cca18fc439c134f48ca7ce5b07ea33776038582e418ffc"
+      },
+      "plausible_wrong_implementation": "Replace only the handoff file to clear the displayed conflict without integrating actual develop commit ancestry, leaving the PR incompatible and its certification stale.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Verify merge parents of 056d8ae2124538b78fb70289189985647a5e731a are previous PR head and 5ad67cab183cc26672d837c7f3ded55ba27e9189; compare D..Z and GitHub mergeable state.",
+        "observed": "Merge commit has both immutable parents, issue-specific code is preserved, PR reports mergeable=true. New candidate 056d8ae2124538b78fb70289189985647a5e731a now needs result-only recertification."
+      },
+      "required_risk_families": [
+        "structural-contract",
+        "reference-liveness"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "foreign issue certificate must not propagate"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "commit-target-binding",
+          "dimension": "material head verified"
+        }
+      ],
+      "sibling_cases": [
+        {
+          "id": "A-003-sibling-certificate",
+          "surface": "certificate",
+          "dimension": "foreign issue certificate",
+          "status": "passed",
+          "evidence": "Current material retains develop issue #764 handoff; issue #768 historical evidence remains in issue-specific namespace; planned result-only child will replace only the global pointer."
+        },
+        {
+          "id": "A-003-sibling-base",
+          "surface": "git-history",
+          "dimension": "base contents preservation",
+          "status": "passed",
+          "evidence": "Local compare B..D and D..Z proved disjoint functional paths; develop exact commit 5ad67cab183cc26672d837c7f3ded55ba27e9189 is second merge parent."
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Resolved conflict with semantic two-parent merge on original PR branch and preserved base-side certificate as material placeholder before recertification."
+      },
+      "detection_change": {
+        "evidence": "GitHub mergeable=true and merge-base ancestry verified; official pr-conflict-resolution gate will be checked again before terminal handoff."
+      }
+    }
+  ]
+}

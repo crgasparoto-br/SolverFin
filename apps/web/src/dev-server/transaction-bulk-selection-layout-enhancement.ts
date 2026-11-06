@@ -14,7 +14,7 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         bottom: 16px;
         display: grid;
         gap: 8px 12px;
-        grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+        grid-template-columns: auto auto minmax(0, 1fr);
         height: auto;
         left: 50%;
         max-height: calc(100vh - 32px);
@@ -32,11 +32,10 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
       }
       .selection-bar > strong { grid-column: 1; grid-row: 1; }
       .selection-bar > [data-selection-total] { grid-column: 2; grid-row: 1; }
-      .selection-bar > [data-selection-clear] { grid-column: 4; grid-row: 1; }
-      .selection-bar > [data-group-open] { grid-column: 5; grid-row: 1; }
       .selection-bar .bulk-selection-actions {
-        grid-column: 1 / -1;
-        grid-row: 2;
+        grid-column: 3;
+        grid-row: 1;
+        justify-content: flex-end;
         justify-self: end;
         min-width: 0;
       }
@@ -47,12 +46,12 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         overflow-wrap: anywhere;
         text-align: left;
       }
-      .selection-bar .bulk-selection-help { grid-row: 3; }
-      .selection-bar .bulk-selection-status { grid-row: 4; }
+      .selection-bar .bulk-selection-help { grid-row: 2; }
+      .selection-bar .bulk-selection-status { grid-row: 3; }
       .selection-bar .bulk-selection-status:empty { display: none; }
       @media(max-width:760px) {
         .selection-bar {
-          grid-template-columns: 1fr 1fr;
+          grid-template-columns: minmax(0, 1fr);
           width: calc(100vw - 32px);
         }
         .statement-panel:has(> .selection-bar:not([hidden])) > .statement-table {
@@ -64,15 +63,17 @@ export function enhanceTransactionBulkSelectionLayout(html: string): string {
         .selection-bar .bulk-selection-actions,
         .selection-bar .bulk-selection-help,
         .selection-bar .bulk-selection-status {
-          grid-column: 1 / -1;
+          grid-column: 1;
         }
         .selection-bar > strong { grid-row: 1; }
         .selection-bar > [data-selection-total] { grid-row: 2; }
-        .selection-bar .bulk-selection-actions { grid-row: 3; justify-self: stretch; }
-        .selection-bar > [data-selection-clear] { grid-column: 1; grid-row: 4; }
-        .selection-bar > [data-group-open] { grid-column: 2; grid-row: 4; }
-        .selection-bar .bulk-selection-help { grid-row: 5; }
-        .selection-bar .bulk-selection-status { grid-row: 6; }
+        .selection-bar .bulk-selection-actions {
+          grid-row: 3;
+          justify-content: center;
+          justify-self: stretch;
+        }
+        .selection-bar .bulk-selection-help { grid-row: 4; }
+        .selection-bar .bulk-selection-status { grid-row: 5; }
       }
     </style>`;
 
