@@ -19,6 +19,12 @@ const enhanced = enhanceTransactionBulkSelection(source);
 assert.match(enhanced, /data-transaction-bulk-selection-enhancement/);
 assert.match(enhanced, /data-transaction-bulk-selection-controller/);
 assert.match(enhanced, /dataset\.selectionEntity = "group"/);
+assert.match(
+  enhanced,
+  /input\.dataset\.reconcileProtected = String\(group\.reconcileProtected === true/,
+);
+assert.match(enhanced, /member\.reconcileProtected === true/);
+assert.match(enhanced, /member\.source === "account_remuneration"/);
 assert.match(enhanced, /data-transaction-group-state/);
 assert.match(enhanced, /statement-status transaction-group-state/);
 assert.match(enhanced, /Agrupamento com/);

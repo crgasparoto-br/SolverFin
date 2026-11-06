@@ -117,6 +117,14 @@ try {
   assert.equal(mixedSelection.voidDisabled, false);
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
   assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
+  const protectedPostedGroup = await inspectProtectedGroupSelection(browser.cdp, created.groupId);
+  assert.equal(protectedPostedGroup.groupProtected, true);
+  assert.equal(protectedPostedGroup.reconcileDisabled, true);
+  assert.equal(protectedPostedGroup.unreconcileDisabled, true);
+  assert.equal(protectedPostedGroup.clearDisabled, false);
+  assert.equal(protectedPostedGroup.voidDisabled, false);
+  assert.match(protectedPostedGroup.reconcileTooltip, /remuneração automática/i);
+  assert.match(protectedPostedGroup.help, /remuneração automática/i);
   const desktopIcons = await readSelectionActionIcons(browser.cdp);
   assertSelectionActionIcons(desktopIcons, "desktop");
   assert.equal(desktopIcons.find((item) => item.action === "group").disabled, true);
@@ -392,6 +400,10 @@ try {
   assert.equal(reconciled.directStatus, "Conciliado");
 
   await selectMixed(browser.cdp, created);
+  const protectedReconciledGroup = await inspectProtectedGroupSelection(browser.cdp, created.groupId);
+  assert.equal(protectedReconciledGroup.reconcileDisabled, true);
+  assert.equal(protectedReconciledGroup.unreconcileDisabled, true);
+  assert.match(protectedReconciledGroup.unreconcileTooltip, /remuneração automática/i);
   const unreconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await evaluate(
     browser.cdp,
@@ -691,6 +703,35 @@ try {
     ).catch(() => undefined);
   }
   await browser.close(outputDir);
+}
+
+async function inspectProtectedGroupSelection(cdp, groupId) {
+  return evaluate(
+    cdp,
+    `(() => {
+      const group = document.querySelector('[data-selection-entity="group"][value="${groupId}"]');
+      if (!group || !group.checked) throw new Error('Selected group missing for protected-state test.');
+      const original = group.dataset.reconcileProtected;
+      group.dataset.reconcileProtected = 'true';
+      group.dispatchEvent(new Event('change', { bubbles: true }));
+      const bar = document.querySelector('[data-selection-bar]');
+      const reconcile = bar.querySelector('[data-bulk-selection-action="reconcile"]');
+      const unreconcile = bar.querySelector('[data-bulk-selection-action="unreconcile"]');
+      const result = {
+        groupProtected: group.dataset.reconcileProtected === 'true',
+        reconcileDisabled: reconcile.disabled,
+        unreconcileDisabled: unreconcile.disabled,
+        reconcileTooltip: reconcile.getAttribute('data-tooltip'),
+        unreconcileTooltip: unreconcile.getAttribute('data-tooltip'),
+        clearDisabled: bar.querySelector('[data-selection-clear]').disabled,
+        voidDisabled: bar.querySelector('[data-bulk-selection-action="void"]').disabled,
+        help: bar.querySelector('[data-bulk-selection-help]').textContent.trim()
+      };
+      group.dataset.reconcileProtected = original || 'false';
+      group.dispatchEvent(new Event('change', { bubbles: true }));
+      return result;
+    })()`,
+  );
 }
 
 async function selectMixed(cdp, created) {

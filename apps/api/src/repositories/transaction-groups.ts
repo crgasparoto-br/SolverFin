@@ -49,6 +49,7 @@ interface MemberRow {
   createdAt: Date;
   updatedAt: Date;
   categoryName: string | null;
+  reconcileProtected: boolean;
 }
 
 export interface TransactionGroupRecord {
@@ -62,7 +63,15 @@ export interface TransactionGroupRecord {
   status: TransactionStatus;
   currency: string;
   totalAmountMinor: number;
-  members: Array<Transaction & { categoryName?: string; transactionGroupId?: string }>;
+  /** Computed from linked remuneration records, not the editable transaction source. */
+  reconcileProtected: boolean;
+  members: Array<
+    Transaction & {
+      categoryName?: string;
+      transactionGroupId?: string;
+      reconcileProtected?: boolean;
+    }
+  >;
 }
 
 export async function createTransactionGroupForContext(
@@ -224,6 +233,7 @@ async function hydrateGroup(
     status: valid?.status ?? "posted",
     currency: valid?.currency ?? "BRL",
     totalAmountMinor: valid?.totalAmountMinor ?? 0,
+    reconcileProtected: members.some((member) => member.reconcileProtected),
     members,
   };
 }
@@ -239,11 +249,18 @@ async function loadMembers(
   const params: unknown[] = [context.organizationId, context.financialProfileId, groupId ?? ids];
   const predicate = groupId ? `t."transactionGroupId"=$3` : `t."id"=any($3::uuid[])`;
   const rows = await executeQuery<MemberRow>(
-    `select t.*, c."name" as "categoryName" from "Transaction" t left join "Category" c on c."id"=t."categoryId" and c."organizationId"=t."organizationId" and c."financialProfileId"=t."financialProfileId"
+    `select t.*, c."name" as "categoryName",
+            exists(select 1 from "AccountRemuneration" ar
+                   where ar."transactionId"=t."id" and ar."organizationId"=$1
+                     and ar."financialProfileId"=$2) as "reconcileProtected"
+       from "Transaction" t left join "Category" c on c."id"=t."categoryId" and c."organizationId"=t."organizationId" and c."financialProfileId"=t."financialProfileId"
      where t."organizationId"=$1 and t."financialProfileId"=$2 and ${predicate} order by t."occurredOn", t."createdAt" ${lock ? "for update of t" : ""}`,
     params,
   );
-  return rows.map(mapMember);
+  return rows.map((row) => ({
+    ...mapMember(row),
+    reconcileProtected: row.reconcileProtected,
+  }));
 }
 
 function mapMember(

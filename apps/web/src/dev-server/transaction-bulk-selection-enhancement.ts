@@ -130,6 +130,11 @@ export function enhanceTransactionBulkSelection(html: string): string {
           input.dataset.groupId = group.id;
           input.dataset.kind = group.kind || "";
           input.dataset.status = group.status || "";
+          input.dataset.reconcileProtected = String(group.reconcileProtected === true ||
+            group.members.some(function (member) {
+              return member.reconcileProtected === true || member.source === "account_remuneration" ||
+                Boolean(member.cardId || member.invoiceId);
+            }));
           input.dataset.currency = group.currency || "BRL";
           input.dataset.amount = String((group.kind === "expense" ? -1 : 1) * Math.abs(Number(group.totalAmountMinor || 0)));
           input.dataset.memberCount = String(group.members.length);

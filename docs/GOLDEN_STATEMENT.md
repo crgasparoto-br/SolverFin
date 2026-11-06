@@ -457,4 +457,7 @@ operação do endpoint ou exclusão de dados foi alterada.
 
 A validação Chrome cobre os cinco controles em desktop e mobile, ausência
 de texto visível, estado de bloqueio, confirmação de exclusão e a ativação
-de Limpar por teclado, além dos cenários de conciliação em massa.
+de Limpar por teclado, além dos cenários de conciliação em massa. Grupos com
+remuneração automática expõem o bloqueio por um sinal calculado no servidor:
+ambos os ícones de conciliação ficam indisponíveis com tooltip explicativo,
+sem impedir Limpar, Unificar conforme elegibilidade ou Excluir.

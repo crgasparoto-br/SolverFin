@@ -31,6 +31,10 @@ O servidor expande os grupos para seus membros dentro da mesma transação de ba
 - conciliação aceita lançamentos previstos, efetivados ou conciliados; desconciliação altera somente os conciliados e preserva os demais elegíveis;
 - conciliar um previsto define `effectiveOn` como a data civil UTC da transição, como no domínio individual; um efetivado legado sem data efetiva usa `occurredOn`; `occurredOn` e `plannedOn` nunca são sobrescritos;
 - sugestões pendentes e lançamentos excluídos bloqueiam a alteração de conciliação; compras de cartão/fatura e remuneração automática exigem seus fluxos próprios;
+- a consulta de agrupamentos entrega `reconcileProtected` para o grupo e seus membros, calculado
+  pelo vínculo de remuneração automática no perfil financeiro; a barra bloqueia
+  conciliação/desconciliação quando qualquer membro é protegido, inclusive em grupos mistos; o
+  servidor continua sendo a barreira obrigatória;
 - seleção mista é idempotente: apenas os alvos aplicáveis são alterados, e os demais são retornados em `unchangedTransactionIds`;
 - agrupamentos são temporariamente desanexados durante a mudança de situação e restaurados antes do commit;
 - na exclusão, os membros são desanexados, marcados como `voided` e o agrupamento é removido;
