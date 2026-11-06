@@ -167,6 +167,7 @@ async function assertUnreconciledAccountRecurrenceEdit(
     openingBalanceMinor: 0,
   });
   const recurrence = await createRecurrenceForContext(CONTEXT, {
+    kind: "expense",
     frequency: "monthly",
     startOn: "2028-07-08",
     amountMinor: 3_500,
