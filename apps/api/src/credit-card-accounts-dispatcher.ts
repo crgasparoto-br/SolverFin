@@ -162,8 +162,9 @@ async function assertCurrentOnlyRecurringAccountEdit(
     );
   };
   const transaction = await getTransactionForContext(context, transactionId);
+  const recurrenceId = transaction.recurrenceId;
   if (
-    !transaction.recurrenceId ||
+    !recurrenceId ||
     transaction.cardId ||
     transaction.invoiceId ||
     transaction.accountRemuneration ||
@@ -173,7 +174,7 @@ async function assertCurrentOnlyRecurringAccountEdit(
     (body.status !== undefined && body.status !== transaction.status)
   ) blocked();
 
-  const recurrence = await getRecurrenceForContext(context, transaction.recurrenceId);
+  const recurrence = await getRecurrenceForContext(context, recurrenceId);
   if (!recurrence.accountId || recurrence.cardId || recurrence.status === "cancelled") blocked();
 
   if (transaction.installmentId) {
@@ -182,7 +183,7 @@ async function assertCurrentOnlyRecurringAccountEdit(
     });
     if (
       !installment ||
-      installment.recurrenceId !== transaction.recurrenceId ||
+      installment.recurrenceId !== recurrenceId ||
       !["planned", "posted"].includes(installment.status) ||
       installment.invoice ||
       installment.card ||
