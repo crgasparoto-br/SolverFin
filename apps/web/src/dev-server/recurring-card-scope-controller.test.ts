@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     expectedScope: "current_and_future",
   });
   await assertScopeRequest("account", "current", {
-    expectedPath: "/api/transactions/transaction-1",
+    expectedPath: "/api/transactions/transaction-1/current-only",
   });
   await assertScopeRequest("account", "current_and_future", {
     expectedPath: "/api/transactions/transaction-1",
@@ -71,7 +71,7 @@ function assertAccountEditContract(): void {
   assert.match(script, /A conta vem do filtro principal\./);
   assert.match(
     script,
-    /const requestPath = isCard && scope === "current_only" \? path \+ "\/current-only" : path/,
+    /const requestPath = scope === "current_only" \? path \+ "\/current-only" : path/,
   );
 }
 

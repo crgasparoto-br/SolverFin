@@ -314,7 +314,7 @@ export function recurringCardScopeControllerScript(): string {
           }
 
           const scope = button.dataset.explicitEditScope;
-          const requestPath = isCard && scope === "current_only" ? path + "/current-only" : path;
+          const requestPath = scope === "current_only" ? path + "/current-only" : path;
           const payload = targetKind === "card" ? cardPayload(data, scope) : accountPayload(data, scope);
 
           setBusy(true);

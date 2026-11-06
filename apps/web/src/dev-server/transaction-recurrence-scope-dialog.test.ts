@@ -43,6 +43,17 @@ async function main(): Promise<void> {
   assert.equal(harness.modal.open, false);
   assert.equal(harness.requests.length, 0);
   assert.deepEqual(harness.form.values, originalValues);
+
+  const current = createHarness();
+  await current.submit(fakeSubmitEvent(current.form));
+  await current.currentButton.dispatch("click", fakeEvent(current.currentButton));
+  assert.equal(current.requests.length, 1);
+  assert.equal(current.requests[0]?.path, "/api/transactions/transaction-1/current-only");
+  assert.equal(current.requests[0]?.method, "PATCH");
+  assert.equal(
+    (current.requests[0]?.body as Record<string, unknown>)?.applyToFuturePlanned,
+    undefined,
+  );
 }
 
 function createHarness() {

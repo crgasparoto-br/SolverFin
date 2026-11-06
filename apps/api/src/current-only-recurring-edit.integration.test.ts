@@ -3,14 +3,19 @@ import assert from "node:assert/strict";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
+import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleMvpApiRequest } from "./mvp.js";
+import { handleApiRequest } from "./router.js";
 import type { ApiRequest } from "./router.js";
 import {
+  cancelRecurrenceForContext,
   createRecurrenceForContext,
   generateInstallmentsForContext,
+  getRecurrenceForContext,
 } from "./repositories/recurrences.js";
+import { createTransactionForContext, getTransactionForContext } from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -140,6 +145,123 @@ async function main(): Promise<void> {
   assert.deepEqual(await readOccurrences(recurrence.id), expandedOccurrences);
 
   await assertRecurringEditGuards(token, purchasePath, recurrence.id);
+
+  const bypassCard = await authenticatedPatch(
+    token,
+    `/api/transactions/${selected.transactionId}/current-only`,
+    { amountMinor: 8_900 },
+  );
+  assert.equal(bypassCard.statusCode, 409, "account-only route must reject card recurrence");
+  await assertUnreconciledAccountRecurrenceEdit(token, suffix);
+}
+
+async function assertUnreconciledAccountRecurrenceEdit(
+  token: string,
+  suffix: string,
+): Promise<void> {
+  const account = await createAccountForContext(CONTEXT, {
+    name: `Conta da recorrência após desconciliação ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 0,
+  });
+  const recurrence = await createRecurrenceForContext(CONTEXT, {
+    frequency: "monthly",
+    startOn: "2028-07-08",
+    amountMinor: 3_500,
+    description: `Recorrência original ${suffix}`,
+    accountId: account.id,
+  });
+  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-09-08", 3);
+  const before = await readOccurrences(recurrence.id);
+  assert.equal(before.length, 3);
+  const selected = before[1]!;
+  const path = `/api/transactions/${selected.transactionId}`;
+
+  const reconciled = await authenticatedPatch(token, path, { status: "reconciled" });
+  assert.equal(reconciled.statusCode, 200, "status-only reconciliation stays available");
+  const whileReconciled = await authenticatedPatch(token, path + "/current-only", {
+    amountMinor: 4_200,
+    status: "reconciled",
+  });
+  assert.equal(whileReconciled.statusCode, 409, "current-only must not edit reconciled rows");
+
+  const unreconciled = await authenticatedPatch(token, path, { status: "posted" });
+  assert.equal(unreconciled.statusCode, 200, "status-only unreconciliation stays available");
+  assert.equal((await getTransactionForContext(CONTEXT, selected.transactionId)).status, "posted");
+
+  const generic = await authenticatedPatch(token, path, {
+    status: "posted",
+    description: "tentativa generica",
+  });
+  assert.equal(generic.statusCode, 409);
+  assert.equal(
+    (generic.body as { error?: { code?: string } }).error?.code,
+    "INSTALLMENT_DIRECT_UPDATE_REQUIRED",
+    "generic installment mutation must remain closed",
+  );
+
+  const statusBypass = await authenticatedPatch(token, path + "/current-only", {
+    status: "reconciled",
+    description: "tentativa de contornar conciliação",
+  });
+  assert.equal(statusBypass.statusCode, 409, "scope edit cannot change status");
+  const futureBypass = await authenticatedPatch(token, path + "/current-only", {
+    amountMinor: 9_999,
+    applyToFuturePlanned: true,
+  });
+  assert.equal(futureBypass.statusCode, 409, "current-only cannot expand its scope");
+
+  const updated = await authenticatedPatch(token, path + "/current-only", {
+    editScope: "current_only",
+    status: "posted",
+    kind: "expense",
+    accountId: account.id,
+    amountMinor: 4_200,
+    occurredOn: "2028-08-12",
+    plannedOn: "2028-08-12",
+    description: `Ocorrência editada após desconciliar ${suffix}`,
+    note: "Edição da ocorrência sem alterar a regra",
+  });
+  assert.equal(updated.statusCode, 200, JSON.stringify(updated.body));
+
+  const after = await readOccurrences(recurrence.id);
+  assert.equal(after.length, 3);
+  assertOccurrenceUnchanged(before[0], after[0]);
+  assertOccurrenceUnchanged(before[2], after[2]);
+  assert.equal(after[1]?.transactionAmountMinor, 4_200);
+  assert.equal(after[1]?.installmentAmountMinor, 4_200);
+  assert.equal(after[1]?.transactionOccurredOn, "2028-08-12");
+  assert.equal(after[1]?.installmentDueOn, "2028-08-12");
+  assert.equal(after[1]?.transactionDescription, `Ocorrência editada após desconciliar ${suffix}`);
+  const selectedUpdated = await getTransactionForContext(CONTEXT, selected.transactionId);
+  assert.equal(selectedUpdated.status, "posted");
+  assert.equal(selectedUpdated.recurrenceId, recurrence.id);
+  assert.ok(selectedUpdated.installmentId);
+  const rule = await getRecurrenceForContext(CONTEXT, recurrence.id);
+  assert.equal(rule.amountMinor, 3_500);
+  assert.equal(rule.description, `Recorrência original ${suffix}`);
+
+  const ordinary = await createTransactionForContext(CONTEXT, {
+    accountId: account.id,
+    kind: "expense",
+    status: "posted",
+    amountMinor: 1_200,
+    occurredOn: "2028-08-15",
+    description: `Transação não recorrente ${suffix}`,
+  });
+  const bypassOrdinary = await authenticatedPatch(
+    token,
+    `/api/transactions/${ordinary.id}/current-only`,
+    { description: "tentativa sem recorrência" },
+  );
+  assert.equal(bypassOrdinary.statusCode, 409, "manual transaction cannot use recurring route");
+  assert.equal((await getTransactionForContext(CONTEXT, ordinary.id)).description, ordinary.description);
+
+  await cancelRecurrenceForContext(CONTEXT, recurrence.id);
+  const cancelledSnapshot = await readOccurrences(recurrence.id);
+  const cancelled = await authenticatedPatch(token, path + "/current-only", { amountMinor: 5_000 });
+  assert.equal(cancelled.statusCode, 409, "cancelled recurrence must remain locked");
+  assert.deepEqual(await readOccurrences(recurrence.id), cancelledSnapshot);
 }
 
 async function assertRecurringEditGuards(
@@ -274,7 +396,8 @@ async function authenticatedPatch(token: string, path: string, body: unknown) {
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const response = await handleCreditCardAccountsApiRequest(request);
+  const response = (await handleCreditCardAccountsApiRequest(request)) ??
+    (await handleApiRequest(request));
   assert.ok(response, `Expected response for ${path}`);
   return response;
 }

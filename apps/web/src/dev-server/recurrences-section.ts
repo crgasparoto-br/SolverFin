@@ -465,8 +465,11 @@ export function recurrencesSectionScript(): string {
             }
             const path = form.dataset.path || "/api/transactions";
             const execute = async (scope) => {
+              const requestPath = scope === "current" && form.dataset.recurrenceId
+                ? path + "/current-only"
+                : path;
               const response = await send(
-                path,
+                requestPath,
                 "PATCH",
                 payload(scope === "current_and_future"),
               );

@@ -11,9 +11,11 @@ import { auth } from "./auth-service.js";
 import { handleCreditCardAccountsApiRequest as handleBaseCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
+import { listInstallmentsForContext } from "./repositories/installments.js";
+import { getRecurrenceForContext } from "./repositories/recurrences.js";
 import { updateRecurringAccountTransactionForContext } from "./repositories/recurring-account-transaction-edit.js";
 import { updateRecurringCardPurchaseForContext } from "./repositories/recurring-card-purchase-edit.js";
-import { updateTransactionForContext } from "./repositories/transactions.js";
+import { getTransactionForContext, updateTransactionForContext } from "./repositories/transactions.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const RECURRING_PURCHASE_PATH = /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
@@ -59,9 +61,11 @@ export async function handleCreditCardAccountsApiRequest(
     const context = await resolveContext(request);
 
     if (isCurrentOnlyAccountEdit && currentOnlyTransactionMatch && body) {
+      const transactionId = decodeURIComponent(currentOnlyTransactionMatch[1] ?? "");
+      await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body);
       const transaction = await updateTransactionForContext(
         context,
-        decodeURIComponent(currentOnlyTransactionMatch[1] ?? ""),
+        transactionId,
         {
           ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
           ...(body.status !== undefined
@@ -139,6 +143,51 @@ export async function handleCreditCardAccountsApiRequest(
     });
 
     return json(response.statusCode, response.body);
+  }
+}
+
+/**
+ * Only an eligible account recurrence may bypass the generic installment edit
+ * guard for a single occurrence. Status changes keep their status-only route.
+ */
+async function assertCurrentOnlyRecurringAccountEdit(
+  context: TenantContext,
+  transactionId: string,
+  body: Record<string, unknown>,
+): Promise<void> {
+  const blocked = (): never => {
+    throw Object.assign(
+      new Error("Desconcilie a ocorrência recorrente antes de editar; outras parcelas exigem manutenção própria."),
+      { code: "RECURRING_ACCOUNT_CURRENT_ONLY_EDIT_BLOCKED", statusCode: 409 },
+    );
+  };
+  const transaction = await getTransactionForContext(context, transactionId);
+  if (
+    !transaction.recurrenceId ||
+    transaction.cardId ||
+    transaction.invoiceId ||
+    transaction.accountRemuneration ||
+    !["planned", "posted"].includes(transaction.status) ||
+    body.applyToFuturePlanned === true ||
+    (body.editScope !== undefined && body.editScope !== "current_only") ||
+    (body.status !== undefined && body.status !== transaction.status)
+  ) blocked();
+
+  const recurrence = await getRecurrenceForContext(context, transaction.recurrenceId);
+  if (!recurrence.accountId || recurrence.cardId || recurrence.status === "cancelled") blocked();
+
+  if (transaction.installmentId) {
+    const [installment] = await listInstallmentsForContext(context, {
+      installmentId: transaction.installmentId,
+    });
+    if (
+      !installment ||
+      installment.recurrenceId !== transaction.recurrenceId ||
+      !["planned", "posted"].includes(installment.status) ||
+      installment.invoice ||
+      installment.card ||
+      installment.cardInstrument
+    ) blocked();
   }
 }
 
