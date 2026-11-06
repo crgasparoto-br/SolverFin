@@ -35,7 +35,7 @@ export async function updateActiveGenericTransaction(
 ): Promise<void> {
   const updated = await executeQuery<{ id: string }>(
     statusOnlyReconciliation ? buildReconciliationStatusSql() : buildUpdateTransactionSql(),
-    [...transactionParams, expectedUpdatedAt ?? null],
+    statusOnlyReconciliation ? [...transactionParams] : [...transactionParams, expectedUpdatedAt ?? null],
   );
   if (updated.length !== 1) {
     throw new InvoiceContractError(
