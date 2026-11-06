@@ -8,13 +8,13 @@
     "remaining_issue_ids": [],
     "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-11-06T22:04:59.920500+00:00",
+  "created_at": "2026-11-06T22:13:55.183624+00:00",
   "identity": {
-    "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
-    "material_head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
-    "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
-    "merge_preview_sha": "66670f30329b1998fc04a985da8856cd2e2d658e",
-    "material_merge_preview_sha": "66670f30329b1998fc04a985da8856cd2e2d658e"
+    "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
+    "material_head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
+    "base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
+    "merge_preview_sha": "53df1751cd4c0647fb12a1d11f3e0b546da77049",
+    "material_merge_preview_sha": "53df1751cd4c0647fb12a1d11f3e0b546da77049"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -28,9 +28,19 @@
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
-    "material_head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+    "work_item_start_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
+    "material_head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
     "issue_changed_paths": [
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/issue-774/code-growth.json",
+      ".audit/entregar-issue/issue-774/codebase-grounding.json",
+      ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+      ".audit/entregar-issue/issue-774/inherited-controls.json",
+      ".audit/entregar-issue/issue-774/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-774/requirement-closure.json",
+      ".audit/entregar-issue/issue-774/risk-saturation.json",
+      ".audit/entregar-issue/issue-774/specification-snapshot.json",
+      ".audit/entregar-issue/issue-774/specification-sources/SRC-ISSUE-774.txt",
       "apps/api/src/credit-card-accounts-dispatcher.ts",
       "apps/api/src/current-only-recurring-edit.integration.test.ts",
       "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
@@ -47,7 +57,7 @@
       "scripts/statement-visual/issue-539-operational-installments.mjs",
       "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs"
     ],
-    "issue_delta_sha256": "56a99dd99acb8879a18dba0301e9fadaaf873419c8ad29ecda2ef7c2d0dc1fa9"
+    "issue_delta_sha256": "db1e6632d7cc46373272360ddc351bf63066e84714e752517dbd32baf36300a8"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -114,8 +124,8 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "f294d4041025f7e87df990b13d49fab8e7e446972e66c569bfb67d9d3d14782b",
-      "logical_sha256": "f294d4041025f7e87df990b13d49fab8e7e446972e66c569bfb67d9d3d14782b",
+      "sha256": "b08fb2394e38fec620246a16599ec1a476251b60f926c1f1b64df96818fb30d7",
+      "logical_sha256": "b08fb2394e38fec620246a16599ec1a476251b60f926c1f1b64df96818fb30d7",
       "logical_size": 41418,
       "artifact_transport": {
         "format": "plain-json",
@@ -124,8 +134,8 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "998cd90acf961d7bc3d838b277d072c9cc80c8c2bca6391a1283f20e9fb11fcc",
-      "logical_sha256": "998cd90acf961d7bc3d838b277d072c9cc80c8c2bca6391a1283f20e9fb11fcc",
+      "sha256": "7ab41272307392cb8872e7525239bdfbaf1763f1f03d61650edc6a7d333a1992",
+      "logical_sha256": "7ab41272307392cb8872e7525239bdfbaf1763f1f03d61650edc6a7d333a1992",
       "logical_size": 4796,
       "artifact_transport": {
         "format": "plain-json",
@@ -134,8 +144,8 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "270bba12b7865ccd9d4d186ebdd943dc125cfff979148af6c58c74b435ef76e9",
-      "logical_sha256": "270bba12b7865ccd9d4d186ebdd943dc125cfff979148af6c58c74b435ef76e9",
+      "sha256": "80bd74f3b28e533afddfe1f987104fad849bf454413decc568afe1fe374d9fc7",
+      "logical_sha256": "80bd74f3b28e533afddfe1f987104fad849bf454413decc568afe1fe374d9fc7",
       "logical_size": 154,
       "artifact_transport": {
         "format": "plain-json",
@@ -144,8 +154,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "64113bb959bf6a73a35739b42e073c243613a51442fda7ee3f322036fc7dbfe8",
-      "logical_sha256": "64113bb959bf6a73a35739b42e073c243613a51442fda7ee3f322036fc7dbfe8",
+      "sha256": "cc65495c9086cb1f964d5d3dfd05aa9b18147269c158b9e2677609905624ad77",
+      "logical_sha256": "cc65495c9086cb1f964d5d3dfd05aa9b18147269c158b9e2677609905624ad77",
       "logical_size": 11695,
       "artifact_transport": {
         "format": "plain-json",
@@ -154,8 +164,8 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "9a17909d56d2537844800d270d011e412351a15df67e7c75647cbe3b6b5e8725",
-      "logical_sha256": "9a17909d56d2537844800d270d011e412351a15df67e7c75647cbe3b6b5e8725",
+      "sha256": "2beb5dec3f7cc1af96c7102a3ef010817a1c21acf658e7435f4f736c33e73ac4",
+      "logical_sha256": "2beb5dec3f7cc1af96c7102a3ef010817a1c21acf658e7435f4f736c33e73ac4",
       "logical_size": 1644,
       "artifact_transport": {
         "format": "plain-json",
@@ -174,7 +184,7 @@
       "applicable": true,
       "status": "passed",
       "checked": 1,
-      "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+      "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
       "evidence_artifacts": [
         "requirement_closure",
         "requirement_attack_matrix",

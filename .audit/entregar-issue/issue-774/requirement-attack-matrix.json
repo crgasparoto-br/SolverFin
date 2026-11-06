@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+  "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
   "requirements": [
     {
       "requirement_id": "REQ-774-001",
@@ -16,7 +16,7 @@
       "plausible_wrong_implementation": "Missing selected occurrence after reconciliation is silently treated as an already editable planned item",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "The test first reconciles then unreconciles and asserts current-only PATCH returns HTTP 200 with persisted posted state.",
         "observed": "The test first reconciles then unreconciles and asserts current-only PATCH returns HTTP 200 with persisted posted state.",
@@ -26,7 +26,7 @@
         {
           "id": "NC-774-001-tem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -57,10 +57,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -93,7 +93,7 @@
       "plausible_wrong_implementation": "Generic installment edit route could mutate sibling installments instead of the selected account occurrence",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Selected current-only occurrence changes while the recurrence rule and its first/last siblings remain unchanged.",
         "observed": "Selected current-only occurrence changes while the recurrence rule and its first/last siblings remain unchanged.",
@@ -103,7 +103,7 @@
         {
           "id": "NC-774-002-sem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -134,10 +134,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -170,7 +170,7 @@
       "plausible_wrong_implementation": "Form omits categoryId null and accountId change, or persists occurredOn without synchronizing installment dueOn",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Distinct account and category IDs, dates and minor units are persisted, null category is reread, and siblings retain old values.",
         "observed": "Distinct account and category IDs, dates and minor units are persisted, null category is reread, and siblings retain old values.",
@@ -180,7 +180,7 @@
         {
           "id": "NC-774-003-tem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -211,10 +211,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -247,7 +247,7 @@
       "plausible_wrong_implementation": "Current-only request leaks to future planned series and modifies already posted or reconciled installments",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Expanded recurrence flow is invoked separately and preserves the prior occurrence.",
         "observed": "Expanded recurrence flow is invoked separately and preserves the prior occurrence.",
@@ -257,7 +257,7 @@
         {
           "id": "NC-774-004-sem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -288,10 +288,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -324,7 +324,7 @@
       "plausible_wrong_implementation": "Generic transaction PATCH silently allows data and status changes for canonical installment",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Status-only reconciled-to-posted and posted-to-reconciled transitions work.",
         "observed": "Status-only reconciled-to-posted and posted-to-reconciled transitions work.",
@@ -334,7 +334,7 @@
         {
           "id": "NC-774-005-sem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -365,10 +365,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -401,7 +401,7 @@
       "plausible_wrong_implementation": "Approval evidence for only current occurrence is reused for an unrelated future effect outside the authorized scope",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Authorization and account recurrence contract permit current-only changes for a posted occurrence.",
         "observed": "Authorization and account recurrence contract permit current-only changes for a posted occurrence.",
@@ -411,7 +411,7 @@
         {
           "id": "NC-774-006-aut",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -442,10 +442,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -478,7 +478,7 @@
       "plausible_wrong_implementation": "Current-only edit is allowed to reconcile without the status-only operational API",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Current-only edit passing unchanged posted status succeeds.",
         "observed": "Current-only edit passing unchanged posted status succeeds.",
@@ -488,7 +488,7 @@
         {
           "id": "NC-774-007-sem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -519,10 +519,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -555,7 +555,7 @@
       "plausible_wrong_implementation": "Editing the selected transaction causes unrelated canonical installment or rule to be overwritten",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
         "procedure": "Updated dueOn/amount and selected account/category are persisted with same transaction and installment IDs.",
         "observed": "Updated dueOn/amount and selected account/category are persisted with same transaction and installment IDs.",
@@ -565,7 +565,7 @@
         {
           "id": "NC-774-008-sem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
           "control_type": "test",
@@ -596,10 +596,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
           "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -632,7 +632,7 @@
       "plausible_wrong_implementation": "Mock-only test asserts route name while real browser cannot edit the occurrence after unreconciliation",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
         "procedure": "Real Chrome scenario checks reconciled restriction, unreconcile, modal scope, new account/category and readback.",
         "observed": "Real Chrome scenario checks reconciled restriction, unreconcile, modal scope, new account/category and readback.",
@@ -642,7 +642,7 @@
         {
           "id": "NC-774-009-tem",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
           "evidence_sha256": "c8f07eba0dfa6ebe2661aaa49ddd33d31e64c19c8599dc64896dea9a4e2fd1a6",
           "control_type": "test",
@@ -673,10 +673,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
           "evidence_sha256": "c8f07eba0dfa6ebe2661aaa49ddd33d31e64c19c8599dc64896dea9a4e2fd1a6",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],
@@ -710,7 +710,7 @@
       "plausible_wrong_implementation": "Use a transaction from a second financial profile with the primary token to mutate a foreign record",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
         "procedure": "Existing repository integration tests enforce tenant and profile account reference boundaries.",
         "observed": "Existing repository integration tests enforce tenant and profile account reference boundaries.",
@@ -720,7 +720,7 @@
         {
           "id": "NC-774-010-ten",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
           "evidence_sha256": "c89bb441c4b42dce6fc6125e743bfaaa6093d8e6983d51dd76800ee4ef33909f",
           "control_type": "test",
@@ -750,9 +750,9 @@
         {
           "id": "NC-774-010-doc",
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "docs/TRANSACTIONS.md",
-          "evidence_sha256": "2b40f52d12937aaf9d6914607b4aeeb507f922f64e9287f4c137d7f4b4ff5c13",
+          "evidence_sha256": "20db303ff214bd970eac3126d3f7d7b166e0a0b927403c3014be075c05667b75",
           "control_type": "procedure",
           "risk_family": "documentation",
           "surface": "github-target-contract",
@@ -781,10 +781,10 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
           "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
           "evidence_sha256": "c89bb441c4b42dce6fc6125e743bfaaa6093d8e6983d51dd76800ee4ef33909f",
-          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "procedure": "Repository CI #42302635468 ran integration regression and all historical tests for the changed contract.",
           "observed": "CI CRITICAL integration suite completed successfully on material head."
         }
       ],

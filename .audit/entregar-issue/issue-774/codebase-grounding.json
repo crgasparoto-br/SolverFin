@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
-  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
+  "base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
   "creations": [
     {
       "path": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
@@ -48,7 +48,7 @@
       "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
       "search": {
         "queries": [
-          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "git diff --name-status 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c d5236de8bfd67cec742e2c9ff4bcb6c06a4902df -- apps/api/src/current-only-recurring-edit.integration.test.ts",
           "git grep -n current-only -- apps/api/src/current-only-recurring-edit.integration.test.ts"
         ],
         "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
@@ -69,12 +69,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "reached_tests": [
           "apps/api/src/current-only-recurring-edit.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
-        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+        "evidence_sha256": "5324977692a843dd75e911a3b817484753066ec2a5cc0aa017e8782ae84626bf"
       }
     },
     {
@@ -84,7 +84,7 @@
       "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
       "search": {
         "queries": [
-          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/operational-installments.test.ts",
+          "git diff --name-status 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c d5236de8bfd67cec742e2c9ff4bcb6c06a4902df -- apps/web/src/dev-server/operational-installments.test.ts",
           "git grep -n current-only -- apps/web/src/dev-server/operational-installments.test.ts"
         ],
         "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
@@ -105,12 +105,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "reached_tests": [
           "apps/web/src/dev-server/operational-installments.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
-        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+        "evidence_sha256": "5324977692a843dd75e911a3b817484753066ec2a5cc0aa017e8782ae84626bf"
       }
     },
     {
@@ -120,7 +120,7 @@
       "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
       "search": {
         "queries": [
-          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/recurring-card-scope-controller.test.ts",
+          "git diff --name-status 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c d5236de8bfd67cec742e2c9ff4bcb6c06a4902df -- apps/web/src/dev-server/recurring-card-scope-controller.test.ts",
           "git grep -n current-only -- apps/web/src/dev-server/recurring-card-scope-controller.test.ts"
         ],
         "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
@@ -141,12 +141,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "reached_tests": [
           "apps/web/src/dev-server/recurring-card-scope-controller.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
-        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+        "evidence_sha256": "5324977692a843dd75e911a3b817484753066ec2a5cc0aa017e8782ae84626bf"
       }
     },
     {
@@ -156,7 +156,7 @@
       "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
       "search": {
         "queries": [
-          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts",
+          "git diff --name-status 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c d5236de8bfd67cec742e2c9ff4bcb6c06a4902df -- apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts",
           "git grep -n current-only -- apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts"
         ],
         "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
@@ -177,12 +177,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
-        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+        "evidence_sha256": "5324977692a843dd75e911a3b817484753066ec2a5cc0aa017e8782ae84626bf"
       }
     },
     {
@@ -192,7 +192,7 @@
       "requirement": "REQ-774-008;REQ-774-009",
       "search": {
         "queries": [
-          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+          "git diff --name-status 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c d5236de8bfd67cec742e2c9ff4bcb6c06a4902df -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
           "git grep -n waitForBlockedQuery -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
         ],
         "scope": "Retained previously executable test and adapted its waiting boundary to the new serialized status-only transaction.",
@@ -213,12 +213,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
         "reached_tests": [
           "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
-        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+        "evidence_sha256": "5324977692a843dd75e911a3b817484753066ec2a5cc0aa017e8782ae84626bf"
       }
     }
   ]
