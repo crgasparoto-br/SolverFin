@@ -9,7 +9,6 @@ import {
 
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
-import { assertNoActiveCardPurchaseReversalInTransaction } from "./card-invoice-purchase-delete.js";
 import {
   InvoiceContractError,
   summarizeInvoiceForContext,
@@ -209,17 +208,8 @@ export async function moveCardPurchaseInvoicePeriodForContext(
       destinationInvoice.id,
       invoiceMoveAmountMinor,
       now,
-    );
-
-    // Invoice adjustments lock the origin before the dependency check.
-    // A refund racing the transfer must force rollback of both totals and the move.
-    await assertNoActiveCardPurchaseReversalInTransaction(
-      executeQuery,
-      context,
-      cardId,
       current.id,
     );
-
     await insertAuditLogEntry(executeQuery, {
       organizationId: context.organizationId,
       financialProfileId: context.financialProfileId,
