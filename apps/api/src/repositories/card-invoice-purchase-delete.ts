@@ -77,31 +77,15 @@ export async function voidSimpleCardPurchaseInTransaction(
       409,
     );
   }
-  // A purchase with a live credit cannot be voided independently: doing so
-  // would leave its reversal orphaned and may make the invoice total negative.
+  // An active credit keeps the purchase financially linked even if the
+  // purchase has previously moved to a different invoice.
   if (source.kind === "EXPENSE") {
-    const activeReversals = await executeQuery<{ id: string }>(
-      `select "id" from "Transaction"
-        where "organizationId" = $1 and "financialProfileId" = $2
-          and "cardId" = $3 and "invoiceId" = $4
-          and "kind" = 'INCOME' and "status" <> 'VOIDED'
-          and "description" like $5
-        limit 1`,
-      [
-        context.organizationId,
-        context.financialProfileId,
-        cardId,
-        source.invoiceId,
-        `%[estorno:${transactionId}:unico]`,
-      ],
+    await assertNoActiveCardPurchaseReversalInTransaction(
+      executeQuery,
+      context,
+      cardId,
+      transactionId,
     );
-    if (activeReversals.length > 0) {
-      throw new InvoiceContractError(
-        "CARD_PURCHASE_ACTIVE_REVERSAL",
-        "Anule primeiro o estorno ativo antes de excluir a compra.",
-        409,
-      );
-    }
   }
   const now = new Date().toISOString();
   const invoice = await executeQuery<{ id: string }>(
@@ -151,4 +135,33 @@ export async function voidSimpleCardPurchaseInTransaction(
     redactedChanges: { status: "changed", voidedAt: "added" },
   });
   return { transactionId, invoiceId: source.invoiceId };
+}
+
+/** Recheck refund dependencies after locking the invoice financial mutation. */
+export async function assertNoActiveCardPurchaseReversalInTransaction(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  cardId: EntityId,
+  transactionId: EntityId,
+): Promise<void> {
+  const activeReversals = await executeQuery<{ id: string }>(
+    `select "id" from "Transaction"
+      where "organizationId" = $1 and "financialProfileId" = $2
+        and "cardId" = $3 and "kind" = 'INCOME' and "status" <> 'VOIDED'
+        and "description" like $4
+      limit 1`,
+    [
+      context.organizationId,
+      context.financialProfileId,
+      cardId,
+      `%[estorno:${transactionId}:unico]`,
+    ],
+  );
+  if (activeReversals.length > 0) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_ACTIVE_REVERSAL",
+      "Anule primeiro o estorno ativo antes de excluir a compra.",
+      409,
+    );
+  }
 }
