@@ -26,6 +26,7 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
+import { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 interface TransactionRow {
@@ -254,6 +255,12 @@ export async function updateTransactionForContext(
   options: UpdateTransactionOptions = {},
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+  if (isInvoiceLinkedCardTransaction(currentTransaction) && currentTransaction.status === "voided") {
+    throw Object.assign(new Error("Lançamento de cartão anulado não pode ser editado."), {
+      code: "CARD_PURCHASE_NOT_FOUND",
+      statusCode: 404,
+    });
+  }
 
   if (
     options.denyCanonicalInstallmentMutation === true &&
@@ -404,6 +411,10 @@ export async function voidTransactionForContext(
       "Desagrupe os lançamentos antes de excluí-los.",
       409,
     );
+  }
+  if (isInvoiceLinkedCardTransaction(currentTransaction)) {
+    await deleteSimpleCardPurchaseForContext(context, currentTransaction.cardId, transactionId);
+    return getTransactionDomain(context, await findTransactionRow(context, transactionId));
   }
   const result = voidTransactionDomain(context, currentTransaction, new Date().toISOString());
   const transaction = attachNote(result.transaction, getTransactionNote(currentTransaction));
@@ -591,16 +602,22 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   return transaction;
 }
 
+function isInvoiceLinkedCardTransaction(
+  transaction: Transaction | undefined,
+): transaction is Transaction & { cardId: EntityId; invoiceId: EntityId } {
+  return (
+    transaction !== undefined &&
+    transaction.cardId !== undefined &&
+    transaction.invoiceId !== undefined &&
+    transaction.accountId === undefined
+  );
+}
+
 function isCardInvoicePurchase(transaction: Transaction | undefined): transaction is Transaction & {
   cardId: EntityId;
   invoiceId: EntityId;
 } {
-  return (
-    transaction?.kind === "expense" &&
-    transaction.accountId === undefined &&
-    transaction.cardId !== undefined &&
-    transaction.invoiceId !== undefined
-  );
+  return transaction?.kind === "expense" && isInvoiceLinkedCardTransaction(transaction);
 }
 
 function prepareTransactionPayload<

@@ -190,6 +190,7 @@ export async function summarizeInvoiceForContext(
           and p."financialProfileId" = i."financialProfileId"
         where i."organizationId" = $1 and i."financialProfileId" = $2
           and i."invoiceId" = $3 and i."cardId" = $4
+          and p."status" <> 'VOIDED'
      )
      select
         count(*)::int as "purchasesCount",
@@ -553,7 +554,8 @@ export async function reconcileInvoiceInstallmentForContext(
           and i."organizationId" = $3 and i."financialProfileId" = $4
           and i."cardId" = inv."cardId" and t."cardId" = inv."cardId"
           and t."accountId" is null and t."kind" = 'EXPENSE'
-        for update of i, inv`,
+          and t."status" <> 'VOIDED'
+        for update of i, inv, t`,
       [installmentId, invoiceId, context.organizationId, context.financialProfileId],
     );
     const row = rows[0];

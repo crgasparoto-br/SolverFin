@@ -123,8 +123,18 @@ fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão fís
 A rota e o envelope de resposta existentes são mantidos para compatibilidade.
 Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
 lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
-Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
+Edições concorrentes rejeitam atualizações cujo estado original da compra tenham
 mudado antes da persistência, inclusive quando anulada por outra requisição.
+
+As rotas gerais `POST /api/transactions/:transactionId/void` e
+`POST /api/transactions/bulk-actions` (`action: "void"`) reutilizam a exclusão
+lógica especializada para compras e créditos de estorno vinculados a faturas.
+Um lote misto é atômico: item inelegível provoca rollback de toda a seleção;
+cada compra recebe apenas um evento de auditoria `SOFT_DELETE`. Compras
+parceladas, recorrentes, conciliadas ou com fatura bloqueada são rejeitadas.
+Parcelas cujo registro principal esteja `VOIDED` são excluídas da listagem
+operacional e dos resumos, sem perda do histórico; conciliação e ajuste de
+valor também são bloqueados.
 
 ### Ajuste pontual ou futuro de valores de parcelas (#742)
 
