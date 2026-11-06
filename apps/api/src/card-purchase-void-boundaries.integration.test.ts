@@ -255,6 +255,9 @@ async function main(): Promise<void> {
         description: "Compra para estorno " + suffix,
         cardInstrumentId: instrumentId,
       });
+      const balanceBeforeReversal = (
+        await summarizeInvoiceForContext(CONTEXT, expense.invoice.id)
+      ).totalExpensesMinor;
       const credit = await reverseCardPurchaseForContext(
         CONTEXT,
         card.id,
@@ -264,7 +267,7 @@ async function main(): Promise<void> {
       await voidTransactionForContext(CONTEXT, credit.transactionId);
       assert.equal(
         (await summarizeInvoiceForContext(CONTEXT, expense.invoice.id)).totalExpensesMinor,
-        800,
+        balanceBeforeReversal,
       );
       assert.equal(await countSoftDelete(credit.transactionId), 1);
       await assert.rejects(
