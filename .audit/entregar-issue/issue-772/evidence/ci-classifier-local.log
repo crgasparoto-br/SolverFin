@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: design-system-only change is FAST
+ok 1 - design-system-only change is FAST
+  ---
+  duration_ms: 3.20088
+  type: 'test'
+  ...
+# Subtest: public static asset is FAST
+ok 2 - public static asset is FAST
+  ---
+  duration_ms: 0.871683
+  type: 'test'
+  ...
+# Subtest: ordinary non-financial web code is STANDARD
+ok 3 - ordinary non-financial web code is STANDARD
+  ---
+  duration_ms: 0.277799
+  type: 'test'
+  ...
+# Subtest: financial and multi-currency surfaces are CRITICAL
+ok 4 - financial and multi-currency surfaces are CRITICAL
+  ---
+  duration_ms: 0.624629
+  type: 'test'
+  ...
+# Subtest: all API source is CRITICAL during initial rollout
+ok 5 - all API source is CRITICAL during initial rollout
+  ---
+  duration_ms: 0.277498
+  type: 'test'
+  ...
+# Subtest: shared/domain/config/AI packages are CRITICAL
+ok 6 - shared/domain/config/AI packages are CRITICAL
+  ---
+  duration_ms: 1.703747
+  type: 'test'
+  ...
+# Subtest: Prisma migration is CRITICAL and marks database validation
+ok 7 - Prisma migration is CRITICAL and marks database validation
+  ---
+  duration_ms: 0.242587
+  type: 'test'
+  ...
+# Subtest: workflow and classifier changes are CRITICAL
+ok 8 - workflow and classifier changes are CRITICAL
+  ---
+  duration_ms: 0.325709
+  type: 'test'
+  ...
+# Subtest: explicit FAST never downgrades observed CRITICAL risk
+ok 9 - explicit FAST never downgrades observed CRITICAL risk
+  ---
+  duration_ms: 0.443092
+  type: 'test'
+  ...
+# Subtest: unknown path fails closed to CRITICAL
+ok 10 - unknown path fails closed to CRITICAL
+  ---
+  duration_ms: 0.597198
+  type: 'test'
+  ...
+# Subtest: empty changed-path evidence fails closed to CRITICAL
+ok 11 - empty changed-path evidence fails closed to CRITICAL
+  ---
+  duration_ms: 0.27155
+  type: 'test'
+  ...
+# Subtest: local CI policy is independent of external or orchestrator locks
+ok 12 - local CI policy is independent of external or orchestrator locks
+  ---
+  duration_ms: 0.229698
+  type: 'test'
+  ...
+# Subtest: FAST public SVG installs dependencies before merge-preview typecheck
+ok 13 - FAST public SVG installs dependencies before merge-preview typecheck
+  ---
+  duration_ms: 0.321182
+  type: 'test'
+  ...
+# Subtest: web-only typechecks run after building workspace packages in all CI paths
+ok 14 - web-only typechecks run after building workspace packages in all CI paths
+  ---
+  duration_ms: 0.487187
+  type: 'test'
+  ...
+# Subtest: active CI workflows do not invoke the legacy orchestrator runtime
+ok 15 - active CI workflows do not invoke the legacy orchestrator runtime
+  ---
+  duration_ms: 3.161372
+  type: 'test'
+  ...
+# Subtest: root npm scripts do not invoke the legacy runtime
+ok 16 - root npm scripts do not invoke the legacy runtime
+  ---
+  duration_ms: 0.573063
+  type: 'test'
+  ...
+# Subtest: workspace scripts do not invoke the legacy runtime
+ok 17 - workspace scripts do not invoke the legacy runtime
+  ---
+  duration_ms: 0.838204
+  type: 'test'
+  ...
+# Subtest: STANDARD and CRITICAL formatting gates fail closed
+ok 18 - STANDARD and CRITICAL formatting gates fail closed
+  ---
+  duration_ms: 0.655885
+  type: 'test'
+  ...
+# Subtest: new neutral gate stays downstream of the still-required legacy gate
+ok 19 - new neutral gate stays downstream of the still-required legacy gate
+  ---
+  duration_ms: 0.313341
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 107.439996

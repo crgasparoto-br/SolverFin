@@ -1,0 +1,22 @@
+GitHub Actions exact-SHA authenticated technical evidence (remote):
+repository=crgasparoto-br/SolverFin
+material_head_sha=9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba
+run_id=42217453231
+run_url=https://github.com/crgasparoto-br/SolverFin/actions/runs/42217453231
+job_id=127891261672
+job_name=CRITICAL validation
+job_conclusion=success
+test_command=npm run test:integration --workspace @solverfin/api
+test_reached=card-purchase-edit-contract.integration.test.js
+test_reached=category-evolution-report.integration.test.js
+test_reached=manual-entry-fill-rules-migration.integration.test.js
+test_suite_completed=success (CRITICAL validation job)
+required_gate=Delivery V2 gate: success
+required_gate=Repository CI gate: success
+local_unit_command=python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
+local_unit_result=23 tests OK (see solo-bootstrap-local.log)
+HEAD: 9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/card-purchase-edit-contract.integration.test.ts
+REACHED: apps/api/src/manual-entry-fill-rules-migration.integration.test.ts

@@ -1,0 +1,182 @@
+{
+  "schema_version": 2,
+  "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "creations": [],
+  "references": [
+    {
+      "symbol": "withSharedTransaction",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/db.ts",
+        "line": 69
+      },
+      "verified_by": {
+        "command": "git grep -n withSharedTransaction -- apps/api/src/db.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "getPool",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/db.ts",
+        "line": 28
+      },
+      "verified_by": {
+        "command": "git grep -n getPool -- apps/api/src/db.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "deleteSimpleCardPurchaseForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+        "line": 7
+      },
+      "verified_by": {
+        "command": "git grep -n deleteSimpleCardPurchaseForContext -- apps/api/src/repositories/card-invoice-purchase-delete.ts",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Transaction VOIDED retained; rollback fixtures; stale editor waits on a database lock and rejects resurrection after competing delete.",
+      "requirement": "REQ-772-002, REQ-772-003, REQ-772-004",
+      "search": {
+        "queries": [
+          "git diff 5ad67cab..9f2955 -- apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git grep -n assertSimplePurchaseSoftDelete apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "scope": "Existing card-purchase-edit-contract integration file already handles card, invoice and recurrence flows; append adversarial tests without creating a second runner.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+            "case": "Existing happy path card purchase edit and recurrent/installment restrictions.",
+            "oracle": "assert.rejects and reread of stored PostgreSQL state, not a mocked repository.",
+            "comparison": "Added direct soft delete assertions, transaction rollback and controlled three-connection writer race; no prior tests removed."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Use the same PostgreSQL integration suite and existing tenant/profile fixture with rollback to prevent cross-test contamination.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Card purchase edit and recurring/parcelled contracts."
+      ],
+      "coverage_after": [
+        "VOlDED historic read-back, audit log, invoice and limit, foreign profile, double void, reconciled and installment blocks, lock-contention CAS and rollback of fixtures."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "reached_tests": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "64328e62dddda76ec53151f9086f4d84b5a009f1073a5e0a2944d7139501576d"
+      }
+    },
+    {
+      "path": "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts",
+      "operation": "added",
+      "scenario": "Backfill unchanged historical migration 20261028124500 in a temporary schema; compare manual description/prefix against real automation rows.",
+      "requirement": "REQ-772-005, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n manual_entry -- apps/api/src/manual-entry-fill-rules.integration.test.ts",
+          "find apps/api/src -maxdepth 1 -name \"*migration*.integration.test.ts\""
+        ],
+        "scope": "Migration replay needs old schema/trigger under transactional rollback. Existing manual fill rule integration validates current schema, not migration backfill.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/manual-entry-fill-rules.integration.test.ts",
+            "case": "Manual rule read/write behavior after migrations.",
+            "oracle": "Rule placement and classification after schema exists, not legacy migration replay.",
+            "comparison": "New test needed for actual legacy table creation, backfill and rollback."
+          },
+          {
+            "path": "apps/api/src/account-remuneration-posting-date-migration.integration.test.ts",
+            "case": "Existing isolated historical migration regression fixture.",
+            "oracle": "Uses SQL migration against transaction-scoped database fixture.",
+            "comparison": "Reuse the fixture pattern, but different table and purpose demand new entry."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "A new test is required to exercise historical SQL migration without altering applied migration or existing rule test.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Manual entry rules current-schema behavior is exercised in existing integration suite."
+      ],
+      "coverage_after": [
+        "Five legacy row variants, immutable purpose constraint, manual inactive check, healthy normal automation and rollback after all assertions."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "reached_tests": [
+          "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "64328e62dddda76ec53151f9086f4d84b5a009f1073a5e0a2944d7139501576d"
+      }
+    },
+    {
+      "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+      "operation": "modified",
+      "scenario": "Two simultaneous open GitHub PRs sharing HEAD are denied by solo attestation, with closed and divergent-HEAD benign controls.",
+      "requirement": "REQ-772-006, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n require_unique_open_pr_head tests/test_solverfin_solo_audit_bootstrap.py",
+          "git diff 5ad67cab..9f2955 -- tests/test_solverfin_solo_audit_bootstrap.py"
+        ],
+        "scope": "The existing unittest suite is the registered attestation bootstrap test harness; extend it with one unique-HEAD case and benign siblings.",
+        "runner": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "case": "Existing GitHub Actions authenticated HEAD and signature provenance checks.",
+            "oracle": "Mocks authenticated PR-association collection and expects ValueError on duplicated open PR.",
+            "comparison": "Added one test with four branches without deleting or replacing existing checks."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "No need for a second audit harness; extend existing unittest bootstrap while preserving previous tests.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Existing signature, workflow and HEAD identity cases before this issue."
+      ],
+      "coverage_after": [
+        "23 unittest cases, including shared open PRs and closed/different HEAD negative/positive alternatives."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
+        "exit_code": 0,
+        "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+        "reached_tests": [
+          "tests/test_solverfin_solo_audit_bootstrap.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
+        "evidence_sha256": "b768f497ed22ebf7a2685bb0ddabef157b676e6691b7b30cc6c8442d3f63d1be"
+      }
+    }
+  ]
+}

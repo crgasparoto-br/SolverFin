@@ -1,0 +1,27 @@
+source_probes_sha 9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba
+PASS delete-void-persisted apps/api/src/repositories/card-invoice-purchase-delete.ts 328d88552b0c45bd436b checks 3
+PASS delete-eligibility apps/api/src/repositories/card-invoice-purchase-delete.ts 328d88552b0c45bd436b checks 4
+PASS voided-listing apps/api/src/repositories/card-invoice-contracts-core.ts 3a287e94082a9a6e81ea checks 2
+PASS concurrent-edit-guard apps/api/src/repositories/card-invoice-contracts-core.ts 3a287e94082a9a6e81ea checks 4
+PASS reversal-guard apps/api/src/repositories/card-invoice-purchase-reverse.ts 6111037afb466e693536 checks 1
+PASS credit-edit-guard apps/api/src/repositories/card-invoice-reversal-edit.ts 708525e25aca34aca5f2 checks 1
+PASS period-move-guard apps/api/src/repositories/card-purchase-invoice-period-move-core.ts e55c481f25e8aae60dcc checks 2
+PASS concurrent-postgres-test apps/api/src/card-purchase-edit-contract.integration.test.ts 1e898953e71475bbbd20 checks 4
+PASS isolate-postgres-fixtures apps/api/src/card-purchase-edit-contract.integration.test.ts 1e898953e71475bbbd20 checks 3
+PASS legacy-migration-control apps/api/src/manual-entry-fill-rules-migration.integration.test.ts 67f64796aa128ccaa2af checks 4
+PASS solo-shared-head-test tests/test_solverfin_solo_audit_bootstrap.py d4b0d2ebbe6311035f8d checks 2
+PASS ui-confirmation apps/web/src/dev-server/cards-page-v2-script-purchases.ts 94fc28701205a70d02aa checks 1
+PASS api-documentation docs/API_CREDIT_CARDS_INVOICES.md f5810a39b2f820b491cc checks 3
+changed_paths:
+M	apps/api/src/card-purchase-edit-contract.integration.test.ts
+A	apps/api/src/manual-entry-fill-rules-migration.integration.test.ts
+M	apps/api/src/repositories/card-invoice-contracts-core.ts
+M	apps/api/src/repositories/card-invoice-contracts.ts
+M	apps/api/src/repositories/card-invoice-purchase-delete.ts
+M	apps/api/src/repositories/card-invoice-purchase-reverse.ts
+M	apps/api/src/repositories/card-invoice-reversal-edit.ts
+M	apps/api/src/repositories/card-purchase-invoice-period-move-core.ts
+M	apps/web/src/dev-server/cards-page-v2-script-purchases.ts
+M	docs/API_CREDIT_CARDS_INVOICES.md
+M	tests/test_solverfin_solo_audit_bootstrap.py
+PASS no deleted files/no migration/workflow/secret changes; material descends from develop base

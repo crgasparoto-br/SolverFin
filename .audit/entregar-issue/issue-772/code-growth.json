@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "9f2955cd9dfcd9b2c1fbaf3efd81ef08334f31ba",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "comparison_base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
+      "lines_before": 886,
+      "lines_after": 906
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-contracts.ts",
+      "lines_before": 116,
+      "lines_after": 117
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+      "lines_before": 112,
+      "lines_after": 119
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
+      "lines_before": 175,
+      "lines_after": 176
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-reversal-edit.ts",
+      "lines_before": 135,
+      "lines_after": 135
+    },
+    {
+      "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+      "lines_before": 500,
+      "lines_after": 500
+    },
+    {
+      "path": "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
+      "lines_before": 165,
+      "lines_after": 165
+    }
+  ],
+  "blocking_files": []
+}
