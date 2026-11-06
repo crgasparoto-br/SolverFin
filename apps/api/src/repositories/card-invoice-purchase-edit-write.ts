@@ -3,7 +3,17 @@ import type { EntityId, TenantContext } from "@solverfin/domain";
 import type { QueryExecutor } from "../db.js";
 import { InvoiceContractError } from "./card-invoice-contracts-core.js";
 
-export const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
+const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
+
+export function assertCardPurchaseInvoiceStatusEditable(status: string): void {
+  if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(status)) {
+    throw new InvoiceContractError(
+      "CARD_PURCHASE_INVOICE_LOCKED",
+      "Compras de faturas fechadas, pagas ou canceladas nao podem ser editadas.",
+      409,
+    );
+  }
+}
 
 /** Lock the invoice and commit an eligible delta or roll back the purchase edit. */
 export async function applyEditableCardPurchaseInvoiceChangeInTransaction(
