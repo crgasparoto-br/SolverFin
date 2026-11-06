@@ -121,14 +121,16 @@ altera o registro. Compras conciliadas, com parcelas, recorrências ou membros d
 agrupamentos não podem ser excluídas por esse endpoint; a API valida tenant, perfil,
 fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão física.
 
-Uma compra com **estorno ativo** na mesma fatura não pode ser anulada isoladamente,
-mesmo quando outras compras deixam o total da fatura positivo: a API retorna
-`CARD_PURCHASE_ACTIVE_REVERSAL` (HTTP 409) sem alterar compra, crédito, total
-ou auditoria. Primeiro deve-se anular o crédito pelo fluxo especializado de
-estorno; depois é possível anular a compra original, se continuar elegível.
-O cálculo de exclusão também exige saldo de fatura não negativo na própria
-gravação SQL; saldos incompatíveis são recusados com erro de contrato HTTP 409,
-sem expor a violação de constraint do banco.
+Uma compra com **estorno ativo** não pode ser anulada isoladamente nem
+transferida para outra fatura, mesmo quando outras compras deixam o total
+positivo: a API retorna `CARD_PURCHASE_ACTIVE_REVERSAL` (HTTP 409) e reverte
+integralmente a operação, preservando compra, crédito, totais e auditoria.
+O vínculo é verificado em todas as faturas do cartão, não apenas na atual.
+Primeiro deve-se anular o crédito pelo fluxo especializado de estorno; depois
+é possível anular ou transferir a compra original, se continuar elegível.
+Os ajustes de exclusão e transferência também exigem saldo de fatura não
+negativo na própria gravação SQL; saldos incompatíveis são recusados com erro
+de contrato HTTP 409, sem expor a violação de constraint do banco.
 A rota e o envelope de resposta existentes são mantidos para compatibilidade.
 Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
 lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
