@@ -84,7 +84,11 @@ async function main(): Promise<void> {
   await assertLockedInvoiceRejectsCardPurchaseEdit(suffix);
   await assertSimplePurchaseSoftDelete(account.id, physicalInstrument.id, suffix);
   await assertConcurrentPurchaseEditCannotResurrect(account.id, physicalInstrument.id, suffix);
-  await assertConcurrentInvoiceClosureRejectsPurchaseEdit(account.id, physicalInstrument.id, suffix);
+  await assertConcurrentInvoiceClosureRejectsPurchaseEdit(
+    account.id,
+    physicalInstrument.id,
+    suffix,
+  );
   await assertConcurrentReversalEditCannotResurrect(account.id, physicalInstrument.id, suffix);
 }
 
