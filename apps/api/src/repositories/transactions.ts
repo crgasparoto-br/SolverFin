@@ -28,6 +28,7 @@ import { insertAuditLogEntry } from "./audit.js";
 import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
 import {
   assertGenericCardEditAllowed,
+  isCanonicalInstallmentReconciliation,
   updateActiveGenericTransaction,
 } from "./transaction-generic-write.js";
 import { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
@@ -147,18 +148,6 @@ type UpdateTransactionPayloadWithMetadata = Omit<UpdateTransactionPayload, "cate
 
 export interface UpdateTransactionOptions {
   denyCanonicalInstallmentMutation?: boolean;
-}
-
-function isCanonicalInstallmentReconciliation(
-  currentStatus: TransactionStatus,
-  payload: UpdateTransactionPayloadWithMetadata,
-): boolean {
-  const keys = Object.keys(payload);
-  if (keys.length !== 1 || payload.status === undefined) return false;
-  if (payload.status === "reconciled") {
-    return currentStatus === "planned" || currentStatus === "posted";
-  }
-  return payload.status === "posted" && currentStatus === "reconciled";
 }
 
 type TransactionMetadata = {
@@ -335,6 +324,9 @@ export async function updateTransactionForContext(
     ...(category ? { category } : {}),
   });
   const transaction = attachNote(result.transaction, prepared.note);
+  const reconciliationOnly =
+    currentTransaction !== undefined &&
+    isCanonicalInstallmentReconciliation(currentTransaction.status, payload);
 
   if (prepared.metadata.applyToFuturePlanned === true && currentTransaction?.recurrenceId) {
     assertRecurringTransferSameCurrency(transaction);
@@ -345,16 +337,19 @@ export async function updateTransactionForContext(
       executeQuery,
       buildTransactionParams(transaction),
       currentTransaction?.updatedAt,
+      reconciliationOnly,
     );
-    await syncInstallmentById(
-      executeQuery,
-      context,
-      currentTransaction?.installmentId,
-      transaction.plannedOn,
-      transaction.amountMinor,
-      transaction.currency,
-      transaction.updatedAt,
-    );
+    if (!reconciliationOnly) {
+      await syncInstallmentById(
+        executeQuery,
+        context,
+        currentTransaction?.installmentId,
+        transaction.plannedOn,
+        transaction.amountMinor,
+        transaction.currency,
+        transaction.updatedAt,
+      );
+    }
     await insertAuditLogEntry(executeQuery, result.auditEntry);
 
     if (prepared.metadata.applyToFuturePlanned === true) {
