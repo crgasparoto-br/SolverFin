@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "comparison_base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/api/src/credit-card-accounts-dispatcher.ts",
+      "lines_before": 192,
+      "lines_after": 270
+    },
+    {
+      "path": "apps/api/src/router.ts",
+      "lines_before": 1214,
+      "lines_after": 1227
+    },
+    {
+      "path": "apps/web/src/dev-server/operational-installments.ts",
+      "lines_before": 842,
+      "lines_after": 862
+    },
+    {
+      "path": "apps/web/src/dev-server/recurrences-section.ts",
+      "lines_before": 653,
+      "lines_after": 658
+    },
+    {
+      "path": "apps/web/src/dev-server/recurring-card-scope-controller.ts",
+      "lines_before": 356,
+      "lines_after": 358
+    },
+    {
+      "path": "apps/web/src/dev-server/transactions-page-v2.ts",
+      "lines_before": 1844,
+      "lines_after": 1844
+    },
+    {
+      "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "lines_before": 694,
+      "lines_after": 700
+    },
+    {
+      "path": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+      "lines_before": null,
+      "lines_after": 251
+    }
+  ],
+  "blocking_files": []
+}

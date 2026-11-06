@@ -1,0 +1,454 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "0f637034bc1cefe7847d4787e95bd68d6e6648c3cf5ff7886abdadb00685794a"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-774",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "8390e67c38e6a20bb40c4668b6cfd03751e478b50d00be448fc1d48c550b0b76",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 2,
+      "source_text": "Em 06/11/2026, no Extrato bancário, uma ocorrência de **lançamento recorrente** foi marcada como conciliada e depois desconciliada; após retornar a `posted`/não conciliado, a edição pelo modal **Editar lançamento** não pode ser salva. A interface envia a opção “Somente este lançamento” ao mesmo `PATCH /api/transactions/:id` utilizado para alterações genéricas, que corretamente bloqueia mutações de parcelas canônicas com `INSTALLMENT_DIRECT_UPDATE_REQUIRED`.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "O relato original reproduz a divergência entre PATCH genérico bloqueado e rota de escopo atual; a edição via current-only está no dispatcher e no teste PostgreSQL."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "73440868876b26fb265d7f95213931beeb911f48a0f2a7544f04c5529dd74177",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 5,
+      "source_text": "Restaurar a edição da ocorrência recorrente **desconciliada** por caminho próprio de escopo `current_only`, sem liberar mutações genéricas de parcelas comuns ou compras em cartão e sem alterar outras ocorrências.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "O endpoint current-only protege as parcelas genéricas e os cartões; os controladores web recorrem ao caminho próprio, sem propagar alterações às demais ocorrências."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "2f9eb63214b4d20f064e917e220d375aa38a45bf8370861a3f49e40cc128c6c9",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 8,
+      "source_text": "[ ] Recorrência de conta em `planned` ou `posted` após conciliar → desconciliar permite editar “Somente este lançamento”; campos permitidos do modal, datas, descrição, categoria, valor e conta persistem.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-003"
+      ],
+      "scope_decision": null,
+      "rationale": "O teste de integração troca conta e categoria entre valores distintos após conciliar e desconciliar, limpa categoria e lê persistência; Chrome reproduz o modal real."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "2b4a085af1f2f632ce946defc1eb81283397a4b3f2049ef420f21015af00be0c",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 9,
+      "source_text": "[ ] Opção “Este lançamento e os próximos” continua usando o fluxo próprio de recorrência, preservando ocorrências futuras efetivadas/conciliadas e o comportamento existente.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-004"
+      ],
+      "scope_decision": null,
+      "rationale": "A opção current_and_future mantém o caminho genérico com applyToFuturePlanned e a integração antiga conserva ocorrências futuras bloqueadas."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "875abdabd07e76e0640c338655bb841deb3746e4065e5b93e19ba5b2b83dfb3a",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 10,
+      "source_text": "[ ] `PATCH /api/transactions/:id` continua bloqueando atualizações combinadas de `installmentId` (`409 INSTALLMENT_DIRECT_UPDATE_REQUIRED`); única exceção segue sendo PATCH exclusivo de status para conciliar/desconciliar.",
+      "flags": [
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-005"
+      ],
+      "scope_decision": null,
+      "rationale": "O endpoint genérico exige payload de status exclusivo para uma parcela canônica, lança INSTALLMENT_DIRECT_UPDATE_REQUIRED em atualização de dados e não perde a proteção com o lock."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "42af6603400a61e8feeda8b6f1f7ec609f2a2495d26975cd1fb8a107e2d31b2d",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 11,
+      "source_text": "[ ] A rota `/current-only` exige recorrência de **conta** real e escopo autorizado; não pode liberar atualização de parcela manual, compra de cartão/fatura, ocorrência conciliada, anulada ou recorrência cancelada. Identidade tenant/perfil preservada.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-006"
+      ],
+      "scope_decision": null,
+      "rationale": "O dispatcher consulta Transaction, Recurrence e Installment sob organizationId e financialProfileId autenticados; bloqueia manual, cartão, fatura, cancelada e reconciliada."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "9e144d1f9dc5cca7927dbae9a0d29586bd1b1c019248f3ba77691d8480528dda",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 12,
+      "source_text": "[ ] Mudanças de situação na edição não podem contornar a conciliação operacional; a API só aceita status igual ao persistido nesse fluxo.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-007"
+      ],
+      "scope_decision": null,
+      "rationale": "O dispatcher compara o campo status com o estado persistido antes de atualizar e bloqueia expansão de escopo; testes diretos forjam status diferente e futuro."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "1164eb44883695c3ba7290fcfeee41ce582283671c0e0cb6dfda8c8d6cfc6b2d",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 13,
+      "source_text": "[ ] Sincronização com parcela canônica, isolamento de demais ocorrências e definição da recorrência; sem alterar valores ou vínculos de terceiros.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-008"
+      ],
+      "scope_decision": null,
+      "rationale": "Transação, parcela e log de auditoria são persistidos na mesma transação; contas e categorias da regra/siblings não mudam, e os testes incluem corrida de cancelamento."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "61f81be5b383e4479a17a2d05afafb8c394e5bb5bb41ae92cdd6cb480542eea1",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 14,
+      "source_text": "[ ] Testes discriminantes de API e frontend para positivo/negativo/regressão, CI e evidência real Chrome quando disponível; aplicar Golden Screen.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-009"
+      ],
+      "scope_decision": null,
+      "rationale": "Testes de controladores, integração PostgreSQL e Chrome real cobrem os caminhos novos e negativos; evidência de execução exata será vinculada ao SHA material final."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "c905bbbc40066400e70622c0159f27010d5eb5d41cef03a49c609b906c2d8328",
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "source_line": 15,
+      "source_text": "[ ] Branch e PR baseadas em `develop`, padrões de `crgasparoto-br/skill`. Sem merge automático nem conclusão por CI isolada.",
+      "flags": [
+        "negative",
+        "isolation"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-774-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "A PR #775 está aberta para develop sem merge; a entrega usa a Skill oficial, com certificado próprio produzido somente após os gates do SHA definitivo."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-774",
+      "source_sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "candidate_count": 10,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [
+    {
+      "id": "OBS-003",
+      "description": "O teste de integração troca conta e categoria entre valores distintos após conciliar e desconciliar, limpa categoria e lê persistência; Chrome reproduz o modal real.",
+      "requirement_ids": [
+        "REQ-774-003"
+      ],
+      "obligation_ids": [
+        "OBL-003"
+      ],
+      "evidence_ids": [
+        "EV-774-003"
+      ],
+      "scenario_ids": [
+        "SC-774-003"
+      ],
+      "negative_control_evidence": [
+        "NC-774-003:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-004",
+      "description": "A opção current_and_future mantém o caminho genérico com applyToFuturePlanned e a integração antiga conserva ocorrências futuras bloqueadas.",
+      "requirement_ids": [
+        "REQ-774-004"
+      ],
+      "obligation_ids": [
+        "OBL-004"
+      ],
+      "evidence_ids": [
+        "EV-774-004"
+      ],
+      "scenario_ids": [
+        "SC-774-004"
+      ],
+      "negative_control_evidence": [
+        "NC-774-004:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-005",
+      "description": "O endpoint genérico exige payload de status exclusivo para uma parcela canônica, lança INSTALLMENT_DIRECT_UPDATE_REQUIRED em atualização de dados e não perde a proteção com o lock.",
+      "requirement_ids": [
+        "REQ-774-005"
+      ],
+      "obligation_ids": [
+        "OBL-005"
+      ],
+      "evidence_ids": [
+        "EV-774-005"
+      ],
+      "scenario_ids": [
+        "SC-774-005"
+      ],
+      "negative_control_evidence": [
+        "NC-774-005:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-006",
+      "description": "O dispatcher consulta Transaction, Recurrence e Installment sob organizationId e financialProfileId autenticados; bloqueia manual, cartão, fatura, cancelada e reconciliada.",
+      "requirement_ids": [
+        "REQ-774-006"
+      ],
+      "obligation_ids": [
+        "OBL-006"
+      ],
+      "evidence_ids": [
+        "EV-774-006"
+      ],
+      "scenario_ids": [
+        "SC-774-006"
+      ],
+      "negative_control_evidence": [
+        "NC-774-006:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-007",
+      "description": "O dispatcher compara o campo status com o estado persistido antes de atualizar e bloqueia expansão de escopo; testes diretos forjam status diferente e futuro.",
+      "requirement_ids": [
+        "REQ-774-007"
+      ],
+      "obligation_ids": [
+        "OBL-007"
+      ],
+      "evidence_ids": [
+        "EV-774-007"
+      ],
+      "scenario_ids": [
+        "SC-774-007"
+      ],
+      "negative_control_evidence": [
+        "NC-774-007:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-008",
+      "description": "Transação, parcela e log de auditoria são persistidos na mesma transação; contas e categorias da regra/siblings não mudam, e os testes incluem corrida de cancelamento.",
+      "requirement_ids": [
+        "REQ-774-008"
+      ],
+      "obligation_ids": [
+        "OBL-008"
+      ],
+      "evidence_ids": [
+        "EV-774-008"
+      ],
+      "scenario_ids": [
+        "SC-774-008"
+      ],
+      "negative_control_evidence": [
+        "NC-774-008:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    },
+    {
+      "id": "OBS-009",
+      "description": "Testes de controladores, integração PostgreSQL e Chrome real cobrem os caminhos novos e negativos; evidência de execução exata será vinculada ao SHA material final.",
+      "requirement_ids": [
+        "REQ-774-009"
+      ],
+      "obligation_ids": [
+        "OBL-009"
+      ],
+      "evidence_ids": [
+        "EV-774-009"
+      ],
+      "scenario_ids": [
+        "SC-774-009"
+      ],
+      "negative_control_evidence": [
+        "NC-774-009:apps/api/src/current-only-recurring-edit.integration.test.ts"
+      ]
+    }
+  ],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "A issue altera apenas operações de escrita e formulário, sem introduzir um modelo histórico, paginação, versões ou novas projeções de leitura.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "A parcela canônica segue protegida pelo PATCH genérico e a rota específica de conta preserva a mesma fonte de dados e sincroniza a parcela selecionada.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Contrato de rota e elegibilidade cruzado com docs/TRANSACTIONS.md, docs/API_INSTALLMENTS.md, docs/RECURRENCES_INSTALLMENTS_WEB.md e os dois consumidores de UI.",
+    "old_contract_terms": [
+      "generic PATCH /api/transactions/:id blocks canonical installment data mutations"
+    ],
+    "new_contract_terms": [
+      "PATCH /api/transactions/:id/current-only for eligible recurrence of account"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "git grep -nE INSTALLMENT_DIRECT_UPDATE_REQUIRED|/current-only|Somente este lançamento -- docs; docs/RECURRENCES_INSTALLMENTS_WEB.md:56"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-774-001",
+      "REQ-774-002",
+      "REQ-774-003",
+      "REQ-774-004",
+      "REQ-774-005",
+      "REQ-774-006",
+      "REQ-774-007",
+      "REQ-774-008",
+      "REQ-774-009",
+      "REQ-774-010"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010"
+    ],
+    "evidence": [
+      "apps/api/src/current-only-recurring-edit.integration.test.ts",
+      "apps/api/src/credit-card-accounts-dispatcher.ts",
+      "apps/web/src/dev-server/recurrences-section.ts",
+      "apps/web/src/dev-server/recurring-card-scope-controller.ts",
+      "apps/web/src/dev-server/operational-installments.ts",
+      "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+      "docs/TRANSACTIONS.md",
+      "docs/API_INSTALLMENTS.md"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

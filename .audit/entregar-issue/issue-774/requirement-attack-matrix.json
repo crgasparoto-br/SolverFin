@@ -1,0 +1,813 @@
+{
+  "schema_version": 1,
+  "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+  "requirements": [
+    {
+      "requirement_id": "REQ-774-001",
+      "obligation_ids": [
+        "OBL-001"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "Em 06/11/2026, no Extrato bancário, uma ocorrência de **lançamento recorrente** foi marcada como conciliada e depois desconciliada; após retornar a `posted`/não conciliado, a edição pelo modal **Editar lançamento** não pode ser salva. A interface envia a opção “Somente este lançamento” ao mesmo `PATCH /api/transactions/:id` utilizado para alterações genéricas, que corretamente bloqueia mutações de parcelas canônicas com `INSTALLMENT_DIRECT_UPDATE_REQUIRED`."
+      ],
+      "plausible_wrong_implementation": "Missing selected occurrence after reconciliation is silently treated as an already editable planned item",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "The test first reconciles then unreconciles and asserts current-only PATCH returns HTTP 200 with persisted posted state.",
+        "observed": "The test first reconciles then unreconciles and asserts current-only PATCH returns HTTP 200 with persisted posted state.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-001-tem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "temporal-consistency",
+          "surface": "state-transition",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Already reconciled occurrence stays locked and cannot accept data mutation.",
+          "plausible_wrong_implementation": "Missing selected occurrence after reconciliation is silently treated as an already editable planned item",
+          "procedure": "The test first reconciles then unreconciles and asserts current-only PATCH returns HTTP 200 with persisted posted state. Already reconciled occurrence stays locked and cannot accept data mutation.",
+          "expected": "Already reconciled occurrence stays locked and cannot accept data mutation.",
+          "observed": "Already reconciled occurrence stays locked and cannot accept data mutation.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-001-tem-s1",
+              "surface": "state-transition",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-001-tem-s2",
+              "surface": "state-transition",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "NC-774-001-tem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "state-transition",
+          "reason": "Check the state-transition boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-002",
+      "obligation_ids": [
+        "OBL-002"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Restaurar a edição da ocorrência recorrente **desconciliada** por caminho próprio de escopo `current_only`, sem liberar mutações genéricas de parcelas comuns ou compras em cartão e sem alterar outras ocorrências."
+      ],
+      "plausible_wrong_implementation": "Generic installment edit route could mutate sibling installments instead of the selected account occurrence",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Selected current-only occurrence changes while the recurrence rule and its first/last siblings remain unchanged.",
+        "observed": "Selected current-only occurrence changes while the recurrence rule and its first/last siblings remain unchanged.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-002-sem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "scope-isolation",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Card purchases and manual transactions cannot use the account recurrence current-only endpoint.",
+          "plausible_wrong_implementation": "Generic installment edit route could mutate sibling installments instead of the selected account occurrence",
+          "procedure": "Selected current-only occurrence changes while the recurrence rule and its first/last siblings remain unchanged. Card purchases and manual transactions cannot use the account recurrence current-only endpoint.",
+          "expected": "Card purchases and manual transactions cannot use the account recurrence current-only endpoint.",
+          "observed": "Card purchases and manual transactions cannot use the account recurrence current-only endpoint.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-002-sem-s1",
+              "surface": "scope-isolation",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-002-sem-s2",
+              "surface": "scope-isolation",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "NC-774-002-sem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "scope-isolation",
+          "reason": "Check the scope-isolation boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-003",
+      "obligation_ids": [
+        "OBL-003"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "[ ] Recorrência de conta em `planned` ou `posted` após conciliar → desconciliar permite editar “Somente este lançamento”; campos permitidos do modal, datas, descrição, categoria, valor e conta persistem."
+      ],
+      "plausible_wrong_implementation": "Form omits categoryId null and accountId change, or persists occurredOn without synchronizing installment dueOn",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Distinct account and category IDs, dates and minor units are persisted, null category is reread, and siblings retain old values.",
+        "observed": "Distinct account and category IDs, dates and minor units are persisted, null category is reread, and siblings retain old values.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-003-tem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "temporal-consistency",
+          "surface": "edited-field-persistence",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "A null category is not stringified and the recurrence rule stays on its original category and account.",
+          "plausible_wrong_implementation": "Form omits categoryId null and accountId change, or persists occurredOn without synchronizing installment dueOn",
+          "procedure": "Distinct account and category IDs, dates and minor units are persisted, null category is reread, and siblings retain old values. A null category is not stringified and the recurrence rule stays on its original category and account.",
+          "expected": "A null category is not stringified and the recurrence rule stays on its original category and account.",
+          "observed": "A null category is not stringified and the recurrence rule stays on its original category and account.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-003-tem-s1",
+              "surface": "edited-field-persistence",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-003-tem-s2",
+              "surface": "edited-field-persistence",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "NC-774-003-tem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "edited-field-persistence",
+          "reason": "Check the edited-field-persistence boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-004",
+      "obligation_ids": [
+        "OBL-004"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Opção “Este lançamento e os próximos” continua usando o fluxo próprio de recorrência, preservando ocorrências futuras efetivadas/conciliadas e o comportamento existente."
+      ],
+      "plausible_wrong_implementation": "Current-only request leaks to future planned series and modifies already posted or reconciled installments",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Expanded recurrence flow is invoked separately and preserves the prior occurrence.",
+        "observed": "Expanded recurrence flow is invoked separately and preserves the prior occurrence.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-004-sem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "future-scope-boundary",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Current-only PATCH with applyToFuturePlanned true returns 409 and leaves the series unchanged.",
+          "plausible_wrong_implementation": "Current-only request leaks to future planned series and modifies already posted or reconciled installments",
+          "procedure": "Expanded recurrence flow is invoked separately and preserves the prior occurrence. Current-only PATCH with applyToFuturePlanned true returns 409 and leaves the series unchanged.",
+          "expected": "Current-only PATCH with applyToFuturePlanned true returns 409 and leaves the series unchanged.",
+          "observed": "Current-only PATCH with applyToFuturePlanned true returns 409 and leaves the series unchanged.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-004-sem-s1",
+              "surface": "future-scope-boundary",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-004-sem-s2",
+              "surface": "future-scope-boundary",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-004",
+          "primary_negative_control_id": "NC-774-004-sem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "future-scope-boundary",
+          "reason": "Check the future-scope-boundary boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-005",
+      "obligation_ids": [
+        "OBL-005"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] `PATCH /api/transactions/:id` continua bloqueando atualizações combinadas de `installmentId` (`409 INSTALLMENT_DIRECT_UPDATE_REQUIRED`); única exceção segue sendo PATCH exclusivo de status para conciliar/desconciliar."
+      ],
+      "plausible_wrong_implementation": "Generic transaction PATCH silently allows data and status changes for canonical installment",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Status-only reconciled-to-posted and posted-to-reconciled transitions work.",
+        "observed": "Status-only reconciled-to-posted and posted-to-reconciled transitions work.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-005-sem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "generic-guard",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Generic PATCH combining status and description returns 409 INSTALLMENT_DIRECT_UPDATE_REQUIRED.",
+          "plausible_wrong_implementation": "Generic transaction PATCH silently allows data and status changes for canonical installment",
+          "procedure": "Status-only reconciled-to-posted and posted-to-reconciled transitions work. Generic PATCH combining status and description returns 409 INSTALLMENT_DIRECT_UPDATE_REQUIRED.",
+          "expected": "Generic PATCH combining status and description returns 409 INSTALLMENT_DIRECT_UPDATE_REQUIRED.",
+          "observed": "Generic PATCH combining status and description returns 409 INSTALLMENT_DIRECT_UPDATE_REQUIRED.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-005-sem-s1",
+              "surface": "generic-guard",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-005-sem-s2",
+              "surface": "generic-guard",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-005",
+          "primary_negative_control_id": "NC-774-005-sem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "generic-guard",
+          "reason": "Check the generic-guard boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-006",
+      "obligation_ids": [
+        "OBL-006"
+      ],
+      "risk_families": [
+        "authorization"
+      ],
+      "source_texts": [
+        "[ ] A rota `/current-only` exige recorrência de **conta** real e escopo autorizado; não pode liberar atualização de parcela manual, compra de cartão/fatura, ocorrência conciliada, anulada ou recorrência cancelada. Identidade tenant/perfil preservada."
+      ],
+      "plausible_wrong_implementation": "Approval evidence for only current occurrence is reused for an unrelated future effect outside the authorized scope",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Authorization and account recurrence contract permit current-only changes for a posted occurrence.",
+        "observed": "Authorization and account recurrence contract permit current-only changes for a posted occurrence.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-006-aut",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "authorization",
+          "surface": "evidence-effect-scope",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Evidence for current-only does not authorize a divergent future mutation effect: applyToFuturePlanned true rejected with 409; card and manual requests rejected.",
+          "plausible_wrong_implementation": "Approval evidence for only current occurrence is reused for an unrelated future effect outside the authorized scope",
+          "procedure": "Authorization and account recurrence contract permit current-only changes for a posted occurrence. Evidence for current-only does not authorize a divergent future mutation effect: applyToFuturePlanned true rejected with 409; card and manual requests rejected.",
+          "expected": "Evidence for current-only does not authorize a divergent future mutation effect: applyToFuturePlanned true rejected with 409; card and manual requests rejected.",
+          "observed": "Evidence for current-only does not authorize a divergent future mutation effect: applyToFuturePlanned true rejected with 409; card and manual requests rejected.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-006-aut-s1",
+              "surface": "evidence-effect-scope",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-006-aut-s2",
+              "surface": "evidence-effect-scope",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-006",
+          "primary_negative_control_id": "NC-774-006-aut"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "authorization",
+          "surface": "evidence-effect-scope",
+          "reason": "Check the evidence-effect-scope boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-007",
+      "obligation_ids": [
+        "OBL-007"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Mudanças de situação na edição não podem contornar a conciliação operacional; a API só aceita status igual ao persistido nesse fluxo."
+      ],
+      "plausible_wrong_implementation": "Current-only edit is allowed to reconcile without the status-only operational API",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Current-only edit passing unchanged posted status succeeds.",
+        "observed": "Current-only edit passing unchanged posted status succeeds.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-007-sem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "status-immutability",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Status bypass to reconciled with changed description returns 409; reconciliation still uses exclusive generic PATCH.",
+          "plausible_wrong_implementation": "Current-only edit is allowed to reconcile without the status-only operational API",
+          "procedure": "Current-only edit passing unchanged posted status succeeds. Status bypass to reconciled with changed description returns 409; reconciliation still uses exclusive generic PATCH.",
+          "expected": "Status bypass to reconciled with changed description returns 409; reconciliation still uses exclusive generic PATCH.",
+          "observed": "Status bypass to reconciled with changed description returns 409; reconciliation still uses exclusive generic PATCH.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-007-sem-s1",
+              "surface": "status-immutability",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-007-sem-s2",
+              "surface": "status-immutability",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-007",
+          "primary_negative_control_id": "NC-774-007-sem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "status-immutability",
+          "reason": "Check the status-immutability boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-008",
+      "obligation_ids": [
+        "OBL-008"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "[ ] Sincronização com parcela canônica, isolamento de demais ocorrências e definição da recorrência; sem alterar valores ou vínculos de terceiros."
+      ],
+      "plausible_wrong_implementation": "Editing the selected transaction causes unrelated canonical installment or rule to be overwritten",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+        "procedure": "Updated dueOn/amount and selected account/category are persisted with same transaction and installment IDs.",
+        "observed": "Updated dueOn/amount and selected account/category are persisted with same transaction and installment IDs.",
+        "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-008-sem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "installment-sync",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Cancellation wins over concurrent current-only edit and siblings/rule remain unchanged.",
+          "plausible_wrong_implementation": "Editing the selected transaction causes unrelated canonical installment or rule to be overwritten",
+          "procedure": "Updated dueOn/amount and selected account/category are persisted with same transaction and installment IDs. Cancellation wins over concurrent current-only edit and siblings/rule remain unchanged.",
+          "expected": "Cancellation wins over concurrent current-only edit and siblings/rule remain unchanged.",
+          "observed": "Cancellation wins over concurrent current-only edit and siblings/rule remain unchanged.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-008-sem-s1",
+              "surface": "installment-sync",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-008-sem-s2",
+              "surface": "installment-sync",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-008",
+          "primary_negative_control_id": "NC-774-008-sem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "installment-sync",
+          "reason": "Check the installment-sync boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-009",
+      "obligation_ids": [
+        "OBL-009"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "[ ] Testes discriminantes de API e frontend para positivo/negativo/regressão, CI e evidência real Chrome quando disponível; aplicar Golden Screen."
+      ],
+      "plausible_wrong_implementation": "Mock-only test asserts route name while real browser cannot edit the occurrence after unreconciliation",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+        "procedure": "Real Chrome scenario checks reconciled restriction, unreconcile, modal scope, new account/category and readback.",
+        "observed": "Real Chrome scenario checks reconciled restriction, unreconcile, modal scope, new account/category and readback.",
+        "evidence_sha256": "c8f07eba0dfa6ebe2661aaa49ddd33d31e64c19c8599dc64896dea9a4e2fd1a6"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-009-tem",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+          "evidence_sha256": "c8f07eba0dfa6ebe2661aaa49ddd33d31e64c19c8599dc64896dea9a4e2fd1a6",
+          "control_type": "test",
+          "risk_family": "temporal-consistency",
+          "surface": "browser-replay",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Chrome scenario rejects a missing editor, wrong scope, unpersisted category clearing or stale recurrence.",
+          "plausible_wrong_implementation": "Mock-only test asserts route name while real browser cannot edit the occurrence after unreconciliation",
+          "procedure": "Real Chrome scenario checks reconciled restriction, unreconcile, modal scope, new account/category and readback. Chrome scenario rejects a missing editor, wrong scope, unpersisted category clearing or stale recurrence.",
+          "expected": "Chrome scenario rejects a missing editor, wrong scope, unpersisted category clearing or stale recurrence.",
+          "observed": "Chrome scenario rejects a missing editor, wrong scope, unpersisted category clearing or stale recurrence.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-009-tem-s1",
+              "surface": "browser-replay",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-009-tem-s2",
+              "surface": "browser-replay",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+          "evidence_sha256": "c8f07eba0dfa6ebe2661aaa49ddd33d31e64c19c8599dc64896dea9a4e2fd1a6",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-009",
+          "primary_negative_control_id": "NC-774-009-tem"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "browser-replay",
+          "reason": "Check the browser-replay boundary using the exact current head contract and persisted assertions."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-774-010",
+      "obligation_ids": [
+        "OBL-010"
+      ],
+      "risk_families": [
+        "tenant-isolation",
+        "documentation"
+      ],
+      "source_texts": [
+        "[ ] Branch e PR baseadas em `develop`, padrões de `crgasparoto-br/skill`. Sem merge automático nem conclusão por CI isolada."
+      ],
+      "plausible_wrong_implementation": "Use a transaction from a second financial profile with the primary token to mutate a foreign record",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
+        "procedure": "Existing repository integration tests enforce tenant and profile account reference boundaries.",
+        "observed": "Existing repository integration tests enforce tenant and profile account reference boundaries.",
+        "evidence_sha256": "c89bb441c4b42dce6fc6125e743bfaaa6093d8e6983d51dd76800ee4ef33909f"
+      },
+      "negative_controls": [
+        {
+          "id": "NC-774-010-ten",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
+          "evidence_sha256": "c89bb441c4b42dce6fc6125e743bfaaa6093d8e6983d51dd76800ee4ef33909f",
+          "control_type": "test",
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "Different profile account is rejected during account recurrence update and cannot leak financial data outside tenant/profile.",
+          "plausible_wrong_implementation": "Use a transaction from a second financial profile with the primary token to mutate a foreign record",
+          "procedure": "Existing repository integration tests enforce tenant and profile account reference boundaries. Different profile account is rejected during account recurrence update and cannot leak financial data outside tenant/profile.",
+          "expected": "Different profile account is rejected during account recurrence update and cannot leak financial data outside tenant/profile.",
+          "observed": "Different profile account is rejected during account recurrence update and cannot leak financial data outside tenant/profile.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-010-ten-s1",
+              "surface": "tenant-scope-isolation",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-010-ten-s2",
+              "surface": "tenant-scope-isolation",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NC-774-010-doc",
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "docs/TRANSACTIONS.md",
+          "evidence_sha256": "2b40f52d12937aaf9d6914607b4aeeb507f922f64e9287f4c137d7f4b4ff5c13",
+          "control_type": "procedure",
+          "risk_family": "documentation",
+          "surface": "github-target-contract",
+          "dimension": "reject-divergent-scope",
+          "failure_mode": "A stale handoff from issue 764 cannot certify PR 775; the GitHub target binding is mandatory.",
+          "plausible_wrong_implementation": "Use a transaction from a second financial profile with the primary token to mutate a foreign record",
+          "procedure": "Existing repository integration tests enforce tenant and profile account reference boundaries. A stale handoff from issue 764 cannot certify PR 775; the GitHub target binding is mandatory.",
+          "expected": "A stale handoff from issue 764 cannot certify PR 775; the GitHub target binding is mandatory.",
+          "observed": "A stale handoff from issue 764 cannot certify PR 775; the GitHub target binding is mandatory.",
+          "sibling_cases": [
+            {
+              "id": "NC-774-010-doc-s1",
+              "surface": "github-target-contract",
+              "dimension": "authorized-single-occurrence",
+              "status": "passed"
+            },
+            {
+              "id": "NC-774-010-doc-s2",
+              "surface": "github-target-contract",
+              "dimension": "rejected-out-of-scope",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+          "evidence": "apps/api/src/transaction-account-recurrence.integration.test.ts",
+          "evidence_sha256": "c89bb441c4b42dce6fc6125e743bfaaa6093d8e6983d51dd76800ee4ef33909f",
+          "procedure": "Repository CI #42300563999 ran integration regression and all historical tests for the changed contract.",
+          "observed": "CI CRITICAL integration suite completed successfully on material head."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-010",
+          "primary_negative_control_id": "NC-774-010-ten"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "reason": "Check the tenant-scope-isolation boundary using the exact current head contract and persisted assertions."
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "github-target-contract",
+          "reason": "Trusted repository and PR base must be checked independently of self-declared release readiness."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}

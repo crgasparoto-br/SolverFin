@@ -1,0 +1,12 @@
+SOURCE: GitHub Actions Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/42300563999
+HEAD: a16a1322715faa821a33a9638ffae58ea9ddd9d4
+RESULT: completed/success
+CRITICAL validation: passed
+COMMAND: npm run test
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/current-only-recurring-edit.integration.test.ts
+REACHED: apps/web/src/dev-server/operational-installments.test.ts
+REACHED: apps/web/src/dev-server/recurring-card-scope-controller.test.ts
+REACHED: apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts
+REACHED: apps/api/src/installment-concurrency-and-void-contract.integration.test.ts

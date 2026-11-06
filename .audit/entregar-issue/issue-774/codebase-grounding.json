@@ -1,0 +1,225 @@
+{
+  "schema_version": 2,
+  "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "creations": [
+    {
+      "path": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+      "kind": "file",
+      "name": "issue-774 real Chrome scenario",
+      "search": {
+        "queries": [
+          "git grep -n current-only -- scripts/statement-visual",
+          "git ls-files scripts/statement-visual"
+        ],
+        "scope": "Reutilizamos CDP, login e cenário existente issue-539; precisamos de fixture própria para o ciclo conciliado -> desconciliado após interação UI.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
+            "reason_not_reused": "Script existente já é extenso e valida formulário restrito; a nova sequência efetiva precisa manter fixture, asserções e readback isolados."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Cenário novo com dados sintéticos reutilizando APIs do CDP existente, integrado ao executor de Chrome já registrado."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "validateUnreconciledRecurringAccountEdit",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/issue-539-operational-installments.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+        "line": 9
+      },
+      "verified_by": {
+        "command": "git grep -n validateUnreconciledRecurringAccountEdit -- scripts/statement-visual",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+      "operation": "modified",
+      "scenario": "regression of account and category persistence plus status-only row locks",
+      "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/api/src/current-only-recurring-edit.integration.test.ts",
+          "git grep -n current-only -- apps/api/src/current-only-recurring-edit.integration.test.ts"
+        ],
+        "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/current-only-recurring-edit.integration.test.ts",
+            "case": "O arquivo de teste existia antes da issue; cobre o controle positivo original e regressões do mesmo fluxo.",
+            "oracle": "Testes usam assert.strictEqual e examinam payload, estado persistido ou as asserções de JS.",
+            "comparison": "A suíte no HEAD amplia o oráculo sem eliminar os cenários existentes."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Manter a suíte já registrada no CI, incluindo negativos, conta distinta, categoria nula e status concorrente.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "reached_tests": [
+          "apps/api/src/current-only-recurring-edit.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/operational-installments.test.ts",
+      "operation": "modified",
+      "scenario": "routing to transaction modal after posting an account recurrence without unlocking restricted installments",
+      "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/operational-installments.test.ts",
+          "git grep -n current-only -- apps/web/src/dev-server/operational-installments.test.ts"
+        ],
+        "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/operational-installments.test.ts",
+            "case": "O arquivo de teste existia antes da issue; cobre o controle positivo original e regressões do mesmo fluxo.",
+            "oracle": "Testes usam assert.strictEqual e examinam payload, estado persistido ou as asserções de JS.",
+            "comparison": "A suíte no HEAD amplia o oráculo sem eliminar os cenários existentes."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Manter a suíte já registrada no CI, incluindo negativos, conta distinta, categoria nula e status concorrente.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "reached_tests": [
+          "apps/web/src/dev-server/operational-installments.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/recurring-card-scope-controller.test.ts",
+      "operation": "modified",
+      "scenario": "null category and account reassignment in explicit scope selection while preserving card contract",
+      "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/recurring-card-scope-controller.test.ts",
+          "git grep -n current-only -- apps/web/src/dev-server/recurring-card-scope-controller.test.ts"
+        ],
+        "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/recurring-card-scope-controller.test.ts",
+            "case": "O arquivo de teste existia antes da issue; cobre o controle positivo original e regressões do mesmo fluxo.",
+            "oracle": "Testes usam assert.strictEqual e examinam payload, estado persistido ou as asserções de JS.",
+            "comparison": "A suíte no HEAD amplia o oráculo sem eliminar os cenários existentes."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Manter a suíte já registrada no CI, incluindo negativos, conta distinta, categoria nula e status concorrente.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "reached_tests": [
+          "apps/web/src/dev-server/recurring-card-scope-controller.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts",
+      "operation": "modified",
+      "scenario": "legacy scope choice and null category without future propagation",
+      "requirement": "REQ-774-003;REQ-774-005;REQ-774-006;REQ-774-008;REQ-774-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts",
+          "git grep -n current-only -- apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts"
+        ],
+        "scope": "Testes existentes foram estendidos, não substituídos nem removidos.",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts",
+            "case": "O arquivo de teste existia antes da issue; cobre o controle positivo original e regressões do mesmo fluxo.",
+            "oracle": "Testes usam assert.strictEqual e examinam payload, estado persistido ou as asserções de JS.",
+            "comparison": "A suíte no HEAD amplia o oráculo sem eliminar os cenários existentes."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Manter a suíte já registrada no CI, incluindo negativos, conta distinta, categoria nula e status concorrente.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+      }
+    },
+    {
+      "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "two concurrent status-only and installment editor lock waiters",
+      "requirement": "REQ-774-008;REQ-774-009",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 a16a1322715faa821a33a9638ffae58ea9ddd9d4 -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+          "git grep -n waitForBlockedQuery -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "scope": "Retained previously executable test and adapted its waiting boundary to the new serialized status-only transaction.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+            "case": "Existing concurrency regression now awaits two row lock queries before releasing blocker.",
+            "oracle": "Both operations must succeed without losing the edit and must preserve posted-to-reconciled status.",
+            "comparison": "Query pattern changed but all readback assertions retained."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The application now locks before updating; the regression must observe the actual locking boundary.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "a16a1322715faa821a33a9638ffae58ea9ddd9d4",
+        "reached_tests": [
+          "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-774/evidence/ground-tests.log",
+        "evidence_sha256": "68aebfbec2ce3eb56f410e0d819cc5a2208b0dea7f92156634344862c8f577a9"
+      }
+    }
+  ]
+}
