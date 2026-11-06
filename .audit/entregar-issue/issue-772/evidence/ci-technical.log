@@ -1,9 +1,9 @@
-GitHub Actions exact material SHA job evidence; read via authenticated GitHub connector.
+GitHub Actions authenticated exact material HEAD verification
 repository=crgasparoto-br/SolverFin
-material_head_sha=32e8f460693da372637fcf3b00346b17cbaffa94
-run_id=42239669842
-run_url=https://github.com/crgasparoto-br/SolverFin/actions/runs/42239669842
-job_id=127966713018
+material_head_sha=178753add211f7e84d3bd15aea475320ba56b9ce
+run_id=42284967768
+run_url=https://github.com/crgasparoto-br/SolverFin/actions/runs/42284967768
+job_id=128125428135
 job_name=CRITICAL validation
 job_conclusion=success
 step=Enforce complete repository formatting: success
@@ -11,23 +11,11 @@ step=Run npm run lint: success
 step=Run npm run typecheck: success
 step=Run npm run test:integration --workspace @solverfin/api: success
 step=Run npm run build: success
-test_command=npm run test:integration --workspace @solverfin/api
-test_reached=card-purchase-edit-contract.integration.test.js
-test_reached=card-purchase-void-boundaries.integration.test.js
-test_reached=category-evolution-report.integration.test.js
-test_reached=manual-entry-fill-rules-migration.integration.test.js
-source_line_1=2026-11-06T15:09:45.5356096Z [test] card-purchase-edit-contract.integration.test.js
-source_line_2=2026-11-06T15:09:46.9606816Z [test] card-purchase-void-boundaries.integration.test.js
-source_line_3=2026-11-06T15:10:08.5408198Z [test] manual-entry-fill-rules-migration.integration.test.js
-test_suite_completed=success (CRITICAL validation job)
-required_gate=Delivery V2 gate: success
-required_gate=Repository CI gate: success
-other_workflow=Solo audit bootstrap verification: success run 42239669846
-other_workflow=Statement visual validation: success run 42239669841
-other_workflow=Delivery audit workspace: success run 42239669840
-HEAD: 32e8f460693da372637fcf3b00346b17cbaffa94
+HEAD: 178753add211f7e84d3bd15aea475320ba56b9ce
 COMMAND: npm run test:integration --workspace @solverfin/api
 EXIT_CODE: 0
 REACHED: apps/api/src/card-purchase-edit-contract.integration.test.ts
 REACHED: apps/api/src/card-purchase-void-boundaries.integration.test.ts
+REACHED: apps/api/src/card-purchase-invoice-period-move.integration.test.ts
+REACHED: apps/api/src/installment-concurrency-and-void-contract.integration.test.ts
 REACHED: apps/api/src/manual-entry-fill-rules-migration.integration.test.ts

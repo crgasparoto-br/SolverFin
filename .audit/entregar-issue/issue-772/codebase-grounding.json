@@ -1,8 +1,47 @@
 {
   "schema_version": 2,
-  "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+  "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
   "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
-  "creations": [],
+  "creations": [
+    {
+      "path": "apps/api/src/repositories/transaction-generic-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"updateActiveGenericTransaction\" -- apps/api/src/repositories",
+          "git grep -n \"buildUpdateTransactionSql\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing generic write flow was in transactions.ts; new isolated module prevents another oversized repository file and consolidates SQL guards.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/transactions.ts",
+            "reason_not_reused": "The write SQL was extracted out of this existing module for guarded reuse without violating the structural file-size policy."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Small extracted implementation of optimistic WHERE guards for generic transaction update; existing repository entrypoint imports it."
+    },
+    {
+      "path": "apps/api/src/repositories/card-purchase-invoice-period-move-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"totalAmountMinor\" -- apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+          "git grep -n \"updateOpenInvoiceTotal\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing invoice-period move core previously held both balance SQL statements; isolation keeps the existing public entrypoint and reduces file from >500 lines to 499.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+            "reason_not_reused": "Existing file exceeded CODE-GROWTH-001 limit when incorporating concurrency-safe invoice checks; helper extracted without new entrypoint."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Explicit atomic balance mutation helper preserves withTransaction scope, status/card/tenant/currency restrictions and rollback for both invoices."
+    }
+  ],
   "references": [
     {
       "symbol": "withSharedTransaction",
@@ -53,7 +92,7 @@
       "requirement": "REQ-772-002, REQ-772-003, REQ-772-004",
       "search": {
         "queries": [
-          "git diff 5ad67cab..9f2955 -- apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git diff 5ad67cab..178753 -- apps/api/src/card-purchase-edit-contract.integration.test.ts",
           "git grep -n assertSimplePurchaseSoftDelete apps/api/src/card-purchase-edit-contract.integration.test.ts"
         ],
         "scope": "Existing card-purchase-edit-contract integration file already handles card, invoice and recurrence flows; append adversarial tests without creating a second runner.",
@@ -80,12 +119,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
         "reached_tests": [
           "apps/api/src/card-purchase-edit-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
+        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
       }
     },
     {
@@ -128,12 +167,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
         "reached_tests": [
           "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
+        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
       }
     },
     {
@@ -144,7 +183,7 @@
       "search": {
         "queries": [
           "git grep -n require_unique_open_pr_head tests/test_solverfin_solo_audit_bootstrap.py",
-          "git diff 5ad67cab..9f2955 -- tests/test_solverfin_solo_audit_bootstrap.py"
+          "git diff 5ad67cab..178753 -- tests/test_solverfin_solo_audit_bootstrap.py"
         ],
         "scope": "The existing unittest suite is the registered attestation bootstrap test harness; extend it with one unique-HEAD case and benign siblings.",
         "runner": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
@@ -170,12 +209,12 @@
         "status": "passed",
         "command": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
         "exit_code": 0,
-        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
         "reached_tests": [
           "tests/test_solverfin_solo_audit_bootstrap.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-        "evidence_sha256": "c69c6b04610f932986bb905fc3721bd00f0283faa69324d2694fc3e49c3924d5"
+        "evidence_sha256": "3b45d5cae1c4a90469260207450245963d6de801fb5ef1df4117a9c80d98f423"
       }
     },
     {
@@ -186,7 +225,7 @@
       "search": {
         "queries": [
           "git grep -n voidTransactionForContext apps/api/src/card-purchase-edit-contract.integration.test.ts",
-          "git diff --name-status 5ad67cab..32e8f460 -- apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+          "git diff --name-status 5ad67cab..178753ad -- apps/api/src/card-purchase-void-boundaries.integration.test.ts",
           "git grep -n reconcileInvoiceInstallmentForContext -- apps/api/src"
         ],
         "scope": "Repository API transaction routes, card invoice summary, installment reconciliation and PostgreSQL existing purchase contract on both base and HEAD.",
@@ -219,12 +258,95 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "32e8f460693da372637fcf3b00346b17cbaffa94",
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
         "reached_tests": [
           "apps/api/src/card-purchase-void-boundaries.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "04819c48580ba663a289ed50e429635775fa3e05dd70fa9027e79aad0209e305"
+        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+      }
+    },
+    {
+      "path": "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Two PostgreSQL writers reading the same invoice origin cannot both debit it; source invoice closing while move waits rolls back debit, credit, and pointer.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n assertMoveCommonPurchase apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+          "git grep -n assertConcurrentPurchaseEditCannotResurrect apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "scope": "Extend existing invoice move end-to-end PostgreSQL tests with controlled row lock and invoice-close interleavings; no replacement runner needed.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+            "case": "Prior happy path move and locked invoice rejections",
+            "oracle": "Actual PostgreSQL Invoice totals and Transaction invoiceId readback",
+            "comparison": "Add two concurrent writers with divergent destination faturas plus concurrent invoice closure; verify one success, one conflict and no duplicated monetary effect."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Reuse canonical API integration test with concrete competing SQL writer race.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Ordinary invoice transfer and previously locked invoices"
+      ],
+      "coverage_after": [
+        "Exactly one of two stale-source moves debits origin; closed origin after initial read rejects with rollback of amount and pointer."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "reached_tests": [
+          "apps/api/src/card-purchase-invoice-period-move.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
+      }
+    },
+    {
+      "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Previously-VOIDED installment cannot be reconciled via generic transaction patch after logical void.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n assertIndividualLogicalVoidKeepsInstallmentHistory -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "scope": "Existing installment and VOIDED generic mutation PostgreSQL test now includes direct status reconciliation rejection.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+            "case": "Original installment concurrency/void integration path",
+            "oracle": "HTTP PATCH returns 409 and readback remains VOIDED",
+            "comparison": "Additional direct transition conflict after VOIDED"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend canonical transaction+installment integration suite rather than adding a separate test.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Canonical installment history and logical void"
+      ],
+      "coverage_after": [
+        "Concurrent canonical status change rejects VOIDED"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "178753add211f7e84d3bd15aea475320ba56b9ce",
+        "reached_tests": [
+          "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "3c2b3f9d52c270fec1f125b8021bc39c2f060c35556ba2245260878f40be95d5"
       }
     }
   ]
