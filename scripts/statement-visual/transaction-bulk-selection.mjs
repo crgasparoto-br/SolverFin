@@ -207,7 +207,9 @@ try {
   assert.equal(clearReady.tooltip, clearReady.label);
   await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
+    text: "\r",
+    unmodifiedText: "\r",
     key: "Enter",
     code: "Enter",
     windowsVirtualKeyCode: 13,
@@ -332,7 +334,9 @@ try {
   const reconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
+    text: "\r",
+    unmodifiedText: "\r",
     key: "Enter",
     code: "Enter",
     windowsVirtualKeyCode: 13,
@@ -350,16 +354,14 @@ try {
     browser.cdp,
     `(() => {
       const bar = document.querySelector('[data-selection-bar]');
-      const button = bar.querySelector('[data-bulk-selection-action="reconcile"]');
-      const result = {
+      return {
         enterReceived: window.__issue530EnterReceived === true,
         nativeActivation: bar.getAttribute('aria-busy') === 'true'
       };
-      if (!result.nativeActivation) button.click();
-      return result;
     })()`,
   );
   assert.equal(keyboardActivation.enterReceived, true);
+  assert.equal(keyboardActivation.nativeActivation, true, "Enter must activate reconciliation natively.");
   await sleep(40);
   const loading = await evaluate(
     browser.cdp,
