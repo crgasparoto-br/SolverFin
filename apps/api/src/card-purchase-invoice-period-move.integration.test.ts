@@ -272,9 +272,7 @@ async function assertMoveRecurringMaterializedOccurrence(
   assert.equal(await readInvoiceTotal(original.invoiceId), originalInvoiceTotal - 3_000);
 }
 
-type MoveAttempt =
-  | { ok: true; destinationId: string }
-  | { ok: false; error: unknown };
+type MoveAttempt = { ok: true; destinationId: string } | { ok: false; error: unknown };
 
 async function assertConcurrentMovesPreserveTotals(
   cardId: string,
