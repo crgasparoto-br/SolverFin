@@ -3,6 +3,10 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
+  applyEditableCardPurchaseInvoiceChangeInTransaction,
+  assertCardPurchaseInvoiceStatusEditable,
+} from "./card-invoice-purchase-edit-write.js";
+import {
   checkRecurringEdit,
   loadPurchaseInstallmentEditStates,
   purchaseInstallmentEditViolation,
@@ -154,8 +158,6 @@ export class InvoiceContractError extends Error {
     this.statusCode = statusCode;
   }
 }
-
-const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
 
 function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
   const violation = purchaseInstallmentEditViolation(rows);
@@ -331,13 +333,7 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-  if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(invoice.status)) {
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_INVOICE_LOCKED",
-      "Compras de faturas fechadas, pagas ou canceladas nao podem ser editadas.",
-      409,
-    );
-  }
+  assertCardPurchaseInvoiceStatusEditable(invoice.status);
 
   const denied = await checkRecurringEdit(query, context, current, invoice.currency, payload);
   if (denied) throw new InvoiceContractError(denied.code, denied.message, 409);
@@ -456,23 +452,15 @@ export async function updateCardPurchaseForContext(
         "A compra foi alterada ou anulada durante a edição.",
         409,
       );
-    // Recheck invoice eligibility under a row lock after the purchase write.
-    // Closing the invoice concurrently must roll back the entire edit,
-    // including status-only and non-financial changes.
-    const lockedInvoice = await executeQuery<{ id: string; status: string }>(
-      `select "id", "status" from "Invoice"
-        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-          and "cardId" = $4 and "currency" = $5
-        for update`,
-      [invoice.id, context.organizationId, context.financialProfileId, cardId, current.currency],
+    await applyEditableCardPurchaseInvoiceChangeInTransaction(
+      executeQuery,
+      context,
+      cardId,
+      invoice.id,
+      current.currency,
+      amountDelta,
+      now,
     );
-    if (!lockedInvoice[0] || LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(lockedInvoice[0].status)) {
-      throw new InvoiceContractError(
-        "CARD_PURCHASE_INVOICE_LOCKED",
-        "A fatura foi fechada ou alterada durante a edição.",
-        409,
-      );
-    }
     if (current.installmentId !== null) {
       await executeQuery(
         `update "Installment" set
@@ -506,33 +494,6 @@ export async function updateCardPurchaseForContext(
           context.userId,
         ],
       );
-    }
-
-    if (amountDelta !== 0) {
-      const adjustedInvoice = await executeQuery<{ id: string }>(
-        `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
-         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-           and "cardId" = $6 and "currency" = $7
-           and "status" not in ('CLOSED', 'PAID', 'CANCELLED')
-           and "totalAmountMinor" + $4 >= 0
-         returning "id"`,
-        [
-          invoice.id,
-          context.organizationId,
-          context.financialProfileId,
-          amountDelta,
-          now,
-          cardId,
-          current.currency,
-        ],
-      );
-      if (adjustedInvoice.length !== 1) {
-        throw new InvoiceContractError(
-          "CARD_PURCHASE_INVOICE_TOTAL_INVALID",
-          "A fatura foi alterada ou o saldo é incompatível com a edição.",
-          409,
-        );
-      }
     }
 
     await insertAuditLogEntry(executeQuery, {
