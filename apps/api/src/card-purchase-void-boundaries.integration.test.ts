@@ -6,6 +6,7 @@ import { closePool, query, withSharedTransaction } from "./db.js";
 import { buildApiErrorResponse } from "./errors.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
+import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   adjustInvoiceInstallmentAmountForContext,
   listCardPurchasesForContext,
@@ -319,6 +320,16 @@ async function main(): Promise<void> {
       assert.equal((await readTransaction(expense.transaction.id)).status, "POSTED");
       assert.equal(await countSoftDelete(expense.transaction.id), 0);
       assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
+      await assert.rejects(
+        () => moveCardPurchaseInvoicePeriodForContext(
+          CONTEXT,
+          card.id,
+          expense.transaction.id,
+          { invoicePeriod: "2032-06" },
+        ),
+        hasCode("CARD_PURCHASE_INVOICE_LOCKED"),
+      );
+      assert.equal(await readInvoiceTotal(expense.invoice.id), 0);
 
       // Also reject when another purchase keeps the invoice balance positive:
       // a non-negative total alone cannot prove absence of an orphaned credit.
@@ -335,6 +346,21 @@ async function main(): Promise<void> {
         () => voidTransactionForContext(CONTEXT, expense.transaction.id),
         hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
       );
+      await assert.rejects(
+        () => moveCardPurchaseInvoicePeriodForContext(
+          CONTEXT,
+          card.id,
+          expense.transaction.id,
+          { invoicePeriod: "2032-06" },
+        ),
+        hasCode("CARD_PURCHASE_ACTIVE_REVERSAL"),
+      );
+      const [sourceInvoice] = await query<{ invoiceId: string }>(
+        'select "invoiceId" from "Transaction" where "id" = $1',
+        [expense.transaction.id],
+      );
+      assert.equal(sourceInvoice?.invoiceId, expense.invoice.id);
+      assert.equal(await readInvoiceTotal(expense.invoice.id), positiveTotal);
 
       // A mixed card/bank batch must roll back the entire selection.
       const bankForRollback = await createTransactionForContext(CONTEXT, {
