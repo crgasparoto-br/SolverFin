@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "subject_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "source_snapshot_sha": "45f516268ab5a51931bdd096c7a131fc3b8f73d8",
+  "tests": [
+    {
+      "requirement_id": "REQ-719-01",
+      "control_id": "NC-719-01",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Removing a catalogued route must fail 14/14 coverage",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-02",
+      "control_id": "NC-719-02",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Priority categories must be preserved",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-03",
+      "control_id": "NC-719-03",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Legacy migration must not confer new visual acceptance",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-04",
+      "control_id": "NC-719-04",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Derivation must preserve one target issue for each distinct route",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-05",
+      "control_id": "NC-719-05",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Epic link must point to 702",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-06",
+      "control_id": "NC-719-06",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Inventory may not silently include implementation work",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-07",
+      "control_id": "NC-719-07",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Frozen source SHA must not be replaced",
+      "observed": "The deliberately altered document was rejected"
+    },
+    {
+      "requirement_id": "REQ-719-08",
+      "control_id": "NC-719-08",
+      "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+      "check": "local documented inventory mutation",
+      "positive_case_passed": true,
+      "mutation_changed_input": true,
+      "negative_case_rejected": true,
+      "expected": "Waived routes cannot be silently reclassified",
+      "observed": "The deliberately altered document was rejected"
+    }
+  ],
+  "runtime": "Python stdlib on an offline Git bundle, no network access"
+}

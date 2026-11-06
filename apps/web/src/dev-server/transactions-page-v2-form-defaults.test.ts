@@ -16,6 +16,51 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
 
     assert.match(
       html,
+      /data-statement-save-continue[^>]*>Salvar e continuar<\/button>/,
+      "novo lançamento oferece salvar e continuar",
+    );
+    assert.match(
+      html,
+      /attemptKeyFor\(path, draft\)/,
+      "manual transaction POST reuses a durable attempt key",
+    );
+    assert.match(
+      html,
+      /idempotencyKey: attemptKeyFor\("\/api\/installments", draft\)/,
+      "installment POST retries keep the same key",
+    );
+    assert.match(
+      html,
+      /form\.dataset\.saveAttempted === "true"/,
+      "closing after an uncertain save refreshes the list",
+    );
+    assert.match(
+      html,
+      /modal\.addEventListener\("cancel"/,
+      "Escape cannot close while a write is in flight",
+    );
+    assert.match(
+      html,
+      /repeatMode === "single" && form\.dataset\.method !== "PATCH"/,
+      "continue is restricted to single creation",
+    );
+    assert.match(
+      html,
+      /saveAndContinue = method === "POST"/,
+      "edição não permite salvar e continuar",
+    );
+    assert.match(
+      html,
+      /if \(saveAndContinue\) \{[\s\S]*?form\.reset\(\);[\s\S]*?form\.dataset\.path = "\/api\/transactions"/,
+      "criação precisa persistir antes de limpar o formulário",
+    );
+    assert.match(
+      html,
+      /data-fill-rule-save/,
+      "extrato exibe o controle para salvar a associação de descrição e categoria",
+    );
+    assert.match(
+      html,
       /Data do evento<input name="occurredOn" type="date" required \/>/,
       "a data do evento continua obrigatória no lançamento simples",
     );
@@ -63,6 +108,66 @@ test("novo lançamento sugere datas locais e aplica fallbacks temporais seguros"
       html,
       /form\.dataset\.method = clone \? "POST" : "PATCH";[\s\S]*form\.occurredOn\.value = transaction\.occurredOn; form\.plannedOn\.value = transaction\.plannedOn \|\| transaction\.occurredOn; form\.effectiveOn\.value = transaction\.effectiveOn \|\| "";/,
       "edição e clonagem hidratam as datas persistidas sem substituir pela data atual",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("novo lançamento centraliza o dialog e limita a rolagem ao próprio modal", async () => {
+  globalThis.fetch = mockFetch();
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+    const normalized = html.replace(/\s+/g, " ");
+
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]\{[^}]*box-sizing:border-box;[^}]*inset:0;[^}]*margin:auto;[^}]*height:fit-content;[^}]*max-height:calc\(100dvh - 32px\);[^}]*max-width:min\(860px,calc\(100vw - 32px\)\);[^}]*overflow:hidden;[^}]*position:fixed;[^}]*transform:none\}/,
+      "o dialog de novo lançamento precisa de centralização geométrica no viewport e limite seguro",
+    );
+    assert.match(
+      normalized,
+      /dialog\[data-modal\]>\.modal-panel\{[^}]*max-height:inherit;[^}]*overflow-y:auto;[^}]*overscroll-behavior:contain\}/,
+      "formulários longos devem rolar dentro do modal, sem deslocar a página",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: min\(640px, calc\(100% - 32px\)\); \}/,
+      "o CSS da Golden Screen não pode reposicionar o modal no canto direito no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \{ margin-inline: auto; max-width: calc\(100% - 32px\); \}/,
+      "o CSS da Golden Screen deve preservar ao menos 16px de margem lateral no mobile",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{border:1px[^}]*height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\)/,
+      "o refinamento da Golden Screen deve centralizar novos lançamentos no desktop",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{height:fit-content;margin:auto;max-height:calc\(100dvh - 32px\);max-width:calc\(100% - 32px\);width:calc\(100% - 32px\)\}/,
+      "o refinamento responsivo deve preservar margens de 16px nos celulares sem forcar altura fixa",
+    );
+    assert.match(
+      normalized,
+      /html:has\(body \[data-golden-screen="statement"\]\):has\(dialog\[data-modal\]\[open\]\)\{overflow-y:hidden\}/,
+      "a pagina deve ficar sem rolagem enquanto o dialog estiver aberto",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\]\{border:1px[^}]*overflow:hidden;padding:0;/,
+      "o dialog externo nao pode criar uma segunda barra de rolagem",
+    );
+    assert.match(
+      normalized,
+      /body:has\(\[data-golden-screen="statement"\]\) dialog\[data-modal\] \.modal-panel\{box-sizing:border-box;max-height:calc\(100dvh - 34px\);min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;/,
+      "somente o painel interno deve controlar a rolagem de formularios longos",
     );
   } finally {
     globalThis.fetch = originalFetch;

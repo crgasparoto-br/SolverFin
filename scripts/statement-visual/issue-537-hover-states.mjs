@@ -11,9 +11,9 @@ const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const scenarios = [];
 const accountsCardsSelectors = {
-  primary: ".resource-detail-actions .resource-primary-action:not(:disabled)",
-  neutral: ".resource-detail-actions .secondary-button:not(:disabled)",
-  destructive: ".resource-detail-actions .danger-button:not(:disabled)",
+  primary: ".sf-page-header-actions .resource-primary-action:not(:disabled)",
+  neutral: ".resource-detail-actions .sf-icon-button:not(.danger-icon-button):not(:disabled)",
+  destructive: ".resource-detail-actions .danger-icon-button:not(:disabled)",
 };
 const statementNeutralSelectors = {
   accountPicker: ".account-select-trigger",
@@ -258,12 +258,12 @@ function isLightNeutral(value) {
 
 function checkDestructive(state, styles) {
   check(
-    styles.backgroundColor === "rgb(254, 226, 226)",
+    styles.backgroundColor === "rgb(254, 242, 242)",
     `Issue 537 destructive action lost its semantic ${state} surface`,
     styles,
   );
   check(
-    styles.color === "rgb(220, 38, 38)",
+    styles.color === "rgb(185, 28, 28)",
     `Issue 537 destructive action lost its semantic ${state} text/icon color`,
     styles,
   );

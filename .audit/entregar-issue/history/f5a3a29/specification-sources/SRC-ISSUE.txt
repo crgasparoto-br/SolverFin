@@ -1,0 +1,23 @@
+## Escopo
+- Corrigir falso erro `IMPORT_PDF_INVALID` causado por busca de objetos PDF por sufixo de identificador.
+- Homologar layout de extrato de conta Mercado Pago com colunas Data, Descrição, ID da operação, Valor e Saldo, em múltiplas páginas.
+- Permitir extração de PDF com senha de leitura vazia e permissões de leitura/cópia, mantendo bloqueio dos PDFs que exigem senha.
+
+## Requisitos
+- Extrair texto e posicionamento de modo determinístico, sem OCR genérico.
+- Reconstruir descrições multilineares e preservar data, ID de operação, sinal, moeda BRL e valor inteiro em centavos.
+- Validar continuidade de saldos, saldo inicial/final e totais de entradas/saídas; falha bloqueia o lote integralmente.
+- Ignorar cabeçalhos, rodapés, sumários e saldos como movimentações.
+- Preservar consentimento, idempotência, revisão humana, isolamento tenant/perfil e ausência de armazenamento do PDF original.
+- Erros diferenciados para extrator ausente, PDF bloqueado e layout não homologado.
+
+## Critérios de aceite
+- Pré-visualização real com múltiplas páginas e 38 movimentações, sem publicação de conteúdo financeiro pessoal em fixtures.
+- Testes sintéticos reproduzem entradas/saídas, operações repetidas, campos em múltiplas linhas, saldos e totais exatos.
+- Testes negativos abrangem PDF truncado, catálogo inválido, senha requerida, layout incompatível e conteúdos adulterados.
+- CI e testes no SHA exato, evidência de execução com documento real fora do repositório e auditoria independente antes de aprovar.
+
+## Invariantes
+- Alterações partem da `develop` e PR tem `develop` como base.
+- Não versionar documento real nem dados pessoais, identificadores ou valores de contas do cliente.
+- CI verde não substitui aprovação de auditoria independente.

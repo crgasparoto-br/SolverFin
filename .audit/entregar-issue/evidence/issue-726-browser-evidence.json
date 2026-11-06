@@ -1,0 +1,2015 @@
+{
+  "schema_version": 1,
+  "target": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 726,
+    "pull_request_number": 754,
+    "material_head_sha": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85"
+  },
+  "source": {
+    "run_id": 41203149301,
+    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41203149301",
+    "status": "completed",
+    "conclusion": "success",
+    "artifact_id": 13043971276,
+    "artifact_name": "statement-visual-evidence-8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+    "artifact_zip_sha256": "d1ea4fb5d458b75981f0191417084ac3071c82ef080fc834ccb71b802d42e2bd",
+    "browser": "Google Chrome 156.0.8078.47"
+  },
+  "original_reports": {
+    "issue-565-ai-review-queue.json": {
+      "sha256": "5d7f97a2556b1ccf7eb83523e25630ee1b495231a40a72b32afef651d9f9c0c6",
+      "data": {
+        "generatedAt": "2026-10-31T13:01:41.767Z",
+        "commit": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "browser": "Google Chrome 156.0.8078.47",
+        "fixture": {
+          "suggestionId": "34cb0014-f321-4806-974e-2820b8ae293d",
+          "accountId": "44444444-4444-4444-8444-444444444445",
+          "description": "Linha 2 importada e pronta para revisao humana."
+        },
+        "captures": [
+          {
+            "viewport": "320x740",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 10,
+              "right": 295,
+              "width": 285,
+              "height": 175
+            },
+            "screenshot": "issue-565-ai-review-queue-320x740.png"
+          },
+          {
+            "viewport": "390x844",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 10,
+              "right": 365,
+              "width": 355,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-390x844.png"
+          },
+          {
+            "viewport": "768x1024",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 232,
+              "right": 741,
+              "width": 509,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-768x1024.png"
+          },
+          {
+            "viewport": "1024x768",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 539,
+              "width": 305,
+              "height": 175
+            },
+            "screenshot": "issue-565-ai-review-queue-1024x768.png"
+          },
+          {
+            "viewport": "1366x768",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 679,
+              "width": 445,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-1366x768.png"
+          },
+          {
+            "viewport": "1440x900",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 709,
+              "width": 475,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-1440x900.png"
+          },
+          {
+            "viewport": "1366x900",
+            "cardVisible": true,
+            "filtersVisible": true,
+            "bodyFitsViewport": true,
+            "actionsFitViewport": true,
+            "actionsContainedInCards": true,
+            "actionsMeetMinimum": true,
+            "technicalIdHidden": true,
+            "selectedEvidenceReady": true,
+            "decisionAfterEvidence": true,
+            "detailActionsFitViewport": true,
+            "secondaryBelowReview": true,
+            "buttonLabels": [
+              "Em revisão"
+            ],
+            "filterValues": [
+              "transaction_extraction",
+              "pending_review",
+              "all"
+            ],
+            "cardRect": {
+              "left": 234,
+              "right": 679,
+              "width": 445,
+              "height": 138
+            },
+            "screenshot": "issue-565-ai-review-queue-1366x900.png"
+          }
+        ],
+        "keyboard": {
+          "detailsOpenedByKeyboard": true,
+          "detailsFocused": true,
+          "detailsFocusRestored": true,
+          "editOpenedByKeyboard": true,
+          "editControlFocused": true,
+          "editFocusRestored": true
+        },
+        "urlState": {
+          "before": "?kind=transaction_extraction&status=pending_review&confidence=all",
+          "after": "?kind=transaction_extraction&confidence=low",
+          "confidencePersisted": true,
+          "profilePreserved": true
+        },
+        "textResize": {
+          "rootFontSize": 32,
+          "cardVisible": true,
+          "actionsVisible": true,
+          "actionsContainedInCards": true,
+          "bodyFitsViewport": true,
+          "cardText": "Extração de lançamentoPendente · origem importação · confiança 100%2026-08-07 - Revisão visual issue 565 mvweto5pRevisar"
+        },
+        "evidenceNegative": {
+          "cases": [
+            {
+              "action": "approve",
+              "mode": "visible",
+              "guard": true,
+              "posts": 1,
+              "confirmations": 1,
+              "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "hidden",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "opacity",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "clipped",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "ancestor-opacity",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "ancestor-clipped",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "approve",
+              "mode": "inert",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "visible",
+              "guard": true,
+              "posts": 1,
+              "confirmations": 1,
+              "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "hidden",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "opacity",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "clipped",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "ancestor-opacity",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "ancestor-clipped",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            },
+            {
+              "action": "reject",
+              "mode": "inert",
+              "guard": false,
+              "posts": 0,
+              "confirmations": 0,
+              "ok": true
+            }
+          ],
+          "hiddenEvidenceBlockedDecision": true,
+          "evidenceRestored": true
+        },
+        "fingerprintChecks": [
+          {
+            "action": "approve",
+            "changed": true,
+            "posts": 0,
+            "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "approve",
+            "changed": false,
+            "posts": 1,
+            "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "reject",
+            "changed": true,
+            "posts": 0,
+            "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "settled": true,
+            "ok": true
+          },
+          {
+            "action": "reject",
+            "changed": false,
+            "posts": 1,
+            "original": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "expectedFingerprint": "db-fp-v1-ef79fff59fd1b4c2046cc9e2dba1c82dbdc3df6bfb17a6e694420d0fbd57e0b3",
+            "settled": true,
+            "ok": true
+          }
+        ],
+        "hierarchyNegative": {
+          "baseline": true,
+          "attackRejected": true,
+          "restored": true
+        },
+        "longEvidence": [
+          {
+            "width": 320,
+            "height": 740,
+            "screenshot": "issue-726-inbox-long-evidence-320x740.png",
+            "bodyFitsViewport": true,
+            "decisionFitsViewport": true,
+            "evidenceBeforeDecision": true
+          },
+          {
+            "width": 390,
+            "height": 844,
+            "screenshot": "issue-726-inbox-long-evidence-390x844.png",
+            "bodyFitsViewport": true,
+            "decisionFitsViewport": true,
+            "evidenceBeforeDecision": true
+          }
+        ],
+        "reviewCardGridNegatives": [
+          {
+            "viewport": "390x844",
+            "baseline": {
+              "cardWidth": 355,
+              "cardRight": 365,
+              "buttonLeft": 12,
+              "buttonRight": 119,
+              "gridColumns": "353px",
+              "overflowPx": 0,
+              "contained": true,
+              "hitTarget": true
+            },
+            "attack": {
+              "cardWidth": 355,
+              "cardRight": 365,
+              "buttonLeft": 420,
+              "buttonRight": 527,
+              "gridColumns": "150px 240px 140px",
+              "overflowPx": 162,
+              "contained": false,
+              "hitTarget": false
+            },
+            "restored": {
+              "cardWidth": 355,
+              "cardRight": 365,
+              "buttonLeft": 12,
+              "buttonRight": 119,
+              "gridColumns": "353px",
+              "overflowPx": 0,
+              "contained": true,
+              "hitTarget": true
+            },
+            "attackRejected": true,
+            "restorationPassed": true
+          },
+          {
+            "viewport": "1366x768",
+            "baseline": {
+              "cardWidth": 445,
+              "cardRight": 679,
+              "buttonLeft": 236,
+              "buttonRight": 343,
+              "gridColumns": "442.844px",
+              "overflowPx": 0,
+              "contained": true,
+              "hitTarget": true
+            },
+            "attack": {
+              "cardWidth": 445,
+              "cardRight": 679,
+              "buttonLeft": 644,
+              "buttonRight": 751,
+              "gridColumns": "150px 240px 140px",
+              "overflowPx": 72,
+              "contained": false,
+              "hitTarget": true
+            },
+            "restored": {
+              "cardWidth": 445,
+              "cardRight": 679,
+              "buttonLeft": 236,
+              "buttonRight": 343,
+              "gridColumns": "442.844px",
+              "overflowPx": 0,
+              "contained": true,
+              "hitTarget": true
+            },
+            "attackRejected": true,
+            "restorationPassed": true
+          }
+        ],
+        "goldenScreenControls": [
+          {
+            "viewport": "390x844",
+            "complete": true,
+            "row": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "nav": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(203, 213, 225)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "trigger": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(203, 213, 225)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "refresh": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "status": {
+              "background": "rgb(238, 245, 248)",
+              "color": "rgb(15, 23, 42)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 138,
+              "neutral": false,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "selectedAriaPressed": "true",
+            "tokenMatch": true,
+            "contrast": [
+              11.72,
+              11.72,
+              11.72,
+              11.72
+            ],
+            "disabledOpacity": 1,
+            "disabledCursor": "not-allowed",
+            "disabledContrast": 6.92,
+            "disabledTokensMatch": true,
+            "ariaMenuLabel": "Adicionar entrada à Inbox",
+            "hasNeutralLinks": true,
+            "financialDirectionColorFromTokens": true,
+            "focusStyleDefined": true,
+            "menuKeyboard": {
+              "opened": true,
+              "closed": true,
+              "focusRestored": true
+            },
+            "stateMatrix": {
+              "samples": [
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 23, 42)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 17.85,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 23, 42)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 17.85,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                }
+              ],
+              "expected": 33,
+              "dialogOpened": true,
+              "unselectedOption": {
+                "available": true,
+                "background": "rgb(255, 255, 255)",
+                "color": "rgb(15, 61, 76)",
+                "pass": true
+              },
+              "complete": true,
+              "negative": {
+                "attacked": {
+                  "label": "refresh-negative",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": false
+                },
+                "restored": {
+                  "label": "refresh-restored",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                "attackRejected": true,
+                "restorationPassed": true
+              },
+              "negativePass": true
+            }
+          },
+          {
+            "viewport": "1366x768",
+            "complete": true,
+            "row": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "nav": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(203, 213, 225)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "trigger": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(203, 213, 225)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "refresh": {
+              "background": "rgb(255, 255, 255)",
+              "color": "rgb(15, 61, 76)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 44,
+              "neutral": true,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "status": {
+              "background": "rgb(238, 245, 248)",
+              "color": "rgb(15, 23, 42)",
+              "border": "rgb(226, 232, 240)",
+              "minTouchHeight": true,
+              "actualHeight": 138,
+              "neutral": false,
+              "hovered": false,
+              "focusVisible": false,
+              "active": false,
+              "expanded": false
+            },
+            "selectedAriaPressed": "true",
+            "tokenMatch": true,
+            "contrast": [
+              11.72,
+              11.72,
+              11.72,
+              11.72
+            ],
+            "disabledOpacity": 1,
+            "disabledCursor": "not-allowed",
+            "disabledContrast": 6.92,
+            "disabledTokensMatch": true,
+            "ariaMenuLabel": "Adicionar entrada à Inbox",
+            "hasNeutralLinks": true,
+            "financialDirectionColorFromTokens": true,
+            "focusStyleDefined": true,
+            "menuKeyboard": {
+              "opened": true,
+              "closed": true,
+              "focusRestored": true
+            },
+            "stateMatrix": {
+              "samples": [
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "row",
+                  "selector": ".inbox-review-queue [data-review-select]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "navigation",
+                  "selector": ".inbox-review-nav",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "new-entry",
+                  "selector": ".inbox-new-entry-trigger",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "refresh",
+                  "selector": "[data-review-refresh]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 23, 42)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 17.85,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "filter",
+                  "selector": "[data-review-filter=\"kind\"]",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 23, 42)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 17.85,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-select",
+                  "selector": "#ai-review-dialog [data-review-edit-form] select",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "rest",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(226, 232, 240)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "active",
+                  "background": "rgb(220, 238, 243)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 9.8,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": true,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "focus-visible",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": true,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                {
+                  "label": "dialog-close",
+                  "selector": "#ai-review-dialog .dialog-actions button",
+                  "state": "disabled",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(71, 85, 105)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 6.92,
+                  "ring": false,
+                  "rest": false,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": true,
+                  "pass": true
+                }
+              ],
+              "expected": 33,
+              "dialogOpened": true,
+              "unselectedOption": {
+                "available": true,
+                "background": "rgb(255, 255, 255)",
+                "color": "rgb(15, 61, 76)",
+                "pass": true
+              },
+              "complete": true,
+              "negative": {
+                "attacked": {
+                  "label": "refresh-negative",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(255, 255, 255)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(203, 213, 225)",
+                  "contrast": 11.72,
+                  "ring": false,
+                  "rest": true,
+                  "hover": false,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": false
+                },
+                "restored": {
+                  "label": "refresh-restored",
+                  "selector": "[data-review-refresh]",
+                  "state": "hover",
+                  "background": "rgb(241, 245, 249)",
+                  "color": "rgb(15, 61, 76)",
+                  "border": "rgb(165, 203, 214)",
+                  "contrast": 10.7,
+                  "ring": false,
+                  "rest": false,
+                  "hover": true,
+                  "pressed": false,
+                  "disabled": false,
+                  "pass": true
+                },
+                "attackRejected": true,
+                "restorationPassed": true
+              },
+              "negativePass": true
+            }
+          }
+        ],
+        "failures": []
+      }
+    },
+    "issue-565-ai-review-queue-states.json": {
+      "sha256": "68390cc918d7b5636de6b87a506811d2218eadd7c134afb5450532cb4d997a00",
+      "data": {
+        "generatedAt": "2026-10-31T13:01:48.603Z",
+        "commit": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "browser": "Google Chrome 156.0.8078.47",
+        "fixture": {
+          "suggestionId": "24cb2bcd-fba0-4efb-8900-0e7515a9bbaf"
+        },
+        "evidence": {
+          "kinds": {
+            "cardCount": 5,
+            "allKindsVisible": true,
+            "editOnlyOnSupportedKinds": true,
+            "lowConfidenceVisible": true,
+            "editObserved": [
+              {
+                "kind": "transaction_extraction",
+                "hasEdit": true
+              },
+              {
+                "kind": "categorization",
+                "hasEdit": true
+              },
+              {
+                "kind": "deduplication",
+                "hasEdit": false
+              },
+              {
+                "kind": "reconciliation",
+                "hasEdit": false
+              },
+              {
+                "kind": "insight",
+                "hasEdit": false
+              }
+            ]
+          },
+          "loading": {
+            "visible": true,
+            "retryVisible": false
+          },
+          "empty": {
+            "visible": true
+          },
+          "missingEvidence": {
+            "blocked": true,
+            "recovered": true
+          },
+          "error": {
+            "visible": true,
+            "retryVisible": true
+          },
+          "unavailable": {
+            "visible": true,
+            "distinctFromError": true,
+            "retryVisible": true
+          },
+          "retry": {
+            "clicked": true,
+            "recovered": true
+          },
+          "conflict": {
+            "visible": true,
+            "actionReenabled": true
+          }
+        },
+        "failures": []
+      }
+    },
+    "issue-564-category-learning.json": {
+      "sha256": "30162bc8daac3f26298c9f420faa0c79024b99f6e151ea586e4f868b13fe7312",
+      "data": {
+        "commit": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+        "generatedAt": "2026-10-31T13:01:12.996Z",
+        "stage": "passed",
+        "fixtures": {
+          "suffix": "mvwetjhl",
+          "accountId": "44444444-4444-4444-8444-444444444445",
+          "categoryId": "66666666-6666-4666-8666-666666666603",
+          "ignoreEntryId": "47690829-5b7f-4928-b813-27d00f96141a",
+          "revertEntryId": "e7bec401-0dec-416c-bd48-eb5205d3ba78",
+          "ignoreSuggestionId": "4aea1566-b13d-4467-976f-b5aac580c29d",
+          "correctionSuggestionId": "e6803682-436d-4a6b-9985-24f37c9fb9d3"
+        },
+        "settingsBefore": {
+          "panelVisible": true,
+          "ignoreVisible": true,
+          "revertVisible": true,
+          "ignoreStatus": "active",
+          "revertStatus": "active",
+          "activeButtonsForMutatedEntries": 4
+        },
+        "settingsAfter": {
+          "panelVisible": true,
+          "ignoreVisible": false,
+          "revertVisible": false,
+          "ignoreStatus": "ignored",
+          "revertStatus": "reverted",
+          "activeButtonsForMutatedEntries": 0
+        },
+        "settingsMobile": {
+          "width": 390,
+          "height": 844,
+          "noHorizontalOverflow": true
+        },
+        "inboxOrigin": {
+          "learningCategorizationId": "0f24d0a6-da44-4c58-8009-1a704c55ddcd",
+          "learningOriginVisible": true,
+          "correctionButtonVisible": true
+        },
+        "correctionGuards": [
+          {
+            "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+            "mode": "hidden",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "ready"
+          },
+          {
+            "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+            "mode": "wrong-selection",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "ready"
+          },
+          {
+            "fingerprint": "sha256-c787551bebb78a526da3c2f5f40c59a336060848ed20c398ae7f8c77566c1eea",
+            "mode": "changed-fingerprint",
+            "posts": 0,
+            "blocked": true,
+            "reviewState": "unavailable"
+          }
+        ],
+        "failedDialog": {
+          "open": true,
+          "categoryPreserved": true,
+          "submitEnabled": true,
+          "statusLive": true,
+          "fitsViewport": true
+        },
+        "learningCountBefore": 3,
+        "learningCountAfter": 4
+      }
+    }
+  },
+  "captures_verified": [
+    {
+      "filename": "issue-565-ai-review-queue-320x740.png",
+      "size_pixels": [
+        320,
+        740
+      ],
+      "sha256": "975d2269b23cb74f0d94ccb48edfb6fd4b4ce0020c7efd76a1001ef906eb176e"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-390x844.png",
+      "size_pixels": [
+        390,
+        844
+      ],
+      "sha256": "1b54b309d130fd200e9c4ca66ebf82b16f9dca64378d4208b13c14ae74159f52"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-768x1024.png",
+      "size_pixels": [
+        768,
+        1024
+      ],
+      "sha256": "b96f853339897cf7c43041d02a8e245891084eef5976aa0f6ae7acd250047b3c"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-1024x768.png",
+      "size_pixels": [
+        1024,
+        768
+      ],
+      "sha256": "05c5b30bde9a99b945d7ed1fc3f0acef557f056fc3cf80decc50349cefb0145e"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-1366x768.png",
+      "size_pixels": [
+        1366,
+        768
+      ],
+      "sha256": "423d6f238727f62e2507f529135f71da07b00e88ffaca3a3ec618a926a6c56eb"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-1440x900.png",
+      "size_pixels": [
+        1440,
+        900
+      ],
+      "sha256": "85b35af523bbd1f20fe2f936ba4f28bbf841362a4968eb989ca05bfcf8b7e156"
+    },
+    {
+      "filename": "issue-565-ai-review-queue-1366x900.png",
+      "size_pixels": [
+        1366,
+        900
+      ],
+      "sha256": "aac0dc5eb2015b0a0ad8a5e7884e4500f2c18f71bbb842a24977a8c599cdf7f2"
+    },
+    {
+      "filename": "issue-726-inbox-long-evidence-320x740.png",
+      "size_pixels": [
+        320,
+        740
+      ],
+      "sha256": "fb43fc1b2fe8eaa3d4839ad4723e5750168760d20acafe23dea7d9d2029d3e43"
+    },
+    {
+      "filename": "issue-726-inbox-long-evidence-390x844.png",
+      "size_pixels": [
+        390,
+        844
+      ],
+      "sha256": "cfeef9f73c06799250825961762874a49a7d6b9fc5eabcbf760cdb806cf2c7e3"
+    }
+  ],
+  "visual_gate": {
+    "sha256": "8b3cd9dc3e9e161d8f9b71c60f3a6ce77b5fbd85",
+    "registered_modules": 75,
+    "execution_units": 75,
+    "failures": 0
+  },
+  "validated_assertions": {
+    "fingerprint_stale_approve_no_post": true,
+    "fingerprint_current_approve_exact_post": true,
+    "fingerprint_stale_reject_no_post": true,
+    "fingerprint_current_reject_exact_post": true,
+    "category_hidden_no_post": true,
+    "category_selection_changed_no_post": true,
+    "category_stale_no_post": true,
+    "hierarchy_secondary_promoted_rejected": true,
+    "hierarchy_restored": true,
+    "evidence_hidden_blocked": true,
+    "evidence_restored": true,
+    "viewports": true,
+    "mobile_long_content": true,
+    "empty_error_retry_conflict": true,
+    "evidence_visibility_variants": true,
+    "neutral_pseudostate_matrix": true
+  },
+  "honesty": "This report verifies raw artifact outcomes and hashes; it does not substitute for independent audit. Screenshots remain in original immutable GitHub Actions artifact, with per-file digests above."
+}

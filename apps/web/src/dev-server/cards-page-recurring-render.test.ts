@@ -46,6 +46,8 @@ const purchase = {
   invoiceId: "invoice-1",
   occurredOn: "2028-01-10",
   recurrenceId: "recurrence-1",
+  installmentSequenceNumber: 2,
+  totalInstallments: 3,
   status: "posted",
 };
 const invoiceSummary = {
@@ -129,6 +131,9 @@ async function cardsPageRendersRecurringPurchaseOnce(): Promise<void> {
     assert.doesNotMatch(html, /Erro ao carregar dados/);
     assert.equal(countOccurrences(html, purchaseRowMarker), 1);
     assert.match(html, recurringPurchasePattern);
+    assert.match(html, /class="recurrence-indicator" title="Lançamento recorrente"/);
+    assert.match(html, /indicator\.dataset\.recurrenceIconOnly = "true"/);
+    assert.doesNotMatch(html, /class="installment-badge cards-installment-label"/);
     assert.match(html, /data-edit-purchase="purchase-1" data-recurrence-id="recurrence-1"/);
     assert.match(html, /form.dataset.currentPurchaseId = purchase.id/);
     assert.match(html, /form.dataset.recurrenceId = purchase.recurrenceId/);

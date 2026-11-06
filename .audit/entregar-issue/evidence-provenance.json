@@ -1,16 +1,6 @@
 {
   "schema_version": 1,
-  "material_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-  "evidence": [
-    {
-      "evidence_id": "EVID-618-EXACT-HEAD",
-      "kind": "quantitative",
-      "status": "passed",
-      "path": "evidence/handoff-remediation-675.txt",
-      "sha256": "3bd1d2005e4ff9ae0f843a9e7c6640b0a40333897d7c430dd9ea1feb9e28408d",
-      "freshness_policy": "exact-material-head",
-      "subject_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-      "producer": "GitHub Actions Delivery V2 CI run 36035406314"
-    }
-  ]
+  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
+  "evidence": []
 }

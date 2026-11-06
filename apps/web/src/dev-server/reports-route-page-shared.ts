@@ -5,6 +5,52 @@ import {
 } from "./reports-analysis-archetype.js";
 import { reportPageStyles } from "./reports-route-page-styles.js";
 
+/** Presentation-only choice. Financial blocks are never converted or combined. */
+export function parseReportCurrencyFilter(value: string | null): string | undefined {
+  if (value === null || value === "") return undefined;
+  if (value === "all") return "all";
+  if (!/^[A-Za-z]{3}$/.test(value)) {
+    throw new Error("Moeda inválida. Selecione uma moeda disponível ou Todas as moedas.");
+  }
+  return value.toUpperCase();
+}
+
+export function selectReportCurrencyBlocks<T extends { currency: string }>(
+  blocks: readonly T[],
+  requestedCurrency?: string,
+): { currency: string; visible: T[] } {
+  const currency =
+    requestedCurrency ??
+    blocks.find((block) => block.currency.toUpperCase() === "BRL")?.currency ??
+    blocks[0]?.currency ??
+    "all";
+  return {
+    currency,
+    visible:
+      currency === "all"
+        ? blocks.slice()
+        : blocks.filter((block) => block.currency.toUpperCase() === currency),
+  };
+}
+
+export function renderReportCurrencyOptions(
+  selectedCurrency: string,
+  availableCurrencies: readonly string[],
+): string {
+  const currencies = [
+    ...new Set([
+      ...availableCurrencies.map((currency) => currency.toUpperCase()),
+      ...(selectedCurrency !== "all" ? [selectedCurrency] : []),
+    ]),
+  ].sort((left, right) => left.localeCompare(right));
+  return `<option value="all"${selectedCurrency === "all" ? " selected" : ""}>Todas as moedas</option>${currencies
+    .map(
+      (currency) =>
+        `<option value="${escapeReportHtml(currency)}"${currency === selectedCurrency ? " selected" : ""}>${escapeReportHtml(currency)}</option>`,
+    )
+    .join("")}`;
+}
+
 export type ReportsView = "category-evolution" | "installments" | "cash-flow";
 
 export function renderReportHeading(title: string, description: string): string {
@@ -34,13 +80,19 @@ export function renderReportState(
   state: ReportAnalysisState,
   title: string,
   description: string,
+  retryHref?: string,
 ): string {
-  return renderReportAnalysisStateBlock({
+  let retry = "";
+  if (state === "api-error" && retryHref) {
+    retry = `<a class="report-retry sf-focus-ring" href="${escapeReportHtml(retryHref)}">Tentar novamente</a>`;
+  }
+  const stateHtml = renderReportAnalysisStateBlock({
     id: `report-state-${state}`,
     state,
     title,
     description,
   });
+  return `${stateHtml}${retry}`;
 }
 
 export function renderReportsShell(content: string): string {

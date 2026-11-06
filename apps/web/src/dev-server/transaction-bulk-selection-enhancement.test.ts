@@ -19,11 +19,62 @@ const enhanced = enhanceTransactionBulkSelection(source);
 assert.match(enhanced, /data-transaction-bulk-selection-enhancement/);
 assert.match(enhanced, /data-transaction-bulk-selection-controller/);
 assert.match(enhanced, /dataset\.selectionEntity = "group"/);
+assert.match(
+  enhanced,
+  /input\.dataset\.reconcileProtected = String\(group\.reconcileProtected === true/,
+);
+assert.match(enhanced, /member\.reconcileProtected === true/);
+assert.match(enhanced, /member\.source === "account_remuneration"/);
 assert.match(enhanced, /data-transaction-group-state/);
 assert.match(enhanced, /statement-status transaction-group-state/);
 assert.match(enhanced, /Agrupamento com/);
 assert.match(enhanced, /grouped-status/);
 assert.match(enhanced, /Marcar como conciliado/);
+assert.match(enhanced, /function decorateIconButton\(button, label, glyph, danger\)/);
+assert.match(enhanced, /function createIconButton\(action, label, glyph, danger\)/);
+assert.match(enhanced, /button\.dataset\.bulkSelectionAction = action/);
+assert.match(enhanced, /button\.setAttribute\("data-button-variant", "neutral"\)/);
+assert.match(enhanced, /button\.setAttribute\("aria-label", label\)/);
+assert.match(enhanced, /button\.setAttribute\("data-tooltip", tooltip\)/);
+assert.match(enhanced, /button\.innerHTML = glyph/);
+assert.match(
+  enhanced,
+  /createIconButton\("reconcile", "Marcar como conciliado", icon\.reconcile, false\)/,
+);
+assert.match(
+  enhanced,
+  /createIconButton\("unreconcile", "Desmarcar conciliado", icon\.unreconcile, false\)/,
+);
+assert.match(
+  enhanced,
+  /decorateIconButton\(groupOpen, "Unificar lançamentos", icon\.groupAction, false\)/,
+);
+assert.match(enhanced, /decorateIconButton\(clearButton, "Limpar seleção", icon\.clear, false\)/);
+assert.match(enhanced, /createIconButton\("void", "Excluir selecionados", icon\.trash, true\)/);
+assert.match(enhanced, /actions\.setAttribute\("role", "group"\)/);
+assert.match(enhanced, /Ações dos lançamentos selecionados/);
+assert.match(enhanced, /statement-status statement-status-ok/);
+assert.match(enhanced, /statement-status statement-status-posted/);
+assert.match(enhanced, /statement-status bulk-icon-neutral/);
+assert.match(enhanced, /statement-status bulk-icon-danger/);
+assert.match(enhanced, /44px/);
+assert.match(enhanced, /26px/);
+assert.match(enhanced, /15px/);
+assert.match(enhanced, /updateTooltip\(groupOpen/);
+assert.doesNotMatch(
+  enhanced,
+  /<span>Excluir selecionados<\/span>|<span>Desmarcar conciliado<\/span>/,
+);
+assert.doesNotMatch(enhanced, /refresh-cw/);
+assert.match(enhanced, /item\.dataset\.status === "planned"/);
+assert.match(enhanced, /item\.dataset\.status === "posted"/);
+assert.match(enhanced, /hasReconcileTarget/);
+assert.match(enhanced, /item\.dataset\.reconcileProtected === "true"/);
+assert.match(enhanced, /Conciliação indisponível: remuneração automática exige seu fluxo próprio/);
+assert.match(enhanced, /!eligibleStatuses \|\| !hasReconcileTarget/);
+assert.match(enhanced, /!eligibleStatuses \|\| !hasReconciled/);
+assert.match(enhanced, /Todos os lançamentos selecionados já estão conciliados/);
+assert.doesNotMatch(enhanced, /Efetive os lançamentos previstos antes de alterar a conciliação/);
 assert.match(enhanced, /Desmarcar conciliado/);
 assert.match(enhanced, /Excluir selecionados/);
 assert.match(enhanced, /\/api\/transactions\/bulk-actions/);

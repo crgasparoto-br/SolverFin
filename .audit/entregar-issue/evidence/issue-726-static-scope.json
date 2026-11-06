@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "initial_material_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b",
+  "paths": [
+    "apps/web/src/dev-server/category-learning-controller.test.ts",
+    "apps/web/src/dev-server/category-learning-controller.ts",
+    "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+    "apps/web/src/dev-server/inbox-page.ts",
+    "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
+    "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+    "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts",
+    "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+    "docs/AI_REVIEW_QUEUE.md",
+    "scripts/statement-visual/issue-564-category-learning.mjs",
+    "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+    "scripts/statement-visual/issue-726-inbox-controls.mjs"
+  ],
+  "protected_api_finance_paths_changed": [],
+  "negative_probe": {
+    "operation": "git diff --name-only c273f132bd2a0f879ae0f6791a2bc7054862da0b..3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+    "expected": "No API, domain, database migration, permission or currency-contract source path changed",
+    "observed": "No apps/api, packages, prisma or apps/web/src/api path in issue-local diff",
+    "passed": true
+  },
+  "source_tree": "Authenticated exact-sha GitHub repository.bundle from Delivery audit workspace 41158602958"
+}

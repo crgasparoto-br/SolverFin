@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "subject_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+  "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+  "trusted_base_certificate": {
+    "issue": 724,
+    "pr": 744,
+    "material_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8"
+  },
+  "material_head_existing_certificate": {
+    "issue": 725,
+    "pr": 751,
+    "material_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342"
+  },
+  "material_head_target_binding": {
+    "status": "current-target",
+    "reuse_allowed": true,
+    "base_origin": {
+      "checked": true,
+      "base_sha": "9265025a21c39528131f3319943d0125c5cf9538",
+      "present_identity_artifacts": [
+        "handoff-ready.json",
+        "specification-snapshot.json"
+      ],
+      "inherited_paths": [],
+      "all_present_identity_artifacts_inherited": false,
+      "comparison_mode": "git-exact-base-sha"
+    },
+    "note": "Semantic target is correct but certification is invalid for HEAD: identity.material_head_sha differs. Semantic binding does not waive exact-SHA certification."
+  },
+  "negative_proof_file": "evidence/issue-725-stale-certificate-negative.txt",
+  "negative_proof_sha256": "45c842d0187404ef31b4f4325e1093b1f918ba3c7f42bcaaa7acc5b6c52b88f7",
+  "positive_expected": "A new result-only child must certify HEAD cec1ef84bd04fb6c7df2a8bed06bb857af8b3683 and use this frozen candidate as its direct parent."
+}

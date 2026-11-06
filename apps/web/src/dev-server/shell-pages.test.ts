@@ -26,6 +26,31 @@ const resolveAuthenticatedSources = (
     };
   }
 
+  if (routeId === "cards") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /cardsPageStyles\(\)/);
+    return {
+      renderer,
+      styles: readModuleSource("cards-page-v2-styles.js"),
+    };
+  }
+
+  if (routeId === "dashboard") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /dashboardStyles\(\)/);
+    assert.match(renderer, /import \{ dashboardStyles \} from "\.\/dashboard-styles\.js"/);
+    return {
+      renderer,
+      styles: readModuleSource("dashboard-styles.js"),
+    };
+  }
+
+  if (routeId === "adminInstitutions") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /import \{ adminPageStyles \} from "\.\/admin-institutions-styles\.js"/);
+    return { renderer, styles: readModuleSource("admin-institutions-styles.js") };
+  }
+
   const source = readModuleSource(moduleFileName);
   return { renderer: source, styles: source };
 };

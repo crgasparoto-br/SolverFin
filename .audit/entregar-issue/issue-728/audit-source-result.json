@@ -1,0 +1,333 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "008f097b490d8bf90a7174db8ddfb169893bcef6",
+    "head_sha": "4b904abbf7db6033ae6e096cf62fa5398f50672a"
+  },
+  "requirements": [
+    {
+      "id": "REQ-728-001",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-002",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-003",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-004",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-005",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-006",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-007",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-008",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-009",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-010",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "REQ-728-011",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-PRESENTATION",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-FILTERS",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-ERROR",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-AUTH",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-TESTS",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-CERT",
+      "status": "covered",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "S-ACTIONS",
+      "status": "not-executed",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165",
+      "reason": "Full network rejection and recovery for refresh/status/upload would require expensive independent browser integration beyond the authenticated Chrome evidence already reused; skipped after the 503 semantic blocker was proven."
+    }
+  ],
+  "changed_path_reviews": [
+    {
+      "id": ".audit/entregar-issue/handoff-ready.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/handoff-ready.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/code-growth.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/code-growth.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/codebase-grounding.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/codebase-grounding.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/evidence/issue-728-test-reach.log; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/requirement-closure.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/requirement-closure.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/specification-snapshot.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/specification-snapshot.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/specification-sources/SRC-ISSUE-728.txt",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/specification-sources/SRC-ISSUE-728.txt; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-728/standard-evidence.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for .audit/entregar-issue/issue-728/standard-evidence.json; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "apps/web/src/dev-server/admin-institutions-page.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for apps/web/src/dev-server/admin-institutions-page.test.ts; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "apps/web/src/dev-server/admin-institutions-page.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-PRESENTATION",
+        "S-FILTERS",
+        "S-ERROR",
+        "S-ACTIONS",
+        "S-AUTH"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for apps/web/src/dev-server/admin-institutions-page.ts; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "apps/web/src/dev-server/admin-institutions-styles.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-PRESENTATION"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for apps/web/src/dev-server/admin-institutions-styles.ts; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "apps/web/src/dev-server/shared-styles.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for apps/web/src/dev-server/shared-styles.test.ts; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "apps/web/src/dev-server/shell-pages.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for apps/web/src/dev-server/shell-pages.test.ts; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "scripts/statement-visual/coverage-contract.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for scripts/statement-visual/coverage-contract.mjs; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "scripts/statement-visual/issue-615-secondary-route.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for scripts/statement-visual/issue-615-secondary-route.mjs; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "scripts/statement-visual/issue-728-admin-states.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-TESTS"
+      ],
+      "reason": "Inspected exact-SHA diff or documented scope for scripts/statement-visual/issue-728-admin-states.mjs; correlated with committed source and remote CI tests.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A-001",
+      "requirement_id": "REQ-728-009",
+      "surface_id": "S-ERROR",
+      "disposition": "blocking",
+      "root_cause": "The SSR page collapses every apiGet failure into a permission denial; apiGet discards HTTP status, and Chrome test asserts denial even when 503 is injected.",
+      "evidence_path": "independent_sources/chrome-error-503-390x844.png",
+      "evidence_sha256": "fd893a47a3a0fa5decc1a001a36ad86372c69ef9b55ed143d56a0686a5f84b7d"
+    },
+    {
+      "id": "A-002",
+      "requirement_id": "REQ-728-002",
+      "surface_id": "S-CERT",
+      "disposition": "blocking",
+      "root_cause": "Implementation proceeded without the explicitly required authenticated Chrome evidence of divergence before editing; the producer acknowledges only structural SSR baseline verification.",
+      "evidence_path": "independent_sources/observations.json",
+      "evidence_sha256": "b88cd8443b465d386fb4e95577ece82c4f1e62ddc1c02f4ee38199a7ab3f2165"
+    },
+    {
+      "id": "R-001",
+      "requirement_id": "REQ-728-005",
+      "surface_id": "S-PRESENTATION",
+      "disposition": "optional-recommendation",
+      "root_cause": "On 320 x 740 the first content row of the catalog is below the first viewport; improve compact mobile hierarchy after correcting blockers.",
+      "evidence_path": "independent_sources/chrome-catalog-first-fold-320x740.png",
+      "evidence_sha256": "04f9b7ce85254af7306400ff537721be3d686c72de7bc85f301f212d72225f05"
+    }
+  ],
+  "blocking_ids": [
+    "A-001",
+    "A-002"
+  ],
+  "verdict": "REPROVADA",
+  "previous_findings": [],
+  "coverage": "limited",
+  "discovery_closed": true,
+  "rejection_id": "audit-rejection:1729b972-8d92-4071-a0dd-e2d15a19163c",
+  "source_material_sha": "e017110006135b4b56daf6359f6f561b316de6d2",
+  "published_handoff_sha": "4b904abbf7db6033ae6e096cf62fa5398f50672a",
+  "audit_transport": "certified-handoff",
+  "preflight": "READY",
+  "actual_chrome_evidence": "Material CI artifact 13262046485, SHA e017110006135b4b56daf6359f6f561b316de6d2",
+  "validity": "independent",
+  "release_gate_satisfied": false,
+  "remediation_mode": "targeted-remediation"
+}

@@ -122,6 +122,20 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /href="\/inbox">Abrir inbox/);
       assert.match(html, /href="\/cartoes">Ver cartões/);
       assert.match(html, /Ferramentas de decisão/);
+      assertCockpitHierarchy(html);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 2);
+      assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 3);
+      assert.ok(
+        html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'),
+      );
+      assert.match(html, /\.dashboard-metric \.sf-metric-card \{ display: grid;/);
+      assert.match(html, /text-align: left; white-space: nowrap;/);
+      assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 5);
+      const intrusive = html.replace(
+        '<section class="next-actions"',
+        '<section class="decision-section" aria-label="Painel intrusivo"></section><section class="next-actions"',
+      );
+      assert.throws(() => assertCockpitHierarchy(intrusive));
       assert.match(html, /Planejamento financeiro/);
       assert.match(html, /Tendências e períodos/);
       assert.match(html, /Assistente financeiro/);
@@ -136,6 +150,7 @@ describe("dev-server dashboard page", () => {
 
       assert.match(html, /class="sf-page-container dashboard-page"/);
       assert.match(html, /class="sf-page-header"/);
+      assert.match(html, /class="dashboard-primary-currencies" data-multicurrency="false"/);
       assert.match(html, /class="sf-summary-grid"/);
       assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /class="evidence-detail"/);
@@ -143,7 +158,7 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /\.metric-drilldown:focus-visible/);
       assert.match(
         html,
-        /\.currency-summary \.sf-summary-grid, \.decision-grid, \.cash-flow-dashboard-grid \{ grid-template-columns: 1fr;/,
+        /\.currency-summary \.sf-summary-grid, \.dashboard-supporting-metrics, \.decision-grid, \.cash-flow-dashboard-grid \{ grid-template-columns: 1fr;/,
       );
     } finally {
       globalThis.fetch = originalFetch;
@@ -265,4 +280,19 @@ function jsonResponse(body: unknown): Response {
     status: 200,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
+}
+
+function assertCockpitHierarchy(html: string): void {
+  const position = html.indexOf('id="currency-BRL"');
+  const action = html.indexOf('<section class="next-actions"');
+  const horizon = html.indexOf('class="cash-flow-section"');
+  const secondary = html.indexOf('class="decision-section"');
+  const supporting = html.indexOf('class="dashboard-supporting-section"');
+  const evidence = html.indexOf('class="dashboard-evidence-index"');
+  assert.ok(position >= 0, "Posição por moeda deve existir");
+  assert.ok(action > position, "Próxima ação deve seguir o saldo e a variação");
+  assert.ok(supporting > action, "Indicadores complementares não podem preceder a próxima ação");
+  assert.ok(horizon > supporting, "Horizonte não pode encobrir os complementos");
+  assert.ok(secondary > horizon, "Módulos secundários devem ficar após o horizonte");
+  assert.ok(evidence > secondary, "Índice de evidências não pode ocupar a dobra inicial");
 }

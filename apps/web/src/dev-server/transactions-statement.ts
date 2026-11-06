@@ -23,6 +23,7 @@ export interface TransactionRecord {
   effectiveOn?: string;
   accountId?: string;
   destinationAccountId?: string;
+  note?: string | null;
   categoryId?: string;
   cardId?: string;
   invoiceId?: string;
@@ -53,7 +54,8 @@ export interface TransactionGroupRecord {
   status: string;
   currency: string;
   totalAmountMinor: number;
-  members: TransactionRecord[];
+  reconcileProtected?: boolean;
+  members: Array<TransactionRecord & { reconcileProtected?: boolean }>;
 }
 
 export function projectTransactionGroups(
@@ -102,6 +104,8 @@ export interface StatementRow {
   transaction: TransactionRecord;
   amountMinor: number;
   balanceAfterMinor: number;
+  /** Canonical ascending running-balance order, preserved when presentation sorts rows. */
+  balanceOrder?: number;
 }
 
 export interface StatementSummary {
@@ -125,7 +129,9 @@ export function resolveFilters(
 ): StatementFilters {
   const month = resolveSelectedMonth(url, currentMonth);
   const day = resolveSelectedDay(url, month);
-  const period = day ? dayToPeriod(day) : monthToPeriod(month);
+  const range = resolveSelectedRange(url);
+  // An explicit day is more specific than a stale relative range in a GET filter.
+  const period = day ? dayToPeriod(day) : (range ?? monthToPeriod(month));
   const currency = normalizeCurrency(url?.searchParams.get("currency"));
   const kind = normalizeKindFilter(url?.searchParams.get("kind"));
   const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
@@ -175,11 +181,20 @@ export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "e
 }
 
 export function buildTransactionQuery(filters: StatementFilters): string {
-  return new URLSearchParams({
+  const query = new URLSearchParams({
     status: "all",
     accountId: filters.accountId ?? "",
-    occurredTo: filters.endsOn,
-  }).toString();
+  });
+  // Drilldowns have their own date semantics. Normal statements use the date
+  // displayed to the user, never the occurrence date as an implicit cutoff.
+  const cutoffKey =
+    filters.evidence === "posted"
+      ? "occurredTo"
+      : filters.evidence === "planned"
+        ? "plannedTo"
+        : "statementTo";
+  query.set(cutoffKey, filters.endsOn);
+  return query.toString();
 }
 
 export function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
@@ -276,8 +291,11 @@ export function summarize(rows: StatementRow[], openingMinor: number): Statement
     (summary, row) => {
       const absolute = Math.abs(row.amountMinor);
 
-      if (row.transaction.kind === "income") summary.incomeMinor += row.transaction.amountMinor;
-      if (row.transaction.kind === "expense") summary.expenseMinor += row.transaction.amountMinor;
+      // Individual-account cards show real inflows/outflows, including each
+      // transfer leg in that account's own currency. The signed row amount
+      // already resolves source versus destination and cross-currency values.
+      if (row.amountMinor > 0) summary.incomeMinor += row.amountMinor;
+      if (row.amountMinor < 0) summary.expenseMinor -= row.amountMinor;
       summary.plannedBalanceMinor += row.amountMinor;
 
       if (row.transaction.effectiveOn === undefined) {
@@ -349,6 +367,18 @@ function resolveSelectedDay(url: URL | undefined, month: string): string | undef
   if (!queryDay.startsWith(`${month}-`)) return undefined;
 
   return queryDay;
+}
+
+/** An explicit closed range wins over the month and single-day selectors. */
+function resolveSelectedRange(
+  url: URL | undefined,
+): Pick<StatementFilters, "startsOn" | "endsOn"> | undefined {
+  const from = url?.searchParams.get("from");
+  const to = url?.searchParams.get("to");
+  if (!isValidDateOnly(from) || !isValidDateOnly(to)) return undefined;
+  if (from > to) return undefined;
+
+  return { startsOn: from, endsOn: to };
 }
 
 function accountCurrency(account: AccountRecord): string {

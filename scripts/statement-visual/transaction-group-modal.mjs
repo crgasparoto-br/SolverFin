@@ -137,7 +137,7 @@ try {
       await new Promise((resolve) => setTimeout(resolve, 80));
       const result = {
         modalOpen: document.querySelector("[data-modal]").open,
-        submitDisabled: form.querySelector('[type="submit"]').disabled,
+        submitDisabled: form.querySelector('[data-statement-save-primary]').disabled,
         description: form.description.value,
         message: form.querySelector(".form-status").textContent
       };

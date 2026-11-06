@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 755,
+    "pull_request_number": 756,
+    "material_head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7"
+  },
+  "escapes": [],
+  "source": "Old certified handoff 0e70f7564bb532a113f32ebc660390f5513cae4a for issue 755 declares previous_independent_rejection=false and has no issue-755 audit_escape_closure artifact. Foreign issue-725 inherited closure is not prior lineage for issue 755."
+}

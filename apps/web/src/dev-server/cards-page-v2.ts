@@ -1,3 +1,7 @@
+import { cardsPageSetupScript } from "./cards-page-v2-script-setup.js";
+import { cardsPagePurchaseActionsScript } from "./cards-page-v2-script-purchases.js";
+import { cardsPageMutationScript } from "./cards-page-v2-script-mutations.js";
+import { cardsPageRemainingActionsScript } from "./cards-page-v2-script-other.js";
 import { formatDateOnly } from "@solverfin/shared";
 
 import { renderMoney } from "../design-system/money.js";
@@ -13,16 +17,17 @@ import {
 import { apiGet } from "./api.js";
 import { attachmentWorkspaceScript, renderAttachmentWorkspace } from "./attachment-workspace.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
+import { icon } from "./icons.js";
 import {
   recurrencesSectionScript,
-  recurrencesSectionStyles,
   renderRecurrenceActionMenuItems,
   renderRecurrenceEditModal,
   renderRecurrenceIndicator,
   type RecurrenceRecord,
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { cardsPageStyles } from "./cards-page-v2-styles.js";
+import { entryFillRuleScript, renderEntryFillRuleControl } from "./entry-fill-rules.js";
 
 type CardSort =
   | "date_asc"
@@ -77,6 +82,8 @@ interface CardInstrumentRecord {
   effectiveCreditLimitMinor?: number;
 }
 interface CardPurchaseRecord {
+  /** API financial direction (legacy mocked records without it remain expenses). */
+  kind?: "expense" | "income";
   id: string;
   financialProfileId?: string;
   cardId: string;
@@ -98,6 +105,8 @@ interface CardPurchaseRecord {
 }
 interface InvoiceInstallmentRecord {
   id: string;
+  status: string;
+  dueOn: string;
   sequenceNumber: number;
   totalInstallments: number;
   initialSequenceNumber?: number;
@@ -138,6 +147,7 @@ interface InvoiceCardTotalRecord {
 interface CardPresentation {
   search: string;
   sort: CardSort;
+  groupBy: "day" | "instrument";
   reconciliation: ReconciliationFilter;
   day?: string;
 }
@@ -228,18 +238,52 @@ export async function renderCardsPageV2(
   if (!installmentsResult.ok) return renderErrorPage(installmentsResult.error);
 
   const accounts = accountsResult.ok ? accountsResult.data.accounts : [];
-  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const reversalCategoriesResult = await apiGet<{ categories: CategoryRecord[] }>(
+    token,
+    "/api/categories?kind=income",
+  );
+  const categories = categoriesResult.ok
+    ? [
+        ...categoriesResult.data.categories,
+        ...(reversalCategoriesResult.ok
+          ? reversalCategoriesResult.data.categories.filter(
+              (category) => category.name.trim().toLocaleLowerCase("pt-BR") === "estornos",
+            )
+          : []),
+      ]
+    : [];
   const summary = summaryResult.data.summary;
+  // The original transaction amount is a historical base, not the effective total
+  // after one or more installment amounts have been adjusted.
+  const allCardInstallments =
+    selectedCard && selectedInvoice
+      ? await apiGet<{ installments: InvoiceInstallmentRecord[] }>(
+          token,
+          `/api/installments?cardId=${encodeURIComponent(selectedCard.id)}&status=all`,
+        )
+      : null;
+  const effectiveTotals = new Map<string, number>();
+  if (allCardInstallments?.ok) {
+    for (const installment of allCardInstallments.data.installments ?? []) {
+      const transactionId = installment.transaction?.id;
+      if (!transactionId || !Number.isSafeInteger(installment.amountMinor)) continue;
+      effectiveTotals.set(
+        transactionId,
+        (effectiveTotals.get(transactionId) ?? 0) + installment.amountMinor,
+      );
+    }
+  }
   const canonicalPurchases = projectInvoicePurchases(
     purchasesResult.data.purchases,
     installmentsResult.data.installments ?? [],
+    effectiveTotals,
   );
   const invoiceCurrency = resolveInvoiceCurrency(selectedInvoice, canonicalPurchases);
   const visiblePurchases = sortPurchases(
     filterPurchases(canonicalPurchases, categories, presentation),
     presentation.sort,
   );
-  const groups = groupPurchasesByInstrument(visiblePurchases, instruments, invoiceCurrency);
+  const groups = groupPurchasesByInstrument(visiblePurchases, instruments);
   const matchingPaymentAccounts = invoiceCurrency
     ? accounts.filter(
         (account) =>
@@ -248,13 +292,11 @@ export async function renderCardsPageV2(
     : [];
 
   const content = renderPageContainer({
-    className: "cards-a3-page",
+    className: selectedInvoice ? "cards-a3-page cards-has-invoice" : "cards-a3-page",
     childrenHtml: `${renderPageHeader({
-      eyebrow: "Cartões e faturas",
       title: "Cartões de Crédito",
-      description:
-        "Acompanhe cada cartão pela fatura selecionada e revise as compras que a compõem.",
-      actionsHtml: renderPageActions(selectedCard, activeInstruments),
+      description: "Acompanhe as faturas, limites e compras dos seus cartões.",
+      actionsHtml: selectedInvoice ? "" : renderPageActions(selectedCard, activeInstruments),
     })}${renderDetailLayout({
       masterHtml: renderCardMaster(
         cards,
@@ -277,6 +319,9 @@ export async function renderCardsPageV2(
         presentation,
         currency: invoiceCurrency,
         paymentAccounts: matchingPaymentAccounts,
+        purchaseActionHtml: selectedInvoice
+          ? renderPageActions(selectedCard, activeInstruments)
+          : "",
         url,
       }),
     })}`,
@@ -285,7 +330,26 @@ export async function renderCardsPageV2(
   return renderShell(`
     <div class="cards-layout" data-cards-archetype="A3">
       ${content}
-      ${renderPurchaseModal(selectedCard, categories, activeInstruments, cardCurrency)}
+      ${renderPurchaseModal(selectedCard, categoriesResult.ok ? categoriesResult.data.categories : [], activeInstruments, cardCurrency)}
+      <dialog class="cards-dialog" data-modal="reversal-edit" aria-labelledby="cards-reversal-edit-title">
+        <section class="cards-dialog-panel cards-purchase-dialog-panel">
+          <header><div><span class="cards-kicker">Crédito na fatura</span><h2 id="cards-reversal-edit-title">Editar estorno</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+          <p class="cards-dialog-description">O estorno foi criado. Confira os dados e salve os ajustes desejados.</p>
+          <form data-reversal-edit-form>
+            <label>Descrição<input name="description" required maxlength="180"></label>
+            <label>Valor do estorno (${escapeHtml(cardCurrency ?? "")})<input name="amountMinor" data-money inputmode="decimal" required></label>
+            <label>Data<input name="occurredOn" type="date" required></label>
+            <label>Instrumento<select name="cardInstrumentId">${renderInstrumentOptions(activeInstruments, cardCurrency)}</select></label>
+            <label>Categoria<input value="Estornos" readonly aria-readonly="true"></label>
+            <p class="form-status" data-reversal-edit-status role="status"></p>
+            <div class="cards-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-close-modal>Fechar</button><button type="submit" class="sf-button sf-button-primary">Salvar</button></div>
+          </form>
+        </section>
+      </dialog>
+
+      ${selectedInvoice ? renderInstallmentAmountModal() : ""}
+      ${renderRecurringEditScopeModal()}
+      ${selectedInvoice ? renderInvoiceAttachmentsDialog(selectedInvoice) : ""}
       ${renderPaymentModal(
         selectedInvoice,
         matchingPaymentAccounts,
@@ -325,13 +389,22 @@ function invoicesForCard(invoices: readonly InvoiceRecord[], cardId: string): In
 function projectInvoicePurchases(
   purchases: readonly CardPurchaseRecord[],
   installments: readonly InvoiceInstallmentRecord[],
+  effectiveTotals: ReadonlyMap<string, number> = new Map(),
 ): CardPurchaseRecord[] {
   const installmentTransactionIds = new Set(
     installments.map((installment) => installment.transaction?.id).filter(isDefined),
   );
-  const simpleAndRecurringPurchases = purchases.filter(
-    (purchase) => !installmentTransactionIds.has(purchase.id),
-  );
+  const simpleAndRecurringPurchases = purchases
+    .filter((purchase) => !installmentTransactionIds.has(purchase.id))
+    .map((purchase) => ({
+      ...purchase,
+      amountMinor:
+        purchase.kind === "income" ? -Math.abs(purchase.amountMinor) : purchase.amountMinor,
+      description:
+        purchase.kind === "income"
+          ? purchase.description.replace(/ \[estorno:[^\]]+\]$/, "")
+          : purchase.description,
+    }));
   const installmentOccurrences = installments.flatMap((installment) => {
     const purchase = installment.transaction;
     if (!purchase || !installment.invoice?.id || !purchase.cardId) return [];
@@ -340,9 +413,12 @@ function projectInvoicePurchases(
         ...purchase,
         invoiceId: installment.invoice.id,
         installmentId: installment.id,
+        occurredOn: installment.dueOn,
+        plannedOn: installment.dueOn,
+        status: installment.status,
         amountMinor: installment.amountMinor,
         currency: installment.currency,
-        purchaseTotalAmountMinor: purchase.amountMinor,
+        purchaseTotalAmountMinor: effectiveTotals.get(purchase.id) ?? purchase.amountMinor,
         installmentSequenceNumber: installment.sequenceNumber,
         totalInstallments: installment.totalInstallments,
         installmentStart: installment.initialSequenceNumber ?? 1,
@@ -378,6 +454,7 @@ function resolvePresentation(url: URL, invoice: InvoiceRecord | undefined): Card
       .trim()
       .slice(0, 160),
     sort: SORTS.has(rawSort as CardSort) ? (rawSort as CardSort) : "date_desc",
+    groupBy: url.searchParams.get("groupBy") === "instrument" ? "instrument" : "day",
     reconciliation:
       rawReconciliation === "reconciled" || rawReconciliation === "unreconciled"
         ? rawReconciliation
@@ -428,7 +505,6 @@ function sortPurchases(
 function groupPurchasesByInstrument(
   purchases: readonly CardPurchaseRecord[],
   instruments: readonly CardInstrumentRecord[],
-  currency: string | undefined,
 ): InstrumentPurchaseGroup[] {
   const groups = new Map<string, InstrumentPurchaseGroup>();
   const order: string[] = [];
@@ -441,10 +517,7 @@ function groupPurchasesByInstrument(
         label:
           id === "__unassigned__"
             ? "Sem instrumento identificado"
-            : formatInstrumentLabel(
-                instruments.find((instrument) => instrument.id === id),
-                currency,
-              ),
+            : formatInstrumentIdentity(instruments.find((instrument) => instrument.id === id)),
         purchases: [],
       };
       groups.set(id, group);
@@ -471,7 +544,7 @@ function renderPageActions(
         : card.status !== "active"
           ? "O cartão selecionado não está ativo"
           : "Registrar compra neste cartão";
-  return `<button type="button" class="sf-button sf-button-primary" data-open-modal="purchase"${disabled ? " disabled" : ""} title="${escapeHtml(reason)}">Registrar compra</button>`;
+  return `<button type="button" class="sf-button sf-button-secondary" data-open-modal="purchase"${disabled ? " disabled" : ""} title="${escapeHtml(reason)}">Registrar compra</button>`;
 }
 
 function renderCardMaster(
@@ -505,7 +578,7 @@ function renderCardMaster(
     : "/contas-cartoes";
   return `<section class="cards-master-panel" aria-labelledby="cards-master-title">
     <div class="cards-master-heading">
-      <div><span class="cards-kicker">Cartão</span><h2 id="cards-master-title">Selecionado</h2></div>
+      <div><h2 id="cards-master-title">Cartão</h2></div>
       <a class="cards-edit-link" href="${escapeHtml(manageHref)}">Gerenciar</a>
     </div>
     <form method="get" action="/cartoes" class="cards-card-picker" data-card-picker-form>
@@ -517,7 +590,7 @@ function renderCardMaster(
       selectedCard
         ? `<div class="cards-card-identity">
       <span class="cards-card-icon" aria-hidden="true">${institution ? renderInstitutionIcon(institution.key) : ""}</span>
-      <div><strong>${escapeHtml(selectedCard.name)}</strong><span>${escapeHtml(selectedCard.maskedIdentifier ?? "Identificador não informado")}</span></div>
+      <div><strong>${escapeHtml(selectedCard.name)}</strong>${selectedCard.maskedIdentifier ? `<span>${escapeHtml(selectedCard.maskedIdentifier)}</span>` : ""}</div>
       ${renderBadge({
         label: formatCardStatus(selectedCard.status),
         tone: selectedCard.status === "active" ? "positive" : "attention",
@@ -525,12 +598,12 @@ function renderCardMaster(
     </div>`
         : ""
     }
-    <dl class="cards-master-meta">
+    <details class="cards-master-details" open><summary>Dados do cartão</summary><dl class="cards-master-meta">
       <div><dt>Moeda padrão</dt><dd>${escapeHtml(cardCurrency ?? "Não informada")}</dd></div>
       <div><dt>Moeda da fatura</dt><dd>${escapeHtml(invoiceCurrency ?? "Indisponível")}</dd></div>
       <div><dt>Fechamento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.closingDay ?? "-"))}</dd></div>
       <div><dt>Vencimento contratual</dt><dd>Dia ${escapeHtml(String(selectedCard?.dueDay ?? "-"))}</dd></div>
-    </dl>
+    </dl></details>
     ${
       selectedCard && !cardCurrency
         ? `<p class="cards-card-warning" role="status">Defina a moeda padrão deste cartão antes de registrar novas compras. <a href="${escapeHtml(manageHref)}">Editar cartão</a></p>`
@@ -543,14 +616,14 @@ function renderCardMaster(
           active
             .map(
               (instrument) =>
-                `<li><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span>${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
+                `<li>${renderInstrumentListLabel(instrument, cardCurrency)}${instrument.isDefault ? "<strong>Padrão</strong>" : ""}</li>`,
             )
             .join("") || "<li><span>Nenhum instrumento ativo.</span></li>"
         }
         ${archived
           .map(
             (instrument) =>
-              `<li class="muted"><span>${escapeHtml(formatInstrumentLabel(instrument, cardCurrency))}</span><small>Arquivado</small></li>`,
+              `<li class="muted">${renderInstrumentListLabel(instrument, cardCurrency)}<small>Arquivado</small></li>`,
           )
           .join("")}
       </ul>
@@ -571,6 +644,7 @@ function renderInvoiceDetail(input: {
   presentation: CardPresentation;
   currency: string | undefined;
   paymentAccounts: readonly AccountRecord[];
+  purchaseActionHtml: string;
   url: URL;
 }): string {
   if (!input.card) {
@@ -601,6 +675,10 @@ function renderInvoiceDetail(input: {
     ${invoiceNavigation}
     ${renderInvoiceHeader(input.invoice, input.summary, input.currency, input.paymentAccounts)}
     ${renderInvoiceSummary(input.invoice, input.summary, input.currency)}
+    <div class="cards-purchase-section-header">
+      <div class="cards-purchase-title"><h3 id="cards-purchases-title">Itens da fatura</h3><span>${escapeHtml(input.currency ?? "Moeda indisponível")}</span></div>
+      ${input.purchaseActionHtml}
+    </div>
     ${renderPurchaseFilters(
       input.card.id,
       input.invoice,
@@ -615,10 +693,19 @@ function renderInvoiceDetail(input: {
       input.recurrences,
       input.invoices,
       input.invoice,
-      input.currency,
+      input.presentation.sort,
+      input.presentation.groupBy,
     )}
-    ${renderAttachmentWorkspace({ entityKind: "invoice", entityId: input.invoice.id, title: "Anexos da fatura" })}
   </section>`;
+}
+
+function renderInvoiceAttachmentsDialog(invoice: InvoiceRecord): string {
+  return `<dialog class="cards-dialog" data-modal="invoice-attachments" aria-labelledby="cards-attachment-dialog-title">
+    <section class="cards-dialog-panel">
+      <header><div><span class="cards-kicker">Fatura selecionada</span><h2 id="cards-attachment-dialog-title">Documentos da fatura</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      ${renderAttachmentWorkspace({ entityKind: "invoice", entityId: invoice.id, title: "Anexos da fatura" })}
+    </section>
+  </dialog>`;
 }
 
 function renderInvoiceNavigation(
@@ -683,18 +770,19 @@ function renderInvoiceNavigation(
     <div class="cards-invoice-period-row" aria-label="Navegação entre faturas">
       ${
         previousPeriod
-          ? `<a class="cards-invoice-period-link cards-invoice-period-link-previous" href="${escapeHtml(navigationHref(previousPeriod))}" rel="prev"><span aria-hidden="true">‹</span><span><strong>Anterior</strong><small>${escapeHtml(formatMonth(previousPeriod[0]))}</small></span></a>`
-          : `<span class="cards-invoice-period-link cards-invoice-period-link-previous is-disabled" aria-disabled="true"><span aria-hidden="true">‹</span><span><strong>Anterior</strong></span></span>`
+          ? `<a class="cards-invoice-period-link cards-invoice-period-link-previous" href="${escapeHtml(navigationHref(previousPeriod))}" rel="prev" aria-label="Fatura anterior: ${escapeHtml(formatMonth(previousPeriod[0]))}"><span aria-hidden="true">‹</span><span><strong>Anterior</strong><small>${escapeHtml(formatMonth(previousPeriod[0]))}</small></span></a>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-previous is-disabled" aria-disabled="true" aria-label="Sem fatura anterior"><span aria-hidden="true">‹</span><span><strong>Anterior</strong></span></span>`
       }
       <div class="cards-invoice-current" aria-current="page">
         <span class="cards-kicker">Fatura</span>
         <strong>${escapeHtml(formatMonth(selectedMonth))}</strong>
         <span class="cards-invoice-period-status">${escapeHtml(status)}</span>
+
       </div>
       ${
         nextPeriod
-          ? `<a class="cards-invoice-period-link cards-invoice-period-link-next" href="${escapeHtml(navigationHref(nextPeriod))}" rel="next"><span><strong>Próxima</strong><small>${escapeHtml(formatMonth(nextPeriod[0]))}</small></span><span aria-hidden="true">›</span></a>`
-          : `<span class="cards-invoice-period-link cards-invoice-period-link-next is-disabled" aria-disabled="true"><span><strong>Próxima</strong></span><span aria-hidden="true">›</span></span>`
+          ? `<a class="cards-invoice-period-link cards-invoice-period-link-next" href="${escapeHtml(navigationHref(nextPeriod))}" rel="next" aria-label="Próxima fatura: ${escapeHtml(formatMonth(nextPeriod[0]))}"><span><strong>Próxima</strong><small>${escapeHtml(formatMonth(nextPeriod[0]))}</small></span><span aria-hidden="true">›</span></a>`
+          : `<span class="cards-invoice-period-link cards-invoice-period-link-next is-disabled" aria-disabled="true" aria-label="Sem próxima fatura"><span><strong>Próxima</strong></span><span aria-hidden="true">›</span></span>`
       }
     </div>
     <details class="cards-month-picker">
@@ -721,23 +809,30 @@ function renderInvoiceHeader(
   const canPay = !["paid", "cancelled"].includes(status);
   const amountDueMinor = summary?.amountDueMinor ?? invoice.totalAmountMinor;
   return `<header class="cards-invoice-header">
-    <div class="cards-invoice-title-block">
-      <div class="cards-invoice-title-row"><span class="cards-kicker">Fatura selecionada</span>${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}</div>
-      <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
-      <p>${escapeHtml(currency ?? "Moeda indisponível")} · Fechamento ${formatDate(invoice.periodEndOn)} · Vencimento ${formatDate(invoice.dueOn)}</p>
-    </div>
     <div class="cards-invoice-primary">
-      <span>Valor a pagar</span><strong>${money(amountDueMinor, currency)}</strong>
-      <div class="cards-invoice-actions">
-        ${canClose ? `<button type="button" class="sf-button sf-button-primary" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">Fechar fatura</button>` : ""}
-        ${
-          canPay
-            ? `<button type="button" class="sf-button ${canClose ? "sf-button-secondary" : "sf-button-primary"}" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button>`
-            : ""
-        }
-      </div>
+      <span>Valor a pagar</span>
+      <strong>${money(amountDueMinor, currency)}</strong>
+      ${canPay ? `<div class="cards-invoice-actions"><button type="button" class="sf-button sf-button-primary" data-open-modal="payment"${paymentAccounts.length > 0 ? "" : " disabled"} title="${paymentAccounts.length > 0 ? "Liquidar esta fatura" : "Cadastre uma conta ativa na mesma moeda da fatura"}">Liquidar fatura</button></div>` : ""}
     </div>
-    <p class="cards-settlement-note"><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p>
+    <div class="cards-invoice-title-block">
+      <div class="cards-invoice-title-row">
+        <span class="cards-kicker">Situação da fatura</span>
+        ${renderBadge({ label: formatInvoiceStatus(status), tone: invoiceTone(status) })}
+      </div>
+      <div class="cards-invoice-heading-row">
+        <h2 id="cards-invoice-title">${escapeHtml(formatInvoicePeriod(invoice))}</h2>
+      </div>
+      <dl class="cards-invoice-metadata" aria-label="Datas e moeda da fatura">
+        <div class="cards-invoice-due"><dt>Vencimento</dt><dd><time datetime="${escapeHtml(invoice.dueOn)}">${formatDate(invoice.dueOn)}</time></dd></div>
+        <div class="cards-invoice-closing"><dt>Fechamento</dt><dd><time datetime="${escapeHtml(invoice.periodEndOn)}">${formatDate(invoice.periodEndOn)}</time></dd></div>
+        <div class="cards-invoice-currency"><dt>Moeda</dt><dd>${escapeHtml(currency ?? "Indisponível")}</dd></div>
+      </dl>
+    </div>
+    <div class="cards-invoice-secondary-actions" role="group" aria-label="Outras ações da fatura">
+      <button type="button" class="cards-invoice-documents" data-open-modal="invoice-attachments" title="Gerenciar documentos desta fatura" aria-label="Documentos da fatura">${icon("file-text", 16)} <span>Documentos</span></button>
+      ${canClose ? `<button type="button" class="sf-button sf-button-secondary cards-close-invoice" data-api-path="/api/invoices/${escapeHtml(invoice.id)}/close" data-confirm="Fechar esta fatura?">${icon("lock", 15)} Fechar fatura</button>` : ""}
+      <details class="cards-settlement-note"><summary>Sobre a liquidação</summary><p><strong>Liquidação não é uma nova compra.</strong> O pagamento movimenta a conta escolhida e quita a fatura sem registrar uma segunda despesa econômica.</p></details>
+    </div>
   </header>`;
 }
 
@@ -750,6 +845,10 @@ function renderInvoiceSummary(
   const limitTotal = totals.reduce((sum, item) => sum + item.limitTotalMinor, 0);
   const limitUsed = totals.reduce((sum, item) => sum + item.limitUsedMinor, 0);
   const limitAvailable = totals.reduce((sum, item) => sum + item.limitAvailableMinor, 0);
+  const limitDetails =
+    totals.length > 0
+      ? `<details class="cards-limit-detail"><summary>Detalhes do limite</summary><dl><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl></details>`
+      : "";
   return `<section class="cards-invoice-summary" aria-label="Resumo da fatura">
     ${renderSummaryGrid({
       childrenHtml: [
@@ -762,19 +861,15 @@ function renderInvoiceSummary(
         summaryMetric(
           "Limite disponível",
           totals.length > 0 ? money(limitAvailable, currency) : "Indisponível",
+          limitDetails,
         ),
       ].join(""),
     })}
-    ${
-      totals.length > 0
-        ? `<dl class="cards-limit-detail"><div><dt>Limite total</dt><dd>${money(limitTotal, currency)}</dd></div><div><dt>Limite utilizado</dt><dd>${money(limitUsed, currency)}</dd></div></dl>`
-        : ""
-    }
   </section>`;
 }
 
-function summaryMetric(label: string, valueHtml: string): string {
-  return `<section class="cards-summary-metric"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong></section>`;
+function summaryMetric(label: string, valueHtml: string, extraHtml = ""): string {
+  return `<section class="cards-summary-metric"><div class="cards-summary-copy"><span>${escapeHtml(label)}</span><strong>${valueHtml}</strong>${extraHtml}</div></section>`;
 }
 
 function renderPurchaseFilters(
@@ -796,6 +891,10 @@ function renderPurchaseFilters(
   base.searchParams.set("cardId", cardId);
   base.searchParams.set("invoiceId", invoice.id);
   if (profileId) base.searchParams.set("profileId", profileId);
+  if (presentation.search) base.searchParams.set("q", presentation.search);
+  if (presentation.sort !== "date_desc") base.searchParams.set("sort", presentation.sort);
+  if (presentation.groupBy === "instrument") base.searchParams.set("groupBy", "instrument");
+  if (presentation.day) base.searchParams.set("day", presentation.day);
   const controls = `<form method="get" action="/cartoes" class="cards-purchase-filter-form">
       <input type="hidden" name="cardId" value="${escapeHtml(cardId)}">
       <input type="hidden" name="invoiceId" value="${escapeHtml(invoice.id)}">
@@ -804,12 +903,26 @@ function renderPurchaseFilters(
       <label class="cards-search-field" for="cards-purchase-search">Buscar compras
         <input id="cards-purchase-search" type="search" name="q" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" data-purchase-search autocomplete="off">
       </label>
+      <label class="cards-purchase-group-filter" for="cards-purchase-group">Agrupar por
+        <select id="cards-purchase-group" name="groupBy" aria-label="Agrupar lançamentos por">
+          <option value="day"${presentation.groupBy === "day" ? " selected" : ""}>Dia</option>
+          <option value="instrument"${presentation.groupBy === "instrument" ? " selected" : ""}>Instrumento</option>
+        </select>
+      </label>
+      <div class="cards-purchase-day-filter">
+        <label for="cards-purchase-day">Dia da fatura
+          <input id="cards-purchase-day" type="date" name="day" min="${escapeHtml(invoice.periodStartOn)}" max="${escapeHtml(invoice.periodEndOn)}" value="${escapeHtml(presentation.day ?? "")}">
+        </label>
+        ${presentation.day ? `<a class="cards-clear-day" href="${escapeHtml(withQuery(base, { day: null, reconciliation: presentation.reconciliation }))}" aria-label="Exibir todos os dias da fatura">Todos os dias</a>` : ""}
+      </div>
+      <details class="cards-advanced-filters"${presentation.sort !== "date_desc" ? " open" : ""}>
+        <summary>Mais filtros${presentation.sort !== "date_desc" ? " · ativos" : ""}</summary>
+        <div class="cards-advanced-fields">
       <label for="cards-purchase-sort">Ordenar
         <select id="cards-purchase-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
       </label>
-      <label for="cards-purchase-day">Dia
-        <input id="cards-purchase-day" type="date" name="day" min="${escapeHtml(invoice.periodStartOn)}" max="${escapeHtml(invoice.periodEndOn)}" value="${escapeHtml(presentation.day ?? "")}">
-      </label>
+        </div>
+      </details>
       <button class="sf-button sf-button-secondary" type="submit">Aplicar</button>
     </form>
     <div class="cards-reconciliation-filters" aria-label="Filtrar conciliação">
@@ -837,7 +950,8 @@ function renderPurchaseGroups(
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
   selectedInvoice: InvoiceRecord,
-  invoiceCurrency: string | undefined,
+  sort: CardSort,
+  groupBy: "day" | "instrument",
 ): string {
   if (groups.length === 0) {
     return `<div class="cards-purchase-empty" data-purchase-filter-empty>${renderEmptyState({
@@ -845,12 +959,63 @@ function renderPurchaseGroups(
       description: "Ajuste os filtros ou registre uma compra para esta fatura.",
     })}</div>`;
   }
-  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title">
-    <div class="cards-section-heading"><div><span class="cards-kicker">Compras</span><h3 id="cards-purchases-title">Itens da fatura</h3></div><span>${escapeHtml(invoiceCurrency ?? "Moeda indisponível")}</span></div>
-    ${groups
-      .map((group) =>
-        renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
-      )
+  const sharedHead = `<div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Instrumento</span><span role="columnheader">Categoria</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>`;
+  if (groupBy === "instrument") {
+    return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title"><div class="cards-shared-table-head">${sharedHead}</div>
+      ${groups
+        .map((group) =>
+          renderInstrumentGroup(group, categories, recurrences, invoices, selectedInvoice),
+        )
+        .join("")}
+    </section>`;
+  }
+  const days = new Map<string, InstrumentPurchaseGroup[]>();
+  for (const group of groups) {
+    for (const purchase of group.purchases) {
+      const dayGroups = days.get(purchase.occurredOn) ?? [];
+      let dayInstrument = dayGroups.find((candidate) => candidate.id === group.id);
+      if (!dayInstrument) {
+        dayInstrument = { id: group.id, label: group.label, purchases: [] };
+        dayGroups.push(dayInstrument);
+      }
+      dayInstrument.purchases.push(purchase);
+      days.set(purchase.occurredOn, dayGroups);
+    }
+  }
+  const labelsByInstrument = new Map(groups.map((group) => [group.id, group.label]));
+  const orderedDays = [...days.keys()].sort((left, right) =>
+    sort === "date_asc" ? left.localeCompare(right) : right.localeCompare(left),
+  );
+  return `<section class="cards-purchase-groups" aria-labelledby="cards-purchases-title" data-cards-day-groups><div class="cards-shared-table-head">${sharedHead}</div>
+    ${orderedDays
+      .map((date) => {
+        const dayGroups = days.get(date) ?? [];
+        const purchases = sortPurchases(
+          dayGroups.flatMap((group) => group.purchases),
+          sort,
+        );
+        const totals = totalsByCurrency(purchases);
+        return `<details class="cards-day-group" data-cards-day-group data-day="${escapeHtml(date)}" open>
+          <summary><span class="cards-day-title"><time datetime="${escapeHtml(date)}">${formatDate(date)}</time><small>${formatPurchaseCount(purchases.length)}</small></span><strong>${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</strong></summary>
+          <div class="cards-day-content">
+            <div class="cards-purchase-table" role="table" aria-label="Compras de ${formatDate(date)}">
+              ${purchases
+                .map((purchase) =>
+                  renderPurchaseRow(
+                    purchase,
+                    labelsByInstrument.get(purchase.cardInstrumentId ?? "__unassigned__") ??
+                      "Sem instrumento identificado",
+                    categories,
+                    recurrences,
+                    invoices,
+                    selectedInvoice,
+                  ),
+                )
+                .join("")}
+            </div>
+          </div>
+        </details>`;
+      })
       .join("")}
   </section>`;
 }
@@ -866,10 +1031,16 @@ function renderInstrumentGroup(
   return `<details class="cards-instrument-group" data-instrument-purchase-group${group.id === "__unassigned__" ? "" : ` data-instrument-id="${escapeHtml(group.id)}"`} open>
     <summary><div><strong data-instrument-label>${escapeHtml(group.label)}</strong><span>${formatPurchaseCount(group.purchases.length)}</span></div><div class="cards-instrument-totals">${totals.map(([currency, amount]) => money(amount, currency)).join(" · ")}</div></summary>
     <div class="cards-purchase-table" role="table" aria-label="Compras de ${escapeHtml(group.label)}">
-      <div class="cards-purchase-table-head" role="row"><span role="columnheader">Data</span><span role="columnheader">Compra</span><span role="columnheader">Situação</span><span role="columnheader">Valor</span><span role="columnheader">Ações</span></div>
       ${group.purchases
         .map((purchase) =>
-          renderPurchaseRow(purchase, categories, recurrences, invoices, selectedInvoice),
+          renderPurchaseRow(
+            purchase,
+            group.label,
+            categories,
+            recurrences,
+            invoices,
+            selectedInvoice,
+          ),
         )
         .join("")}
     </div>
@@ -878,6 +1049,7 @@ function renderInstrumentGroup(
 
 function renderPurchaseRow(
   purchase: CardPurchaseRecord,
+  instrumentLabel: string,
   categories: readonly CategoryRecord[],
   recurrences: readonly RecurrenceRecord[],
   invoices: readonly InvoiceRecord[],
@@ -892,17 +1064,33 @@ function renderPurchaseRow(
     : undefined;
   const locked = ["closed", "paid", "cancelled"].includes(selectedInvoice.status);
   const otherPeriods = invoices.filter((invoice) => invoice.id !== selectedInvoice.id);
+  const sequence = purchase.installmentSequenceNumber;
+  const total = purchase.totalInstallments;
   const installmentLabel =
-    purchase.installmentSequenceNumber !== undefined && purchase.totalInstallments !== undefined
-      ? `Parcela ${purchase.installmentSequenceNumber} de ${purchase.totalInstallments}`
+    !purchase.recurrenceId &&
+    sequence !== undefined &&
+    total !== undefined &&
+    Number.isInteger(sequence) &&
+    Number.isInteger(total) &&
+    total > 1 &&
+    sequence >= 1 &&
+    sequence <= total
+      ? `Parcela ${sequence} de ${total}`
       : undefined;
   return `<article class="cards-purchase-row" role="row" data-purchase-item data-reconciliation="${purchase.status === "reconciled" ? "reconciled" : "unreconciled"}">
     <time role="cell" data-label="Data" datetime="${escapeHtml(purchase.occurredOn)}">${formatDate(purchase.occurredOn)}</time>
-    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${recurrence ? renderRecurrenceIndicator() : ""}</strong>${installmentLabel ? `<span class="cards-installment-label">${escapeHtml(installmentLabel)}</span>` : ""}<span>${escapeHtml(category)}</span>${purchase.purchaseTotalAmountMinor !== undefined ? `<small>Total da compra: ${money(purchase.purchaseTotalAmountMinor, normalizeCurrency(purchase.currency))}</small>` : ""}</div>
-    <span role="cell" data-label="Situação">${renderBadge({ label: formatPurchaseStatus(purchase.status), tone: purchase.status === "reconciled" ? "positive" : "information" })}</span>
-    <strong role="cell" data-label="Valor" class="cards-purchase-amount">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
-    <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}">•••</summary><div class="cards-purchase-menu actions-menu" role="menu">
-      <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked ? " disabled" : ""}>Editar compra</button>
+    <div role="cell" data-label="Compra" class="cards-purchase-description description"><strong>${escapeHtml(purchase.description)}${installmentLabel ? ` <span class="installment-badge cards-installment-label" aria-label="${escapeHtml(installmentLabel)}" title="${escapeHtml(installmentLabel)}">${escapeHtml(installmentLabel)}</span>` : ""}${recurrence ? renderRecurrenceIndicator() : ""}</strong></div>
+    <span role="cell" data-label="Instrumento" class="cards-purchase-instrument">${escapeHtml(instrumentLabel)}</span>
+    <span role="cell" data-label="Categoria" class="cards-purchase-category" data-category-direction="${purchase.amountMinor < 0 ? "in" : "out"}"><span class="cards-purchase-category-badge"><svg viewBox="0 0 20 20" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/></svg><span class="cards-purchase-category-label">${escapeHtml(category)}</span></span></span>
+    <span role="cell" data-label="Situação" class="cards-purchase-status-cell">${renderPurchaseStatusControl(purchase, locked)}</span>
+    <strong role="cell" data-label="Valor" class="cards-purchase-amount${purchase.amountMinor < 0 ? " is-negative" : ""}">${money(purchase.amountMinor, normalizeCurrency(purchase.currency))}</strong>
+    <details class="cards-purchase-actions" role="cell" data-label="Ações"><summary aria-label="Ações da compra ${escapeHtml(purchase.description)}" title="Ações da compra">${icon("more-horizontal", 18)}</summary><div class="cards-purchase-menu actions-menu" role="menu">
+      <button type="button" class="actions-item" role="menuitem" data-edit-purchase="${escapeHtml(purchase.id)}"${recurrence ? ` data-recurrence-id="${escapeHtml(recurrence.id)}"` : ""}${locked || (installmentLabel && purchase.status === "reconciled") ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-clone-purchase="${escapeHtml(purchase.id)}" data-clone-source-locked="${locked ? "true" : "false"}"${purchase.amountMinor < 0 ? " disabled" : ""}>${icon("copy", 16)}<span>Clonar</span></button>
+      ${installmentLabel && purchase.installmentId ? `<button type="button" class="actions-item" role="menuitem" data-edit-installment-amount="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" ? " disabled" : ""}>${icon("pencil", 16)}<span>Editar valor da parcela</span></button>` : ""}
+      <button type="button" class="actions-item" role="menuitem" data-reverse-purchase="${escapeHtml(purchase.id)}"${locked || purchase.amountMinor <= 0 ? " disabled" : ""}>${icon("refresh-cw", 16)}<span>Estorno</span></button>
+      <button type="button" class="actions-item" role="menuitem" data-delete-purchase="${escapeHtml(purchase.id)}"${locked || purchase.status === "reconciled" || Boolean(purchase.installmentId || purchase.recurrenceId) ? " disabled" : ""}>${icon("trash-2", 16)}<span>Excluir</span></button>
+      
       ${recurrence ? renderRecurrenceActionMenuItems(recurrence) : ""}
       ${!locked && otherPeriods.length > 0 ? `<span class="cards-move-hint">Mover para outra fatura disponível no menu</span>` : ""}
     </div></details>
@@ -920,33 +1108,102 @@ function renderPurchaseModal(
   const cardSettingsHref = selectedCard
     ? `/contas-cartoes?resource=${encodeURIComponent(`card:${selectedCard.id}`)}`
     : "/contas-cartoes";
-  return `<dialog class="cards-dialog" data-modal="purchase" aria-labelledby="cards-purchase-dialog-title">
-    <section class="cards-dialog-panel">
-      <header><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+  return `<dialog class="cards-dialog" data-modal="purchase" aria-labelledby="cards-purchase-dialog-title" aria-describedby="cards-purchase-dialog-description">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Compra no cartão</span><h2 id="cards-purchase-dialog-title" data-purchase-modal-title>Registrar compra</h2><span class="cards-purchase-card-name">${escapeHtml(selectedCard?.name ?? "Cartão não selecionado")}</span></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      <p class="cards-dialog-description" id="cards-purchase-dialog-description" data-purchase-modal-description>Informe valor e dados da compra. A moeda segue a configuração do cartão.</p>
       <form data-purchase-form data-path="/api/credit-card-accounts/${escapeHtml(selectedCard?.id ?? "")}/purchases">
         <input type="hidden" name="currentPurchaseId"><input type="hidden" name="recurrenceId">
+        <div class="cards-purchase-form-body">
+          <fieldset class="cards-purchase-fieldset cards-purchase-amounts">
+            <legend>Valores</legend>
+            <div class="cards-purchase-field-grid">
         <label><span data-purchase-amount-label>Valor${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}</span><input name="amountMinor" data-money inputmode="decimal" required placeholder="0,00"></label>
-        <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal" readonly aria-readonly="true"></label>
+        <label data-purchase-field="installmentAmountMinor" hidden>Valor desta parcela${cardCurrency ? ` (${escapeHtml(cardCurrency)})` : ""}<input name="installmentAmountMinor" data-money inputmode="decimal"></label>
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset">
+            <legend>Dados da compra</legend>
+            <div class="cards-purchase-field-grid">
         <label>Moeda<input name="currency" value="${escapeHtml(cardCurrency ?? "")}" minlength="3" maxlength="3" pattern="[A-Za-z]{3}" required readonly aria-readonly="true" autocomplete="off"></label>
         <label>Data<input name="occurredOn" type="date" required data-default-local-today></label>
-        <label class="full">Descrição<input name="description" required placeholder="Compra no cartão"></label>
+        <p class="cards-purchase-date-help full" data-purchase-field="recurrenceDateHint" hidden>A alteração da data da compra recorrente respeitará o período da fatura. Ao salvar, escolha entre somente esta ocorrência e as próximas elegíveis.</p>
+        <label class="full">Descrição<input name="description" required placeholder="Descreva a compra"></label>${renderEntryFillRuleControl()}
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset">
+            <legend>Classificação</legend>
+            <div class="cards-purchase-field-grid">
         <label>Instrumento<select name="cardInstrumentId"${instruments.length === 0 ? " disabled" : " required"}>${renderInstrumentOptions(instruments, cardCurrency)}</select></label>
         <label>Categoria<select name="categoryId"><option value="">Sem categoria</option>${renderCategoryOptions(categories)}</select></label>
+            </div>
+          </fieldset>
+          <fieldset class="cards-purchase-fieldset" data-purchase-section="schedule">
+            <legend>Repetição e parcelas</legend>
+            <div class="cards-purchase-field-grid">
         <label>Repetição<select name="repeatMode"><option value="single">Único</option><option value="installment">Parcelado</option><option value="fixed">Fixo</option></select></label>
         <label data-purchase-field="totalInstallments" hidden>Parcelas<input name="totalInstallments" type="number" min="2" max="120" value="2"></label>
         <label data-purchase-field="installmentStart" hidden>Parcela inicial<input name="installmentStart" type="number" min="1" max="120" value="1"></label>
         <label data-purchase-field="installmentValueMode" hidden>Interpretação do valor<select name="installmentValueMode"><option value="total" selected>Valor total da compra</option><option value="per_installment">Valor da parcela</option></select><small data-installment-value-help>O valor será dividido pelo total de parcelas.</small></label>
-        <p class="cards-installment-context full" data-purchase-field="installmentContext" hidden aria-live="polite"></p>
+        <p class="cards-installment-context cards-purchase-installment-note full" data-purchase-field="installmentContext" hidden aria-live="polite"></p>
         <label data-purchase-field="interval" hidden>A cada<input name="interval" type="number" min="1" max="60" value="1"></label>
         <label data-purchase-field="frequency" hidden>Frequência<select name="frequency"><option value="daily">Dia(s)</option><option value="weekly">Semana(s)</option><option value="monthly" selected>Mês(es)</option><option value="yearly">Ano(s)</option></select></label>
         <label data-purchase-field="endOn" hidden>Fim opcional<input name="endOn" type="date"></label>
+            </div>
+          </fieldset>
         ${
           selectedCard && !cardCurrency
             ? `<p class="form-status error full" role="status">Defina a moeda padrão do cartão antes de registrar uma compra. <a href="${escapeHtml(cardSettingsHref)}">Editar cartão em Contas e Cartões</a>.</p>`
             : ""
         }
         <p class="form-status full" data-form-status aria-live="polite"></p>
-        <button class="sf-button sf-button-primary full" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
+        </div>
+        <footer class="cards-purchase-dialog-actions">
+          <button class="sf-button sf-button-secondary" type="button" data-close-modal>Cancelar</button>
+          <button class="sf-button sf-button-secondary" type="submit" data-save-continue${canSave ? "" : " disabled"}>Salvar e continuar</button>
+          <button class="sf-button sf-button-primary" type="submit"${canSave ? "" : " disabled"}>Salvar compra</button>
+        </footer>
+      </form>
+    </section>
+  </dialog>`;
+}
+
+function renderRecurringEditScopeModal(): string {
+  return `<dialog class="cards-dialog cards-recurring-edit-scope-dialog" data-modal="recurring-edit-scope" aria-labelledby="cards-recurring-scope-title" aria-describedby="cards-recurring-scope-description">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Compra recorrente</span><h2 id="cards-recurring-scope-title">Aplicar edição</h2><span class="cards-purchase-card-name" data-recurring-edit-purchase-name></span></div><button type="button" class="cards-dialog-close" data-cancel-recurring-scope aria-label="Voltar à edição">×</button></header>
+      <p class="cards-dialog-description" id="cards-recurring-scope-description">Deseja atualizar somente esta compra ou também as próximas ocorrências elegíveis? Faturas encerradas e lançamentos bloqueados serão preservados.</p>
+      <p class="form-status" data-recurring-edit-scope-status role="status" aria-live="polite"></p>
+      <footer class="cards-purchase-dialog-actions cards-installment-scope-actions">
+        <button type="button" class="sf-button sf-button-secondary" data-cancel-recurring-scope>Voltar</button>
+        <button type="button" class="sf-button sf-button-primary" data-recurring-edit-scope="current_only">Somente esta</button>
+        <button type="button" class="sf-button sf-button-secondary" data-recurring-edit-scope="current_and_future">Esta e as próximas</button>
+      </footer>
+    </section>
+  </dialog>`;
+}
+
+function renderInstallmentAmountModal(): string {
+  return `<dialog class="cards-dialog cards-installment-amount-dialog" data-modal="installment-value" aria-labelledby="cards-installment-value-title" aria-describedby="cards-installment-value-help">
+    <section class="cards-dialog-panel cards-purchase-dialog-panel">
+      <header class="cards-purchase-dialog-header"><div><span class="cards-kicker">Ajuste de parcela</span><h2 id="cards-installment-value-title">Editar valor da parcela</h2><span class="cards-purchase-card-name" data-installment-purchase-name></span></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
+      <p class="cards-dialog-description" id="cards-installment-value-help">Ajuste somente esta parcela ou também as próximas parcelas elegíveis. Faturas fechadas e parcelas conciliadas não serão alteradas.</p>
+      <form data-installment-amount-form>
+        <div class="cards-purchase-form-body">
+          <fieldset class="cards-purchase-fieldset cards-purchase-amounts">
+            <legend>Valor desta parcela</legend>
+            <div class="cards-purchase-field-grid">
+              <label>Valor na moeda da fatura<input name="amountMinor" data-money inputmode="decimal" required aria-label="Novo valor da parcela" placeholder="0,00"></label>
+            </div>
+            <p class="cards-purchase-installment-note" data-installment-scope-description aria-live="polite"></p>
+          </fieldset>
+          <p class="form-status" data-installment-amount-status role="status" aria-live="polite"></p>
+        </div>
+        <footer class="cards-purchase-dialog-actions cards-installment-scope-actions">
+          <button type="button" class="sf-button sf-button-secondary" data-close-modal>Cancelar</button>
+          <button type="button" class="sf-button sf-button-secondary" data-installment-scope="current">Somente esta</button>
+          <button type="button" class="sf-button sf-button-secondary" data-installment-scope="current_and_future">Esta e as próximas</button>
+        </footer>
       </form>
     </section>
   </dialog>`;
@@ -958,10 +1215,10 @@ function renderPaymentModal(
   amountDueMinor: number,
   currency: string | undefined,
 ): string {
-  return `<dialog class="cards-dialog" data-modal="payment" aria-labelledby="cards-payment-dialog-title">
+  return `<dialog class="cards-dialog" data-modal="payment" aria-labelledby="cards-payment-dialog-title" aria-describedby="cards-payment-dialog-description">
     <section class="cards-dialog-panel">
       <header><div><span class="cards-kicker">Liquidação da fatura</span><h2 id="cards-payment-dialog-title">Liquidar fatura</h2></div><button type="button" class="cards-dialog-close" data-close-modal aria-label="Fechar">×</button></header>
-      <p class="cards-payment-explanation">O pagamento reduz o saldo da conta escolhida e liquida a fatura. Ele não cria outra compra nem duplica a despesa já reconhecida.</p>
+      <p id="cards-payment-dialog-description" class="cards-payment-explanation">O pagamento reduz o saldo da conta escolhida e liquida a fatura. Ele não cria outra compra nem duplica a despesa já reconhecida.</p>
       <form data-payment-form data-path="/api/invoices/${escapeHtml(invoice?.id ?? "")}/pay">
         <label>Conta (${escapeHtml(currency ?? "moeda indisponível")})<select name="paymentAccountId" required>${renderAccountOptions(accounts)}</select></label>
         <label>Pago em<input name="paidOn" type="date" required></label>
@@ -1064,22 +1321,36 @@ function renderAccountOptions(accounts: readonly AccountRecord[]): string {
     .join("");
 }
 
-function formatInstrumentLabel(
-  instrument: CardInstrumentRecord | undefined,
-  currency: string | undefined,
-): string {
+function formatInstrumentIdentity(instrument: CardInstrumentRecord | undefined): string {
   if (!instrument) return "Instrumento arquivado ou indisponível";
   const title =
     instrument.name?.trim() ||
     `${formatInstrumentType(instrument.type)} - ${formatInstrumentHolder(instrument.holder)}`;
-  const identifier = instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : "";
-  const limit =
-    instrument.effectiveCreditLimitMinor === undefined
-      ? ""
-      : currency
-        ? ` · limite ${currency} ${formatMinorNumber(instrument.effectiveCreditLimitMinor)}`
-        : " · limite com moeda indisponível";
-  return `${title}${identifier}${limit}`;
+  return `${title}${instrument.maskedIdentifier ? ` · ${instrument.maskedIdentifier}` : ""}`;
+}
+function formatInstrumentLimit(
+  instrument: CardInstrumentRecord | undefined,
+  currency: string | undefined,
+): string | undefined {
+  if (instrument?.effectiveCreditLimitMinor === undefined) return undefined;
+  return currency
+    ? `Limite ${currency} ${formatMinorNumber(instrument.effectiveCreditLimitMinor)}`
+    : "Limite com moeda indisponível";
+}
+function formatInstrumentLabel(
+  instrument: CardInstrumentRecord | undefined,
+  currency: string | undefined,
+): string {
+  const identity = formatInstrumentIdentity(instrument);
+  const limit = formatInstrumentLimit(instrument, currency);
+  return limit ? `${identity} · ${limit}` : identity;
+}
+function renderInstrumentListLabel(
+  instrument: CardInstrumentRecord,
+  currency: string | undefined,
+): string {
+  const limit = formatInstrumentLimit(instrument, currency);
+  return `<span class="cards-instrument-copy"><span class="cards-instrument-name">${escapeHtml(formatInstrumentIdentity(instrument))}</span>${limit ? `<small class="cards-instrument-limit">${escapeHtml(limit)}</small>` : ""}</span>`;
 }
 function formatInstrumentType(type: string): string {
   if (type === "physical") return "Físico";
@@ -1144,9 +1415,12 @@ function buildMonthHref(url: URL, cardId: string, month: string): string {
   if (profileId) next.searchParams.set("profileId", profileId);
   return `${next.pathname}${next.search}`;
 }
-function withQuery(base: URL, changes: Record<string, string>): string {
+function withQuery(base: URL, changes: Record<string, string | null>): string {
   const next = new URL(base);
-  for (const [name, value] of Object.entries(changes)) next.searchParams.set(name, value);
+  for (const [name, value] of Object.entries(changes)) {
+    if (value === null) next.searchParams.delete(name);
+    else next.searchParams.set(name, value);
+  }
   return `${next.pathname}${next.search}`;
 }
 function normalizeMonth(value: string | null | undefined): string | undefined {
@@ -1198,6 +1472,41 @@ function formatInvoiceStatus(status: string): string {
   if (status === "cancelled") return "Cancelada";
   return status;
 }
+function renderPurchaseStatusIcon(status: string): string {
+  const label = escapeHtml(formatPurchaseStatus(status));
+  const kind = status === "reconciled" ? "reconciled" : status === "planned" ? "planned" : "posted";
+  const pictogram =
+    kind === "reconciled"
+      ? icon("check", 15)
+      : kind === "planned"
+        ? icon("clock", 15)
+        : '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>';
+  return `<span class="cards-purchase-status cards-purchase-status-${kind}" role="img" aria-label="${label}" title="${label}" data-tooltip="${label}">${pictogram}</span>`;
+}
+
+function renderPurchaseStatusControl(purchase: CardPurchaseRecord, invoiceLocked: boolean): string {
+  const currentStatus = formatPurchaseStatus(purchase.status);
+  const eligibleStatus = ["planned", "posted", "reconciled"].includes(purchase.status);
+  const allowed = !invoiceLocked && eligibleStatus;
+  const nextStatus = purchase.status === "reconciled" ? "posted" : "reconciled";
+  const actionLabel = nextStatus === "reconciled" ? "Marcar como conciliada" : "Desconciliar";
+  const nextIcon = renderPurchaseStatusIcon(nextStatus);
+  const explanation = invoiceLocked
+    ? "A situação não pode ser alterada porque a fatura está fechada, paga ou cancelada."
+    : "Esta situação não pode ser alterada.";
+  const actionHtml = allowed
+    ? `<button type="button" class="cards-purchase-status-option" data-button-variant="neutral" data-set-purchase-status="${nextStatus}" data-status-purchase-id="${escapeHtml(purchase.id)}" data-status-card-id="${escapeHtml(purchase.cardId)}"${purchase.installmentId ? ` data-status-installment-id="${escapeHtml(purchase.installmentId)}" data-status-invoice-id="${escapeHtml(purchase.invoiceId ?? "")}"` : ""} aria-label="${actionLabel}" title="${actionLabel}" data-tooltip="${actionLabel}">${nextIcon}</button>`
+    : `<span class="cards-purchase-status-readonly" role="img" aria-label="${explanation}" title="${explanation}" data-tooltip="${explanation}">${icon("lock", 15)}</span>`;
+  return `<details class="cards-purchase-status-control" data-purchase-status-control>
+    <summary aria-label="Situação: ${escapeHtml(currentStatus)}. ${allowed ? "Alterar situação" : "Ver restrição de alteração"}" title="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</summary>
+    <div class="cards-purchase-status-menu" role="group" aria-label="Situação da compra">
+      <span class="cards-purchase-status-current" role="img" aria-label="Situação atual: ${escapeHtml(currentStatus)}" title="${escapeHtml(currentStatus)}" data-tooltip="${escapeHtml(currentStatus)}">${renderPurchaseStatusIcon(purchase.status)}</span>
+      ${actionHtml}
+      <span class="cards-purchase-status-feedback" role="status" aria-live="polite" hidden><span class="cards-status-feedback-icon" aria-hidden="true">${icon("clock", 15)}</span><span class="sf-visually-hidden" data-cards-status-feedback-message></span></span>
+    </div>
+  </details>`;
+}
+
 function formatPurchaseStatus(status: string): string {
   if (status === "reconciled") return "Conciliada";
   if (status === "posted") return "Não conciliada";
@@ -1232,7 +1541,7 @@ function renderShell(content: string): string {
     activePathname: "/cartoes",
     content,
     currentLabel: "Cartões de Crédito",
-    styles: css(),
+    styles: cardsPageStyles(),
   });
 }
 function renderErrorPage(error: string): string {
@@ -1245,317 +1554,13 @@ function renderErrorPage(error: string): string {
 }
 
 function clientScript(): string {
-  return `<script data-cards-a3-runtime="true">
-    (() => {
-      const moneyToMinor = (value) => {
-        const normalized = String(value || "").replace(/\\./g, "").replace(",", ".");
-        return Math.round(Number.parseFloat(normalized || "0") * 100);
-      };
-      const minorToMoney = (value) => (Number(value || 0) / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      const localToday = () => {
-        const now = new Date();
-        return now.getFullYear() + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0");
-      };
-      document.querySelectorAll("[data-money]").forEach((input) => input.addEventListener("input", () => {
-        const digits = input.value.replace(/\\D/g, "");
-        input.value = minorToMoney(digits ? Number.parseInt(digits, 10) : 0);
-      }));
-      document.querySelector("[data-card-select]")?.addEventListener("change", (event) => event.target.form?.requestSubmit());
-
-      let lastDialogTrigger = null;
-      const closeDialog = (dialog) => {
-        if (!dialog?.open) return;
-        dialog.close();
-        if (lastDialogTrigger && typeof lastDialogTrigger.focus === "function") lastDialogTrigger.focus();
-        lastDialogTrigger = null;
-      };
-      const purchaseForm = document.querySelector("[data-purchase-form]");
-      const repeatMode = purchaseForm?.querySelector('[name="repeatMode"]');
-      const setField = (name, visible) => {
-        const field = purchaseForm?.querySelector('[data-purchase-field="' + name + '"]');
-        if (field) field.hidden = !visible;
-      };
-      const syncRepeatFields = () => {
-        const mode = repeatMode?.value || "single";
-        setField("totalInstallments", mode === "installment");
-        setField("installmentStart", mode === "installment");
-        setField("installmentValueMode", mode === "installment");
-        setField("interval", mode === "fixed");
-        setField("frequency", mode === "fixed");
-        setField("endOn", mode === "fixed");
-        const help = purchaseForm?.querySelector("[data-installment-value-help]");
-        const valueMode = purchaseForm?.querySelector('[name="installmentValueMode"]')?.value;
-        if (help) help.textContent = valueMode === "per_installment"
-          ? "O valor informado será aplicado a cada parcela e o total da compra será calculado."
-          : "O valor será dividido pelo total de parcelas.";
-      };
-      repeatMode?.addEventListener("change", syncRepeatFields);
-      purchaseForm?.querySelector('[name="installmentValueMode"]')?.addEventListener("change", syncRepeatFields);
-      const resetPurchaseForm = () => {
-        if (!purchaseForm) return;
-        purchaseForm.reset();
-        purchaseForm.dataset.method = "POST";
-        const defaultPath = purchaseForm.getAttribute("data-path") || "";
-        purchaseForm.dataset.path = defaultPath;
-        purchaseForm.dataset.currentPurchaseId = "";
-        purchaseForm.dataset.recurrenceId = "";
-        purchaseForm.dataset.installmentPurchase = "false";
-        purchaseForm.querySelector('[name="currentPurchaseId"]').value = "";
-        purchaseForm.querySelector('[name="recurrenceId"]').value = "";
-        const occurredOnField = purchaseForm.querySelector('[name="occurredOn"]');
-        if (occurredOnField) { occurredOnField.value = localToday(); occurredOnField.readOnly = false; }
-        const amountField = purchaseForm.querySelector('[name="amountMinor"]');
-        if (amountField) amountField.readOnly = false;
-        const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
-        const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
-        if (amountLabel) amountLabel.textContent = "Valor" + (amountCurrency ? " (" + amountCurrency + ")" : "");
-        ["totalInstallments", "installmentStart"].forEach((name) => {
-          const field = purchaseForm.querySelector('[name="' + name + '"]');
-          if (field) field.readOnly = false;
-        });
-        if (repeatMode) repeatMode.disabled = false;
-        if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = false;
-        const currencyField = purchaseForm.querySelector('[name="currency"]');
-        if (currencyField) currencyField.disabled = false;
-        document.querySelector("[data-purchase-modal-title]").textContent = "Registrar compra";
-        syncRepeatFields();
-      };
-      document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => {
-        if (button.disabled) return;
-        const dialog = document.querySelector('dialog[data-modal="' + button.dataset.openModal + '"]');
-        if (!dialog) return;
-        lastDialogTrigger = button;
-        if (button.dataset.openModal === "purchase") resetPurchaseForm();
-        dialog.showModal();
-      }));
-      document.querySelectorAll("[data-close-modal]").forEach((button) => button.addEventListener("click", () => closeDialog(button.closest("dialog"))));
-      document.querySelectorAll("dialog.cards-dialog").forEach((dialog) => dialog.addEventListener("click", (event) => {
-        if (event.target === dialog) closeDialog(dialog);
-      }));
-
-      document.querySelectorAll("[data-purchase]").forEach((node) => {
-        const purchase = JSON.parse(node.textContent || "{}");
-        const button = document.querySelector('[data-edit-purchase="' + purchase.id + '"]');
-        if (!button || button.disabled || !purchaseForm) return;
-        button.addEventListener("click", () => {
-          purchaseForm.reset();
-          purchaseForm.dataset.path = "/api/credit-card-accounts/" + purchase.cardId + "/purchases/" + purchase.id;
-          purchaseForm.dataset.method = "PATCH";
-          purchaseForm.dataset.currentPurchaseId = purchase.id;
-          purchaseForm.dataset.recurrenceId = purchase.recurrenceId || "";
-          const isInstallmentPurchase = Number.isInteger(purchase.installmentSequenceNumber) && Number.isInteger(purchase.totalInstallments);
-          purchaseForm.dataset.installmentPurchase = isInstallmentPurchase ? "true" : "false";
-          purchaseForm.querySelector('[name="currentPurchaseId"]').value = purchase.id;
-          purchaseForm.querySelector('[name="recurrenceId"]').value = purchase.recurrenceId || "";
-          purchaseForm.querySelector('[name="amountMinor"]').value = minorToMoney(isInstallmentPurchase ? purchase.purchaseTotalAmountMinor : purchase.amountMinor);
-          purchaseForm.querySelector('[name="occurredOn"]').value = purchase.occurredOn;
-          purchaseForm.querySelector('[name="description"]').value = purchase.description || "";
-          purchaseForm.querySelector('[name="categoryId"]').value = purchase.categoryId || "";
-          if (purchase.cardInstrumentId) purchaseForm.querySelector('[name="cardInstrumentId"]').value = purchase.cardInstrumentId;
-          const currencyField = purchaseForm.querySelector('[name="currency"]');
-          if (currencyField) {
-            currencyField.value = purchase.currency || currencyField.value;
-            currencyField.disabled = true;
-          }
-          if (repeatMode?.closest("label")) repeatMode.closest("label").hidden = !isInstallmentPurchase;
-          if (isInstallmentPurchase) {
-            repeatMode.value = "installment";
-            repeatMode.disabled = true;
-            purchaseForm.querySelector('[name="amountMinor"]').readOnly = true;
-            purchaseForm.querySelector('[name="occurredOn"]').readOnly = true;
-            purchaseForm.querySelector('[name="totalInstallments"]').value = purchase.totalInstallments;
-            purchaseForm.querySelector('[name="totalInstallments"]').readOnly = true;
-            purchaseForm.querySelector('[name="installmentStart"]').value = purchase.installmentStart || 1;
-            purchaseForm.querySelector('[name="installmentStart"]').readOnly = true;
-            purchaseForm.querySelector('[name="installmentAmountMinor"]').value = minorToMoney(purchase.amountMinor);
-          }
-          syncRepeatFields();
-          if (isInstallmentPurchase) {
-            setField("installmentValueMode", false);
-            setField("installmentAmountMinor", true);
-            setField("installmentContext", true);
-            const context = purchaseForm.querySelector('[data-purchase-field="installmentContext"]');
-            if (context) context.textContent = "Parcelado · Parcela " + purchase.installmentSequenceNumber + " de " + purchase.totalInstallments + ". Valor, data e estrutura do parcelamento são somente leitura.";
-            const amountLabel = purchaseForm.querySelector("[data-purchase-amount-label]");
-            const amountCurrency = purchaseForm.querySelector('[name="currency"]')?.value || "";
-            if (amountLabel) amountLabel.textContent = "Valor total da compra" + (amountCurrency ? " (" + amountCurrency + ")" : "");
-          } else {
-            setField("installmentAmountMinor", false);
-            setField("installmentContext", false);
-          }
-          document.querySelector("[data-purchase-modal-title]").textContent = "Editar compra";
-          lastDialogTrigger = button;
-          document.querySelector('dialog[data-modal="purchase"]')?.showModal();
-        });
-      });
-
-      const request = (path, method, body) => fetch(path, {
-        method,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const responseMessage = async (response) => {
-        const body = await response.json().catch(() => ({}));
-        return response.ok ? "Ação concluída. Atualizando..." : (body?.error?.message || "Não foi possível concluir a ação.");
-      };
-
-      purchaseForm?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        if (!purchaseForm.checkValidity()) {
-          purchaseForm.reportValidity();
-          return;
-        }
-        const data = new FormData(purchaseForm);
-        const method = purchaseForm.dataset.method || "POST";
-        const mode = method === "POST" ? String(data.get("repeatMode") || "single") : "single";
-        const path = purchaseForm.dataset.path || "";
-        const status = purchaseForm.querySelector("[data-form-status]");
-        const currency = String(data.get("currency") || purchaseForm.querySelector('[name="currency"]')?.value || "").trim().toUpperCase();
-        if (method === "POST" && !/^[A-Z]{3}$/.test(currency)) {
-          status.textContent = "Defina a moeda padrão do cartão em Contas e Cartões antes de salvar a compra.";
-          status.className = "form-status error full";
-          return;
-        }
-        const editingInstallment = method === "PATCH" && purchaseForm.dataset.installmentPurchase === "true";
-        const payload = { description: String(data.get("description") || "") };
-        if (!editingInstallment) {
-          payload.amountMinor = moneyToMinor(data.get("amountMinor"));
-          payload.occurredOn = String(data.get("occurredOn") || "");
-        }
-        const categoryId = String(data.get("categoryId") || "");
-        const cardInstrumentId = String(data.get("cardInstrumentId") || "");
-        if (categoryId) payload.categoryId = categoryId;
-        if (cardInstrumentId) payload.cardInstrumentId = cardInstrumentId;
-        if (method === "POST") payload.currency = currency;
-        status.textContent = "Salvando...";
-        let response;
-        if (mode === "fixed") {
-          const cardId = /credit-card-accounts\\/([^/]+)/.exec(path)?.[1] || "";
-          const endOn = String(data.get("endOn") || "");
-          response = await request("/api/recurrences", "POST", {
-            frequency: String(data.get("frequency") || "monthly"),
-            interval: Math.max(1, Number(data.get("interval") || 1)),
-            startOn: payload.occurredOn,
-            ...(endOn ? { endOn } : {}),
-            amountMinor: payload.amountMinor,
-            currency,
-            description: payload.description,
-            cardId,
-            ...(cardInstrumentId ? { cardInstrumentId } : {}),
-            ...(categoryId ? { categoryId } : {}),
-          });
-        } else if (mode === "installment") {
-          const totalInstallments = Math.max(2, Number(data.get("totalInstallments") || 2));
-          const installmentStart = Math.min(
-            Math.max(1, Number(data.get("installmentStart") || 1)),
-            totalInstallments,
-          );
-          const amountMinor =
-            String(data.get("installmentValueMode")) === "per_installment"
-              ? payload.amountMinor * totalInstallments
-              : payload.amountMinor;
-          response = await request(path, "POST", {
-            ...payload,
-            amountMinor,
-            currency,
-            totalInstallments,
-            installmentStart,
-          });
-        } else {
-          response = await request(path, method, payload);
-        }
-        status.textContent = await responseMessage(response);
-        status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok) window.setTimeout(() => window.location.reload(), 350);
-      });
-
-      document.querySelector("[data-payment-form]")?.addEventListener("submit", async (event) => {
-        event.preventDefault();
-        const form = event.currentTarget;
-        if (!form.checkValidity()) {
-          form.reportValidity();
-          return;
-        }
-        const data = new FormData(form);
-        const status = form.querySelector("[data-form-status]");
-        status.textContent = "Liquidando...";
-        const response = await request(form.dataset.path, "POST", {
-          paymentAccountId: String(data.get("paymentAccountId") || ""),
-          paidOn: String(data.get("paidOn") || ""),
-          amountMinor: moneyToMinor(data.get("amountMinor")),
-          description: String(data.get("description") || ""),
-        });
-        status.textContent = await responseMessage(response);
-        status.className = response.ok ? "form-status success full" : "form-status error full";
-        if (response.ok) window.setTimeout(() => window.location.reload(), 350);
-      });
-
-      document.querySelectorAll("[data-api-path]").forEach((button) => button.addEventListener("click", async () => {
-        if (button.dataset.confirm && !window.confirm(button.dataset.confirm)) return;
-        button.disabled = true;
-        const response = await request(button.dataset.apiPath, button.dataset.apiMethod || "POST", {});
-        if (!response.ok) {
-          window.alert(await responseMessage(response));
-          button.disabled = false;
-          return;
-        }
-        window.setTimeout(() => window.location.reload(), 350);
-      }));
-      document.addEventListener("click", (event) => {
-        document.querySelectorAll(".cards-purchase-actions[open]").forEach((details) => {
-          if (!details.contains(event.target)) details.removeAttribute("open");
-        });
-      });
-      document.addEventListener("keydown", (event) => {
-        if (event.key !== "Escape") return;
-        document.querySelectorAll(".cards-purchase-actions[open]").forEach((details) => {
-          const summary = details.querySelector("summary");
-          details.removeAttribute("open");
-          summary?.focus();
-        });
-      });
-      syncRepeatFields();
-    })();
-  </script>`;
-}
-
-function css(): string {
-  return `
-    ${sharedShellStyles()}
-    ${recurrencesSectionStyles()}
-    [hidden]{display:none!important}
-    [data-cards-archetype="A3"]{min-width:0}
-    .cards-a3-page{display:grid;gap:14px;margin:0 auto;max-width:1500px;padding:18px 20px;width:100%}
-    .cards-a3-page .sf-page-header{align-items:center}
-    .cards-a3-page .sf-detail-layout{align-items:start;display:grid;gap:14px;grid-template-columns:minmax(240px,300px) minmax(0,1fr)}
-    .cards-a3-page .sf-detail-layout-master,.cards-a3-page .sf-detail-layout-detail{min-width:0}
-    .cards-master-panel,.cards-detail-panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);min-width:0}
-    .cards-master-panel{display:grid;gap:14px;padding:14px;position:sticky;top:70px}
-    .cards-master-heading,.cards-section-heading{align-items:center;display:flex;gap:10px;justify-content:space-between}
-    .cards-master-heading h2,.cards-section-heading h3{font-size:1rem;margin:2px 0 0}
-    .cards-kicker{color:var(--muted);font-size:.72rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase}
-    .cards-edit-link{font-size:.82rem;font-weight:700}
-    .cards-card-picker{display:grid;gap:6px}.cards-card-picker select{width:100%}
-    .cards-card-identity{align-items:center;background:var(--bg);border-radius:var(--radius);display:grid;gap:9px;grid-template-columns:auto minmax(0,1fr) auto;padding:10px}
-    .cards-card-icon{align-items:center;display:inline-flex;height:26px;width:26px}.cards-card-icon .brand-icon,.cards-card-icon .brand-icon-wrap,.cards-card-icon img{height:26px;width:26px}
-    .cards-card-identity>div{display:grid;gap:2px;min-width:0}.cards-card-identity>div span{color:var(--muted);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .cards-master-meta{display:grid;gap:7px}.cards-master-meta>div{align-items:center;display:flex;gap:8px;justify-content:space-between}.cards-master-meta dt{color:var(--muted);font-size:.78rem}.cards-master-meta dd{font-size:.8rem;font-weight:750;text-align:right}
-    .cards-card-warning{background:var(--primary-soft);border-radius:var(--radius);font-size:.76rem;margin:0;padding:8px 9px}.cards-card-warning a{font-weight:800}
-    .cards-instrument-nav{border-top:1px solid var(--line);padding-top:10px}.cards-instrument-nav summary{align-items:center;cursor:pointer;display:flex;font-weight:750;justify-content:space-between}.cards-instrument-nav summary span{color:var(--muted);font-size:.75rem}.cards-instrument-nav ul{display:grid;gap:7px;list-style:none;margin:10px 0 0;padding:0}.cards-instrument-nav li{align-items:start;display:flex;font-size:.78rem;gap:6px;justify-content:space-between}.cards-instrument-nav li span{min-width:0}.cards-instrument-nav li strong,.cards-instrument-nav li small{white-space:nowrap}
-    .cards-detail-panel{display:grid;gap:0;overflow:hidden}
-    .cards-invoice-navigation{border-bottom:1px solid var(--line);display:grid;gap:8px;padding:12px 14px}.cards-invoice-period-row{align-items:center;display:grid;gap:10px;grid-template-columns:minmax(0,1fr) minmax(180px,auto) minmax(0,1fr)}.cards-invoice-current{align-items:center;display:grid;gap:2px;justify-items:center;min-width:0;text-align:center}.cards-invoice-current>strong{font-size:1rem}.cards-invoice-period-status{background:var(--primary-soft);border-radius:999px;color:var(--primary);font-size:.72rem;font-weight:800;padding:3px 8px}.cards-invoice-period-link{align-items:center;border:1px solid transparent;border-radius:var(--radius);color:var(--text);display:flex;gap:8px;min-height:48px;padding:6px 8px;text-decoration:none}.cards-invoice-period-link:hover{background:var(--bg);border-color:var(--line)}.cards-invoice-period-link>span:not([aria-hidden]){display:grid;gap:1px;min-width:0}.cards-invoice-period-link strong{font-size:.78rem}.cards-invoice-period-link small{color:var(--muted);font-size:.7rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cards-invoice-period-link-next{justify-content:flex-end;text-align:right}.cards-invoice-period-link.is-disabled{color:var(--muted);cursor:not-allowed;opacity:.5}.cards-invoice-period-link.is-disabled:hover{background:transparent;border-color:transparent}.cards-month-picker{justify-self:center;position:relative}.cards-month-picker>summary{border-radius:999px;color:var(--primary);cursor:pointer;font-size:.76rem;font-weight:750;list-style:none;padding:5px 9px}.cards-month-picker>summary::-webkit-details-marker{display:none}.cards-month-picker>summary:hover{background:var(--primary-soft)}.cards-month-jump{align-items:end;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:flex;gap:6px;left:50%;padding:10px;position:absolute;top:calc(100% + 4px);transform:translateX(-50%);z-index:30}.cards-month-jump label{display:grid;font-size:.74rem;gap:4px}.cards-month-jump input{min-width:9.5rem}.cards-month-jump .sf-button{min-height:36px;white-space:nowrap}
-    .cards-invoice-header{align-items:start;border-bottom:1px solid var(--line);display:grid;gap:12px;grid-template-columns:minmax(0,1fr) auto;padding:16px 18px}.cards-invoice-title-block{display:grid;gap:5px}.cards-invoice-title-row{align-items:center;display:flex;gap:8px}.cards-invoice-title-block h2{font-size:1.25rem}.cards-invoice-title-block p{color:var(--muted);font-size:.82rem}.cards-invoice-primary{display:grid;gap:4px;justify-items:end;min-width:230px}.cards-invoice-primary>span{color:var(--muted);font-size:.76rem}.cards-invoice-primary>strong{font-size:1.45rem}.cards-invoice-actions{display:flex;flex-wrap:wrap;gap:7px;justify-content:flex-end;margin-top:5px}.cards-settlement-note{background:var(--primary-soft);border-radius:var(--radius);font-size:.78rem;grid-column:1/-1;margin:0;padding:8px 10px}
-    .cards-invoice-summary{border-bottom:1px solid var(--line);display:grid;gap:9px;padding:12px 18px}.cards-invoice-summary .sf-summary-grid{display:grid;gap:8px;grid-template-columns:repeat(4,minmax(0,1fr))}.cards-summary-metric{background:var(--bg);border-radius:var(--radius);display:grid;gap:3px;padding:10px}.cards-summary-metric>span{color:var(--muted);font-size:.72rem}.cards-summary-metric>strong{font-size:.95rem}.cards-limit-detail{display:flex;flex-wrap:wrap;gap:14px}.cards-limit-detail>div{display:flex;font-size:.76rem;gap:5px}.cards-limit-detail dt{color:var(--muted)}.cards-limit-detail dd{font-weight:750}
-    .cards-detail-panel .sf-filter-bar{border-bottom:1px solid var(--line);display:grid;gap:8px;padding:12px 18px}.cards-purchase-filter-form{align-items:end;display:grid;gap:8px;grid-template-columns:minmax(12rem,1.2fr) minmax(10rem,.7fr) minmax(10rem,.6fr) auto}.cards-purchase-filter-form label{display:grid;font-size:.76rem;gap:5px}.cards-purchase-filter-form input,.cards-purchase-filter-form select{width:100%}.cards-reconciliation-filters{align-items:center;display:flex;flex-wrap:wrap;gap:6px}.cards-filter-chip{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;display:inline-flex;font-size:.74rem;font-weight:700;gap:6px;min-height:32px;padding:4px 9px}.cards-filter-chip.is-active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}.cards-filter-chip small{font-weight:800}.cards-results-status{color:var(--muted);font-size:.76rem;margin-left:auto}
-    .cards-purchase-groups{display:grid;gap:10px;padding:14px 18px 18px}.cards-section-heading>span{color:var(--muted);font-size:.78rem;font-weight:750}.cards-instrument-group{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}.cards-instrument-group>summary{align-items:center;background:var(--bg);cursor:pointer;display:flex;gap:10px;justify-content:space-between;list-style:none;padding:10px 12px}.cards-instrument-group>summary::-webkit-details-marker{display:none}.cards-instrument-group>summary>div:first-child{display:grid;gap:2px}.cards-instrument-group>summary span{color:var(--muted);font-size:.72rem}.cards-instrument-totals{font-size:.82rem;font-weight:800;text-align:right}
-    .cards-purchase-table{display:none}.cards-instrument-group[open]>.cards-purchase-table{display:grid}.cards-purchase-table-head,.cards-purchase-row{align-items:center;display:grid;gap:9px;grid-template-columns:6.5rem minmax(0,1fr) 8.5rem 9rem 3.5rem}.cards-purchase-table-head{border-bottom:1px solid var(--line);color:var(--muted);font-size:.7rem;font-weight:800;padding:7px 10px;text-transform:uppercase}.cards-purchase-row{border-bottom:1px solid var(--line);padding:9px 10px}.cards-purchase-row:last-child{border-bottom:0}.cards-purchase-row time{color:var(--muted);font-size:.8rem}.cards-purchase-description{display:grid;gap:2px;min-width:0}.cards-purchase-description strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cards-purchase-description>span{color:var(--muted);font-size:.76rem}.cards-purchase-amount{text-align:right}.cards-purchase-actions{position:relative;text-align:right}.cards-purchase-actions summary{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:999px;cursor:pointer;display:inline-flex;height:30px;justify-content:center;list-style:none;width:30px}.cards-purchase-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;min-width:210px;padding:5px;position:absolute;right:0;top:34px;z-index:20}.cards-purchase-menu button{background:transparent;border:0;color:var(--text);font-size:.8rem;justify-content:flex-start;text-align:left}.cards-move-hint{border-top:1px solid var(--line);color:var(--muted);font-size:.68rem;padding:6px}
-    .cards-purchase-empty{padding:18px}
-    .cards-dialog{border:0;border-radius:var(--radius);max-height:90vh;max-width:min(680px,calc(100vw - 24px));padding:0;width:100%}.cards-dialog::backdrop{background:rgba(15,23,42,.45)}.cards-dialog-panel{display:grid;gap:14px;padding:18px}.cards-dialog-panel>header{align-items:start;display:flex;gap:12px;justify-content:space-between}.cards-dialog-panel h2{font-size:1.1rem}.cards-dialog-close{background:transparent;border:0;font-size:1.4rem;min-height:44px;min-width:44px}.cards-dialog form{display:grid;gap:10px;grid-template-columns:1fr 1fr}.cards-dialog form label{display:grid;gap:5px}.cards-dialog .full{grid-column:1/-1}.cards-payment-explanation{background:var(--primary-soft);border-radius:var(--radius);font-size:.82rem;padding:9px 10px}.form-status{min-height:20px}.success{color:var(--success)}.error{color:var(--danger)}.money-unavailable{color:var(--muted);font-size:.78rem}
-    .cards-load-error{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:8px;padding:18px}.cards-load-error .sf-button{justify-self:start}
-    @media(max-width:1050px){.cards-a3-page .sf-detail-layout{grid-template-columns:240px minmax(0,1fr)}.cards-invoice-summary .sf-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.cards-purchase-table-head,.cards-purchase-row{grid-template-columns:5.5rem minmax(0,1fr) 7rem 8rem 3rem}.cards-purchase-filter-form{grid-template-columns:1fr 1fr}}
-    @media(max-width:760px){.cards-a3-page{padding:12px}.cards-a3-page .sf-page-header{align-items:stretch;display:grid}.cards-a3-page .sf-page-header-actions{justify-content:stretch}.cards-a3-page .sf-page-header-actions .sf-button{width:100%}.cards-a3-page .sf-detail-layout{display:grid;grid-template-columns:1fr}.cards-master-panel{position:static}.cards-master-meta,.cards-instrument-nav{display:none}.cards-card-identity{grid-template-columns:auto minmax(0,1fr)}.cards-card-identity .sf-badge{grid-column:2}.cards-invoice-period-row{gap:5px;grid-template-columns:minmax(0,.75fr) minmax(130px,1.5fr) minmax(0,.75fr)}.cards-invoice-period-link{gap:4px;min-height:44px;padding:5px}.cards-invoice-period-link small{display:none}.cards-invoice-period-link strong{font-size:.72rem}.cards-invoice-current>strong{font-size:.9rem}.cards-month-picker{justify-self:stretch}.cards-month-picker>summary{text-align:center}.cards-month-jump{display:grid;grid-template-columns:minmax(0,1fr) auto;left:0;right:0;transform:none}.cards-month-jump label{min-width:0}.cards-month-jump input{min-width:0;width:100%}.cards-invoice-header{grid-template-columns:1fr;padding:14px}.cards-invoice-primary{justify-items:start;min-width:0}.cards-invoice-actions{justify-content:flex-start}.cards-invoice-summary{padding:12px 14px}.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr 1fr}.cards-detail-panel .sf-filter-bar{padding:12px 14px}.cards-purchase-filter-form{grid-template-columns:1fr}.cards-reconciliation-filters{align-items:stretch}.cards-results-status{flex-basis:100%;margin-left:0}.cards-purchase-groups{padding:12px 14px}.cards-purchase-table-head{display:none}.cards-purchase-row{align-items:start;grid-template-columns:minmax(0,1fr) auto;padding:10px}.cards-purchase-row>[data-label]::before{color:var(--muted);content:attr(data-label);display:block;font-size:.66rem;font-weight:750;margin-bottom:2px;text-transform:uppercase}.cards-purchase-row time{grid-column:1}.cards-purchase-description{grid-column:1}.cards-purchase-row>[data-label="Situação"]{grid-column:1}.cards-purchase-amount{grid-column:2;grid-row:1;text-align:right}.cards-purchase-actions{grid-column:2;grid-row:2 / span 2}.cards-dialog form{grid-template-columns:1fr}.cards-dialog .full{grid-column:auto}}
-    @media(max-width:430px){.cards-invoice-summary .sf-summary-grid{grid-template-columns:1fr}.cards-invoice-actions{display:grid;width:100%}.cards-invoice-actions .sf-button{width:100%}.cards-filter-chip{flex:1 1 auto;justify-content:center}}
-  `;
+  return (
+    cardsPageSetupScript() +
+    cardsPagePurchaseActionsScript() +
+    cardsPageMutationScript() +
+    cardsPageRemainingActionsScript() +
+    entryFillRuleScript()
+  );
 }
 
 function serializeScriptJson(value: unknown): string {

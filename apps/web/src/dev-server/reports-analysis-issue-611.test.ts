@@ -42,24 +42,31 @@ describe("issue 611 reports analysis archetype", () => {
       new Date("2026-07-31T12:00:00.000Z"),
     );
 
-    process.stdout.write(
-      `ISSUE611_DIAG ${JSON.stringify({
-        a5Count: (html.match(/data-report-analysis="a5"/g) ?? []).length,
-        matrixCount: (html.match(/class="evolution-table"/g) ?? []).length,
-        currencies: html.match(/data-currency="[^"]+"/g) ?? [],
-      })}\n`,
-    );
-
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
     assert.equal((html.match(/class="evolution-table"/g) ?? []).length, 2);
+    assert.equal(
+      (html.match(/class="report-trend report-trend-grid" data-trend-layout="grid"/g) ?? []).length,
+      2,
+    );
+    assert.equal((html.match(/style="--report-trend-columns:12"/g) ?? []).length, 2);
+    assert.match(html, /@container \(min-width:1120px\)/);
+    assert.match(html, /\.evolution-table td strong \{ display:inline;/);
     assert.match(html, /tabindex="0" aria-label="Matriz de evolução em BRL"/);
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Leitura do período - BRL/);
+    assert.match(html, /Resultado ao longo do tempo - USD/);
+    assert.match(html, /Pontos para revisar - USD/);
+    assert.match(html, /Matriz por categoria - BRL/);
 
-    const summary = html.indexOf('data-analysis-layer="summary"');
-    const visualization = html.indexOf('data-analysis-layer="visualization"');
-    const highlights = html.indexOf('data-analysis-layer="highlights"');
-    const detail = html.indexOf('data-analysis-layer="detail"');
+    const firstBlockStart = html.indexOf('<section class="report-analysis-block"');
+    assert.ok(firstBlockStart >= 0, "The report has no analysis block");
+    const firstBlock = html.slice(firstBlockStart);
+    const summary = firstBlock.indexOf('data-analysis-layer="summary"');
+    const visualization = firstBlock.indexOf('data-analysis-layer="visualization"');
+    const highlights = firstBlock.indexOf('data-analysis-layer="highlights"');
+    const detail = firstBlock.indexOf('data-analysis-layer="detail"');
     assert.ok(summary >= 0 && summary < visualization);
     assert.ok(visualization < highlights);
     assert.ok(highlights < detail);
@@ -80,15 +87,26 @@ describe("issue 611 reports analysis archetype", () => {
 
     const html = await renderReportsRoutePage(
       "token",
-      new URL("http://localhost/relatorios?view=installments&month=2026-07"),
+      new URL("http://localhost/relatorios?view=installments&month=2026-07&currency=all"),
     );
 
     assert.equal((html.match(/data-report-analysis="a5"/g) ?? []).length, 2);
     assert.match(html, /data-currency="BRL"/);
     assert.match(html, /data-currency="USD"/);
-    assert.equal((html.match(/<table class="sf-table">/g) ?? []).length, 2);
+    assert.equal(
+      (html.match(/<table class="sf-table installment-detail-table">/g) ?? []).length,
+      2,
+    );
     assert.match(html, /<th scope="col"[^>]*>Valor<\/th>/);
     assert.match(html, /data-money-availability="available"/);
+    assert.match(html, /class="sf-summary-grid summary-grid installment-summary-grid"/);
+    assert.match(html, /class="installment-distribution-grid"/);
+    assert.match(html, /<colgroup><col class="installment-col-due"/);
+    assert.doesNotMatch(html, /class="report-analysis-heading"/);
+    assert.match(html, /Leitura do período - BRL/);
+    assert.match(html, /Pontos para revisar - USD/);
+    assert.match(html, /Parcelas consideradas - BRL/);
+    assert.match(html, /Parcelas consideradas - USD/);
     assert.doesNotMatch(html, /data-currency="BRL"[^]*19\.500/);
   });
 });

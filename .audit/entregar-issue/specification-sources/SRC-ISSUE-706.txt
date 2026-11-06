@@ -1,0 +1,48 @@
+## Contexto
+Na tela do Extrato Bancário (`/lancamentos`), o menu aberto pelo botão de três pontos de um lançamento pode ficar parcialmente fora da área visível quando a linha está próxima ao limite inferior da janela ou dentro da área rolável da lista. A pessoa precisa rolar a página para acessar todas as opções, principalmente `Editar`.
+
+O comportamento afeta a jornada diária de revisão/manutenção de lançamentos e contraria a orientação do Extrato de manter ações contextuais acessíveis sem perder o contexto da lista. A implementação deve seguir `AGENTS.md`, `docs/DESIGN_SYSTEM.md`, `docs/UI_PRIMITIVES.md`, `docs/VISUAL_VALIDATION.md` e a composição A2 existente em `apps/web/src/dev-server/transactions-page-v2.ts`.
+
+## Objetivo
+Garantir que o menu de ações de um lançamento permaneça totalmente visível no viewport, sem exigir rolagem adicional da página ou da lista, abrindo para cima quando não houver espaço abaixo e evitando clipping por ancestrais com overflow.
+
+## Escopo
+- Ajustar o menu de ações dos lançamentos do Extrato A2 para ser posicionado em uma camada fora da área rolável da lista.
+- Ancorar o menu ao botão de três pontos e calcular sua posição considerando os limites do viewport, com abertura para baixo ou para cima conforme o espaço disponível.
+- Preservar as ações existentes, seus payloads, autorizações e a ordem visual das opções.
+- Preservar acessibilidade: nome acessível, `aria-expanded`, navegação por teclado, Escape e devolução de foco ao botão de origem.
+- Cobrir o comportamento em desktop, viewport reduzida e mobile com testes focados e evidência visual proporcional.
+
+## Fora de escopo
+- Alterar regras financeiras, payloads, endpoints ou permissões das ações.
+- Redesenhar o conteúdo do menu ou adicionar novas opções.
+- Alterar o menu de ações de Cartões, Contas e Cartões ou outras rotas, salvo compartilhamento estritamente necessário e sem mudança visual não relacionada.
+- Remover a rolagem normal da página ou da lista de lançamentos.
+
+## Critérios de aceite
+- [ ] Ao abrir o menu de um lançamento próximo ao fim do viewport, todas as opções ficam visíveis sem rolar a página.
+- [ ] Quando não houver espaço suficiente abaixo do botão, o menu abre acima; quando houver espaço, abre abaixo.
+- [ ] O menu não fica cortado por `overflow` da lista/tabela e não cria overflow horizontal global.
+- [ ] Apenas um menu fica aberto por vez; clicar fora ou pressionar Escape fecha o menu.
+- [ ] A abertura por teclado permite alcançar as opções e o foco retorna ao botão de três pontos ao fechar.
+- [ ] Desktop e mobile mantêm a hierarquia, contraste, alvo interativo e leitura do Extrato sem sobreposição indevida.
+- [ ] Os testes focados, typecheck, lint e validação SSR/visual aplicáveis passam.
+
+## Validação obrigatória
+- [ ] Testes adicionados/atualizados quando aplicável
+- [ ] Lint/typecheck/build executados quando disponíveis
+- [ ] Documentação atualizada quando necessário
+- [ ] ADR criada/atualizada quando houver decisão arquitetural
+- [ ] Sem dados sensíveis em logs, fixtures, seeds, prints ou documentação
+
+## Riscos e perguntas abertas
+- O posicionamento deve usar o mesmo padrão de popover fixo e viewport-aware já existente em `accounts-cards-action-menu-enhancement.ts`, sem duplicar regras de domínio.
+- Caso seja necessário alterar o contrato de cobertura visual, atualizar o registro canônico em `scripts/statement-visual/coverage-contract.mjs`, sem criar uma lista paralela no workflow.
+
+## Referências
+- `apps/web/src/dev-server/transactions-page-v2.ts`
+- `apps/web/src/dev-server/statement-list-archetype.ts`
+- `apps/web/src/dev-server/accounts-cards-action-menu-enhancement.ts`
+- `docs/DESIGN_SYSTEM.md`
+- `docs/VISUAL_VALIDATION.md`
+

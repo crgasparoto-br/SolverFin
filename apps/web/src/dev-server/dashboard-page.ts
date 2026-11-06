@@ -29,13 +29,10 @@ import {
   type DashboardScreenViewModel,
 } from "./dashboard-presenter.js";
 import type { FinancialInsightQueueApiPage } from "./financial-insight-queue-presenter.js";
-import {
-  financialInsightQueueStyles,
-  renderDashboardFinancialInsights,
-} from "./financial-insight-queue-view.js";
+import { renderDashboardFinancialInsights } from "./financial-insight-queue-view.js";
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
+import { dashboardStyles } from "./dashboard-styles.js";
 
 const DASHBOARD_LOADING_GRACE_MS = 75;
 const DASHBOARD_LOAD_MAX_LIFETIME_MS = 30_000;
@@ -148,7 +145,7 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
   return `
-    <section class="panel dashboard-hero" aria-label="Situação financeira atual">
+    <section class="dashboard-hero" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Situação financeira atual">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
@@ -163,9 +160,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
     </section>
     ${renderCurrencyNavigator(content.currencySummaries)}
     ${renderCurrencySummaries(content.currencySummaries)}
-    ${renderCashFlowProjection(content.cashFlowProjection)}
-    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
-    <section class="panel next-actions" aria-label="Próximas ações">
+    <section class="next-actions" aria-label="Próximas ações">
       <div class="section-heading">
         <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
       </div>
@@ -176,8 +171,11 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
+    ${renderSupportingCurrencySummaries(content.currencySummaries)}
+    ${renderCashFlowProjection(content.cashFlowProjection)}
+    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     ${renderDecisionModules(content.decisionModules)}
-    <section class="panel list-panel">
+    <section class="list-panel">
       <div class="section-heading">
         <div><p class="eyebrow">Evidências</p><h2>Itens recentes</h2></div>
       </div>
@@ -185,6 +183,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         ${renderRecentItems(content.recentItems)}
       </div>
     </section>
+    ${renderCurrencyEvidenceIndex(content.currencySummaries)}
     ${dashboardEvidenceScript()}
   `;
 }
@@ -192,7 +191,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
 function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
   if (blocks.length < 2) return "";
 
-  return `<nav class="currency-nav panel" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
+  return `<nav class="currency-nav" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
     .map(
       (block) =>
         `<a class="currency-chip" href="#currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</a>`,
@@ -208,21 +207,71 @@ function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewMo
     });
   }
 
-  return blocks
+  const sections = blocks
     .map(
       (block) => `
         <section id="currency-${escapeHtml(block.currency)}" class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
           <div class="section-heading currency-heading">
             <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
           </div>
-          ${renderSummaryGrid({ childrenHtml: block.metrics.map(renderDashboardMetric).join("") })}
-          <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
-            ${block.metrics.map(renderDashboardEvidence).join("")}
-          </div>
+          ${renderSummaryGrid({ childrenHtml: block.metrics.slice(0, 2).map(renderDashboardMetric).join("") })}
         </section>
       `,
     )
     .join("");
+
+  return `<div class="dashboard-primary-currencies" data-multicurrency="${blocks.length > 1}">${sections}</div>`;
+}
+
+function renderSupportingCurrencySummaries(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
+  return blocks
+    .map(
+      (block) => `
+        <section class="dashboard-supporting-section" aria-label="Receitas, despesas e compromissos em ${escapeHtml(block.currency)}">
+          <h2 class="dashboard-supporting-title">Demais indicadores — ${escapeHtml(block.currency)}</h2>
+          <dl class="dashboard-supporting-metrics" aria-label="Demais indicadores em ${escapeHtml(block.currency)}">
+            ${block.metrics.slice(2).map(renderSupportingMetric).join("")}
+          </dl>
+        </section>
+      `,
+    )
+    .join("");
+}
+
+function renderSupportingMetric(metric: DashboardMetricViewModel): string {
+  return `
+    <div class="dashboard-supporting-metric">
+      <dt>${escapeHtml(metric.title)}</dt>
+      <dd>
+        <strong>${formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency })}</strong>
+        <a class="text-link sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a>
+      </dd>
+    </div>
+  `;
+}
+
+function renderCurrencyEvidenceIndex(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+  if (blocks.length === 0) return "";
+
+  return `
+    <section class="dashboard-evidence-index" aria-labelledby="dashboard-evidence-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Detalhamento</p><h2 id="dashboard-evidence-title">Evidências dos indicadores</h2></div>
+      </div>
+      ${blocks
+        .map(
+          (block) => `
+            <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
+              <h3>${escapeHtml(block.currency)}</h3>
+              ${block.metrics.map(renderDashboardEvidence).join("")}
+            </div>
+          `,
+        )
+        .join("")}
+    </section>
+  `;
 }
 
 function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
@@ -422,70 +471,6 @@ function dashboardEvidenceScript(): string {
       window.addEventListener("hashchange", openDashboardEvidence);
       openDashboardEvidence();
     </script>
-  `;
-}
-
-function dashboardStyles(): string {
-  return `
-    ${sharedShellStyles()}
-    ${financialInsightQueueStyles()}
-    main { display: grid; gap: 16px; padding: 20px 0; width: 100%; }
-    .sf-page-container { display: grid; gap: 16px; }
-    .dashboard-hero { align-items: start; display: grid; gap: 16px; grid-template-columns: minmax(0, 1fr) minmax(240px, 360px); }
-    .dashboard-heading { display: grid; gap: 4px; min-width: 0; }
-    .data-quality { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; padding: 12px; }
-    .data-quality strong { color: var(--primary); font-size: 0.875rem; }
-    .data-quality span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
-    .data-quality[data-quality="partial"] { border-style: dashed; }
-    .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); }
-    .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
-    .currency-nav { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
-    .currency-nav > span { color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
-    .currency-chip { border: 1px solid var(--line); border-radius: 999px; color: var(--primary); font-size: 0.8125rem; font-weight: 700; padding: 5px 10px; text-decoration: none; }
-    .currency-chip:hover, .currency-chip:focus-visible { background: var(--primary-soft); }
-    .currency-summary { display: grid; gap: 8px; scroll-margin-top: 20px; }
-    .currency-heading h2 { color: var(--primary); font-size: 1rem; margin: 0; }
-    .currency-summary .sf-summary-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .dashboard-metric { min-width: 0; position: relative; }
-    .dashboard-metric .sf-metric-card { height: 100%; padding-bottom: 42px; }
-    .metric-drilldown, .text-link, .evidence-link { color: var(--primary); font-size: 0.8125rem; font-weight: 700; text-underline-offset: 3px; }
-    .metric-drilldown { bottom: 14px; left: 16px; position: absolute; }
-    .metric-drilldown:focus-visible, .text-link:focus-visible, .evidence-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
-    .currency-evidence { display: grid; gap: 6px; }
-    .evidence-detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); scroll-margin-top: 20px; }
-    .evidence-detail > summary { cursor: pointer; font-size: 0.875rem; font-weight: 700; padding: 10px 12px; }
-    .evidence-detail > p { padding: 0 12px; }
-    .evidence-links { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 12px 12px; }
-    .evidence-link { border: 1px solid var(--line); border-radius: 999px; padding: 6px 10px; text-decoration: none; }
-    .evidence-link:hover { background: var(--primary-soft); }
-    .evidence-static { background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); display: grid; gap: 2px; padding: 7px 10px; }
-    .evidence-static strong { color: var(--primary); font-size: 0.8125rem; }
-    .evidence-static small { color: var(--muted); font-size: 0.75rem; }
-    .cash-flow-section { display:grid; gap:10px; }
-    .cash-flow-dashboard-grid { display:grid; gap:12px; grid-template-columns:repeat(3,minmax(0,1fr)); }
-    .cash-flow-dashboard-card .sf-card-body { display:grid; gap:6px; }
-    .cash-flow-dashboard-metrics { display:grid; gap:10px; }
-    .cash-flow-dashboard-metric { border-top:1px solid var(--line); display:grid; gap:2px; padding-top:8px; }
-    .cash-flow-dashboard-metric:first-child { border-top:0; padding-top:0; }
-    .cash-flow-dashboard-metric > span { color:var(--muted); font-size:0.8125rem; }
-    .cash-flow-dashboard-metric > small { color:var(--muted); line-height:1.4; }
-    .cash-flow-dashboard-value { color:var(--primary); font-size:1.15rem; }
-    .next-actions { gap: 12px; }
-    .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; }
-    .quick-links { display: flex; flex-wrap: wrap; gap: 6px; }
-    .decision-section { display: grid; gap: 10px; }
-    .decision-grid { display: grid; gap: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .decision-card { align-content: start; min-width: 0; }
-    .decision-card .sf-card-body { display: grid; gap: 8px; }
-    .rows { display: grid; gap: 0; }
-    .row { align-items: center; border-top: 1px solid var(--line); display: flex; gap: 12px; justify-content: space-between; min-width: 0; padding: 8px 0; }
-    .row:first-child { border-top: 0; padding-top: 0; }
-    .row div { display: grid; gap: 2px; min-width: 0; }
-    .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
-    .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
-    .row > strong { text-align: right; white-space: nowrap; }
-    @media (max-width: 1024px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } }
-    @media (max-width: 760px) { .currency-summary .sf-summary-grid, .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: 1fr; } .row, .section-heading { align-items: stretch; display: grid; } .row > strong { text-align: left; white-space: normal; } .evidence-links { display: grid; } }
   `;
 }
 

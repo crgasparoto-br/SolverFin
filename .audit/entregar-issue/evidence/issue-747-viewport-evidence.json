@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "subjectSha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "route": "/lancamentos?accountId=06fd0b25-5b08-416a-bdd3-08c65a893712&month=2026-07",
+  "scope": "real-application",
+  "status": "passed",
+  "source_artifact": {
+    "run_id": 40696534811,
+    "artifact_id": 12820740707,
+    "artifact_digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4",
+    "source_file": "statement-contextual-surfaces.json"
+  },
+  "selection": "Exact observed Chrome dialog, labels, bounds and adversarial controls on all three required viewports.",
+  "observations": [
+    {
+      "state": "new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 2,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "footerActionRowDelta": 52,
+        "footerContinueRowDelta": 0,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-1366x768.png",
+      "accessibilityFile": "statement-contextual-new-1366x768-ax.json"
+    },
+    {
+      "state": "new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 2,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "footerActionRowDelta": 65,
+        "footerContinueRowDelta": 0,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 57,
+          "save": 44,
+          "continue": 57
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-390x844.png",
+      "accessibilityFile": "statement-contextual-new-390x844-ax.json"
+    },
+    {
+      "state": "new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "selector": "dialog[data-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 1,
+        "selectedAccountName": "QA Visual - Valores Extensos · BRL",
+        "fullAccountName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyOriginalName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyVisibleName": "QA Visual - Valores Extensos · BRL",
+        "readOnlyInputHidden": true,
+        "documentScrollLocked": true,
+        "dialogOverflowHidden": true,
+        "panelScrollControlled": true,
+        "footerActionColumns": 1,
+        "footerActionLabels": [
+          "Cancelar",
+          "Salvar e continuar",
+          "Salvar lançamento"
+        ],
+        "footerActionRowDelta": 104,
+        "footerContinueRowDelta": 52,
+        "footerContinueHidden": false,
+        "footerContinueAfterCancel": true,
+        "footerSaveAfterCancel": true,
+        "footerPrimaryBelowContinue": true,
+        "footerActionsContained": true,
+        "footerActionHeights": {
+          "cancel": 44,
+          "save": 44,
+          "continue": 44
+        },
+        "tooltipStatusCount": 3,
+        "statusLabelVisuallyHidden": true,
+        "horizontalCenterDelta": 0,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-new-320x740.png",
+      "accessibilityFile": "statement-contextual-new-320x740-ax.json"
+    }
+  ],
+  "controls": [
+    {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Cancel button shifted outside the dialog content box without changing the row",
+      "rejectedBecause": "new: footer actions must fit fully inside the dialog content area\n\nfalse !== true\n",
+      "restored": "passed"
+    }
+  ]
+}

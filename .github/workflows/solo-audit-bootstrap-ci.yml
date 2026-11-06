@@ -1,0 +1,42 @@
+name: Solo audit bootstrap verification
+
+on:
+  pull_request:
+    branches: [develop, main]
+    paths:
+      - ".github/workflows/solo-audit-attestation.yml"
+      - ".github/workflows/solo-audit-bootstrap-ci.yml"
+      - "scripts/solo_audit_*.py"
+      - "scripts/verify_solo_audit_attestation.py"
+      - "scripts/verify_independent_pr_audit.py"
+      - "scripts/verify_session_review.py"
+      - "scripts/session_review.py"
+      - "scripts/session_review_github.py"
+      - "auditar-issue/**"
+      - "entregar-issue/**"
+      - "tests/test_solverfin_solo_audit_bootstrap.py"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Solo audit bootstrap unit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact candidate SHA for unprivileged test only
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Install hash-pinned validation dependencies
+        run: python -m pip install --disable-pip-version-check --require-hashes -r auditar-issue/requirements.lock.txt
+      - name: Compile imported official audit modules
+        run: python -m compileall -q scripts/solo_audit_*.py scripts/verify_solo_audit_attestation.py scripts/verify_independent_pr_audit.py scripts/verify_session_review.py scripts/session_review_github.py auditar-issue/scripts entregar-issue/scripts
+      - name: Execute SolverFin fail-closed check contract tests
+        run: python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v

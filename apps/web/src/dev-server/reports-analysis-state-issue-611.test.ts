@@ -64,10 +64,13 @@ describe("issue 611 report state hierarchy", () => {
 });
 
 function assertAnalysisLayerOrder(html: string): void {
-  const summary = html.indexOf('data-analysis-layer="summary"');
-  const visualization = html.indexOf('data-analysis-layer="visualization"');
-  const highlights = html.indexOf('data-analysis-layer="highlights"');
-  const detail = html.indexOf('data-analysis-layer="detail"');
+  // O CSS do shell pode mencionar as mesmas classes; inspecione somente o HTML do body.
+  const headEnd = html.indexOf("</head>");
+  const markup = headEnd < 0 ? html : html.slice(headEnd + "</head>".length);
+  const summary = markup.indexOf('data-analysis-layer="summary"');
+  const visualization = markup.indexOf('data-analysis-layer="visualization"');
+  const highlights = markup.indexOf('data-analysis-layer="highlights"');
+  const detail = markup.indexOf('data-analysis-layer="detail"');
 
   assert.ok(summary >= 0, "summary layer should be rendered");
   assert.ok(summary < visualization, "visualization should follow summary");

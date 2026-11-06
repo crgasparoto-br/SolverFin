@@ -63,3 +63,16 @@ test("STANDARD and CRITICAL formatting gates fail closed", () => {
     assert.doesNotMatch(section, /npm run format:check\s*\|\|/);
   }
 });
+
+test("new neutral gate stays downstream of the still-required legacy gate", () => {
+  const workflow = readFileSync(".github/workflows/delivery-v2-ci.yml", "utf8");
+  const legacy = workflow.split("  gate:\n")[1]?.split("  repository_gate:\n")[0];
+  const neutral = workflow.split("  repository_gate:\n")[1];
+  assert.ok(legacy, "protected Delivery V2 gate still exists");
+  assert.match(legacy, /name: Delivery V2 gate/);
+  assert.ok(neutral, "neutral successor check is published");
+  assert.match(neutral, /name: Repository CI gate/);
+  assert.match(neutral, /needs: \[gate\]/);
+  assert.match(neutral, /if: \$\{\{ always\(\) \}\}/);
+  assert.match(neutral, /test "\$LEGACY_GATE_RESULT" = "success"/);
+});

@@ -32,6 +32,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`ARCHITECTURE.md`](./ARCHITECTURE.md): arquitetura geral, regras tecnicas e integracao do portao SSR ao build/CI.
 - [`RUNBOOK.md`](./RUNBOOK.md): reproducao e criterios do gate final de regressao/baseline da Fase 2.
 - [`CONVENTIONS.md`](./CONVENTIONS.md): convencoes de TypeScript, organizacao, lint e formatacao.
+- [`SOLO_AUDIT_ATTESTATION.md`](./SOLO_AUDIT_ATTESTATION.md): atestacao Ed25519 de operador unico e bootstrap seguro (PRs #765/#766).
 - [`ENVIRONMENT.md`](./ENVIRONMENT.md): variaveis de ambiente, secrets e validacao segura.
 - [`PRIVACY.md`](./PRIVACY.md): politica operacional de privacidade, retencao, minimizacao e mascaramento.\n- [`ATTACHMENTS.md`](./ATTACHMENTS.md): contrato de upload, armazenamento privado, autorizacao, retencao e operacao de anexos.
 - [`AUTH.md`](./AUTH.md): autenticacao MVP e direcao produtiva.

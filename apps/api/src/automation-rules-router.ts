@@ -16,6 +16,7 @@ import {
   listAutomationRulesForContext,
   updateAutomationRuleForContext,
 } from "./repositories/automation-rules.js";
+import { upsertManualEntryFillRuleForContext } from "./repositories/manual-entry-fill-rules.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
@@ -47,6 +48,7 @@ const ALLOWED_ACTION_STATUSES: readonly AutomationActionStatus[] = [
 
 route("GET", BASE_PATH, listAutomationRulesHandler);
 route("POST", BASE_PATH, createAutomationRuleHandler);
+route("POST", `${BASE_PATH}/manual-entry`, upsertManualEntryFillRuleHandler);
 route("PATCH", `${BASE_PATH}/:ruleId`, updateAutomationRuleHandler);
 route("POST", `${BASE_PATH}/:ruleId/archive`, archiveAutomationRuleHandler);
 route("POST", `${BASE_PATH}/apply`, applyAutomationRulesHandler);
@@ -135,11 +137,26 @@ async function createAutomationRuleHandler(request: ApiRequest): Promise<ApiResp
   return json(201, {
     rule: await createAutomationRuleForContext(context, {
       name: String(body.name ?? ""),
+      ...(body.status !== undefined ? { status: parseStatus(body.status) } : {}),
       ...(priority !== undefined ? { priority } : {}),
       conditions: parseConditions(body),
       actions: parseActions(body),
       ...(body.explanation !== undefined ? { explanation: String(body.explanation) } : {}),
     }),
+  });
+}
+
+async function upsertManualEntryFillRuleHandler(request: ApiRequest): Promise<ApiResponse> {
+  const context = await resolveContext(request);
+  const body = requireObjectBody(request.body);
+  if (typeof body.description !== "string" || typeof body.categoryId !== "string") {
+    throw new AutomationRuleRepositoryError(
+      "MANUAL_FILL_PAYLOAD_INVALID",
+      "Informe descrição e categoria válidas.",
+    );
+  }
+  return json(200, {
+    rule: await upsertManualEntryFillRuleForContext(context, body.description, body.categoryId),
   });
 }
 

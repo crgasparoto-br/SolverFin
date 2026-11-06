@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "dd39ac193944d4f3f56e48ba4b3bf3e026d2d098",
+  "base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
+  "comparison_base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "scripts/verify_independent_pr_audit.py",
+      "lines_before": 438,
+      "lines_after": 448
+    }
+  ],
+  "blocking_files": []
+}

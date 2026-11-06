@@ -85,8 +85,11 @@ describe("dashboard multi-currency contract", () => {
       assert.match(html, /Variação líquida do mês/);
       assert.match(html, /Compra ficticia USD/);
       assert.match(html, /expense - posted - USD - 18\/08\/2026/);
+      assert.match(html, /class="dashboard-hero" data-multicurrency="true"/);
+      assert.match(html, /class="dashboard-primary-currencies" data-multicurrency="true"/);
       assert.equal((html.match(/class="currency-summary"/g) ?? []).length, 2);
-      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 10);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 4);
+      assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 6);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 10);
       assert.match(html, /class="sf-summary-grid"/);
     } finally {

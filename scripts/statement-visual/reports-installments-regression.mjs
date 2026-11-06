@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { reportSelectedFilterFitExpression } from "./report-page-viewport.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -27,7 +28,9 @@ try {
 
   const fixture = await evaluate(browser.cdp, fixtureExpression());
   await validateDesktop(browser.cdp, fixture);
-  await validateMobile(browser.cdp, fixture);
+  await validateTablet(browser.cdp, fixture);
+  await validateMobile(browser.cdp, fixture, 390, 844);
+  await validateMobile(browser.cdp, fixture, 320, 740);
 } catch (error) {
   failures.push({
     message: "Reports installments visual validation crashed",
@@ -80,12 +83,12 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
   check(
-    measurements.aggregateKinds.join("|") === "month|card|category",
+    measurements.aggregateKinds.join("|") === "month|category|card",
     "Installment aggregate families were not fully preserved",
     measurements,
   );
   check(
-    measurements.groupHeadings.join("|") === "Comprometimento por mês|Por cartão|Por categoria",
+    measurements.groupHeadings.join("|") === "Comprometimento por mês|Por categoria|Por cartão",
     "Installment aggregate headings are incomplete",
     measurements,
   );
@@ -104,8 +107,8 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
   check(
-    measurements.reportColumns === 3,
-    "Desktop installment groupings are not in three columns",
+    measurements.reportColumns === 2,
+    "Desktop installment category/card groups are not in two columns",
     measurements,
   );
   check(
@@ -114,7 +117,23 @@ async function validateDesktop(cdp, fixture) {
     measurements,
   );
 
+  check(
+    measurements.filterFit.fits,
+    "Installment desktop cuts selected filter values",
+    measurements.filterFit,
+  );
+  const negativeControl = await validateFilterNegativeControl(
+    browser.cdp,
+    "repeat(6,minmax(0,1fr))",
+  );
+  check(
+    negativeControl.rejected && negativeControl.restored,
+    "Installment desktop did not detect six-column clipping",
+    negativeControl,
+  );
+
   scenarios.push({
+    negativeControl,
     route,
     viewport: "1366x768",
     state: "ready",
@@ -123,19 +142,42 @@ async function validateDesktop(cdp, fixture) {
   });
 }
 
-async function validateMobile(cdp, fixture) {
-  await setViewport(cdp, 390, 844);
+async function validateTablet(cdp, fixture) {
+  await setViewport(cdp, 1024, 768);
+  const route = `/relatorios?view=installments&month=${fixture.month}`;
+  await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments tablet");
+  await waitForState(cdp, "ready");
+  const measurements = await evaluate(cdp, measurementExpression());
+  const filename = "reports-installments-tablet-1024x768.png";
+  await screenshot(cdp, join(outputDir, filename));
+  screenshots.push(filename);
+  check(
+    measurements.filterFit.fits && measurements.pageFitsViewport,
+    "Installment tablet filter clips selected values or leaks overflow",
+    measurements,
+  );
+  scenarios.push({
+    route,
+    viewport: "1024x768",
+    state: "ready",
+    screenshot: filename,
+    measurements,
+  });
+}
+
+async function validateMobile(cdp, fixture, width, height) {
+  await setViewport(cdp, width, height);
   const route = `/relatorios?view=installments&month=${fixture.month}`;
   await navigateWithRetry(cdp, `${baseUrl}${route}`, "reports installments mobile");
   await waitForState(cdp, "ready");
   const measurements = await evaluate(cdp, measurementExpression());
-  const filename = "reports-installments-mobile-390x844.png";
+  const filename = `reports-installments-mobile-${width}x${height}.png`;
   await screenshot(cdp, join(outputDir, filename));
   screenshots.push(filename);
 
   check(
-    measurements.viewportWidth === 390,
-    "Installment mobile viewport is not 390px",
+    measurements.viewportWidth === width,
+    "Installment mobile viewport does not match the requested width",
     measurements,
   );
   check(
@@ -159,12 +201,25 @@ async function validateMobile(cdp, fixture) {
     measurements,
   );
 
+  check(
+    measurements.filterFit.fits,
+    `Installment ${width}px mobile cuts selected filter values`,
+    measurements.filterFit,
+  );
+  // Refuta o antigo layout de duas colunas sem modificar o produto persistido.
+  const negativeControl = await validateFilterNegativeControl(cdp, "repeat(2,minmax(0,1fr))");
+  check(
+    negativeControl.rejected && negativeControl.restored,
+    `Installment ${width}px negative control failed`,
+    negativeControl,
+  );
   scenarios.push({
     route,
-    viewport: "390x844",
+    viewport: `${width}x${height}`,
     state: "ready",
     screenshot: filename,
     measurements,
+    negativeControl,
   });
 }
 
@@ -296,10 +351,27 @@ function fixtureExpression() {
   })()`;
 }
 
+async function validateFilterNegativeControl(cdp, brokenColumns) {
+  return evaluate(
+    cdp,
+    `(() => {
+    const form = document.querySelector('.installment-filters');
+    const before = form.style.gridTemplateColumns;
+    const baseline = ${reportSelectedFilterFitExpression(".installment-filters")};
+    form.style.gridTemplateColumns = ${JSON.stringify(brokenColumns)};
+    const invalid = ${reportSelectedFilterFitExpression(".installment-filters")};
+    form.style.gridTemplateColumns = before;
+    const restored = ${reportSelectedFilterFitExpression(".installment-filters")};
+    return { baseline: baseline.fits, rejected: baseline.fits && !invalid.fits,
+      restored: restored.fits, invalid };
+  })()`,
+  );
+}
+
 function measurementExpression() {
   return `(() => {
     const summary = document.querySelector('.summary-grid');
-    const reportGrid = document.querySelector('.report-grid');
+    const reportGrid = document.querySelector('.installment-distribution-grid');
     const installmentTable = document.querySelector('.installment-table');
     const text = document.body.textContent || '';
     const fixture = ${JSON.stringify({ marker: true })};
@@ -310,7 +382,7 @@ function measurementExpression() {
       metricCount: document.querySelectorAll('.summary-grid .metric-card').length,
       metricLabels: Array.from(document.querySelectorAll('.summary-grid .metric-card > span')).map((item) => item.textContent.trim()),
       aggregateKinds: Array.from(document.querySelectorAll('[data-aggregate-kind]')).map((item) => item.getAttribute('data-aggregate-kind')),
-      groupHeadings: Array.from(document.querySelectorAll('.report-grid h2')).map((item) => item.textContent.trim()),
+      groupHeadings: Array.from(document.querySelectorAll('.installment-distribution h2')).map((item) => item.textContent.trim()),
       installmentRows: document.querySelectorAll('.installment-table-row').length,
       hasCardName: text.includes(${JSON.stringify("QA Cartao relatorio")}),
       hasFirstCategory: text.includes(${JSON.stringify("QA Moradia")}),
@@ -319,7 +391,8 @@ function measurementExpression() {
       summaryColumns: summary ? getComputedStyle(summary).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       reportColumns: reportGrid ? getComputedStyle(reportGrid).gridTemplateColumns.split(' ').filter(Boolean).length : 0,
       tableScrollable: Boolean(installmentTable && installmentTable.scrollWidth > installmentTable.clientWidth + 1),
-      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1
+      pageFitsViewport: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      filterFit: ${reportSelectedFilterFitExpression(".installment-filters")}
     };
   })()`;
 }

@@ -113,6 +113,54 @@ try {
   assert.equal(cloneState.method, "POST");
   assert.match(cloneState.title, /Clonar lançamento/);
 
+  // Both create and edit dialogs must be centered; preserve the geometry check in real Chrome.
+  const modalGeometry = await evaluate(
+    browser.cdp,
+    `(() => {
+      const measure = () => {
+        const dialog = document.querySelector("dialog[open]");
+        if (!dialog) throw new Error("No dialog was open");
+        const rect = dialog.getBoundingClientRect();
+        return {
+          method: document.querySelector("[data-form]")?.dataset.method || "",
+          left: Math.round(rect.x),
+          right: Math.round(innerWidth - (rect.x + rect.width))
+        };
+      };
+      const editButton = document.querySelector('[data-edit="${fixtureIds.transactionId}"]');
+      if (!editButton) throw new Error("Edit button was not found");
+      editButton.click();
+      const edit = measure();
+      document.querySelector("dialog[open]")?.close();
+      const createButton = document.querySelector('[data-open-modal][data-quick-kind="expense"]');
+      if (!createButton) throw new Error("New expense button was not found");
+      createButton.click();
+      const create = measure();
+      document.querySelector("dialog[open]")?.close();
+      const cloneButton = document.querySelector('[data-clone="${fixtureIds.transactionId}"]');
+      if (!cloneButton) throw new Error("Clone button was not found");
+      cloneButton.click();
+      const clone = measure();
+      document.querySelector("dialog[open]")?.close();
+      return { edit, create, clone };
+    })()`,
+  );
+  assert.equal(modalGeometry.edit.method, "PATCH");
+  assert.equal(modalGeometry.create.method, "POST");
+  assert.equal(modalGeometry.clone.method, "POST");
+  assert.ok(
+    Math.abs(modalGeometry.edit.left - modalGeometry.edit.right) <= 40,
+    `edit modal is not centred over the screen: ${JSON.stringify(modalGeometry.edit)}`,
+  );
+  assert.ok(
+    Math.abs(modalGeometry.create.left - modalGeometry.create.right) <= 40,
+    `create modal is not centered over the screen: ${JSON.stringify(modalGeometry.create)}`,
+  );
+  assert.ok(
+    Math.abs(modalGeometry.clone.left - modalGeometry.clone.right) <= 40,
+    `clone modal is not centered over the screen: ${JSON.stringify(modalGeometry.clone)}`,
+  );
+
   const modalState = await evaluate(
     browser.cdp,
     `(() => {

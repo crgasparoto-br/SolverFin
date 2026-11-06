@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "provenance": "reconstructed-from-independent-report",
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 726,
+    "pull_request_number": 754,
+    "material_head_sha": "c273f132bd2a0f879ae0f6791a2bc7054862da0b"
+  },
+  "escapes": [
+    {
+      "escape_id": "AUD-726-A-001",
+      "status": "not-retested",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-002",
+      "status": "not-retested",
+      "escape_class": "control-propagation-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-003",
+      "status": "not-retested",
+      "escape_class": "legacy-variant-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-004",
+      "status": "not-retested",
+      "escape_class": "other",
+      "source_audit": {
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "finding_ids": [
+          "A-004"
+        ],
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+      }
+    },
+    {
+      "escape_id": "AUD-726-A-005",
+      "status": "not-retested",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+        "finding_ids": [
+          "A-005"
+        ],
+        "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+      }
+    }
+  ]
+}

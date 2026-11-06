@@ -1,0 +1,181 @@
+# GitHub Issue 702: Modernizar a interface do SolverFin a partir da Golden Screen do Extrato Bancário
+
+<!-- review-702-2026-10-15 -->
+## Estrutura da epica e governanca das entregas — 15/10/2026
+
+> **Esta issue e uma epica de acompanhamento; nao e uma unica entrega/PR.**
+> O usuario aprovou visualmente a Golden Screen do Extrato em 14/10/2026 (referencia registrada no comentario [de aceite](https://github.com/crgasparoto-br/SolverFin/issues/702#issuecomment-6181511794)). Isso nao substitui validacao tecnica independente. A propagacao e uma fase posterior e **nao bloqueia isoladamente a auditoria ou a aprovacao da PR #713**.
+
+### Estrutura de entregas relacionadas (checklist da epica)
+
+**Fase 0 — consolidar a referencia aprovada**
+
+- [ ] #714 — Extrato: fechamento documental e tecnico no SHA correto (PR #713, base `develop`); preservar o aceite visual ja concedido.
+
+**Fase 1 — propagacao independente por superficie**
+
+- [ ] #715 — Cartoes de Credito (`/cartoes`); antecedente #610.
+- [ ] #716 — Contas e Cartoes (`/contas-cartoes`); antecedente #612.
+- [ ] #717 — Categorias (`/categorias`); antecedentes #615 e #232.
+- [ ] #718 — Relatorios (`/relatorios`); antecedente #611.
+
+**Fase 2 — demais superficies**
+
+- [ ] #719 — Inventariar rotas adicionais, avaliar divergencias reais e abrir issues especificas por rota quando necessario; reaproveitar o historico de #591 sem presumir que issues fechadas satisfazem automaticamente a nova Golden Screen.
+- [ ] As issues derivadas da #719 que forem consideradas obrigatorias para a epica foram concluidas e auditadas.
+
+### Regras de dependencia e aceite
+
+1. **Golden Screen como baseline:** o aceite visual de produto ja esta registrado; a #714 consolida documentacao, CI, handoff/auditoria tecnica e commit material de referencia na `develop`. Nao reabrir a aprovacao estetica por mera existencia de tarefas de propagacao.
+2. **Propagacao depois da baseline:** cada issue de #715–#718 e uma entrega isolada, usando a Golden Screen como referencia de qualidade e `docs/SCREEN_ARCHETYPES.md` para composicao apropriada a cada superficie.
+3. **PRs pequenas e base `develop`:** escopo, testes e evidencias de cada issue sao avaliados individualmente. CI verde e necessario mas nao substitui comparacao visual humana; auditoria independente deve tratar o SHA real.
+4. **Separacao das decisoes:** a PR #713 do Extrato **nao e reprovada apenas porque #715–#719 ainda nao foram implementadas**. A epica #702 somente podera ser concluida quando suas etapas obrigatorias estiverem aceitas.
+5. **Sem mudancas financeiras implicitas:** preservar contrato multi-moedas. Na visao individual de conta, transferencias compoem entradas/saidas; na visao `Todas`, transferencias internas de mesma moeda nao inflam os cards, e transferencias cambiais permanecem contabilizadas na moeda selecionada, conforme a regra vigente.
+6. **Governanca GitHub:** as issues #714–#719 declaram `Parent epic: #702` e estao vinculadas pelo checklist acima. **O relacionamento nativo de Sub-issues do GitHub ainda precisa ser criado**, pois as operacoes disponiveis deste conector nao expuseram a criacao desse vinculo. Isso nao altera sua rastreabilidade documental.
+
+### Referencias de historico
+
+- #703: Golden Screen inicial, ja incorporada a `develop`.
+- #713: refinamento e validacao tecnica do Extrato em andamento; nao inclui a propagacao de telas.
+- #591 e #608–#615: migracao/redesign de fundacao anteriores ao aceite da Golden Screen, aproveitaveis como base de codigo e contexto, sem reaproveitamento automatico do aceite visual.
+
+---
+
+## Objetivo
+
+Modernizar a linguagem visual das interfaces operacionais do SolverFin, adotando o **Extrato Bancário (`/lancamentos`) como Golden Screen oficial** e usando seu nível de acabamento como referência para as demais superfícies financeiras.
+
+A modernização deve preservar arquitetura, regras de domínio, acessibilidade, responsividade e contratos financeiros existentes, alterando principalmente hierarquia visual, densidade, uso do espaço, tipografia, iconografia, filtros, listas, master-detail e modais/drawers.
+
+## Contexto
+
+A PR #700 formaliza o contrato de qualidade visual que passa a governar este trabalho. O problema atual não é ausência de funcionalidade, mas uma composição visual ainda pesada e com aparência de CRUD administrativo em partes relevantes do produto.
+
+As diretrizes já existentes de interface limpa, poucos cards e uso de ícones passam a ser tratadas como requisitos verificáveis, não como preferências subjetivas.
+
+## Fonte canônica
+
+- PR #700
+- `docs/DESIGN_SYSTEM.md`
+- `docs/SCREEN_ARCHETYPES.md`
+- `docs/VISUAL_VALIDATION.md`
+- `docs/BRAND.md`
+- `AGENTS.md`
+
+## Escopo
+
+### 1. Golden Screen — Extrato Bancário
+
+Redesenhar `/lancamentos` até que a implementação real satisfaça o contrato de qualidade visual e possa ser aprovada como Golden Screen.
+
+A composição alvo deve priorizar:
+
+- uso mais eficiente da largura disponível;
+- contexto de conta, saldo, moeda e período claramente identificável;
+- navegação de período evidente;
+- resumo financeiro compacto e hierarquizado;
+- filtros principais compactos, com filtros secundários progressivos quando possível;
+- lista financeira escaneável, com descrição e valor dominantes;
+- categoria, status, recorrência, conciliação e demais metadados visualmente secundários;
+- menos cards e bordas; mais hierarquia por tipografia, espaçamento e alinhamento;
+- ação primária evidente e ações secundárias com menor peso visual;
+- identidade da instituição financeira resolvida pelo catálogo visual central;
+- desktop e mobile com o mesmo nível de clareza e acabamento.
+
+### 2. Modais, drawers e controles do Extrato
+
+Revisar também os fluxos contextuais abertos a partir do Extrato, incluindo criação, edição, clonagem, conciliação/desconciliação, agrupamento, recorrência, transferência e demais controles aplicáveis.
+
+Esses componentes devem ter o mesmo nível de refinamento da tela principal e não podem manter aparência visual legada incompatível com a Golden Screen.
+
+### 3. Identidade visual de instituições
+
+Contas, cartões e demais registros referenciam a instituição por chave estável, como `institutionKey`.
+
+Logotipo, asset, fallback e demais elementos exclusivamente visuais são resolvidos por uma camada central compartilhada. Alterar um logo não deve exigir migração dos registros que referenciam a instituição.
+
+### 4. Propagação do padrão
+
+Depois da aprovação da Golden Screen, aplicar o mesmo nível de qualidade, sem cópia cega de layout, a:
+
+- Cartões de Crédito;
+- Contas e Cartões;
+- Categorias;
+- Relatórios;
+- demais superfícies operacionais compatíveis.
+
+## Fora de escopo
+
+- reescrever o frontend ou trocar framework apenas por estética;
+- alterar regras financeiras, cálculos ou contratos de domínio sem necessidade funcional independente;
+- criar um design system paralelo ao já existente;
+- duplicar logos ou tabelas visuais por rota;
+- aprovar interface apenas porque testes funcionais estão verdes.
+
+## Critérios históricos do candidato inicial (PR #703)
+
+> **Atenção:** o checklist abaixo retrata uma etapa anterior à aprovação visual de produto em 14/10/2026. Os itens antigos `[ ]` **não são, por si, pendências atuais do Extrato** nem devem reprovar a PR #713. Conferir apenas divergências reais na #714. O encerramento atual da épica é regido pelo checklist de fases #714–#719 no topo desta issue.
+
+### Golden Screen / Extrato — registro histórico da PR #703
+
+- [ ] `/lancamentos` atende ao contrato de qualidade visual da PR #700 no candidato publicado;
+- [x] a informação principal e a ação principal são identificáveis rapidamente;
+- [x] descrição e valor dominam a leitura das movimentações;
+- [ ] metadados permanecem visualmente secundários;
+- [x] cards, bordas, badges e caixas aninhadas não são usados como layout universal;
+- [x] o viewport horizontal é aproveitado sem criar leitura excessivamente espalhada;
+- [ ] filtros secundários não competem com o conteúdo principal;
+- [ ] modais/drawers do Extrato foram refinados junto com a tela principal;
+- [x] identidade visual de instituições permanece centralizada e reutilizável;
+- [x] estados normal, vazio, erro/indisponível e conteúdo longo são cobertos pelo pacote de validação;
+- [x] desktop e mobile possuem validação visual automatizada no SHA candidato;
+- [x] acessibilidade, teclado, foco, reflow e moeda explícita foram preservados;
+- [ ] o candidato remove a aparência predominante de CRUD administrativo/formulário bruto;
+- [ ] a Golden Screen foi aprovada por auditoria independente e congelada como referência oficial.
+
+### Propagação pós-aprovação — registro histórico (substituído pelo checklist #715–#719)
+
+- [ ] modernizar Cartões de Crédito;
+- [ ] modernizar Contas e Cartões;
+- [ ] modernizar Categorias;
+- [ ] modernizar Relatórios;
+- [ ] estender o padrão às demais superfícies operacionais compatíveis.
+
+## Validação histórica da PR #703 (não representa o estado atual da PR #713)
+
+Candidato do Extrato implementado na PR #703, branch `feat/702-statement-golden-screen`.
+
+- Material funcional certificado: `8800ddb5c473e2da6af593a49b6acf106fc9df93`.
+- Handoff/recertificação atual: `437a0c087c2228719f993b3b29692ac8c5832f90`.
+- Delivery V2 CI do material: run **37714067223** — `completed/success`.
+- Statement visual validation do material: run **37714067226** — `completed/success`.
+- Delivery V2 CI do HEAD atual: run **37715256588** — `completed/success`.
+- Statement visual validation do HEAD atual: run **37715256601** — `completed/success`.
+- PR aberta e mergeável.
+- Nenhum merge foi realizado.
+
+
+## Histórico de pendências de aderência ao mockup — revisão 09/10/2026
+
+**Referência visual obrigatória:** `SolverFin Bank Statement UI Mockup.png`. A validação de layout automatizada no HEAD `020b19c50be57746b1bdccc8cf693dfdc2c7af58` passou, mas a comparação humana da captura desktop com o mockup apontou divergências que os gates atuais não capturam. Os checks marcados acima como pendentes exigem verificação nova; isso não invalida automaticamente funcionalidades previamente testadas.
+
+- [ ] **GS703-M01 — Barra de filtros:** exibir filtros principais Categoria, Tipo, Status e Conciliação diretamente de maneira compacta no desktop, sem esconder opções essenciais em menu de ordenação; preservar filtros ativos, querystring, busca, acessibilidade, teclado e fallback sem JS. No mobile, redução progressiva deve manter filtros acessíveis e estado ativo perceptível.
+- [ ] **GS703-M02 — Linhas financeiras:** reproduzir leitura dominante de descrição e valor, com hierarquia secundária visual de categoria/status, chips/ícones adequados e metadados sempre disponíveis; não criar status financeiros fictícios nem alterar payload, conciliação ou recorrência.
+- [ ] **GS703-M03 — Conta/identidade:** integrar contexto, saldo, moeda, período e instituição com a mesma hierarquia visual do mockup, resolvendo logo exclusivamente pelo catálogo institucional e mantendo fallback legítimo em contas sem instituição; não codificar Nubank nem dados de demonstração na interface real.
+- [ ] **GS703-M04 — Densidade e superfície:** reduzir caixas aninhadas, bordas e grandes vazios e aprimorar tipografia, espaçamento, alinhamento e iconografia; primeira transação deve permanecer totalmente visível em 1366x768, sem overflow horizontal em 390x844 e 320x740.
+- [ ] **GS703-M05 — Fluxos contextuais:** comparar capturas dos cinco estados/superfícies do mockup (novo lançamento, edição, detalhes, conciliação e mais ações), incluindo transferência e diálogos acessíveis; verificar alterações apenas onde o fluxo canônico suportar.
+- [ ] **GS703-M06 — Gate discriminante:** acrescentar/assertar evidências Chrome autenticadas exact-SHA de composição normal, vazio, erro, longo, modal, desktop e mobile e controles negativos que falhem quando M01–M05 regredirem; publicar capturas identificadas e fazer revisão visual independente antes de certificar.
+- [ ] **GS703-M07 — Recertificação:** depois de qualquer alteração funcional, executar gates no novo material SHA, reconstruir o pacote `.audit/entregar-issue`, publicar apenas um filho `result-only` validado e revalidar HEAD/CI; não usar o handoff antigo `8800ddb5` para certificar `020b19c` ou descendentes.
+
+**Regra de aceite:** CI verde não comprova fidelidade estética. A issue e a PR não devem ser encerradas, nem Golden Screen propagada, antes da comparação visual independente conclusiva.
+
+## Gate vigente para a próxima etapa (revisto em 15/10/2026)
+
+O aceite **visual de produto** da Golden Screen do Extrato foi registrado em 14/10/2026; a PR #703 já foi integrada a `develop`. A PR #713 permanece sujeita a fechamento **técnico independente** na #714, sem exigir concluir a propagação antes de avaliá-la. As implementações de #715–#718 podem usar o padrão aprovado para planejamento, mas a execução que depende do código no `develop` deve utilizar o marco técnico de #714. A #702 segue aberta até conclusão e auditoria das etapas obrigatórias e das issues derivadas pela #719.
+
+## Referências
+
+- PR #700
+- PR #703
+- `docs/GOLDEN_STATEMENT.md`
+- mockup `SolverFin Bank Statement UI Mockup.png`

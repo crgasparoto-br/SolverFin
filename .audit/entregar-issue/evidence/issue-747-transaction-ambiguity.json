@@ -1,0 +1,58 @@
+{
+  "generatedAt": "2026-10-28T13:32:13.952Z",
+  "commit": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "browser": "Google Chrome 156.0.8078.47",
+  "evidence": {
+    "scenarios": [
+      {
+        "kind": "transaction",
+        "route": "/lancamentos?accountId=63fcad81-12be-4bae-b6ba-230f4af0e59a&month=2026-09",
+        "committedStatus": 201,
+        "request": {
+          "method": "POST",
+          "pathname": "/api/transactions",
+          "search": "",
+          "body": "{\"kind\":\"expense\",\"amountMinor\":4200,\"occurredOn\":\"2026-09-10\",\"plannedOn\":\"2026-09-10\",\"accountId\":\"63fcad81-12be-4bae-b6ba-230f4af0e59a\",\"description\":\"QA lançamento simples resposta ambígua\",\"status\":\"planned\",\"effectiveOn\":null,\"note\":\"Controle de resposta ambígua sem idempotência\",\"idempotencyKey\":\"76d5235e-4563-414a-893c-d01adda36aac\"}"
+        },
+        "recoveryState": {
+          "modalOpen": true,
+          "nonIdempotentRecovery": "",
+          "installmentRecovery": "",
+          "submitDisabled": false,
+          "statusText": "Não foi possível concluir a ação. Revise os dados e tente novamente."
+        },
+        "transactionReplay": {
+          "idempotencyKey": "76d5235e-4563-414a-893c-d01adda36aac",
+          "status": 200,
+          "feedback": "Ação concluída. Atualizando..."
+        },
+        "persistedIds": [
+          "f8c92a08-f373-4e32-a87a-bc0b495e705d"
+        ],
+        "screenshot": "issue-553-non-idempotent-transaction-1366x768.png"
+      },
+      {
+        "kind": "recurrence",
+        "route": "/lancamentos?accountId=63fcad81-12be-4bae-b6ba-230f4af0e59a&month=2026-10",
+        "committedStatus": 201,
+        "request": {
+          "method": "POST",
+          "pathname": "/api/recurrences",
+          "search": "",
+          "body": "{\"frequency\":\"monthly\",\"interval\":1,\"startOn\":\"2026-10-27\",\"amountMinor\":5500,\"description\":\"QA recorrência resposta ambígua\",\"kind\":\"expense\",\"accountId\":\"63fcad81-12be-4bae-b6ba-230f4af0e59a\"}"
+        },
+        "recoveryState": {
+          "modalOpen": true,
+          "nonIdempotentRecovery": "ambiguous",
+          "installmentRecovery": "",
+          "submitDisabled": true,
+          "statusText": "Não foi possível confirmar se a operação foi concluída. Confira o Extrato antes de tentar novamente para evitar duplicidade. Feche este formulário após a conferência."
+        },
+        "persistedIds": [
+          "1a59637d-3091-4dcb-b5f1-c748429f00d5"
+        ],
+        "screenshot": "issue-553-non-idempotent-recurrence-1366x768.png"
+      }
+    ]
+  }
+}

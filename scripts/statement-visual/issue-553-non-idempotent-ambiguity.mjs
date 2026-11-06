@@ -41,13 +41,18 @@ try {
     pathname: "/api/transactions",
     action: submitForm,
   });
-  await waitForFormStatus(warningText);
+  await waitForFormStatus("Não foi possível concluir a ação");
   const transactionState = await readRecoveryState();
-  assert.equal(transactionState.nonIdempotentRecovery, "ambiguous");
+  assert.equal(transactionState.nonIdempotentRecovery, "");
   assert.equal(transactionState.installmentRecovery, "");
-  assert.equal(transactionState.submitDisabled, true);
-  assert.match(transactionState.statusText, /evitar duplicidade/);
-  await assertNoSecondPost("/api/transactions", submitForm);
+  assert.equal(transactionState.submitDisabled, false);
+  assert.equal(transactionState.modalOpen, true);
+  const committedKey = JSON.parse(transaction.request.body).idempotencyKey;
+  assert.match(committedKey, /^[0-9a-f-]{36}$/i);
+  const transactionReplay = await replayDurablyKeyedTransaction();
+  assert.equal(transactionReplay.status, 200, JSON.stringify(transactionReplay));
+  assert.equal(transactionReplay.idempotencyKey, committedKey);
+  assert.match(transactionReplay.feedback, /Ação concluída/);
 
   const transactions = await readTransactions(fixture.accountId);
   const matchingTransactions = transactions.filter(
@@ -63,6 +68,7 @@ try {
     committedStatus: transaction.backendStatus,
     request: transaction.request,
     recoveryState: transactionState,
+    transactionReplay,
     persistedIds: matchingTransactions.map((item) => item.id),
     screenshot: transactionScreenshot,
   });
@@ -196,6 +202,45 @@ async function maskCommittedResponseAsTimeout({ pathname, action }) {
   }
 }
 
+async function replayDurablyKeyedTransaction() {
+  return evaluate(
+    browser.cdp,
+    `(async () => {
+      const form = document.querySelector("[data-form]");
+      const originalFetch = window.fetch;
+      const originalSetTimeout = window.setTimeout;
+      let replay;
+      window.fetch = async (...args) => {
+        const path = String(args[0] || "").split("?")[0];
+        const options = args[1];
+        const response = await originalFetch(...args);
+        if (path === "/api/transactions" && options?.method === "POST") {
+          replay = { idempotencyKey: JSON.parse(options.body).idempotencyKey, status: response.status };
+        }
+        return response;
+      };
+      window.setTimeout = (callback, delay, ...args) => {
+        if (String(callback).includes("location.reload")) return 0;
+        return originalSetTimeout(callback, delay, ...args);
+      };
+      try {
+        form.requestSubmit(form.querySelector("[data-statement-save-primary]"));
+        for (let attempt = 0; attempt < 100; attempt += 1) {
+          const feedback = form.querySelector(".form-status")?.textContent || "";
+          if (replay && form.dataset.submitting !== "true" && feedback.includes("Ação concluída")) {
+            return { ...replay, feedback };
+          }
+          await new Promise((resolve) => originalSetTimeout(resolve, 100));
+        }
+        throw new Error("Idempotent transaction retry did not settle");
+      } finally {
+        window.fetch = originalFetch;
+        window.setTimeout = originalSetTimeout;
+      }
+    })()`,
+  );
+}
+
 async function assertNoSecondPost(pathname, action) {
   await browser.cdp.send("Network.enable");
   let matchingRequests = 0;
@@ -314,7 +359,7 @@ async function readRecoveryState() {
         modalOpen: document.querySelector("[data-modal]")?.open === true,
         nonIdempotentRecovery: form.dataset.nonIdempotentRecovery || "",
         installmentRecovery: form.dataset.installmentRecovery || "",
-        submitDisabled: form.querySelector('button[type="submit"]')?.disabled === true,
+        submitDisabled: form.querySelector("[data-statement-save-primary]")?.disabled === true,
         statusText: form.querySelector(".form-status")?.textContent || "",
       };
     })()`,

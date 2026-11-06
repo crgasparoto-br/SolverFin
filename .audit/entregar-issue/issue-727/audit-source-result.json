@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:b37bcd2a-80ad-4336-a184-c098141e37dc",
+  "head_sha": "20d96df765d52f54160249fb56095a053ad66c11",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "head_sha": "20d96df765d52f54160249fb56095a053ad66c11",
+    "material_head_sha": "20d96df765d52f54160249fb56095a053ad66c11",
+    "base_sha": "a11e9d72a1ec7e9c563720b7beb91e77ecdde830",
+    "issue_number": 727,
+    "pull_request_number": 758
+  },
+  "external_report": {
+    "sha256": "8a55e940cc42610951ada62161608d4bb2d177fbf30085995a8f5d176e384688",
+    "path": "evidence/issue-727-prior-independent-review.md",
+    "url": "https://github.com/crgasparoto-br/SolverFin/blob/feat/727-golden-settings-contextual-actions/.audit/entregar-issue/evidence/issue-727-prior-independent-review.md"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "other",
+      "summary": "Horizontal overflow at 320 px and 200% zoom and failed long-profile restoration; settings Chrome case failed."
+    },
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "other",
+      "summary": "Missing Chrome evidence of edit, empty/error and form-error states for both configuration tabs."
+    },
+    {
+      "id": "A-003",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "other",
+      "summary": "Inherited base certificate still targets issue 726/PR 754; no own exact-SHA #727 handoff."
+    }
+  ],
+  "recommendations": [],
+  "provenance_note": "Facts transcribed from previous separate-session audit artifact; no signature or GitHub review approval is asserted. Original Markdown bytes are preserved with SHA-256 and will be checked independently."
+}

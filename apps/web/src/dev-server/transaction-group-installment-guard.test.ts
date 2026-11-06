@@ -15,6 +15,8 @@ test("keeps canonical installments selectable for bulk actions and blocks only g
   assert.match(script, /data-canonical-installment/);
   assert.match(script, /syncCanonicalGroupingGuard/);
   assert.match(script, /data-group-open/);
+  assert.match(script, /groupOpen\.setAttribute\("data-tooltip", tooltip\)/);
+  assert.match(script, /Unificar lançamentos: Desmarque as parcelas canônicas/);
   assert.match(script, /continuam disponíveis para conciliar, desconciliar ou excluir/);
   assert.match(script, /function disableLegacyGroupSelection\(input\)/);
   assert.match(script, /input\.disabled = true/);

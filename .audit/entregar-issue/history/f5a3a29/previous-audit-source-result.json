@@ -1,0 +1,357 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "a29730e2cb66c7b4bfc2755a3a27a46f5f99db7f",
+    "head_sha": "d9a76d3756a25a444165a153113dcd8c9517e055"
+  },
+  "verdict": "REPROVADA",
+  "coverage": "limited",
+  "discovery_closed": true,
+  "changed_path_reviews": [
+    {
+      "id": "apps/api/src/pdf-text-extraction.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-EXTRACT",
+        "S-ERRORS"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "apps/api/src/pdf-text-extraction.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-EXTRACT",
+        "S-ERRORS"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "apps/api/src/repositories/document-imports.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-PRIV",
+        "S-REVIEW"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "docs/IMPORTS.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-LAYOUT",
+        "S-BAL"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "packages/domain/src/document-imports.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-POS",
+        "S-NEG"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "packages/domain/src/document-imports.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-STRUCT",
+        "S-LAYOUT"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "packages/domain/src/mercado-pago-pdf.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-POS",
+        "S-NEG",
+        "S-BOUND"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "packages/domain/src/mercado-pago-pdf.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-BOUND",
+        "S-FIELDS",
+        "S-BAL"
+      ],
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "REQ-01",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-02",
+      "status": "covered",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "REQ-03",
+      "status": "covered",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "REQ-04",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-05",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-06",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-07",
+      "status": "covered",
+      "evidence_path": "audit-evidence/repro-synthetic.txt",
+      "evidence_sha256": "66b79fe03a8b566f4bd89a3b80f8c73e1e8cc8f8be182e1545eb4aefa9b08b3c"
+    },
+    {
+      "id": "REQ-08",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-09",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-10",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "REQ-11",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "REQ-12",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "REQ-13",
+      "status": "covered",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "REQ-14",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "REQ-15",
+      "status": "covered",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    },
+    {
+      "id": "REQ-16",
+      "status": "covered",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-STRUCT",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-EXTRACT",
+      "status": "covered",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "S-LAYOUT",
+      "status": "covered",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "S-FIELDS",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-BAL",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-NONMOV",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-BOUND",
+      "status": "covered",
+      "evidence_path": "audit-evidence/repro-synthetic.txt",
+      "evidence_sha256": "66b79fe03a8b566f4bd89a3b80f8c73e1e8cc8f8be182e1545eb4aefa9b08b3c"
+    },
+    {
+      "id": "S-PRIV",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-REVIEW",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-ERRORS",
+      "status": "covered",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "S-POS",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "S-NEG",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "S-REAL",
+      "status": "not-executed",
+      "reason": "Exact original PDF binary 38/3 inaccessible through authorized project Library; 42/4 alternative does not replace it."
+    },
+    {
+      "id": "S-CI",
+      "status": "covered",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    },
+    {
+      "id": "S-HANDOFF",
+      "status": "covered",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    },
+    {
+      "id": "S-INDEP",
+      "status": "covered",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    }
+  ],
+  "previous_findings": [
+    {
+      "id": "A-001",
+      "disposition": "resolved",
+      "reason": "Code and CI regressions for missing/malformed dates exist; parser now derives transaction row anchors from monetary columns.",
+      "evidence_path": "audit-evidence/changed-file-inspection.txt",
+      "evidence_sha256": "4a1ad19095eebf79acf4142ae3e0ba369d5de5fdc018361a534fbe2ce7865903"
+    },
+    {
+      "id": "A-002",
+      "disposition": "still-open",
+      "reason": "No #745-specific certified handoff; base and head contain the same foreign #742/#743 certificate.",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    },
+    {
+      "id": "A-003",
+      "disposition": "still-open",
+      "reason": "Required specific PDF with 38 movements across three pages has no executable raw-byte validation; authorized alternative is 42/4.",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "A-004",
+      "disposition": "resolved",
+      "reason": "Copy:no guard now checks pdfinfo before pdftotext and relevant negative tests are included in exact-head green CI.",
+      "evidence_path": "audit-evidence/official-ci-summary.txt",
+      "evidence_sha256": "269a7ce8a0896d3195fd67561eeaa862c419aa7d9cfb429f861b7f522d7268ff"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A-002",
+      "requirement_id": "REQ-15",
+      "surface_id": "S-HANDOFF",
+      "root_cause": "No delivery-specific certified handoff was produced; the only existing artifact belongs to issue #742 and PR #743.",
+      "disposition": "blocking",
+      "evidence_path": "audit-evidence/transport-and-handoff.txt",
+      "evidence_sha256": "1749aa1d7b492138fa9a8de2170e3ab93030ebd4899d62b4c48dd9e9ab1b0475"
+    },
+    {
+      "id": "A-003",
+      "requirement_id": "REQ-13",
+      "surface_id": "S-REAL",
+      "root_cause": "Required 38-movement original raw binary validation is not recorded in the delivery and bytes could not be obtained via authorized Library path.",
+      "disposition": "blocking",
+      "evidence_path": "audit-evidence/real-private-summary.txt",
+      "evidence_sha256": "38856d0f29577756d65a6dbfc36855b7912eecaab5cde89aa69d7b61e020dfe0"
+    },
+    {
+      "id": "A-005",
+      "requirement_id": "REQ-07",
+      "surface_id": "S-BOUND",
+      "root_cause": "Absolute y < 575 restriction ignores genuine financial row anchors at y=576 and silently returns ready after row omission.",
+      "disposition": "blocking",
+      "evidence_path": "audit-evidence/repro-synthetic.txt",
+      "evidence_sha256": "66b79fe03a8b566f4bd89a3b80f8c73e1e8cc8f8be182e1545eb4aefa9b08b3c"
+    }
+  ],
+  "blocking_ids": [
+    "A-002",
+    "A-003",
+    "A-005"
+  ],
+  "rejection_id": "audit-rejection:37d3aa00-bf5f-4649-82f5-541b5ed66509",
+  "audit_transport": "certified-handoff",
+  "independence": "independent"
+}

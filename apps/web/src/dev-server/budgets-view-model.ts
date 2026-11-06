@@ -70,6 +70,7 @@ export interface BudgetRowViewModel {
   status: string;
   categoryId?: string;
   categoryName: string;
+  categoryPath?: string[];
   periodStartOn: string;
   periodEndOn: string;
   plannedAmountMinor: number | null;
@@ -100,6 +101,7 @@ export interface BudgetsPageViewModel {
 export interface BudgetPresentationFilters {
   currency?: string;
   status?: "active" | "archived";
+  period?: string;
 }
 
 export function buildBudgetsPageViewModel(
@@ -111,8 +113,15 @@ export function buildBudgetsPageViewModel(
 ): BudgetsPageViewModel {
   const categoryIndex = new Map(categories.map((category) => [category.id, category]));
   const normalizedFilterCurrency = normalizeCurrency(filters.currency);
+  const selectedPeriod = parseBudgetPeriod(filters.period);
   const budgetRows = budgets
     .filter((budget) => filters.status === undefined || budget.status === filters.status)
+    .filter(
+      (budget) =>
+        !selectedPeriod ||
+        (budget.periodStartOn === selectedPeriod.periodStartOn &&
+          budget.periodEndOn === selectedPeriod.periodEndOn),
+    )
     .filter((budget) => {
       if (!normalizedFilterCurrency) return true;
       return normalizeCurrency(budget.currency) === normalizedFilterCurrency;
@@ -123,6 +132,12 @@ export function buildBudgetsPageViewModel(
       ? []
       : dashboardUsage
           .filter((usage) => usage.source === "unbudgeted" || usage.source === "uncategorized")
+          .filter(
+            (usage) =>
+              !selectedPeriod ||
+              (usage.periodStartOn === selectedPeriod.periodStartOn &&
+                usage.periodEndOn === selectedPeriod.periodEndOn),
+          )
           .filter((usage) => {
             if (!normalizedFilterCurrency) return true;
             return normalizeCurrency(usage.currency) === normalizedFilterCurrency;
@@ -173,6 +188,7 @@ function buildBudgetRow(
     status: budget.status,
     categoryId: budget.categoryId,
     categoryName: buildCategoryPath(budget.categoryId, categoryIndex),
+    categoryPath: buildCategoryPathParts(budget.categoryId, categoryIndex),
     periodStartOn: budget.periodStartOn,
     periodEndOn: budget.periodEndOn,
     plannedAmountMinor: budget.plannedAmountMinor,
@@ -225,6 +241,9 @@ function buildDashboardRow(
     status: "active",
     ...(usage.categoryId ? { categoryId: usage.categoryId } : {}),
     categoryName,
+    ...(usage.categoryId
+      ? { categoryPath: buildCategoryPathParts(usage.categoryId, categoryIndex) }
+      : {}),
     periodStartOn: usage.periodStartOn,
     periodEndOn: usage.periodEndOn,
     plannedAmountMinor: null,
@@ -275,13 +294,19 @@ function validateUsage(
   return usage;
 }
 
-function buildCategoryPath(
+export function buildCategoryPath(
   categoryId: string,
   categoryIndex: ReadonlyMap<string, CategoryRecord>,
 ): string {
-  const category = categoryIndex.get(categoryId);
-  if (!category) return "Categoria não localizada";
+  return buildCategoryPathParts(categoryId, categoryIndex).join(" › ");
+}
 
+export function buildCategoryPathParts(
+  categoryId: string,
+  categoryIndex: ReadonlyMap<string, CategoryRecord>,
+): string[] {
+  const category = categoryIndex.get(categoryId);
+  if (!category) return ["Categoria não localizada"];
   const path = [category.name];
   const visited = new Set<string>([category.id]);
   let parentId = category.parentCategoryId;
@@ -292,9 +317,24 @@ function buildCategoryPath(
     visited.add(parent.id);
     parentId = parent.parentCategoryId;
   }
-  return path.join(" › ");
+  return path;
 }
 
+/** Only a registered exact date interval may be selected for budget-level usage. */
+export function parseBudgetPeriod(
+  value: string | undefined,
+): { periodStartOn: string; periodEndOn: string } | undefined {
+  const match = /^(\d{4}-\d{2}-\d{2}):(\d{4}-\d{2}-\d{2})$/.exec(value ?? "");
+  if (!match?.[1] || !match[2]) return undefined;
+  const [periodStartOn, periodEndOn] = [match[1], match[2]];
+  for (const day of [periodStartOn, periodEndOn]) {
+    const parsed = new Date(`${day}T00:00:00.000Z`);
+    if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== day) {
+      return undefined;
+    }
+  }
+  return periodStartOn <= periodEndOn ? { periodStartOn, periodEndOn } : undefined;
+}
 function compareBudgetRows(left: BudgetRowViewModel, right: BudgetRowViewModel): number {
   const status = statusRank(left) - statusRank(right);
   if (status !== 0) return status;

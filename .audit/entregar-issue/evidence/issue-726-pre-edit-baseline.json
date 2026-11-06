@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "issue": 726,
+  "repository": "crgasparoto-br/SolverFin",
+  "historical_pre_edit_subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "issue_base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+  "captured_at_utc": "2026-10-30T21:13:52.744Z",
+  "historical_run_id": 41128555517,
+  "historical_artifact_id": 13011839149,
+  "pr_created_at_utc": "2026-10-30T22:47:05Z",
+  "evidence_status": "historical-browser-capture-reviewed-retrospectively",
+  "pre_edit_chrome_authentic_session": true,
+  "provenance": "Browser artifact 13011839149 was captured before PR #754 existed on a different issue branch. Its Inbox source and original browser visual script Git blobs are byte-identical to the immutable base SHA of PR #754. We only inspected this earlier raw artifact retrospectively; this does not assert that the implementing agent reviewed it before editing.",
+  "pre_edit_deltas": [
+    "Two competing header actions Registrar mensagem and Importar extrato",
+    "Insights financeiros inside first-review queue before pending items",
+    "Import evidence in detail column ahead of selected review context and decision"
+  ],
+  "files": [
+    {
+      "name": "issue-565-ai-review-queue.json",
+      "sha256": "8adb85f4c36145dded592087e2b0ea06e2ee0716d242a86918ed380ba80410d5"
+    },
+    {
+      "name": "issue-565-ai-review-queue-1366x900.png",
+      "sha256": "09e63b78d9a6b3cd1b158e514f810a7a32a5f1e8b2af5dbc2f11db062b01a041"
+    },
+    {
+      "name": "issue-525-inbox-desktop-1366x768.png",
+      "sha256": "023b943dcaabee1f99bc96c9da2c99a8144f40024962aed97e4b6e2d090cfb2c"
+    }
+  ],
+  "identity_equal_blobs": [
+    {
+      "path": "apps/web/src/dev-server/inbox-page.ts",
+      "pre_edit_blob": "e5272ac76eedb0df8860b9e4b83caac6e23185fa",
+      "issue_base_blob": "e5272ac76eedb0df8860b9e4b83caac6e23185fa"
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "pre_edit_blob": "4f763e97bc1f43919c6114bc48450fb6bd62c8e5",
+      "issue_base_blob": "4f763e97bc1f43919c6114bc48450fb6bd62c8e5"
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "pre_edit_blob": "63d7718e03b3fe0c1ed384f6477a6a0a232e9130",
+      "issue_base_blob": "63d7718e03b3fe0c1ed384f6477a6a0a232e9130"
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+      "pre_edit_blob": "b55521aabf301e95923ac89621edaffc3359d579",
+      "issue_base_blob": "b55521aabf301e95923ac89621edaffc3359d579"
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "pre_edit_blob": "2c6fc34e97b5032a9f96a9624e715c6e8deee4a2",
+      "issue_base_blob": "2c6fc34e97b5032a9f96a9624e715c6e8deee4a2"
+    }
+  ],
+  "links": {
+    "workflow": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41128555517",
+    "artifact": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41128555517/artifacts/13011839149",
+    "issue": "https://github.com/crgasparoto-br/SolverFin/issues/726",
+    "pr": "https://github.com/crgasparoto-br/SolverFin/pull/754"
+  },
+  "limitation": "There is no proof that the original implementer explicitly inspected this browser baseline before editing; evidence is earlier in timestamp but reviewed retrospectively."
+}

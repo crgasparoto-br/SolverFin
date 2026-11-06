@@ -29,6 +29,99 @@ A moeda e boundary da composicao. Quando um recorte possui mais de uma moeda, ca
 
 Os filtros permanecem na URL e continuam determinando o mesmo recorte usado por resumo, visualizacao, destaques e detalhe. A composicao e SSR, reutiliza primitivas do design system e `Money`, mantem foco visivel e usa overflow controlado para tabelas largas em viewport reduzido.
 
+## Refinamento de densidade e controles — PR #729 (22/10/2026)
+
+A refatoracao de `/relatorios` reaproveita diretamente `renderButton` para atualizar as tres visoes, com tamanho, contraste e foco visivel da fundacao compartilhada. Os links equivalentes do seletor de intervalo recebem aparencia **neutra** (fundo claro, borda fina, texto petroleo); o intervalo ativo tem realce sutil sem se transformar em botao de confirmacao. O estado hover/focus deve ser verificado tambem contra a cascata do shell.
+
+O cabecalho preserva o titulo unico e a indicacao discreta de somente leitura. A barra de filtros usa superficie clara, contornos finos, alturas coerentes e alinhamento compacto; em ate 760px os filtros sao reorganizados em duas colunas, com intervalo e origem em largura integral, e em ate 360px os filtros de Evolucao passam para uma coluna. Os filtros de Parcelas consolidadas e Projecao de caixa ja usam uma coluna em ate 480px, para preservar a exibicao integral de mes, cartao, categoria e moeda em celulares de 390px e 320px. Os filtros e seus parametros GET permanecem disponiveis sem JavaScript; nenhuma selecao, permissao ou comportamento financeiro foi alterado.
+
+Indicadores monetarios por moeda mantem a ordem **resumo → visualizacao → destaques → detalhe**, cards apenas para metricas de decisao e sem fundo primario escuro em todo o card. Receitas e despesas usam as cores semanticas do design system como reforco, mantendo sinal, texto e `Money`. A tendencia passou a usar colunas mais densas com rolagem horizontal local (teclado e touch); matrizes e tabelas preservam cabecalhos semanticos, primeira coluna fixa quando aplicavel e alinhamento numerico tabular. Nenhum total mistura moedas.
+
+O aceite exige, **no HEAD exato da PR**, comparar capturas com a Golden Screen em 1366x768, 390x844 e 320x740: repouso/hover/foco dos controles, abas, filtros, indicadores, tendencia, BRL/USD, conteudo longo, estados vazio/erro, scroll local sem overflow global e legibilidade do detalhamento. Os cenarios Chrome existentes da #718 devem ser reutilizados; CI verde nao substitui a auditoria visual independente.
+
+## Compactacao de grafico, destaques e matriz (22/10/2026, PR #729)
+
+- **Resultado ao longo do tempo (evolucao por categoria):** exibe todos os pontos em grid responsivo que quebra linhas, sem barra horizontal mesmo no desktop, preservando rotulo, valor completo por `Money`, sinal e barra relativa. Em telas menores, reorganiza a quantidade de colunas conforme a largura. Somente este grafico usa `renderResultTrend(..., "Resultado por período", "grid")`; a projecao de caixa conserva o comportamento de rolagem local validado para seus pontos diarios.
+- **Pontos para revisar:** melhor periodo, pior periodo e alerta passam a ocupar uma unica faixa compacta no desktop, sem bloco adicional de alerta abaixo. No mobile, os dois destaques dividem a primeira linha e o aviso fica abaixo, preservando leitura, semantica de `renderAlert` e contexto da moeda. Parcelas consolidadas reutilizam a mesma disposicao compacta.
+- **Matriz por categoria:** o percentual fica **na mesma linha** do valor monetario, com fonte secundaria e separacao discreta; reduz-se o espacamento vertical das celulas e da indicacao de categoria arquivada. Todos os percentuais (inclusive `—` quando indisponiveis), valores, sinais, categorias, hierarquia expandivel, cabeçalhos e scroll local horizontal da matriz permanecem preservados. A largura maior da matriz e intencional; nao se deve truncar valores para economizar altura.
+- **Prova de aceite:** no SHA atualizado da PR, o Chrome deve evidenciar ausencia de scrollbar no grafico de evolucao em 1366x768, 390x844 e 320x740, linhas consolidadas com altura controlada, agrupamento efetivo dos destaques, sem overflow global, e preservacao do scroll da matriz e do grafico de caixa. Os testes existentes da #718, e nao uma nova suite redundante, sao os donos dessas verificacoes.
+
+## Seletor de moeda e densidade de numeros (22/10/2026, PR #729)
+
+Na Evolucao por categoria, o seletor **Moeda** aparece imediatamente depois de **Periodo**, antes de **Atualizar relatorio**, no mesmo formulario GET de intervalo, conta/cartao, inicio e quantidade de periodos. Permite **Todas as moedas** ou uma moeda existente no recorte e preserva o contexto da URL e do perfil. A escolha de uma moeda exibe somente seu bloco; nao ha conversao nem soma de moedas diferentes. Quando a selecao nao tem movimentos, a tela conserva os filtros e informa o estado vazio; entrada malformada e rejeitada antes da consulta.
+
+Os titulos da analise identificam a moeda de modo explicito, como **Matriz por categoria - BRL**. Valor e percentual ficam lado a lado na matriz; as descricoes permanecem legiveis e completas, com scroll horizontal local quando necessario.
+
+## Desduplicacao integral da moeda nos relatorios (22/10/2026, PR #729)
+
+Em Evolucao por categoria e Parcelas consolidadas, o titulo de cada camada (resumo, visualizacao, destaques e detalhe) termina com o codigo da moeda; nao existe sigla isolada entre filtros e resultado. O numero de periodos fica na mesma faixa do resumo. A Projecao de caixa segue o mesmo padrao para posicao de caixa, evolucao e serie diaria, preservando horizonte e datas.
+
+Somente no escopo dos relatorios, o codigo `small.sf-money-currency` redundante fica visualmente oculto, mas o componente `renderMoney` permanece inalterado: simbolo R$, US$, sinais, decimais, `data-currency` e contextos monetarios continuam disponiveis. O Chrome valida a identidade por moeda nos titulos e nos dados em cada viewport; CI verde nao substitui parecer de auditoria independente.
+
+## Legibilidade dos filtros desktop (A718-05, PR #729)
+
+Para impedir que o mes/ano nativo ou a selecao de conta/cartao, categoria e moeda sejam truncados **sem overflow global**, as visoes de Parcelas consolidadas e Evolucao por categoria usam tres colunas entre 1181px e 1920px, reagrupando seis controles em duas linhas no desktop comum (inclusive 1366x768). Ate 1180px mantem-se a grade tablet de duas colunas e, abaixo dos breakpoints mobile anteriores, os controles preservam sua distribuicao responsiva. Nao ha mudanca de URL, dados ou filtros selecionados.
+
+O Chrome dos cenarios existentes mede texto selecionado versus largura util do campo nativo em 1366x768, 1024x768, 390x844 e 320x740 nas tres visoes: a medicao leva em conta tipografia, padding e area reservada ao icone/seta nativo. Os cenarios desktop de Parcelas e Evolucao executam ainda controle negativo que forca a antiga grade comprimida, exige a deteccao do corte e restaura o estilo, mesmo que a pagina nao tenha overflow horizontal.
+
+## Responsividade dos filtros de parcelas (A718-04, PR #729)
+
+O filtro SSR de **Parcelas consolidadas** passa a ocupar uma coluna em telas de ate 480px; a Projecao de caixa utiliza o mesmo breakpoint sem alterar controles ou submetimento GET. Isso impede a truncagem do ano nativo do campo Mes e das opcoes selecionadas de Cartao e Categoria no celular. Entre 481px e 1180px continua a disposicao de duas colunas; desktop preserva sua grade compacta.
+
+A verificacao Chrome ja registrada em `reports-installments-regression.mjs` cobre 390x844 e 320x740, mede a largura disponivel frente ao texto selecionado, exige os cinco controles legiveis e executa um controle negativo que forca temporariamente a grade antiga de duas colunas para comprovar que o caso seria rejeitado. A evidência funcional completa exige o run Chrome no SHA final, nao apenas um teste isolado do CSS.
+
+## Filtro monetario sem duplicacao de blocos (22/10/2026, PR #729)
+
+Em **Parcelas consolidadas** e **Projecao de caixa**, o seletor **Moeda** fica na barra primaria de filtros antes de **Atualizar relatorio/Atualizar projecao**, junto ao mes/status/cartao/categoria ou a data de referencia/horizonte. O filtro e SSR, submetido pelo mesmo GET: `currency=BRL`, `currency=USD` ou `currency=all`. O estado inicial e **BRL**, quando existente, ou a primeira moeda retornada. `Todas as moedas` e uma opcao explicita de comparacao, que volta a apresentar os blocos separados, sem nunca misturar valores. A **Evolucao por categoria** ja possui filtro proprio equivalente, preservado.
+
+As opcoes refletem as moedas presentes nos dados retornados, mantendo uma moeda solicitada fora do recorte para recuperacao. Caso nao existam lancamentos naquela moeda, um estado vazio orienta a troca sem apagar os demais filtros. Uma sigla malformada e recusada antes de consultas financeiras. Os dados continuam carregados das APIs financeiras canonicas **sem parametro de moeda**; a escolha filtra somente os blocos visiveis, sem recalcualr, converter, somar moedas distintas ou duplicar chamadas de API.
+
+Links de detalhe por cartao e categoria nas Parcelas preservam `currency`, mes, status, perfil e origem. A Projecao preserva `referenceDate`, `horizonDays`, `profileId` e os destinos de `Ver origem`. `renderReportCurrencyOptions`, `parseReportCurrencyFilter` e `selectReportCurrencyBlocks` ficam compartilhados em `reports-route-page-shared.ts`, evitando logica duplicada. Testes SSR existentes exercitam BRL inicial, USD isolado, todas, moeda sem dados, entrada invalida e escopo; prova Chrome da Projecao cobre BRL/USD com um bloco por vez e preserva prova comparativa no modo `currency=all`.
+
+## Densidade da serie diaria da projecao de caixa (22/10/2026, PR #729)
+
+A tabela **Serie continua - BRL/USD** utiliza quatro colunas com `colgroup` proporcional (Data 15%, Movimento liquido 20%, Saldo projetado 20%, Evidencias 45%) e `table-layout:fixed`, preservando alinhamento entre `thead` e `tbody`. Cada celula passa a ter **padding vertical de 5px**, texto de tamanho `--sf-font-size-sm` e line-height 1.25; as linhas sem movimentos devem ter altura **de ate 36px** em desktop e mobile. Datas, movimento liquido e saldo permanecem em uma linha, com valores numericos tabulares e alinhamento a direita.
+
+A evidencia de movimento adota `display:flex` com descricao, rotulo da origem e link **Ver origem** na mesma linha quando couber. Em caso de multiplas evidencias ou descricoes longas, a quebra natural e permitida para preservar o conteudo completo, sem cortar informacoes financeiras ou retirar destinos reais dos links. Linhas inativas continuam a indicar `Sem movimento`; hover neutro e foco acessivel do scroller seguem a Golden Screen. No mobile, a rolagem horizontal e local e deliberada.
+
+Os testes ja existentes da rota verificam `colgroup`, metadados de linha, evidencias com origem e os estilos compactos; o validador Chrome #718 da Projecao de Caixa verifica **altura <=36px** para dias sem movimento, alinhamento das quatro colunas e evidencias inline em 1366x768, 390x844 e 320x740 para BRL e USD. Aprovacao de auditoria independente continua separada do CI.
+
+## Densidade das parcelas consolidadas (22/10/2026, PR #729)
+
+Na visao **Parcelas consolidadas**, os cinco indicadores preservam a quantidade e o montante em cada status, porem utilizam uma **faixa compacta** com divisores discretos em vez de cinco cards altos. `Total mensal` recebe destaque suave, sem alterar o calculo canonico. A faixa se reorganiza em tres ou duas colunas por largura e vira cinco linhas compactas em telas estreitas, garantindo legibilidade dos montantes.
+
+O bloco `Distribuicao de <mes> - <moeda>` passou a apresentar o comprometimento mensal como **faixa contextual curta**, pois o mes ja esta selecionado no filtro. As composicoes **Por categoria** e **Por cartao** ficam lado a lado no desktop e empilhadas no mobile. Cada agrupamento exibe denominacao, quantidade, barra relativa e montante; links reais por categoria/cartao, `profileId` e filtros de recorte permanecem intactos. Nao ha novas somas nem mudanca de origem financeira.
+
+A tabela **Parcelas consideradas** utiliza exclusivamente o layout de tabela HTML nativa para alinhar `thead`, `tbody`, valores e datas. `<colgroup>` e `table-layout:fixed` definem sete colunas proporcionais, cabeçalhos nao quebrados, dinheiro e vencimento em linha unica e montantes a direita. Nomes e situacoes longas usam quebra natural sem estreitar outras colunas, as linhas sao densas e recebem divisores e alternancia sutis. Em viewports estreitos, rolagem horizontal local acessivel preserva todas as informacoes sem espremê-las ou ampliar a pagina.
+
+**Aceite:** verificar desktop 1440x900, 1366x768 e mobile 390x844/320x740, incluindo estados de vazio, textos longos, status compostos, montantes, hover/foco dos links e rolagem da tabela, com total BRL e USD isolados. Testes SSR existentes de `reports-route-page.test.ts` e `reports-analysis-issue-611.test.ts` garantem a permanencia de valores, agrupamentos, colunas e semantica; CI nao substitui screenshot e auditoria visual independentes.
+
+## Hover e foco da hierarquia por categoria (22/10/2026, PR #729)
+
+O botao de expandir/recolher categorias da matriz conserva dimensoes compactas, icone de sinal e rotulo acessivel `aria-expanded`. Seu hover usa os tokens neutros da Golden Screen: `--sf-color-neutral-control-hover` (fundo claro), `--sf-color-neutral-control-border-hover` (borda fina) e `--sf-color-neutral-control-text-hover` (icone petroleo). O seletor `.evolution-table button.category-tree-toggle:hover:not(:disabled)` prevalece sobre o `button:hover:not(:disabled)` global, evitando fundo azul-escuro. O estado ativo mantem realce neutro, e `:focus-visible` aplica contorno visivel por teclado.
+
+Os testes SSR existentes verificam a especificidade do seletor e a acessibilidade do controle. A prova Chrome de evolucao por categoria fotografa o hover, compara os valores computados de fundo/borda/texto com os tokens canonicos e confirma que o estado expandido nao foi alterado pelo movimento do mouse. Essa verificacao complementa, sem duplicar, as capturas existentes da #718.
+
+## Resultado ao longo do tempo: doze meses por linha no desktop (22/10/2026, PR #729)
+
+O grafico da Evolucao por categoria usa `container-type:inline-size` na camada de visualizacao para determinar o espaco efetivo, sem depender da largura bruta da janela. A partir de **1120px no proprio bloco**, a grid utiliza no maximo **12 colunas iguais**. Assim, o recorte padrao de 12 meses ocupa uma unica linha; 24 periodos podem ocupar duas linhas de 12. Padding e fonte dos valores sao levemente reduzidos, com `white-space:nowrap`, preservando integralmente valores, simbolos e sinais.
+
+Abaixo desse limiar, a grid volta a usar `auto-fit`, mantendo quebra responsiva sem cortar ou esconder informacoes. A Projecao de caixa permanece com seu proprio modo de rolagem local. A prova Chrome existente da issue #718 inclui um caso adicional em 1600x900 para atestar **12 periodos, 12 colunas, mesma linha e valores sem overflow** por moeda, alem dos viewports 1366x768, 390x844 e 320x740.
+
+## Propagacao visual Golden Screen (#718)
+
+A rota adota o nivel de acabamento da Golden Screen do Extrato, **sem copiar o arquetipo de listagem**. O arquetipo A5 continua sendo a referencia: contexto de visao e filtros no topo, indicador decisivo por moeda, visualizacao, destaques e detalhe. Navegacao entre visoes usa abas discretas; controles mantem altura e foco padronizados. Nos blocos multi-moedas, cada secao apresenta o codigo BRL/USD em seu titulo (sem cabeçalho avulso) e os valores mantem `Money` com `data-currency`, mas sem repetir o codigo textual ao lado do numero; o destaque do resultado e do total mensal nunca une BRL e USD.
+
+A evolucao por categoria oferece barras de tendencia com rolagem local por teclado e rotulos/valores textuais acessiveis. A arvore e a matriz permanecem semanticamente tabulares, com cabecalhos e valores completos em scroll local; nomes extensos podem quebrar linha. As distribuicoes de parcelas preservam os links canonicos, mas evitam cards e bordas aninhadas. A projecao de caixa apresenta, entre resumo e tabela, uma **amostra visual** dos saldos diarios canonicos (ate aproximadamente oito datas, incluindo a ultima): nenhuma interpolacao, soma, nova formula financeira ou supressao da serie completa. A tabela continua mostrando todas as datas e evidencias. Os valores monetários no gráfico usam largura mínima legível e quebra controlada; a validação Chrome rejeita texto de um período que invada a coluna vizinha, com controle negativo executado.
+
+Falha de consulta exibe um link de tentativa novamente para a propria URL, preservando parametros sem exibir resultados parciais. Erro de filtro continua permitindo correcao no formulario SSR. Tabelas largas e graficos utilizam overflow horizontal local com foco visivel em desktop/mobile. A superfície de blocos monetários não permite que a largura intrínseca dos gráficos escape para a viewport; cada gráfico e matriz mantém seu próprio scroll acessível.
+
+O cenário Chrome #718 agora fotografa separadamente as três camadas (resumo, visualização e detalhe) **de cada bloco BRL e USD**, rolando até o conteúdo antes da captura em cada viewport. Os metadados das 18 capturas comprovam visibilidade na viewport, contexto da moeda, existência do conteúdo financeiro e presença dos arquivos no relatório do run; não se aceita apenas uma fotografia da primeira dobra com filtros.
+
+O aceite ampliado da #718 também exercita a **projeção de caixa real** (`view=cash-flow`) em 1366×768, 390×844 e 320×740, com capturas independentes de resumo, visualização e detalhe de BRL e USD, validação de moeda por `Money`, tabela diária e rolagem local. Os estados `empty`, `filter-error` e `api-error` são capturados em 390×844 e 320×740; a prova semântica exige visibilidade, ausência de resultado financeiro parcial, filtros inválidos identificáveis e link de tentativa novamente preservando a URL. Essas verificações pertencem ao mesmo cenário Chrome exact-SHA e falham se qualquer cobertura/captura faltar.
+
+A aceitacao visual exige comparar capturas Chrome autenticadas e a arvore acessivel nos viewports desktop, 390px e 320px no SHA material desta PR, incluindo BRL/USD, recorte vazio, erro, tabela longa e controle negativo de truncamento. O cenário dedicado `reports-718-visual-acceptance` reutiliza `scripts/statement-visual/reports-category-evolution.mjs` por um módulo de entrada separado no workflow agregado, além dos controles legados de responsividade. Testes automatizados e CI verde sao requisitos distintos da aprovacao independente.
+
 ## Evolucao por categoria
 
 **Status:** disponivel desde a issue #542, ampliada pelas issues #546 e #611.
@@ -145,6 +238,12 @@ Os indicadores preservados sao:
 Desde a issue #611, as parcelas sao particionadas por `currency` antes do calculo desses indicadores e dos agrupamentos. Cada moeda recebe resumo proprio, visualizacao dos agrupamentos por mes/cartao/categoria, destaques e tabela detalhada. Parcelas canceladas permanecem identificaveis no detalhe e nao entram nos valores ativos consolidados. Todos os valores monetarios sao exibidos por `Money` com moeda explicita.
 
 Os agrupamentos **Por cartao** e **Por categoria** preservam a identidade canonica de cada recurso e oferecem drilldown para a propria visao de parcelas. O link mantem `view=installments`, mes, status, `profileId` e o filtro irmao compativel, substituindo somente o `cardId` ou `categoryId` correspondente. Recursos homonimos permanecem separados por ID; linhas sinteticas sem ID, como **Sem cartao informado** ou **Sem categoria**, nao fabricam um destino navegavel.
+
+### Densidade e filtros responsivos da Golden Screen
+
+Na Evolução por categoria, a matriz mantém rolagem **local** e reduz o padding vertical das células sem ocultar moeda, valor ou percentuais. O gráfico de períodos quebra em linhas, sem exigir rolagem horizontal. Em larguras de 361 a 760 px, o formulário usa duas colunas proporcionais (Início mais largo para mostrar o mês/ano completo); até 360 px utiliza uma coluna. Os testes Chrome validam os respectivos contratos e não devem exigir a disposição anterior após refatoração aprovada.
+
+Na Projeção de caixa, **Todas as moedas** pode apresentar mais de dois blocos quando houver outras moedas no conjunto; todos devem conservar seus valores, tabelas e unidade de origem, sem soma entre moedas.
 
 ## Estados
 

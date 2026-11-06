@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:aab741ac-4c6b-4b33-aea5-058ba7182ebb",
+  "head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "material_head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "findings": [
+    {
+      "id": "A719-01",
+      "disposition": "blocking",
+      "status": "open",
+      "remediation_mode": "targeted-remediation",
+      "severity": "high",
+      "description": "Inherited base handoff-ready.json bound to issue 718 / PR 729, not issue 719 / PR 730; current delivery must reconstruct its own certificate."
+    }
+  ],
+  "recommendations": [],
+  "source_report_path": "Prior-chat audit verdict: review text not preserved as a signed or hashed original.",
+  "provenance_note": "This is an internally transcribed finding from prior chat; no signed GitHub audit review is available. Do not use this remediation record as an independent approval."
+}

@@ -1,0 +1,38 @@
+HEAD: 0cec2270e8d6d12cc58816c959490f4d070f92a2
+COMMAND: node --test scripts/statement-visual/issue-755-ci-determinism.test.mjs
+TAP version 13
+# Subtest: budget long-list requires exact API readback and the same category's nine history entries
+ok 1 - budget long-list requires exact API readback and the same category's nine history entries
+  ---
+  duration_ms: 8.98605
+  type: 'test'
+  ...
+# Subtest: transaction modal absent, collapsed and mismatched identity all fail closed
+ok 2 - transaction modal absent, collapsed and mismatched identity all fail closed
+  ---
+  duration_ms: 1.114398
+  type: 'test'
+  ...
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-untrusted-fixture-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-zJMbJK/issue-755-fixture-9-failure.json
+# Subtest: failure diagnostics preserve DOM, fixture and network causes without financial payloads
+ok 3 - failure diagnostics preserve DOM, fixture and network causes without financial payloads
+  ---
+  duration_ms: 25.323819
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 136.347911
+EXIT_CODE: 0
+REACHED: scripts/statement-visual/issue-755-ci-determinism.test.mjs

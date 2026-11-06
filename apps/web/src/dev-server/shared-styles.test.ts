@@ -44,6 +44,32 @@ describe("shared shell styles", () => {
     assert.match(css, /\.topbar/);
   });
 
+  it("shares the Golden Screen light navigation palette with every authenticated SSR route", () => {
+    const css = sharedShellStyles();
+    assert.match(css, /\.sidebar\s*\{[^}]*background:\s*var\(--surface\)/s);
+    assert.match(css, /\.sidebar\s*\{[^}]*border-right:\s*1px solid var\(--line\)/s);
+    assert.match(css, /\.sidebar nav a\s*\{[^}]*color:\s*#334155/s);
+    assert.match(css, /\.sidebar nav a:hover\s*\{[^}]*background:\s*#f1f5f9/s);
+    assert.match(css, /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*background:\s*#eef4ff/s);
+    assert.match(css, /\.sidebar nav a\[aria-current="page"\]\s*\{[^}]*color:\s*#1d4ed8/s);
+    assert.match(css, /\.nav-section-label\s*\{[^}]*color:\s*#94a3b8/s);
+    assert.match(css, /\.logout\s*\{[^}]*color:\s*#475569/s);
+    assert.doesNotMatch(css, /\.sidebar\s*\{[^}]*background:\s*var\(--primary\)/s);
+    assert.match(css, /\.nav-more-toggle\[aria-expanded="true"\]\s*\{[^}]*color:\s*#1d4ed8/s);
+  });
+
+  it("keeps the compact shell header content-sized in short SSR states", () => {
+    const css = sharedShellStyles();
+    const mobileCss = css.slice(
+      css.indexOf(`@media (max-width: ${solverFinDesignTokens.breakpoints.shellCompact})`),
+    );
+
+    assert.match(
+      mobileCss,
+      /\.app-shell\s*\{[^}]*grid-template-columns:\s*1fr;[^}]*grid-template-rows:\s*max-content minmax\(0, 1fr\)/s,
+    );
+  });
+
   it("derives executable SSR output from a changed canonical token without a second edit", () => {
     const changedTokens: SolverFinDesignTokens = {
       ...solverFinDesignTokens,
@@ -190,7 +216,19 @@ describe("shared shell styles", () => {
       "utf8",
     );
 
-    assert.match(accountsCardsSource, /class="icon-button danger-icon-button"/);
+    assert.match(
+      accountsCardsSource,
+      /class="sf-button sf-button-secondary sf-icon-button sf-focus-ring resource-action-button danger-icon-button"/,
+    );
+    const detailCssSource = readFileSync(join(currentDir, "accounts-cards", "styles.js"), "utf8");
+    assert.match(
+      detailCssSource,
+      /\.resource-detail-panel button\.danger-icon-button:hover:not\(:disabled\)/,
+    );
+    assert.match(
+      detailCssSource,
+      /\.resource-detail-panel button\.danger-icon-button:focus-visible/,
+    );
     assert.match(css, /:not\(\.danger-icon-button\):hover:not\(:disabled\)/);
     assert.match(css, /:not\(\.danger-icon-button\):focus-visible/);
     assert.match(
@@ -218,7 +256,30 @@ describe("shared shell styles", () => {
   for (const moduleFileName of consumingModules) {
     it(`${moduleFileName} composes its styles from sharedShellStyles()`, () => {
       const source = readFileSync(join(currentDir, moduleFileName), "utf8");
-
+      if (moduleFileName === "cards-page-v2.js" && source.includes("cardsPageStyles()")) {
+        assert.match(source, /import \{ cardsPageStyles \} from "\.\/cards-page-v2-styles\.js"/);
+        const extractedStyles = readFileSync(join(currentDir, "cards-page-v2-styles.js"), "utf8");
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
+      if (moduleFileName === "dashboard-page.js" && source.includes("dashboardStyles()")) {
+        assert.match(source, /import \{ dashboardStyles \} from "\.\/dashboard-styles\.js"/);
+        const extractedStyles = readFileSync(join(currentDir, "dashboard-styles.js"), "utf8");
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
+      if (moduleFileName === "admin-institutions-page.js" && source.includes("adminPageStyles()")) {
+        assert.match(
+          source,
+          /import \{ adminPageStyles \} from "\.\/admin-institutions-styles\.js"/,
+        );
+        const extractedStyles = readFileSync(
+          join(currentDir, "admin-institutions-styles.js"),
+          "utf8",
+        );
+        assert.match(extractedStyles, /sharedShellStyles\(\)/);
+        return;
+      }
       assert.match(source, /sharedShellStyles\(\)/);
     });
   }

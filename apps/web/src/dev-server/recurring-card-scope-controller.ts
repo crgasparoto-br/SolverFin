@@ -133,6 +133,7 @@ export function recurringCardScopeControllerScript(): string {
           accountField.hidden = true;
           accountField.setAttribute("data-edit-account-field", "");
           accountField.textContent = "Conta";
+          accountField.classList.add("full", "statement-entry-account-selector");
 
           const accountSelect = document.createElement("select");
           accountSelect.name = "accountId";
@@ -149,11 +150,35 @@ export function recurringCardScopeControllerScript(): string {
           });
 
           accountField.appendChild(accountSelect);
+          const accountFullName = document.createElement("span");
+          accountFullName.className = "muted";
+          accountFullName.setAttribute("data-edit-account-full-name", "");
+          accountField.appendChild(accountFullName);
+          const readOnlyAccountField = form.querySelector(".statement-entry-account");
+          const staticAccountInput = readOnlyAccountField?.querySelector("input");
+          if (staticAccountInput) {
+            // Preserve the original SSR/no-JS input but expose a wrapping name in
+            // the enhanced dialog, so account identities never truncate on mobile.
+            const readableName = document.createElement("span");
+            readableName.setAttribute("data-account-readonly-full-name", "");
+            readableName.textContent = staticAccountInput.value;
+            staticAccountInput.hidden = true;
+            staticAccountInput.setAttribute("aria-hidden", "true");
+            staticAccountInput.tabIndex = -1;
+            readOnlyAccountField.appendChild(readableName);
+          }
+          const updateAccountFullName = () => {
+            const selectedName = accountSelect.selectedOptions?.[0]?.textContent?.trim() || "";
+            accountFullName.textContent = selectedName;
+            accountSelect.title = selectedName;
+          };
+          accountSelect.addEventListener("change", updateAccountFullName);
           // Transfers show the persisted source next to the destination (#677).
           const sourceField = form.querySelector('[data-field="sourceAccount"]');
           form.insertBefore(accountField, sourceField || firstField);
 
           const createAccountId = accountInput.value;
+          const consolidatedContext = new URLSearchParams(window.location.search).get("accountId") === "all";
           const formDialog = typeof form.closest === "function" ? form.closest("dialog") : null;
           const guidance = formDialog && typeof formDialog.querySelector === "function"
             ? formDialog.querySelector(".modal-panel > div .muted")
@@ -162,18 +187,24 @@ export function recurringCardScopeControllerScript(): string {
           function setAccountMode(transaction) {
             const editing = Boolean(transaction);
             accountField.hidden = !editing;
+            if (readOnlyAccountField) readOnlyAccountField.hidden = editing;
             accountSelect.disabled = !editing;
             accountInput.disabled = editing;
 
             if (editing) {
               accountSelect.value = transaction.accountId || createAccountId;
               if (guidance) guidance.textContent = "Revise a conta usada neste lançamento.";
-              return;
+            } else {
+              accountInput.value = createAccountId;
+              accountSelect.value = createAccountId;
+              if (guidance) guidance.textContent = "A conta vem do filtro principal.";
             }
-
-            accountInput.value = createAccountId;
-            accountSelect.value = createAccountId;
-            if (guidance) guidance.textContent = "A conta vem do filtro principal.";
+            updateAccountFullName();
+            // Recompute transfer source visibility after toggling the editable account.
+            // Otherwise switching from POST to PATCH can leave a second source field visible.
+            if (form.kind && typeof form.kind.dispatchEvent === "function") {
+              form.kind.dispatchEvent(new Event("change", { bubbles: true }));
+            }
           }
 
           document.querySelectorAll("[data-open-modal]").forEach((button) => {
@@ -185,7 +216,7 @@ export function recurringCardScopeControllerScript(): string {
             const editButton = document.querySelector('[data-edit="' + transaction.id + '"]');
             const cloneButton = document.querySelector('[data-clone="' + transaction.id + '"]');
             editButton?.addEventListener("click", () => setAccountMode(transaction));
-            cloneButton?.addEventListener("click", () => setAccountMode(null));
+            cloneButton?.addEventListener("click", () => setAccountMode(consolidatedContext ? transaction : null));
           });
 
           setAccountMode(null);

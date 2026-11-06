@@ -5,6 +5,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { captureSettingsGoldenEvidence } from "./settings-golden-evidence.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -17,8 +18,12 @@ if (!chromePath) throw new Error("CHROME_BIN is required for settings visual val
 await mkdir(outputDir, { recursive: true });
 
 const profilesDesktop = await runScenario("profiles-desktop", 1440, 1000, "profiles");
+const profilesGoldenDesktop = await runScenario("profiles-1366", 1366, 768, "profiles");
+const profilesSmallMobile = await runScenario("profiles-320", 320, 740, "profiles");
 const profilesMobile = await runScenario("profiles-mobile", 390, 844, "profiles");
 const rulesDesktop = await runScenario("rules-desktop", 1440, 1000, "rules");
+const rulesGoldenDesktop = await runScenario("rules-1366", 1366, 768, "rules");
+const rulesSmallMobile = await runScenario("rules-320", 320, 740, "rules");
 const rulesTablet = await runScenario("rules-tablet", 768, 1024, "rules");
 const rulesMobile = await runScenario("rules-mobile", 390, 844, "rules");
 const rulesZoom = await runScenario("rules-mobile-zoom-200", 390, 844, "rules", true);
@@ -43,8 +48,12 @@ const report = {
   screenshots,
   zoomEvidence,
   profilesDesktop,
+  profilesGoldenDesktop,
+  profilesSmallMobile,
   profilesMobile,
   rulesDesktop,
+  rulesGoldenDesktop,
+  rulesSmallMobile,
   rulesTablet,
   rulesMobile,
   rulesZoom,
@@ -80,6 +89,35 @@ async function runScenario(name, width, height, section, zoom = false) {
       section === "rules" ? await validateRenderedRuleFixtures(browser.cdp, ruleFixtures) : null;
     const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const textScale = await applyTextScale(browser.cdp, zoom);
+    const hierarchy = await validateActionHierarchy(browser.cdp, section);
+    const restFilename = `issue-727-${name}-rest.png`;
+    await screenshot(browser.cdp, join(outputDir, restFilename));
+    screenshots.push(restFilename);
+    const longNameEvidence =
+      section === "profiles" ? await validateLongProfileName(browser.cdp, name) : null;
+    if (section === "profiles") {
+      check(
+        longNameEvidence?.wrapped === true && longNameEvidence?.noHorizontalOverflow === true,
+        `${name}: nome longo de perfil cortado ou com overflow`,
+        longNameEvidence,
+      );
+      check(
+        longNameEvidence?.truncationRejected === true && longNameEvidence?.restored === true,
+        `${name}: controle negativo de texto truncado não detectado/restaurado`,
+        longNameEvidence,
+      );
+    }
+    check(
+      hierarchy.primaryCount === 1,
+      `${name}: hierarquia tem mais de uma ação principal`,
+      hierarchy,
+    );
+    check(
+      hierarchy.negativeControlRejectsCompetingPrimary,
+      `${name}: controle negativo da ação principal`,
+      hierarchy,
+    );
+    check(hierarchy.restored, `${name}: controle negativo não restaurou a hierarquia`, hierarchy);
     const dialogSelector =
       section === "profiles"
         ? '[data-open-dialog="new-profile-dialog"]'
@@ -196,7 +234,29 @@ async function runScenario(name, width, height, section, zoom = false) {
         `${name}: erro não associado ao campo`,
         decimalForm,
       );
+      check(
+        decimalForm?.networkErrorVisible === true && decimalForm?.retryEnabled === true,
+        `${name}: erro de rede não recuperável`,
+        decimalForm,
+      );
+      check(
+        decimalForm?.networkValuePreserved === true,
+        `${name}: falha de rede perdeu dados do formulário`,
+        decimalForm,
+      );
     }
+
+    const goldenEvidence = await captureSettingsGoldenEvidence({
+      cdp: browser.cdp,
+      name,
+      section,
+      outputDir,
+      check,
+      pressKey,
+      openDialogWithKeyboard,
+      waitForDialogClosed,
+    });
+    if (goldenEvidence) screenshots.push(...goldenEvidence.screenshots);
 
     return {
       name,
@@ -207,6 +267,10 @@ async function runScenario(name, width, height, section, zoom = false) {
       ruleFixtures,
       renderedRules,
       keyboardNavigation,
+      hierarchy,
+      goldenEvidence,
+      restScreenshot: restFilename,
+      longNameEvidence,
       textScale,
       dialogKeyboard,
       decimalForm,
@@ -433,16 +497,34 @@ async function validateDecimalFormBehavior(cdp) {
         form.requestSubmit();
         await new Promise((resolve) => setTimeout(resolve, 120));
 
+        const invalidBlocked = requests.length === 1;
+        const invalidValuePreserved = minimum.value === '10,501';
+        const errorAssociated =
+          minimum.getAttribute('aria-invalid') === 'true' &&
+          minimum.getAttribute('aria-describedby') === error.id &&
+          !error.hidden;
+
+        window.fetch = async () => {
+          throw new Error('QA simulated network rejection');
+        };
+        minimum.value = '10,50';
+        minimum.dispatchEvent(new Event('input', { bubbles: true }));
+        form.requestSubmit();
+        for (let attempt = 0; attempt < 30; attempt += 1) {
+          if (form.querySelector('[data-form-status].error')) break;
+          await new Promise((resolve) => setTimeout(resolve, 20));
+        }
+        const status = form.querySelector('[data-form-status]');
         return {
           validPayloadMinor,
           validValuePreserved,
           requestCount: requests.length,
-          invalidBlocked: requests.length === 1,
-          invalidValuePreserved: minimum.value === '10,501',
-          errorAssociated:
-            minimum.getAttribute('aria-invalid') === 'true' &&
-            minimum.getAttribute('aria-describedby') === error.id &&
-            !error.hidden,
+          invalidBlocked,
+          invalidValuePreserved,
+          errorAssociated,
+          networkErrorVisible: Boolean(status?.textContent?.includes('Falha de conexão')),
+          retryEnabled: form.querySelector('button[type="submit"]')?.disabled === false,
+          networkValuePreserved: minimum.value === '10,50',
         };
       } finally {
         window.fetch = originalFetch;
@@ -611,6 +693,78 @@ async function waitForDialog(cdp) {
   throw new Error("Settings dialog did not open.");
 }
 
+async function validateLongProfileName(cdp, scenario) {
+  const original = await evaluate(
+    cdp,
+    `(() => {
+      const label = document.querySelector('.profile-item .item-title-line strong');
+      if (!label) return null;
+      const original = label.textContent;
+      label.textContent = 'Perfil-fictício-' + 'A'.repeat(360);
+      return original;
+    })()`,
+  );
+  if (original === null)
+    return {
+      wrapped: false,
+      noHorizontalOverflow: false,
+      truncationRejected: false,
+      restored: false,
+    };
+
+  const filename = `issue-727-${scenario}-long-profile.png`;
+  await screenshot(cdp, join(outputDir, filename));
+  screenshots.push(filename);
+
+  const measurements = await evaluate(
+    cdp,
+    `(() => {
+      const label = document.querySelector('.profile-item .item-title-line strong');
+      const originalText = ${JSON.stringify(original)};
+      const originalStyle = label.getAttribute('style');
+      const height = label.getBoundingClientRect().height;
+      const lineHeight = parseFloat(getComputedStyle(label).lineHeight);
+      const wrapped = height >= lineHeight * 1.7;
+      const noHorizontalOverflow = document.documentElement.scrollWidth <= innerWidth + 1;
+      label.style.width = '90px';
+      label.style.whiteSpace = 'nowrap';
+      label.style.overflow = 'hidden';
+      label.style.textOverflow = 'ellipsis';
+      const truncationRejected = label.scrollWidth > label.clientWidth + 1;
+      if (originalStyle === null) label.removeAttribute('style');
+      else label.setAttribute('style', originalStyle);
+      label.textContent = originalText;
+      const restored = label.textContent === originalText && document.documentElement.scrollWidth <= innerWidth + 1;
+      return { wrapped, noHorizontalOverflow, truncationRejected, restored, screenshot: ${JSON.stringify(filename)} };
+    })()`,
+  );
+  return measurements;
+}
+
+async function validateActionHierarchy(cdp, section) {
+  return evaluate(
+    cdp,
+    `(() => {
+    const scope = document.querySelector('[data-settings-scope="${section}"]');
+    const actions = Array.from(scope?.querySelectorAll('button.sf-button-primary') || []);
+    const primaryCount = actions.length;
+    const secondary = scope?.querySelector('[data-api-path="/api/automation-rules/apply"]');
+    let negativeControlRejectsCompetingPrimary = true;
+    let restored = true;
+    if (secondary) {
+      secondary.classList.remove('sf-button-secondary');
+      secondary.classList.add('sf-button-primary');
+      const mutatedCount = scope.querySelectorAll('button.sf-button-primary').length;
+      negativeControlRejectsCompetingPrimary = mutatedCount > 1;
+      secondary.classList.remove('sf-button-primary');
+      secondary.classList.add('sf-button-secondary');
+      restored = scope.querySelectorAll('button.sf-button-primary').length === primaryCount;
+    }
+    return { section: '${section}', primaryCount, negativeControlRejectsCompetingPrimary, restored };
+  })()`,
+  );
+}
+
 function measurementExpression(section) {
   return `(() => {
     const bodyText = document.body.innerText;
@@ -623,6 +777,11 @@ function measurementExpression(section) {
       viewport: { width: window.innerWidth, height: window.innerHeight },
       rootFontSizePx: parseFloat(getComputedStyle(document.documentElement).fontSize),
       noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      documentScrollWidth: document.documentElement.scrollWidth,
+      horizontalOverflowCandidates: Array.from(document.querySelectorAll("body *")).filter((element) => {
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && rect.right > innerWidth + 1;
+      }).slice(0, 8).map((element) => ({ tag: element.tagName, className: String(element.className).slice(0, 110), right: Math.round(element.getBoundingClientRect().right) })),
       h1Count: document.querySelectorAll('h1').length,
       h1Text: document.querySelector('h1')?.textContent?.trim() || '',
       activeSection: active?.getAttribute('href')?.endsWith('section=rules') ? 'rules' : 'profiles',

@@ -14,6 +14,9 @@ await rulesFailureDoesNotRenderAnEmptyState();
 await accountFailureDoesNotDisableCategories();
 await categoryFailureDoesNotDisableAccounts();
 await bothDependenciesFailIndependently();
+await settingsGoldenHierarchyHasDiscriminatingNegativeControls();
+await longProfileNameRemainsEscapedAndReadable();
+await emptyAndErrorContextsStayDistinguishable();
 
 function sectionResolutionIsServerSide(): void {
   assert.equal(resolveSettingsSection(new URL("https://example.test/configuracoes")), "profiles");
@@ -63,7 +66,7 @@ async function profilesSectionRendersAsTheDefault(): Promise<void> {
       assert.match(html, /href="\/configuracoes\?section=profiles" aria-current="page"/);
       assert.match(html, /href="\/configuracoes\?section=rules"/);
       assert.match(html, />Em uso<\/span>/);
-      assert.match(html, />Ativo<\/span>/);
+      assert.doesNotMatch(html, /Em uso<\/span>[\s\S]*?status-active">Ativo<\/span>/);
       assert.match(html, />Arquivado<\/span>/);
       assert.doesNotMatch(html, /Tenant operacional/);
       assert.doesNotMatch(html, /Regras configuradas/);
@@ -276,6 +279,132 @@ async function bothDependenciesFailIndependently(): Promise<void> {
       assert.match(html, /<input name="name" required/);
       assert.match(html, /name="amountMinMinor" type="text"/);
       assert.match(html, /name="amountMaxMinor" type="text"/);
+    },
+  );
+}
+
+async function settingsGoldenHierarchyHasDiscriminatingNegativeControls(): Promise<void> {
+  await withFetch(
+    {
+      "/api/financial-profiles": {
+        activeProfileId: "profile-a",
+        profiles: [{ id: "profile-a", name: "Conta pessoal", kind: "personal", status: "active" }],
+      },
+      "/api/automation-rules?status=all": {
+        rules: [
+          {
+            id: "rule-a",
+            name: "Mercado",
+            status: "active",
+            priority: 100,
+            conditions: { descriptionIncludes: "mercado" },
+            actions: { status: "suggested" },
+          },
+        ],
+      },
+      "/api/accounts": { accounts: [] },
+      "/api/categories": { categories: [] },
+    },
+    async () => {
+      for (const section of ["profiles", "rules"]) {
+        const html = await renderSettingsPage(
+          "token",
+          new URL(`https://example.test/configuracoes?section=${section}`),
+        );
+        const scopeStart = html.indexOf('<section class="settings-section"');
+        const dialogStart = html.indexOf("<dialog id=", scopeStart);
+        assert.ok(scopeStart >= 0 && dialogStart > scopeStart);
+        const visible = html.slice(scopeStart, dialogStart);
+        assert.equal((visible.match(/class="sf-button sf-button-primary"/g) ?? []).length, 1);
+        assert.doesNotMatch(
+          visible,
+          /settings-section-panel|priority-badge|class="rule-detail"[^>]*style=/,
+        );
+        assert.match(visible, /settings-collection-heading/);
+        assert.match(visible, /maintenance-rows/);
+        if (section === "rules") {
+          assert.match(visible, /class="settings-operation"/);
+          assert.match(visible, /class="sf-button sf-button-secondary" data-api-action/);
+          assert.match(visible, /data-api-path="\/api\/automation-rules\/apply"/);
+          assert.match(visible, /sugestões revisáveis/);
+          const competingPrimary = visible.replace(
+            'class="sf-button sf-button-secondary" data-api-action',
+            'class="sf-button sf-button-primary" data-api-action',
+          );
+          assert.equal(
+            (competingPrimary.match(/class="sf-button sf-button-primary"/g) ?? []).length,
+            2,
+          );
+          assert.notEqual(
+            competingPrimary,
+            visible,
+            "The negative control must actually mutate the action.",
+          );
+        } else {
+          assert.match(visible, /data-current-profile="true"/);
+          assert.equal((visible.match(/>Em uso<\/span>/g) ?? []).length, 1);
+          assert.doesNotMatch(visible, /class="maintenance-actions"[^>]*style=/);
+          assert.match(visible, /aria-label="Arquivar perfil Conta pessoal"/);
+          assert.match(visible, /data-sf-dialog-open="edit-profile-dialog-profile-a"/);
+        }
+        assert.match(html, /data-sf-dialog-close>Cancelar<\/button>/);
+        assert.match(html, /__solverFinUiPrimitivesBound/);
+        assert.match(html, /Falha de conexão\./);
+      }
+    },
+  );
+}
+
+async function longProfileNameRemainsEscapedAndReadable(): Promise<void> {
+  const name = "Perfil de uso muito longo com & caracteres <especiais> e referência internacional";
+  await withFetch(
+    {
+      "/api/financial-profiles": {
+        activeProfileId: "long-profile",
+        profiles: [{ id: "long-profile", name, kind: "family", status: "active" }],
+      },
+    },
+    async () => {
+      const html = await renderSettingsPage("token", new URL("https://example.test/configuracoes"));
+      assert.match(html, /Perfil de uso muito longo com &amp; caracteres &lt;especiais&gt;/);
+      assert.doesNotMatch(html, /<strong>Perfil de uso muito longo com & caracteres/);
+      assert.match(html, /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/);
+      const truncatedVariant = html.replace(
+        /(\.item-title-line strong \{[^}]*?)overflow-wrap: anywhere/,
+        "$1overflow: hidden; text-overflow: ellipsis",
+      );
+      assert.notEqual(truncatedVariant, html);
+      assert.doesNotMatch(
+        truncatedVariant,
+        /\.item-title-line strong \{[^}]*overflow-wrap: anywhere/,
+      );
+    },
+  );
+}
+
+async function emptyAndErrorContextsStayDistinguishable(): Promise<void> {
+  await withFetch(
+    {
+      "/api/financial-profiles": { profiles: [] },
+      "/api/automation-rules?status=all": { rules: [] },
+      "/api/accounts": { accounts: [] },
+      "/api/categories": { categories: [] },
+    },
+    async () => {
+      const profiles = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes"),
+      );
+      assert.match(profiles, /Nenhum perfil financeiro/);
+      assert.match(profiles, /Novo perfil/);
+      assert.doesNotMatch(profiles, /Não foi possível carregar os perfis/);
+      const rules = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes?section=rules"),
+      );
+      assert.match(rules, /Nenhuma regra automática/);
+      assert.match(rules, /Aplicar regras/);
+      assert.doesNotMatch(rules, /Não foi possível carregar as regras/);
     },
   );
 }

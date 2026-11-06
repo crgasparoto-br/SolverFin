@@ -70,7 +70,7 @@ async function cardsA3KeepsInstrumentLimitsCurrencyExplicit(): Promise<void> {
 
   const html = await renderCardsPageV2("session-token", selectedInvoiceUrl());
 
-  assert.match(html, /limite USD 1\.000,00/);
+  assert.match(html, /class="cards-instrument-limit">Limite USD 1\.000,00<\/small>/);
   assert.match(html, /Limite disponível/);
   assert.match(html, /data-currency="USD"/);
   assert.doesNotMatch(html, /limite 1\.000,00/);

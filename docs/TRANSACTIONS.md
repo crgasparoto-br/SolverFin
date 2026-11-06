@@ -160,11 +160,11 @@ canônica não participam da seleção até serem desagrupados.
 
 As ações em massa disponíveis são:
 
-- marcar lançamentos efetivados como conciliados;
-- desmarcar a conciliação de lançamentos conciliados;
+- marcar lançamentos previstos ou efetivados como conciliados, efetivando os previstos na data UTC da ação;
+- desmarcar a conciliação de lançamentos conciliados sem efetivar os previstos da seleção;
 - excluir logicamente os lançamentos selecionados e remover somente os agrupamentos selecionados.
 
-O servidor deduplica IDs, rejeita alteração direta de membro agrupado sem o respectivo grupo, respeita
+O servidor deduplica IDs, rejeita a conciliação de itens protegidos (cartão/fatura ou remuneração automática), rejeita alteração direta de membro agrupado sem o respectivo grupo, respeita
 organização e perfil financeiro, executa a operação de forma atômica e registra apenas metadados
 redigidos de auditoria. Conciliação e desconciliação preservam o grupo; exclusão lógica remove os
 grupos selecionados sem criar nova movimentação financeira.
@@ -227,3 +227,19 @@ npm run test:integration
 
 Mudanças visuais ou de interação também devem executar o workflow de validação real em Chrome e
 preservar os artefatos aplicáveis ao cenário alterado.
+
+### Conciliacao individual de ocorrencias recorrentes (PR #720)
+
+O icone **Situacao** do Extrato deve permitir conciliar cada ocorrencia recorrente
+materializada, inclusive em estado `planned` (Previsto). A acao envia apenas
+`PATCH /api/transactions/:transactionId` com `{ "status": "reconciled" }`,
+referenciando o ID daquela ocorrencia. A data de efetivacao e definida pela
+regra de transicao do dominio; as outras ocorrencias, a definicao da recorrencia,
+valores, categoria, conta e datas previstas nao devem ser alterados.
+
+Apos conciliacao, o mesmo menu deve permitir **Desconciliar** (`status: posted`)
+sem desfazer a efetivacao. Recorrencias materializadas com `installmentId` podem
+usar a mesma atualizacao exclusivamente de status aceita pelo backend; grupos
+financeiros, compras do cartao, remuneracoes automaticas, sugestoes pendentes e
+lancamentos excluidos continuam sujeitos as restricoes atuais. A conciliacao
+**nao** equivale a editar toda a serie recorrente.

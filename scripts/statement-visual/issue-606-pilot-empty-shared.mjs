@@ -8,7 +8,16 @@ const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 
-export async function runPilotEmptyState({ route, expectedTexts, artifactStem }) {
+export async function runPilotEmptyState({
+  route,
+  expectedTexts,
+  artifactStem,
+  compactNavigation = false,
+  viewports = [
+    [1366, 900],
+    [390, 844],
+  ],
+}) {
   if (!chromePath) {
     throw new Error("CHROME_BIN is required for pilot empty-state validation.");
   }
@@ -37,10 +46,7 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
       `Fresh profile registration failed with ${registration.status}.`,
     );
 
-    for (const [width, height] of [
-      [1366, 900],
-      [390, 844],
-    ]) {
+    for (const [width, height] of viewports) {
       await setViewport(browser.cdp, width, height);
       await navigate(browser.cdp, `${baseUrl}${route}`);
       await sleep(350);
@@ -51,12 +57,14 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
           const text = document.body.textContent || '';
           const root = document.documentElement;
           const main = document.querySelector('main');
+          const sidebar = document.querySelector('.sidebar');
           return {
             missingTexts: expected.filter((value) => !text.includes(value)),
             emptyStateCount: document.querySelectorAll('.empty-state').length,
             mainPresent: Boolean(main),
             noHorizontalOverflow: root.scrollWidth <= root.clientWidth + 1,
             viewportWidth: window.innerWidth,
+            navigationHeight: sidebar?.getBoundingClientRect().height ?? null,
           };
         })()`,
       );
@@ -78,6 +86,36 @@ export async function runPilotEmptyState({ route, expectedTexts, artifactStem })
         width,
         `${route} viewport identity changed unexpectedly.`,
       );
+      if (compactNavigation && width <= 390) {
+        assert.ok(
+          measurements.navigationHeight > 0 && measurements.navigationHeight <= 80,
+          `${route} mobile navigation consumes excessive first-fold height at ${width}px: ${measurements.navigationHeight}px.`,
+        );
+        // Deliberately restore the implicit two-auto-row grid. A short page must
+        // then fail the height bound, while restoring the real CSS must pass.
+        const negative = await evaluate(
+          browser.cdp,
+          `(() => {
+          const shell = document.querySelector('.app-shell');
+          const sidebar = document.querySelector('.sidebar');
+          const before = shell.style.gridTemplateRows;
+          shell.style.gridTemplateRows = 'auto auto';
+          const stretchedHeight = sidebar.getBoundingClientRect().height;
+          shell.style.gridTemplateRows = before;
+          const restoredHeight = sidebar.getBoundingClientRect().height;
+          return { stretchedHeight, restoredHeight };
+        })()`,
+        );
+        assert.ok(
+          negative.stretchedHeight > 80,
+          `${route} navigation negative control did not detect the stretched grid at ${width}px.`,
+        );
+        assert.ok(
+          negative.restoredHeight <= 80,
+          `${route} mobile navigation did not recover after the negative control at ${width}px.`,
+        );
+        measurements.navigationHeightNegative = negative;
+      }
       report.viewports.push({
         width,
         height,
