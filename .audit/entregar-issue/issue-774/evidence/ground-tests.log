@@ -1,12 +1,15 @@
-SOURCE: GitHub Actions Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/42302635468
-HEAD: d5236de8bfd67cec742e2c9ff4bcb6c06a4902df
+SOURCE: Authenticated GitHub Actions Repository CI https://github.com/crgasparoto-br/SolverFin/actions/runs/42383070151
+HEAD: 4e5152bc37f7263e32b765fdcee8f07f275d61da
 RESULT: completed/success
-CRITICAL validation: passed
-COMMAND: npm run test:integration --workspace @solverfin/api
+CRITICAL validation: completed/success
 COMMAND: npm run test
+COMMAND: npm run test:integration --workspace @solverfin/api
 EXIT_CODE: 0
 REACHED: apps/api/src/current-only-recurring-edit.integration.test.ts
 REACHED: apps/web/src/dev-server/operational-installments.test.ts
 REACHED: apps/web/src/dev-server/recurring-card-scope-controller.test.ts
 REACHED: apps/web/src/dev-server/transaction-recurrence-scope-dialog.test.ts
 REACHED: apps/api/src/installment-concurrency-and-void-contract.integration.test.ts
+Frontend actual eligibility guard test: planned and posted positives, reconciled, voided, cancelled, manual, card and invoice negatives.
+Visual Chrome run: https://github.com/crgasparoto-br/SolverFin/actions/runs/42383070055
+Source result is delivery handoff, not independent audit or release approval.

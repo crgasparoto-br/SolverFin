@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
+  "head_sha": "4e5152bc37f7263e32b765fdcee8f07f275d61da",
   "families": [
     {
       "family": "authorization",
@@ -63,7 +63,9 @@
       "control_ids": [
         "NC-774-001-tem",
         "NC-774-003-tem",
-        "NC-774-009-tem"
+        "NC-774-009-tem",
+        "NC-774-003-tem-planned",
+        "NC-774-009-tem-planned-browser"
       ],
       "dimensions": [
         {
@@ -87,6 +89,22 @@
           "reason": "Check the state-transition boundary using the exact current head contract and persisted assertions.",
           "control_ids": [
             "NC-774-001-tem"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "planned-account-occurrence-ui",
+          "reason": "Discriminating planned state from posted and excluded state during current-only editing.",
+          "control_ids": [
+            "NC-774-003-tem-planned"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "planned-ui-chrome",
+          "reason": "Discriminating planned state from posted and excluded state during current-only editing.",
+          "control_ids": [
+            "NC-774-009-tem-planned-browser"
           ],
           "status": "passed"
         }
@@ -146,7 +164,9 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-774-010-doc"
+        "NC-774-010-doc",
+        "NC-774-010-doc-rejection",
+        "NC-774-010-doc-closure"
       ],
       "dimensions": [
         {
@@ -154,6 +174,22 @@
           "reason": "Trusted repository and PR base must be checked independently of self-declared release readiness.",
           "control_ids": [
             "NC-774-010-doc"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-claims",
+          "reason": "Independent review source and audit lineage matched against exact material SHA.",
+          "control_ids": [
+            "NC-774-010-doc-rejection"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "audit-remediation-ledger",
+          "reason": "Independent review source and audit lineage matched against exact material SHA.",
+          "control_ids": [
+            "NC-774-010-doc-closure"
           ],
           "status": "passed"
         }

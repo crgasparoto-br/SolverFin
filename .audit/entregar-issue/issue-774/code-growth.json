@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "d5236de8bfd67cec742e2c9ff4bcb6c06a4902df",
+  "subject_sha": "4e5152bc37f7263e32b765fdcee8f07f275d61da",
   "base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
   "comparison_base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
   "policy": {
@@ -49,14 +49,25 @@
       "lines_after": 1844
     },
     {
+      "path": "scripts/statement-visual/issue-539-account-regression-helpers.mjs",
+      "lines_before": null,
+      "lines_after": 51
+    },
+    {
+      "path": "scripts/statement-visual/issue-539-operational-installments-keyboard.mjs",
+      "lines_before": 253,
+      "lines_after": 240
+    },
+    {
       "path": "scripts/statement-visual/issue-539-operational-installments.mjs",
       "lines_before": 694,
-      "lines_after": 700
+      "lines_after": 712
     },
     {
       "path": "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
       "lines_before": null,
-      "lines_after": 251
+      "lines_after": 306,
+      "justification": "Chrome CDP scenario has two complete real-browser flows (unreconciled posted and initially planned) with isolated fixtures, authentication, payload interception, persistence readback, side-effect isolation and screenshots. Reuses existing CDP/runtime helpers; splitting the scenarios would duplicate test setup and reduce traceability."
     }
   ],
   "blocking_files": []

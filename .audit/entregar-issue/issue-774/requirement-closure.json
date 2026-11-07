@@ -67,7 +67,7 @@
         "OBS-003"
       ],
       "scope_decision": null,
-      "rationale": "O teste de integração troca conta e categoria entre valores distintos após conciliar e desconciliar, limpa categoria e lê persistência; Chrome reproduz o modal real."
+      "rationale": "Actual web eligibility guard and Chrome now cover planned and posted account recurrence states with current-only scope, distinct accounts, category null and dates; API integration preserves siblings."
     },
     {
       "id": "OBL-004",
@@ -191,7 +191,7 @@
         "OBS-009"
       ],
       "scope_decision": null,
-      "rationale": "Testes de controladores, integração PostgreSQL e Chrome real cobrem os caminhos novos e negativos; evidência de execução exata será vinculada ao SHA material final."
+      "rationale": "Frontend guard test executes 15 discriminating cases; real Chrome suite includes planned occurrence and posted-after-unreconcile flows, with persisted readbacks and sibling isolation."
     },
     {
       "id": "OBL-010",
@@ -211,7 +211,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "A PR #775 está aberta para develop sem merge; a entrega usa a Skill oficial, com certificado próprio produzido somente após os gates do SHA definitivo."
+      "rationale": "PR branch remains develop-based and unmerged. Latest independent rejection linked to one-to-one remediation and historical findings in certificate critical evidence; independent re-review required after handoff."
     }
   ],
   "source_coverage": [
@@ -238,7 +238,7 @@
   "observable_assertions": [
     {
       "id": "OBS-003",
-      "description": "O teste de integração troca conta e categoria entre valores distintos após conciliar e desconciliar, limpa categoria e lê persistência; Chrome reproduz o modal real.",
+      "description": "Distinct planned and posted account recurrence paths edit current-only; both API integration and Chrome assert actual account/date/value readback, null category and sibling isolation.",
       "requirement_ids": [
         "REQ-774-003"
       ],
@@ -352,7 +352,7 @@
     },
     {
       "id": "OBS-009",
-      "description": "Testes de controladores, integração PostgreSQL e Chrome real cobrem os caminhos novos e negativos; evidência de execução exata será vinculada ao SHA material final.",
+      "description": "Frontend test executes eligibility expression for planned/posted/locked states, and Chrome performs two real edit paths with persisted effects.",
       "requirement_ids": [
         "REQ-774-009"
       ],
@@ -444,7 +444,10 @@
       "apps/web/src/dev-server/operational-installments.ts",
       "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
       "docs/TRANSACTIONS.md",
-      "docs/API_INSTALLMENTS.md"
+      "docs/API_INSTALLMENTS.md",
+      "apps/web/src/dev-server/operational-installments.test.ts",
+      "scripts/statement-visual/issue-539-account-regression-helpers.mjs",
+      "scripts/statement-visual/issue-539-operational-installments-keyboard.mjs"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
