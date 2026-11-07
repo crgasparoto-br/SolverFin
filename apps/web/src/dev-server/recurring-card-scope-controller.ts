@@ -278,7 +278,9 @@ export function recurringCardScopeControllerScript(): string {
           if (destinationAccountId && payload.kind === "transfer") {
             payload.destinationAccountId = destinationAccountId;
           }
-          if (categoryId) payload.categoryId = categoryId;
+          if (categoryId || scope === "current_only") {
+            payload.categoryId = categoryId || null;
+          }
           if (scope === "current_and_future") payload.applyToFuturePlanned = true;
           return payload;
         }
@@ -314,7 +316,7 @@ export function recurringCardScopeControllerScript(): string {
           }
 
           const scope = button.dataset.explicitEditScope;
-          const requestPath = isCard && scope === "current_only" ? path + "/current-only" : path;
+          const requestPath = scope === "current_only" ? path + "/current-only" : path;
           const payload = targetKind === "card" ? cardPayload(data, scope) : accountPayload(data, scope);
 
           setBusy(true);

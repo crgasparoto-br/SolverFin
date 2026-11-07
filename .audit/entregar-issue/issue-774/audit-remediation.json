@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:0ab9f3f1-3747-4441-971b-3350e36e2c8a",
+    "audit_report_sha256": "3d3f241d3ab006cc9fb9e3678b32249a0da1cb31b48729cbfd14a6c00de291d7",
+    "audited_head_sha": "1094bb21a15c22a28d3d0fa4778b5e15dd5b65c1"
+  },
+  "candidate_head_sha": "4e5152bc37f7263e32b765fdcee8f07f275d61da",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-004",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/operational-installments.ts",
+        "apps/web/src/dev-server/operational-installments.test.ts",
+        "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs",
+        "scripts/statement-visual/issue-539-operational-installments.mjs",
+        "scripts/statement-visual/issue-539-operational-installments-keyboard.mjs",
+        "scripts/statement-visual/issue-539-account-regression-helpers.mjs",
+        "docs/TRANSACTIONS.md"
+      ],
+      "evidence": [
+        "apps/web/src/dev-server/operational-installments.ts: planned/posted eligible for transaction scope",
+        "apps/web/src/dev-server/operational-installments.test.ts: executes actual eligibility expression for 12 positive/negative siblings",
+        "scripts/statement-visual/issue-774-recurring-unreconcile-edit.mjs: real Chrome planned scenario with account/date/value/sibling readback"
+      ],
+      "validations": [
+        "node --test apps/web/src/dev-server/operational-installments.test.ts (transpiled current SHA): 15 tests passed locally",
+        "Repository CI 42383070151 and Statement visual validation 42383070055 (exact material SHA; only green terminal state may be relied upon)"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/issue-774/audit-source-result.json",
+        ".audit/entregar-issue/issue-774/audit-remediation.json",
+        ".audit/entregar-issue/issue-774/audit-escape-closure.json",
+        ".audit/entregar-issue/issue-774/learning-closure.json",
+        ".audit/entregar-issue/issue-774/inherited-controls.json",
+        ".audit/entregar-issue/handoff-ready.json"
+      ],
+      "evidence": [
+        "audit-source-result.json: exact latest independent rejection, plus A-001/A-002/A-003 prior resolved dispositions and unavailable original rejection ID",
+        "audit-remediation.json: one-to-one A-004 and A-005 remediation tied by hash to source result",
+        "audit-escape-closure.json and learning-closure.json: new SHA and rejection ID linked with monotonic inherited checks"
+      ],
+      "validations": [
+        "validate_audit_remediation.py, validate_independent_rejection_closure.py, validate_audit_escape_lineage.py",
+        "build_handoff_certificate.py critical exact-material-head; validate_terminal_handoff.py after publishing result-only child"
+      ]
+    }
+  ],
+  "status": "closed",
+  "historical_prior_findings": [
+    {
+      "id": "A-001",
+      "status": "resolved",
+      "reason": "Resolved: API uses null categoryId clear; integration readback asserts null in exact-material tests.",
+      "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "reason": "Resolved: distinct source/destination accounts, categories and category clear are asserted persisted; Chrome scenario now exists for posted.",
+      "evidence_sha256": "273fa73e42d2bb56de99e5b1a43857febf2829b2561291ce049ff04fe2c27af8"
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "reason": "Resolved: H certificate subject issue 774 and PR 775 and parent M material; official critical handoff preflight returned READY.",
+      "evidence_sha256": "a868ace1d6363d65603c1298e4e0046028a0def23fcf1d9b3272fdda50162ce2"
+    }
+  ]
+}
