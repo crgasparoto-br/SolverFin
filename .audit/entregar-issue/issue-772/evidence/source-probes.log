@@ -1,21 +1,22 @@
-source_probes_sha af883c5d82b0dcd306193350ddbeaf9549cea8ee
+source_probes_sha cd40692535453ea2cad88e020811428416b88f5c
 trusted_develop_parent 9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c
-PASS apps/api/src/repositories/card-invoice-purchase-delete.ts git_blob=71fa1622d2a7c6c3b72317f6876263af89f54847 file_exists=true
+PASS apps/api/src/repositories/card-invoice-purchase-delete.ts git_blob=f6b8e480e7d0540d1bad9b011ad0c2740fb9975a file_exists=true
 PASS apps/api/src/repositories/transactions.ts git_blob=73efa06f50e53323e1f2eb9d965ca237dc39a51f file_exists=true
 PASS apps/api/src/repositories/transaction-bulk-actions.ts git_blob=1df2ec884a3c61566f9fa68f47527bbd38280043 file_exists=true
-PASS apps/api/src/repositories/card-invoice-contracts-core.ts git_blob=090d6d5765d8d75c0fab67fd53311dee2c891d2d file_exists=true
+PASS apps/api/src/repositories/card-invoice-contracts-core.ts git_blob=c4695974a423bfb49cebd5827996582d3de122ce file_exists=true
 PASS apps/api/src/repositories/card-invoice-installment-amount.ts git_blob=426caa506b9540058c14bd46d731879d5c3eb645 file_exists=true
 PASS apps/api/src/repositories/installments.ts git_blob=c29a75fbac169e3492ecceb4be038912f5763cbe file_exists=true
-PASS apps/api/src/card-purchase-void-boundaries.integration.test.ts git_blob=79a18ef2a7ea7c2c3bf82c38bed6e82d49b31fe9 file_exists=true
-PASS apps/api/src/card-purchase-edit-contract.integration.test.ts git_blob=3d825cc93d576853db2716532f61fb95d291461c file_exists=true
+PASS apps/api/src/card-purchase-void-boundaries.integration.test.ts git_blob=279e41551aa2c7a566abbef322f9e037338cef63 file_exists=true
+PASS apps/api/src/card-purchase-edit-contract.integration.test.ts git_blob=e7b7c67290a8f0a5cc956ab516ce907ece584133 file_exists=true
 PASS apps/api/src/card-purchase-invoice-period-move.integration.test.ts git_blob=95eeafb47b1f2282fd4b37ac6bd806ad565e068c file_exists=true
 PASS apps/api/src/manual-entry-fill-rules-migration.integration.test.ts git_blob=aa2c722f03dba888d50e8254016850db4575ea3d file_exists=true
-PASS apps/api/src/repositories/card-purchase-invoice-period-move-core.ts git_blob=33de534ce3f5c350131d6c9ffe3b38147343b6dd file_exists=true
-PASS apps/api/src/repositories/card-purchase-invoice-period-move-write.ts git_blob=7e5ff483795fe1a5f1d95a564c7ed2a56ac5576d file_exists=true
+PASS apps/api/src/repositories/card-purchase-invoice-period-move-core.ts git_blob=9fa20eef416e1f63a111978ae602feb50c95224d file_exists=true
+PASS apps/api/src/repositories/card-purchase-invoice-period-move-write.ts git_blob=eb463b303c213dde423c49972868001bdbdb5403 file_exists=true
+PASS apps/api/src/category-evolution-report.integration.test.ts git_blob=4b98c6226787972d28705baeaa246c7f0b73dfd5 file_exists=true
 PASS apps/api/src/transaction-bulk-actions.integration.test.ts git_blob=9c95c5d17b1427833460f42c430de61711fd5f76 file_exists=true
 PASS tests/test_solverfin_solo_audit_bootstrap.py git_blob=c40ff7f2deadc25af8be6da6bb82087839464580 file_exists=true
 PASS apps/web/src/dev-server/cards-page-v2-script-purchases.ts git_blob=8b904ab93d7b8f93e8eddef7a1fa57831cc03f3d file_exists=true
-PASS docs/API_CREDIT_CARDS_INVOICES.md git_blob=15d2aa2997d42415a34cc496d1aa120852e5032e file_exists=true
+PASS docs/API_CREDIT_CARDS_INVOICES.md git_blob=3e281af2251cdee045f308ec0d0c8f1aabe2c650 file_exists=true
 changed_paths:
 M	.audit/entregar-issue/handoff-ready.json
 A	.audit/entregar-issue/issue-768/audit-escape-closure.json
@@ -56,12 +57,14 @@ M	.audit/entregar-issue/specification-snapshot.json
 M	apps/api/src/card-purchase-edit-contract.integration.test.ts
 M	apps/api/src/card-purchase-invoice-period-move.integration.test.ts
 A	apps/api/src/card-purchase-void-boundaries.integration.test.ts
+M	apps/api/src/category-evolution-report.integration.test.ts
 M	apps/api/src/installment-concurrency-and-void-contract.integration.test.ts
 A	apps/api/src/manual-entry-fill-rules-migration.integration.test.ts
 M	apps/api/src/repositories/card-invoice-contracts-core.ts
 M	apps/api/src/repositories/card-invoice-contracts.ts
 M	apps/api/src/repositories/card-invoice-installment-amount.ts
 M	apps/api/src/repositories/card-invoice-purchase-delete.ts
+A	apps/api/src/repositories/card-invoice-purchase-edit-write.ts
 M	apps/api/src/repositories/card-invoice-purchase-reverse.ts
 M	apps/api/src/repositories/card-invoice-reversal-edit.ts
 M	apps/api/src/repositories/card-purchase-invoice-period-move-core.ts
@@ -93,5 +96,8 @@ A	scripts/statement-visual/transaction-bulk-selection-scenarios.mjs
 M	scripts/statement-visual/transaction-bulk-selection.mjs
 M	scripts/statement-visual/transaction-group-modal.mjs
 M	tests/test_solverfin_solo_audit_bootstrap.py
-PASS no physical Transaction deletion; guarded financial bulk void; status PLANNED and effectiveOn retained; profile/card/remuneration isolation checked
-PASS no Git deletions in issue-local scope; develop is ancestor of material SHA
+PASS protected_active_reversal token=CARD_PURCHASE_ACTIVE_REVERSAL path=apps/api/src/repositories/card-invoice-purchase-delete.ts
+PASS historical_void token=action: "soft_delete" path=apps/api/src/repositories/card-invoice-purchase-delete.ts
+PASS no_nonisolated_report_accounting token=withIsolatedProfile path=apps/api/src/category-evolution-report.integration.test.ts
+PASS explicit_foreign_profile_regression token=amountMinor: 550 path=apps/api/src/category-evolution-report.integration.test.ts
+PASS no Git file deletions within current issue diff

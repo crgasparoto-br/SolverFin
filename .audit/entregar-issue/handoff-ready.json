@@ -8,13 +8,13 @@
     "remaining_issue_ids": [],
     "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-11-06T21:27:16.144890+00:00",
+  "created_at": "2026-11-07T13:50:25.541880+00:00",
   "identity": {
-    "head_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
-    "material_head_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+    "head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+    "material_head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
     "base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
-    "merge_preview_sha": "b1cfaf6f81a8c3f50461a5a6a2591fe4d75b24ff",
-    "material_merge_preview_sha": "b1cfaf6f81a8c3f50461a5a6a2591fe4d75b24ff"
+    "merge_preview_sha": "f2fc7ee4c3b73a378235d3a2c5551def5bdfb0ed",
+    "material_merge_preview_sha": "f2fc7ee4c3b73a378235d3a2c5551def5bdfb0ed"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -29,7 +29,7 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
-    "material_head_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+    "material_head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
     "issue_changed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
       ".audit/entregar-issue/issue-768/audit-escape-closure.json",
@@ -70,12 +70,14 @@
       "apps/api/src/card-purchase-edit-contract.integration.test.ts",
       "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
       "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+      "apps/api/src/category-evolution-report.integration.test.ts",
       "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
       "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts",
       "apps/api/src/repositories/card-invoice-contracts-core.ts",
       "apps/api/src/repositories/card-invoice-contracts.ts",
       "apps/api/src/repositories/card-invoice-installment-amount.ts",
       "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+      "apps/api/src/repositories/card-invoice-purchase-edit-write.ts",
       "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
       "apps/api/src/repositories/card-invoice-reversal-edit.ts",
       "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
@@ -108,7 +110,7 @@
       "scripts/statement-visual/transaction-group-modal.mjs",
       "tests/test_solverfin_solo_audit_bootstrap.py"
     ],
-    "issue_delta_sha256": "e18125ef32b6e69281a54ad8f46b1f92c2a34dbc86d74e20167431f9f9fc4a50"
+    "issue_delta_sha256": "2cde22d236540f4bbfbfbcc25eb7d7da32c2fa3d1581c943fed9ba2acec118c3"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -191,8 +193,8 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "551ae87a8d13952a7b0629cf61d9d21cbdbd91e634fdfcdf8965c32382dbd0b7",
-      "logical_sha256": "c1c4c18b4c3036a94b2e4340da0b44bd0ab4957534b0245bee61a84e33767761",
+      "sha256": "ad1949df8fb07f844cfd2d7157af551384308bafc0804dbbc4ef849b3af96a1e",
+      "logical_sha256": "319db0d0c2f7fc1a2de8df0029a2cad198cd0c045abab0cda65e1052a6988bf2",
       "logical_size": 75502,
       "artifact_transport": {
         "format": "base64-shards-v1",
@@ -200,43 +202,43 @@
         "compression": "gzip",
         "encoded_size": 12048,
         "decoded_size": 75502,
-        "decoded_sha256": "c1c4c18b4c3036a94b2e4340da0b44bd0ab4957534b0245bee61a84e33767761",
-        "encoded_sha256": "a2b1014e5f0835398698841bea5298ca84545b2232f41ecbc092c60e48ed6ee0",
+        "decoded_sha256": "319db0d0c2f7fc1a2de8df0029a2cad198cd0c045abab0cda65e1052a6988bf2",
+        "encoded_sha256": "9737b7628a0686fb67d7cff4ee4165f0c334923e256a5e6a9a36409afc218f26",
         "parts": [
           {
             "path": "requirement-attack-matrix.parts/part-000.b64",
             "size": 12048,
-            "sha256": "a2b1014e5f0835398698841bea5298ca84545b2232f41ecbc092c60e48ed6ee0"
+            "sha256": "9737b7628a0686fb67d7cff4ee4165f0c334923e256a5e6a9a36409afc218f26"
           }
         ]
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "8324c2e5bb8fa61d7b40072d6a80267d119be26015ba4b239e787f408a9d233f",
-      "logical_sha256": "010cbe75fb4a98b4e3bbc1d449a31f980b27cdcf5c1c8d49b2aa4141a8fc0cb9",
+      "sha256": "9545c066f730160eda45e2ca50819c7e6f66bd895004e0ba8aec23c640bcb85e",
+      "logical_sha256": "81bbb01141742e27ac90c19bd7dbf53e0cdf5009264a66f46945fd7e27faa8f5",
       "logical_size": 8202,
       "artifact_transport": {
         "format": "base64-shards-v1",
         "version": 1,
         "compression": "gzip",
-        "encoded_size": 1564,
+        "encoded_size": 1568,
         "decoded_size": 8202,
-        "decoded_sha256": "010cbe75fb4a98b4e3bbc1d449a31f980b27cdcf5c1c8d49b2aa4141a8fc0cb9",
-        "encoded_sha256": "b7fd519a221a30a0b1a6ff170683f4d4c8bd541f521a02b76dfa63a01475127f",
+        "decoded_sha256": "81bbb01141742e27ac90c19bd7dbf53e0cdf5009264a66f46945fd7e27faa8f5",
+        "encoded_sha256": "30fcf8a25b06882f4c908fe9e2555210c790c9efd17db7ec621db85dff21ee41",
         "parts": [
           {
             "path": "risk-saturation.parts/part-000.b64",
-            "size": 1564,
-            "sha256": "b7fd519a221a30a0b1a6ff170683f4d4c8bd541f521a02b76dfa63a01475127f"
+            "size": 1568,
+            "sha256": "30fcf8a25b06882f4c908fe9e2555210c790c9efd17db7ec621db85dff21ee41"
           }
         ]
       }
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "f961e70471e7a6064b49a4d2f51d6f55fbc312281552f938732f8eab6a275433",
-      "logical_sha256": "f961e70471e7a6064b49a4d2f51d6f55fbc312281552f938732f8eab6a275433",
+      "sha256": "9233a378ea22b59697cf26270e50abbd737a341acf3983b78025abc202e3c204",
+      "logical_sha256": "9233a378ea22b59697cf26270e50abbd737a341acf3983b78025abc202e3c204",
       "logical_size": 180,
       "artifact_transport": {
         "format": "plain-json",
@@ -245,9 +247,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "45de391d579bb7e6bf4c456ba2847afc021e2b234cca6c8a9884236619e6800d",
-      "logical_sha256": "45de391d579bb7e6bf4c456ba2847afc021e2b234cca6c8a9884236619e6800d",
-      "logical_size": 33242,
+      "sha256": "28dddacc68f84092729111ab179e84d1ae46ad30d5995f850869dee6291903f9",
+      "logical_sha256": "28dddacc68f84092729111ab179e84d1ae46ad30d5995f850869dee6291903f9",
+      "logical_size": 37167,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -255,9 +257,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "f9bda94bfca02a9a5372c8da4eea4dbe416629e08cf90f3b95f662eb267f70bd",
-      "logical_sha256": "f9bda94bfca02a9a5372c8da4eea4dbe416629e08cf90f3b95f662eb267f70bd",
-      "logical_size": 2508,
+      "sha256": "6df9d9990da0af9f3da22ef67d60047249dbaf518a3c78243a64facad7a74fd1",
+      "logical_sha256": "6df9d9990da0af9f3da22ef67d60047249dbaf518a3c78243a64facad7a74fd1",
+      "logical_size": 2652,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -275,7 +277,7 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+      "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },

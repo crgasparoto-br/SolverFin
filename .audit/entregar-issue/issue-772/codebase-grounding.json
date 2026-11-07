@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+  "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
   "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
   "creations": [
     {
@@ -86,6 +86,25 @@
       },
       "decision": "create",
       "justification": "Extract deterministic grouped deletion and mixed-status browser scenarios to limit single-file growth; reuse existing navigation/fixture and capture helpers."
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-purchase-edit-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"totalAmountMinor\" -- apps/api/src/repositories/card-invoice-contracts-core.ts",
+          "git grep -n \"applyEditableCardPurchaseInvoiceChangeInTransaction\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing purchase edit was inside card-invoice-contracts-core.ts; extracted guarded invoice update into a small existing-transaction helper to preserve concurrency and code growth policy.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
+            "reason_not_reused": "Existing purchase edit entrypoint delegates its invoice balance mutation to this extracted helper so the main file remains within CODE-GROWTH-001 and the update contract is tested concurrently."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "New helper contains row-level invoice locking, status recheck and nonnegative amount guard, rather than adding duplicate route logic; imported by existing card-invoice-contracts-core.ts."
     }
   ],
   "references": [
@@ -192,12 +211,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/transaction-bulk-actions.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -235,12 +254,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -278,12 +297,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -321,12 +340,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -364,12 +383,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/web/src/dev-server/transactions-groups.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -406,12 +425,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/card-purchase-edit-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -454,12 +473,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -494,14 +513,14 @@
       ],
       "verification": {
         "status": "passed",
-        "command": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
+        "command": "python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "tests/test_solverfin_solo_audit_bootstrap.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-        "evidence_sha256": "68f385d0509bb01921b592495094e305e7df9866fdc0c21238410ce90f12c9f3"
+        "evidence_sha256": "d92f55aae3f54b3228cf391b4ee6b486d9c128ba26e8d6ee88ba75012aa42fc1"
       }
     },
     {
@@ -545,12 +564,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/card-purchase-void-boundaries.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -587,12 +606,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/card-purchase-invoice-period-move.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     },
     {
@@ -628,12 +647,56 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "af883c5d82b0dcd306193350ddbeaf9549cea8ee",
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
         "reached_tests": [
           "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-        "evidence_sha256": "c3d9e9b230c1a74d5ba0c0681aeba73ba4a32336374d24742b3db1fc3da21658"
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/category-evolution-report.integration.test.ts",
+      "operation": "modified",
+      "scenario": "category report regression isolation under foreign profile and stale shared seeded fixtures",
+      "requirement": "CI-773-ISOLATION-001",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 cd40692535453ea2cad88e020811428416b88f5c -- apps/api/src/category-evolution-report.integration.test.ts",
+          "git show 5ad67cab183cc26672d837c7f3ded55ba27e9189:apps/api/src/category-evolution-report.integration.test.ts",
+          "git grep -n buildCategoryEvolutionReportForContext -- apps/api/src"
+        ],
+        "scope": "Existing issue #542 integration report test reused; no new test file created; isolated financial profile prevents persisted fixture collisions and explicit other-profile BRL 550 remains outside results.",
+        "runner": "npm run test:integration --workspace @solverfin/api (Repository CI CRITICAL job).",
+        "candidates": [
+          {
+            "path": "apps/api/src/category-evolution-report.integration.test.ts",
+            "case": "Existing monthly report test already asserted BRL amounts and currency separation.",
+            "oracle": "Expected February expense 0 in isolated financial profile despite another profile containing a posted 550-minor expense in the same period.",
+            "comparison": "Previously reused shared seeded profile and unscoped calendar periods; current test uses a transactional temporary profile and rollback."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extends existing report integration test with transaction-scoped fixture isolation and cross-profile negative control rather than adding a duplicate suite.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Existing BRL/USD monthly aggregated incomes, expenses and category hierarchy"
+      ],
+      "coverage_after": [
+        "Existing BRL/USD monthly aggregated incomes, expenses and category hierarchy",
+        "Cross-profile contamination negative case with 550 minor amount and rollback fixture"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/category-evolution-report.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
       }
     }
   ]
