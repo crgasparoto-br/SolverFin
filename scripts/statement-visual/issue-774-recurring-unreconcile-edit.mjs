@@ -78,9 +78,11 @@ async function validateRecurringAccountEdit({ cdp, baseUrl, outputDir }, initial
 
   // Before unreconciliation, the restricted editor remains the only entry point.
   await navigate(cdp, `${baseUrl}${route}`);
-  const reconciledState = isPlanned ? { notApplicable: true } : await evaluate(
-    cdp,
-    `(async () => {
+  const reconciledState = isPlanned
+    ? { notApplicable: true }
+    : await evaluate(
+        cdp,
+        `(async () => {
       for (let i = 0; i < 50; i++) {
         const edit = document.querySelector(${JSON.stringify(editSelector)});
         if (edit?.dataset.installmentEdit) return { restricted: true, title: edit.title };
@@ -88,20 +90,24 @@ async function validateRecurringAccountEdit({ cdp, baseUrl, outputDir }, initial
       }
       return { restricted: false };
     })()`,
-  );
-  if (!isPlanned) assert.equal(reconciledState.restricted, true, "Reconciled recurrence must remain restricted");
+      );
+  if (!isPlanned)
+    assert.equal(reconciledState.restricted, true, "Reconciled recurrence must remain restricted");
 
-  const unreconcile = isPlanned ? null : await evaluate(
-    cdp,
-    `(async () => {
+  const unreconcile = isPlanned
+    ? null
+    : await evaluate(
+        cdp,
+        `(async () => {
       const response = await fetch(${JSON.stringify(`/api/transactions/${fixture.transactionId}`)}, {
         method: "PATCH", headers: { "content-type": "application/json" },
         body: JSON.stringify({ status: "posted" }),
       });
       return { status: response.status, body: await response.json() };
     })()`,
-  );
-  if (!isPlanned) assert.equal(unreconcile.status, 200, "The reconciliation must be undone before editing");
+      );
+  if (!isPlanned)
+    assert.equal(unreconcile.status, 200, "The reconciliation must be undone before editing");
 
   await navigate(cdp, `${baseUrl}${route}`);
   const editState = await evaluate(
@@ -221,7 +227,11 @@ async function validateRecurringAccountEdit({ cdp, baseUrl, outputDir }, initial
   if (isPlanned) {
     assert.equal(patch.payload.plannedOn, fixture.editedOn);
     assert.equal(patch.payload.occurredOn, fixture.editedOn);
-    assert.equal(patch.payload.status, "planned", "Current-only edit must not bypass status transitions");
+    assert.equal(
+      patch.payload.status,
+      "planned",
+      "Current-only edit must not bypass status transitions",
+    );
   }
 
   const persisted = await evaluate(
@@ -266,9 +276,12 @@ async function validateRecurringAccountEdit({ cdp, baseUrl, outputDir }, initial
   );
 
   await writeFile(
-    join(outputDir, isPlanned
-      ? "issue-774-planned-account-edit.json"
-      : "issue-774-recurring-unreconcile-edit.json"),
+    join(
+      outputDir,
+      isPlanned
+        ? "issue-774-planned-account-edit.json"
+        : "issue-774-recurring-unreconcile-edit.json",
+    ),
     `${JSON.stringify(
       {
         subjectSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),

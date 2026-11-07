@@ -47,7 +47,10 @@ test("planned and posted account recurrences use current-only scope without unlo
     eligible({ transaction: { recurrenceId: "recurrence-1", status: "reconciled" } }),
     false,
   );
-  assert.equal(eligible({ transaction: { recurrenceId: "recurrence-1", status: "voided" } }), false);
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "voided" } }),
+    false,
+  );
   assert.equal(eligible({ transaction: { recurrenceId: "other", status: "planned" } }), false);
   assert.equal(eligible({ recurrenceId: null }), false, "Manual installment remains restricted");
   assert.equal(eligible({ recurrence: { status: "cancelled" } }), false);
@@ -55,11 +58,15 @@ test("planned and posted account recurrences use current-only scope without unlo
   assert.equal(eligible({ card: { id: "card-1" } }), false);
   assert.equal(eligible({ cardInstrument: { id: "instrument-1" } }), false);
   assert.equal(
-    eligible({ transaction: { recurrenceId: "recurrence-1", status: "planned", cardId: "card-1" } }),
+    eligible({
+      transaction: { recurrenceId: "recurrence-1", status: "planned", cardId: "card-1" },
+    }),
     false,
   );
   assert.equal(
-    eligible({ transaction: { recurrenceId: "recurrence-1", status: "planned", invoiceId: "invoice-1" } }),
+    eligible({
+      transaction: { recurrenceId: "recurrence-1", status: "planned", invoiceId: "invoice-1" },
+    }),
     false,
   );
   assert.equal(eligible({ status: "reconciled" }), false);
