@@ -25,8 +25,8 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const requestScope = await waitForInstallmentLine(fixture.transactionId);
   check(
-    !requestScope.badgePresent,
-    "Fixed recurring entry must not show a parcel badge",
+    requestScope.badgePresent,
+    "Manual finite installment must display its installment badge",
     requestScope,
   );
   check(
@@ -224,23 +224,21 @@ function fixtureExpression() {
       name: "Categoria teclado " + suffix,
       kind: "expense"
     })).category;
-    const recurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-15",
-      endOn: "2026-07-15",
-      amountMinor: 12345,
-      description: "QA issue 539 teclado",
-      kind: "expense",
+    // Keep keyboard and attachment coverage on the restricted finite-installment
+    // editor; planned bank recurrences now open the full transaction editor.
+    const installments = (await request("/api/installments", "POST", {
       accountId: account.id,
-      categoryId: category.id
-    })).recurrence;
-    await request("/api/recurrences/" + recurrence.id + "/generate-installments", "POST", {
-      through: "2026-07-15",
-      maxOccurrences: 1
-    });
-    const installments = (await request(
-      "/api/installments?recurrenceId=" + recurrence.id + "&status=all"
-    )).installments;
+      categoryId: category.id,
+      kind: "expense",
+      status: "planned",
+      description: "QA issue 539 teclado",
+      plannedOn: "2026-07-15",
+      amountMinor: 12345,
+      amountMode: "per_installment",
+      totalInstallments: 2,
+      initialSequenceNumber: 1,
+      idempotencyKey: crypto.randomUUID()
+    })).installments;
     const installment = installments.find((item) => item.transaction?.id);
     if (!installment?.transaction?.id) throw new Error("Keyboard fixture did not create an installment");
     return { accountId: account.id, transactionId: installment.transaction.id };

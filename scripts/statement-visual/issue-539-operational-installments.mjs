@@ -82,9 +82,15 @@ async function validateAccountDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
+  // Preserve the old restricted-installment test against a real finite plan.
+  // Eligible planned account recurrences now use the full transaction editor.
+  const recurrenceLine = await waitForRecurringAccountLine(fixture.recurringAccountTransactionId);
+  check(recurrenceLine.badge === "", "Fixed recurrence should not display a finite installment badge", recurrenceLine);
+  check(recurrenceLine.hasRecurrenceIndicator, "Recurrence indicator was not preserved", recurrenceLine);
+  check(recurrenceLine.editable, "Account recurrence edit action did not become available", recurrenceLine);
   const line = await waitForAccountLine(fixture.accountTransactionId);
-  check(line.badge === "", "Fixed recurrence should not display a finite installment badge", line);
-  check(line.hasRecurrenceIndicator, "Recurrence indicator was not preserved", line);
+  check(line.badge === fixture.accountBadge, "Finite plan must keep its installment badge", line);
+  check(!line.hasRecurrenceIndicator, "Finite installment must not acquire a recurring icon", line);
   check(line.editable, "Installment edit action did not become available", line);
 
   await evaluate(
@@ -505,6 +511,29 @@ async function waitForAccountLine(transactionId) {
   );
 }
 
+async function waitForRecurringAccountLine(transactionId) {
+  return evaluate(
+    browser.cdp,
+    `(async () => {
+      for (let attempt = 0; attempt < 80; attempt += 1) {
+        const node = document.querySelector('script[data-transaction="${transactionId}"]');
+        const row = node?.closest("article");
+        const edit = row?.querySelector('[data-edit="${transactionId}"]');
+        if (row && edit && !edit.disabled && !edit.dataset.installmentEdit &&
+            edit.title === "Editar lançamento recorrente") {
+          return {
+            badge: row.querySelector("[data-installment-badge]")?.textContent.trim() || "",
+            hasRecurrenceIndicator: Boolean(row.querySelector(".recurrence-indicator")),
+            editable: true
+          };
+        }
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+      throw new Error("Timed out waiting for the full account recurrence editor");
+    })()`,
+  );
+}
+
 async function waitForCardLine(transactionId) {
   return evaluate(
     browser.cdp,
@@ -619,13 +648,32 @@ function fixtureExpression() {
     const accountInstallments = (await request(
       "/api/installments?recurrenceId=" + accountRecurrence.id + "&status=all"
     )).installments;
-    const accountInstallment = accountInstallments.find(
+    const recurringAccountInstallment = accountInstallments.find(
+      (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
+    );
+    // Manual finite installments still exercise the restricted edit and
+    // future-scope dialog; account recurrences exercise the full modal above.
+    const manualPlan = await request("/api/installments", "POST", {
+      accountId: account.id,
+      categoryId: category.id,
+      kind: "expense",
+      status: "planned",
+      description: "QA issue 539 parcela manual",
+      plannedOn: "2026-07-05",
+      amountMinor: 12345,
+      amountMode: "per_installment",
+      totalInstallments: 3,
+      initialSequenceNumber: 1,
+      idempotencyKey: crypto.randomUUID()
+    });
+    const manualInstallments = manualPlan.installments;
+    const accountInstallment = manualInstallments.find(
       (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
     );
     const blockedAccountInstallment = accountInstallments.find(
       (item) => item.dueOn === "2026-08-05" && item.transaction?.id,
     );
-    const conflictAccountInstallment = accountInstallments.find(
+    const conflictAccountInstallment = manualInstallments.find(
       (item) => item.dueOn === "2026-09-05" && item.transaction?.id,
     );
     let blockedAccountMonth = "";
@@ -676,6 +724,7 @@ function fixtureExpression() {
 
     if (
       !accountInstallment?.transaction?.id ||
+      !recurringAccountInstallment?.transaction?.id ||
       !blockedAccountInstallment?.transaction?.id ||
       !blockedAccountMonth ||
       !conflictAccountInstallment?.transaction?.id ||
@@ -689,6 +738,7 @@ function fixtureExpression() {
       archivedCategoryId: category.id,
       accountInstallmentId: accountInstallment.id,
       accountTransactionId: accountInstallment.transaction.id,
+      recurringAccountTransactionId: recurringAccountInstallment.transaction.id,
       accountBadge: "Parcela " + accountInstallment.sequenceNumber + " de " + accountInstallment.totalInstallments,
       blockedAccountMonth,
       blockedAccountTransactionId: blockedAccountInstallment.transaction.id,
