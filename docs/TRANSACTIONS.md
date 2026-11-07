@@ -248,8 +248,12 @@ lancamentos excluidos continuam sujeitos as restricoes atuais. A conciliacao
 
 No Extrato, a ocorrência recorrente desconciliada retorna ao estado
 `posted` e pode ser editada pelo menu de ações e pelo escopo **Somente este
-lançamento**. O formulário usa `PATCH /api/transactions/:id/current-only`;
-o endpoint genérico continua bloqueando mutações não exclusivamente de
+lançamento**. A mesma edição completa também está disponível quando a
+ocorrência bancária ainda está `planned`, incluindo conta, datas, categoria,
+descrição e valor; parcelas manuais, compras em cartão e lançamentos
+conciliados continuam no editor restrito. O formulário usa
+`PATCH /api/transactions/:id/current-only`; o endpoint genérico continua
+bloqueando mutações não exclusivamente de
 situação em parcelas canônicas. **Este lançamento e os próximos** preserva
 a operação já existente, que alcança somente as futuras elegíveis. A
 alteração individual sincroniza a parcela selecionada sem alterar outras

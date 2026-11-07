@@ -6,7 +6,16 @@ import { join } from "node:path";
 import { evaluate, navigate, screenshot, sleep } from "./cdp.mjs";
 
 /** Exercise the real bank-statement modal, not only an API or mock controller. */
-export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, outputDir }) {
+export async function validateUnreconciledRecurringAccountEdit(context) {
+  return validateRecurringAccountEdit(context, "posted");
+}
+
+export async function validatePlannedRecurringAccountEdit(context) {
+  return validateRecurringAccountEdit(context, "planned");
+}
+
+async function validateRecurringAccountEdit({ cdp, baseUrl, outputDir }, initialStatus) {
+  const isPlanned = initialStatus === "planned";
   const fixture = await evaluate(
     cdp,
     `(async () => {
@@ -27,6 +36,9 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       )).toISOString().slice(0, 10);
       const startOn = occurrenceDate(-1);
       const selectedOn = occurrenceDate(0);
+      const editedOn = new Date(Date.UTC(
+        today.getUTCFullYear(), today.getUTCMonth(), 9,
+      )).toISOString().slice(0, 10);
       const through = occurrenceDate(1);
       const source = (await request("/api/accounts", "POST", {
         name: "QA #774 origem " + suffix, kind: "checking", currency: "BRL", openingBalanceMinor: 0,
@@ -48,8 +60,13 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       const installments = (await request("/api/installments?recurrenceId=" + recurrence.id + "&status=all")).installments;
       const selected = installments.find((item) => item.dueOn === selectedOn && item.transaction?.id);
       if (!selected) throw new Error("Selected recurrence occurrence was not materialized");
-      await request("/api/transactions/" + selected.transaction.id, "PATCH", { status: "reconciled" });
+      if (!${isPlanned}) {
+        await request("/api/transactions/" + selected.transaction.id, "PATCH", { status: "reconciled" });
+      } else if (selected.transaction.status !== "planned") {
+        throw new Error("Expected a planned account occurrence for the planned editing scenario");
+      }
       return {
+        editedOn,
         sourceId: source.id, destinationId: destination.id, categoryId: category.id,
         month: selectedOn.slice(0, 7), recurrenceId: recurrence.id, transactionId: selected.transaction.id,
         siblingIds: installments.filter((item) => item.id !== selected.id).map((item) => item.transaction?.id),
@@ -59,9 +76,9 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.sourceId)}&month=${fixture.month}`;
   const editSelector = `[data-edit="${fixture.transactionId}"]`;
 
-  // While reconciled the restricted installment editor is still the only entry point.
+  // Before unreconciliation, the restricted editor remains the only entry point.
   await navigate(cdp, `${baseUrl}${route}`);
-  const reconciledState = await evaluate(
+  const reconciledState = isPlanned ? { notApplicable: true } : await evaluate(
     cdp,
     `(async () => {
       for (let i = 0; i < 50; i++) {
@@ -72,9 +89,9 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       return { restricted: false };
     })()`,
   );
-  assert.equal(reconciledState.restricted, true, "Reconciled recurrence must remain restricted");
+  if (!isPlanned) assert.equal(reconciledState.restricted, true, "Reconciled recurrence must remain restricted");
 
-  const unreconcile = await evaluate(
+  const unreconcile = isPlanned ? null : await evaluate(
     cdp,
     `(async () => {
       const response = await fetch(${JSON.stringify(`/api/transactions/${fixture.transactionId}`)}, {
@@ -84,7 +101,7 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       return { status: response.status, body: await response.json() };
     })()`,
   );
-  assert.equal(unreconcile.status, 200, "The reconciliation must be undone before editing");
+  if (!isPlanned) assert.equal(unreconcile.status, 200, "The reconciliation must be undone before editing");
 
   await navigate(cdp, `${baseUrl}${route}`);
   const editState = await evaluate(
@@ -138,6 +155,10 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       form.querySelector('[name="categoryId"]').value = "";
       form.querySelector('[name="description"]').value = ${JSON.stringify(description)};
       form.querySelector('[name="amountMinor"]').value = "54,32";
+      if (${isPlanned}) {
+        form.querySelector('[name="occurredOn"]').value = ${JSON.stringify(fixture.editedOn)};
+        form.querySelector('[name="plannedOn"]').value = ${JSON.stringify(fixture.editedOn)};
+      }
       return { valid: form.checkValidity(), account: account.value,
         category: form.querySelector('[name="categoryId"]').value };
     })()`,
@@ -147,7 +168,10 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
     account: fixture.destinationId,
     category: "",
   });
-  await screenshot(cdp, join(outputDir, "issue-774-after-unreconcile-edit-dialog.png"));
+  const screenshotName = isPlanned
+    ? "issue-774-planned-account-edit-dialog.png"
+    : "issue-774-after-unreconcile-edit-dialog.png";
+  await screenshot(cdp, join(outputDir, screenshotName));
 
   const submitted = await evaluate(
     cdp,
@@ -194,6 +218,11 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
   assert.equal(patch.payload.categoryId, null);
   assert.equal(patch.payload.description, description);
   assert.equal(patch.payload.amountMinor, 5432);
+  if (isPlanned) {
+    assert.equal(patch.payload.plannedOn, fixture.editedOn);
+    assert.equal(patch.payload.occurredOn, fixture.editedOn);
+    assert.equal(patch.payload.status, "planned", "Current-only edit must not bypass status transitions");
+  }
 
   const persisted = await evaluate(
     cdp,
@@ -203,13 +232,22 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
       const recurrence = await request(${JSON.stringify(`/api/recurrences/${fixture.recurrenceId}`)});
       const installments = await request(${JSON.stringify(`/api/installments?recurrenceId=${fixture.recurrenceId}&status=all`)});
       return { transaction: selected.transaction, recurrence: recurrence.recurrence,
+        selectedInstallment: installments.installments.find(
+          (item) => item.transaction?.id === ${JSON.stringify(fixture.transactionId)},
+        ),
         siblingTransactions: installments.installments.filter(
           (item) => item.transaction?.id !== ${JSON.stringify(fixture.transactionId)},
         ).map((item) => item.transaction),
       };
     })()`,
   );
-  assert.equal(persisted.transaction.status, "posted");
+  assert.equal(persisted.transaction.status, initialStatus);
+  if (isPlanned) {
+    assert.equal(String(persisted.transaction.plannedOn).slice(0, 10), fixture.editedOn);
+    assert.equal(String(persisted.transaction.occurredOn).slice(0, 10), fixture.editedOn);
+    assert.equal(String(persisted.selectedInstallment.dueOn).slice(0, 10), fixture.editedOn);
+    assert.equal(persisted.selectedInstallment.amountMinor, 5432);
+  }
   assert.equal(persisted.transaction.accountId, fixture.destinationId);
   assert.equal(persisted.transaction.categoryId ?? null, null);
   assert.equal(persisted.transaction.amountMinor, 5432);
@@ -228,24 +266,28 @@ export async function validateUnreconciledRecurringAccountEdit({ cdp, baseUrl, o
   );
 
   await writeFile(
-    join(outputDir, "issue-774-recurring-unreconcile-edit.json"),
+    join(outputDir, isPlanned
+      ? "issue-774-planned-account-edit.json"
+      : "issue-774-recurring-unreconcile-edit.json"),
     `${JSON.stringify(
       {
         subjectSha: execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim(),
         route,
-        scenario: "reconciled -> posted -> current-only UI edit -> persisted readback",
+        scenario: isPlanned
+          ? "planned -> current-only UI edit -> persisted readback"
+          : "reconciled -> posted -> current-only UI edit -> persisted readback",
         reconciledState,
         editState,
         modalState,
         prepared,
         patch,
         persisted,
-        screenshot: "issue-774-after-unreconcile-edit-dialog.png",
+        screenshot: screenshotName,
         result: "passed",
       },
       null,
       2,
     )}\n`,
   );
-  console.log("[issue-774] Real Chrome reconciliation and current-only edit passed");
+  console.log(`[issue-774] Real Chrome ${initialStatus} current-only edit passed`);
 }

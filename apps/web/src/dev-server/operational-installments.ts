@@ -391,13 +391,13 @@ export function operationalInstallmentsController(): string {
           }
           const editButton = row.querySelector('[data-edit="' + transactionId + '"]');
           if (!editButton) return;
-          // A posted account recurrence (including after unreconciliation) is
-          // edited by the transaction's current-only scope modal. Finite
-          // installments and locked occurrences retain the restricted editor.
+          // Eligible planned and posted bank recurrences use the full
+          // transaction scope modal; reconciled/card/manual installments
+          // retain their restricted editor.
           const recurringAccountOccurrence = Boolean(
             installment.recurrenceId &&
             installment.transaction?.recurrenceId === installment.recurrenceId &&
-            installment.transaction?.status === "posted" &&
+            ["planned", "posted"].includes(installment.transaction?.status) &&
             ["planned", "posted"].includes(installment.status) &&
             installment.recurrence &&
             installment.recurrence.status !== "cancelled" &&

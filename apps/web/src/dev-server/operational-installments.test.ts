@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 
 import {
   buildAccountInstallmentsPath,
@@ -21,11 +22,47 @@ test("installment editing has one managed primary submit and suppresses create-o
   assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
 });
 
-test("posted account recurrences use current-only scope, without unlocking ordinary installments", () => {
+test("planned and posted account recurrences use current-only scope without unlocking other installments", () => {
   const script = operationalInstallmentsController();
-  assert.match(script, /installment\.transaction\?\.status === "posted"/);
-  assert.match(script, /installment\.recurrence\.status !== "cancelled"/);
-  assert.match(script, /recurringAccountOccurrence/);
+  // Evaluate the actual generated controller guard against discriminating data;
+  // checking only a matching string would miss a broken planned branch.
+  const guard = script.match(
+    /const recurringAccountOccurrence = Boolean\(([\s\S]*?)\);\s*if \(recurringAccountOccurrence\)/,
+  );
+  assert.ok(guard, "Account recurrence eligibility guard must exist in the generated controller");
+  const eligible = (overrides = {}) => {
+    const record = {
+      id: "installment-1",
+      recurrenceId: "recurrence-1",
+      status: "planned",
+      recurrence: { status: "active" },
+      transaction: { id: "transaction-1", recurrenceId: "recurrence-1", status: "planned" },
+      ...overrides,
+    };
+    return runInNewContext(`Boolean(${guard[1]})`, { installment: record }) === true;
+  };
+  assert.equal(eligible(), true, "Planned bank recurrence must open the full transaction editor");
+  assert.equal(eligible({ transaction: { recurrenceId: "recurrence-1", status: "posted" } }), true);
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "reconciled" } }),
+    false,
+  );
+  assert.equal(eligible({ transaction: { recurrenceId: "recurrence-1", status: "voided" } }), false);
+  assert.equal(eligible({ transaction: { recurrenceId: "other", status: "planned" } }), false);
+  assert.equal(eligible({ recurrenceId: null }), false, "Manual installment remains restricted");
+  assert.equal(eligible({ recurrence: { status: "cancelled" } }), false);
+  assert.equal(eligible({ invoice: { id: "invoice-1" } }), false);
+  assert.equal(eligible({ card: { id: "card-1" } }), false);
+  assert.equal(eligible({ cardInstrument: { id: "instrument-1" } }), false);
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "planned", cardId: "card-1" } }),
+    false,
+  );
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "planned", invoiceId: "invoice-1" } }),
+    false,
+  );
+  assert.equal(eligible({ status: "reconciled" }), false);
   assert.match(script, /if \(recurringAccountOccurrence\) \{/);
   assert.match(script, /editButton\.dataset\.installmentEdit = installment\.id/);
 });
