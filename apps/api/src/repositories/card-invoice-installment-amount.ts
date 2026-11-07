@@ -69,7 +69,7 @@ export async function adjustInvoiceInstallmentAmountForContext(
               and selected."organizationId" = $3 and selected."financialProfileId" = $4
         ) and i."organizationId" = $3 and i."financialProfileId" = $4
         order by i."sequenceNumber", i."id"
-        for update of i, inv`,
+        for update of i, inv, t`,
       [installmentId, invoiceId, context.organizationId, context.financialProfileId],
     );
     const selected = rows.find((row) => row.id === installmentId && row.invoiceId === invoiceId);

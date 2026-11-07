@@ -107,6 +107,14 @@ async function assertIndividualLogicalVoidKeepsInstallmentHistory(
     "voided",
   );
 
+  const rejectedReconciliation = await apiRequest(
+    token,
+    "PATCH",
+    `/api/transactions/${transactionId}`,
+    { status: "reconciled" },
+  );
+  assert.equal(rejectedReconciliation.statusCode, 409, "VOIDED cannot be reconciled again.");
+
   const current = await readInstallment(token, installment.id);
   assert.equal(current.status, "planned");
   assert.equal(current.transaction?.status, "voided");

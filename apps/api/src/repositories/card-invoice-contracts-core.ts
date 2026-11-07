@@ -3,6 +3,11 @@ import { TenantAuthorizationError, type EntityId, type TenantContext } from "@so
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import {
+  applyEditableCardPurchaseInvoiceChangeInTransaction,
+  assertCardPurchaseInvoiceStatusEditable,
+  LOCKED_CARD_PURCHASE_INVOICE_STATUSES,
+} from "./card-invoice-purchase-edit-write.js";
+import {
   checkRecurringEdit,
   loadPurchaseInstallmentEditStates,
   purchaseInstallmentEditViolation,
@@ -155,8 +160,6 @@ export class InvoiceContractError extends Error {
   }
 }
 
-const LOCKED_CARD_PURCHASE_INVOICE_STATUSES = new Set(["CLOSED", "PAID", "CANCELLED"]);
-
 function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
   const violation = purchaseInstallmentEditViolation(rows);
   if (violation) throw new InvoiceContractError(violation.code, violation.message, 409);
@@ -174,6 +177,7 @@ export async function summarizeInvoiceForContext(
          from "Transaction" t
         where t."organizationId" = $1 and t."financialProfileId" = $2
           and t."invoiceId" = $3 and t."cardId" = $4 and t."accountId" is null
+          and t."status" <> 'VOIDED'
           and not exists (
             select 1 from "Installment" pi
              where pi."transactionId" = t."id"
@@ -189,6 +193,7 @@ export async function summarizeInvoiceForContext(
           and p."financialProfileId" = i."financialProfileId"
         where i."organizationId" = $1 and i."financialProfileId" = $2
           and i."invoiceId" = $3 and i."cardId" = $4
+          and p."status" <> 'VOIDED'
      )
      select
         count(*)::int as "purchasesCount",
@@ -260,6 +265,7 @@ export async function listCardPurchasesForContext(
     `"financialProfileId" = $2`,
     `"cardId" is not null`,
     `"accountId" is null`,
+    `"status" <> 'VOIDED'`,
     `("kind" = 'EXPENSE' or ("kind" = 'INCOME' and "description" like '%[estorno:%'))`,
   ];
   const params: unknown[] = [context.organizationId, context.financialProfileId];
@@ -328,13 +334,7 @@ export async function updateCardPurchaseForContext(
     );
   }
 
-  if (LOCKED_CARD_PURCHASE_INVOICE_STATUSES.has(invoice.status)) {
-    throw new InvoiceContractError(
-      "CARD_PURCHASE_INVOICE_LOCKED",
-      "Compras de faturas fechadas, pagas ou canceladas nao podem ser editadas.",
-      409,
-    );
-  }
+  assertCardPurchaseInvoiceStatusEditable(invoice.status);
 
   const denied = await checkRecurringEdit(query, context, current, invoice.currency, payload);
   if (denied) throw new InvoiceContractError(denied.code, denied.message, 409);
@@ -416,12 +416,17 @@ export async function updateCardPurchaseForContext(
       }
       assertPurchaseInstallmentsEditable(lockedRows);
     }
-    await executeQuery(
+    // Guard the write using the snapshot read before this transaction.
+    const updated = await executeQuery<{ id: string }>(
       `update "Transaction" set
         "categoryId" = $4, "cardInstrumentId" = $5, "status" = $6, "amountMinor" = $7,
         "occurredOn" = $8, "plannedOn" = $8, "description" = $9, "reconciledAt" = $10,
         "updatedAt" = $11, "updatedByUserId" = $12
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $13 and "invoiceId" = $14 and "accountId" is null
+         and "status" = $15 and "status" <> 'VOIDED'
+         and "amountMinor" = $16 and "updatedAt" = $17
+       returning "id"`,
       [
         current.id,
         context.organizationId,
@@ -435,9 +440,28 @@ export async function updateCardPurchaseForContext(
         nextReconciledAt,
         now,
         context.userId,
+        cardId,
+        invoice.id,
+        current.status,
+        current.amountMinor,
+        current.updatedAt,
       ],
     );
-
+    if (updated.length !== 1)
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CONCURRENT_CHANGE",
+        "A compra foi alterada ou anulada durante a edição.",
+        409,
+      );
+    await applyEditableCardPurchaseInvoiceChangeInTransaction(
+      executeQuery,
+      context,
+      cardId,
+      invoice.id,
+      current.currency,
+      amountDelta,
+      now,
+    );
     if (current.installmentId !== null) {
       await executeQuery(
         `update "Installment" set
@@ -470,14 +494,6 @@ export async function updateCardPurchaseForContext(
           now,
           context.userId,
         ],
-      );
-    }
-
-    if (amountDelta !== 0) {
-      await executeQuery(
-        `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
-         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-        [invoice.id, context.organizationId, context.financialProfileId, amountDelta, now],
       );
     }
 
@@ -534,7 +550,8 @@ export async function reconcileInvoiceInstallmentForContext(
           and i."organizationId" = $3 and i."financialProfileId" = $4
           and i."cardId" = inv."cardId" and t."cardId" = inv."cardId"
           and t."accountId" is null and t."kind" = 'EXPENSE'
-        for update of i, inv`,
+          and t."status" <> 'VOIDED'
+        for update of i, inv, t`,
       [installmentId, invoiceId, context.organizationId, context.financialProfileId],
     );
     const row = rows[0];
@@ -681,7 +698,8 @@ async function findCardPurchase(
             "amountMinor", "currency", "kind", "status", "reconciledAt", "updatedAt"
        from "Transaction"
        where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-         and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
+         and "cardId" = $4 and "invoiceId" is not null and "accountId" is null
+         and "kind" = 'EXPENSE' and "status" <> 'VOIDED'`,
     [transactionId, context.organizationId, context.financialProfileId, cardId],
   );
   const row = rows[0];
@@ -723,7 +741,7 @@ async function calculateLimitUsedForCard(
        join "Invoice" i on i."id" = t."invoiceId"
        where t."organizationId" = $1 and t."financialProfileId" = $2 and t."cardId" = $3
          and t."accountId" is null and t."kind" = 'EXPENSE'
-         and i."status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
+         and t."status" <> 'VOIDED' and i."status" in ('OPEN', 'CLOSED', 'OVERDUE')`,
     [context.organizationId, context.financialProfileId, cardId],
   );
 
