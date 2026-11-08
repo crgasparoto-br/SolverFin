@@ -1,7 +1,12 @@
-Stage A material=017655321b0c286f582d74ba713c168e13ddff5f; protected develop base=1b30adacc864341f9aea5113cbdb9be233fbb8a1.
-GitHub Actions Delivery audit workspace run 42485539937: completed/success, authenticated exact-SHA Git Bundle restored with SHA 017655321b0c286f582d74ba713c168e13ddff5f.
-Material tests: python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py => 27 passed.
-Raw positive log SHA-256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab; negative old-code mutant SHA-256=ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e (4 expected failures).
-Repository CI run 42485539820: completed/success at exact material SHA (observed GitHub Actions).
-Changed material paths: scripts/session_review_evidence.py; tests/test_session_review_trusted_producers.py.
-Protected workflows, policy, rulesets, develop and main unchanged; Stage B deferred; no independent approval or merge.
+repository=crgasparoto-br/SolverFin
+base_sha=1b30adacc864341f9aea5113cbdb9be233fbb8a1
+material_head_sha=b00de9f8c38f145a8bd732c195a7fad32ed77c51
+delivery_workspace_run=42505743571
+delivery_workspace_status=completed/success
+ci_bundle=trusted-audit-git-bundle-b00de9f8c38f145a8bd732c195a7fad32ed77c51
+bundle_restorer=auditar-issue/scripts/restore_ci_git_bundle.py READY
+repository_ci_run=42505743521
+repository_ci_terminal_status=completed/success
+repository_ci_url=https://github.com/crgasparoto-br/SolverFin/actions/runs/42505743521
+python_tests=34 passed on exact material checkout
+negative_mutant=6 expected failures; sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518

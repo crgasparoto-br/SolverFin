@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/pr770_audit/remediation/issue-762/specification-snapshot.json",
-    "sha256": "5eff7553740c1cf3cd9dc70a5457a98bee67df8d6dd3e14d31950d633ed3f9de"
+    "path": "specification-snapshot.json",
+    "sha256": "eecd9c51049055946219b742e97fdbf7968858f4a0c33a5faea2441de66891d4"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -301,7 +301,8 @@
       "Etapa A",
       "Etapa B",
       "JUnit aggregate counts",
-      "A-004 targeted/systemic remediation inventory"
+      "A-004 targeted/systemic remediation inventory",
+      "A-006 JUnit hierarchy fail-closed"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
@@ -330,11 +331,12 @@
     ],
     "evidence": [
       "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 27 passed com controle adicional JUnit inconsistente no HEAD exato 017655321b0c286f582d74ba713c168e13ddff5f",
+      "Testes focados 34 passed com controle adicional JUnit inconsistente no HEAD exato b00de9f8c38f145a8bd732c195a7fad32ed77c51",
       "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
       "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
-      "A-004: 27 tests passed on material HEAD 017655321b0c286f582d74ba713c168e13ddff5f; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
-      "A-005: 27 tests passed on exact material 017655321b0c286f582d74ba713c168e13ddff5f; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab"
+      "A-004: 27 tests passed on material HEAD b00de9f8c38f145a8bd732c195a7fad32ed77c51; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
+      "A-005: 27 tests passed on exact material b00de9f8c38f145a8bd732c195a7fad32ed77c51; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
+      "A-006: 34 exact material tests passed at b00de9f8c38f145a8bd732c195a7fad32ed77c51; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

@@ -61,5 +61,9 @@
     "prior_rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336"
   },
   "trusted_anchor_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
-  "verdict": "REPROVADA"
+  "verdict": "REPROVADA",
+  "handoff_revalidation": {
+    "material_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+    "note": "Historical source audit identity is immutable; this field only records the current remediation material."
+  }
 }

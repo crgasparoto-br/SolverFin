@@ -9,7 +9,7 @@
     ],
     "audit_report_sha256": "ffae9d6f88f81ec055d40f0cb81229af315ff99fad4fb5d0600a5d9df324dcc5",
     "audited_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-    "revalidated_material_head_sha": "017655321b0c286f582d74ba713c168e13ddff5f"
+    "revalidated_material_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
