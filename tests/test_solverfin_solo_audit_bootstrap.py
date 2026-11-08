@@ -17,6 +17,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "entregar-issue" / "scripts"))
 import solo_audit_check_runs as solo_checks
+import solo_audit_github as solo_github
 sys.path.insert(0, str(ROOT / "auditar-issue" / "scripts"))
 from audit_signature import sign_report, verify_report
 import verify_independent_pr_audit as trusted_checks
@@ -133,6 +134,28 @@ class SolverFinTrustedChecks(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "request for changes"):
                 solo_checks.required_evidence("crgasparoto-br/SolverFin", identity)
 
+
+
+    def test_open_pr_uniqueness_blocks_shared_head_but_not_closed_or_other_sha(self):
+        repo = "crgasparoto-br/SolverFin"
+        associations = [
+            {"number": 765, "state": "open", "head": {"sha": HEAD}},
+            {"number": 771, "state": "open", "head": {"sha": HEAD}},
+        ]
+        with patch.object(solo_github.session_runner, "pages", return_value=associations):
+            with self.assertRaisesRegex(ValueError, "multiple open PRs share one HEAD"):
+                solo_github.require_unique_open_pr_head(repo, 765, HEAD)
+
+            associations[1]["state"] = "closed"
+            solo_github.require_unique_open_pr_head(repo, 765, HEAD)
+
+            associations[1]["state"] = "open"
+            associations[1]["head"]["sha"] = BASE
+            solo_github.require_unique_open_pr_head(repo, 765, HEAD)
+
+            associations[0]["head"]["sha"] = BASE
+            with self.assertRaisesRegex(ValueError, "omitted the current PR"):
+                solo_github.require_unique_open_pr_head(repo, 765, HEAD)
 
     def test_workflow_runs_on_solverfin_sources_without_candidate_checkout(self):
         text = (ROOT / ".github/workflows/solo-audit-attestation.yml").read_text()

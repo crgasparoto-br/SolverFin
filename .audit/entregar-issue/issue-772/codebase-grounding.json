@@ -1,0 +1,703 @@
+{
+  "schema_version": 2,
+  "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+  "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+  "creations": [
+    {
+      "path": "apps/api/src/repositories/transaction-generic-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"updateActiveGenericTransaction\" -- apps/api/src/repositories",
+          "git grep -n \"buildUpdateTransactionSql\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing generic write flow was in transactions.ts; new isolated module prevents another oversized repository file and consolidates SQL guards.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/transactions.ts",
+            "reason_not_reused": "The write SQL was extracted out of this existing module for guarded reuse without violating the structural file-size policy."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Small extracted implementation of optimistic WHERE guards for generic transaction update; existing repository entrypoint imports it."
+    },
+    {
+      "path": "apps/api/src/repositories/card-purchase-invoice-period-move-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"totalAmountMinor\" -- apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+          "git grep -n \"updateOpenInvoiceTotal\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing invoice-period move core previously held both balance SQL statements; isolation keeps the existing public entrypoint and reduces file from >500 lines to 499.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
+            "reason_not_reused": "Existing file exceeded CODE-GROWTH-001 limit when incorporating concurrency-safe invoice checks; helper extracted without new entrypoint."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Explicit atomic balance mutation helper preserves withTransaction scope, status/card/tenant/currency restrictions and rollback for both invoices."
+    },
+    {
+      "path": "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
+        ],
+        "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/transaction-bulk-selection.mjs",
+            "reason_not_reused": "Original oversized entrypoint remains the orchestrator; extracted helper prevents further monolithic growth and duplication."
+          },
+          {
+            "path": "scripts/statement-visual/cdp.mjs",
+            "reason_not_reused": "Generic browser CDP driver is already reused by the new module; it cannot own issue-specific assertions."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract reusable Chrome toolbar assertion and failure-handling probes from the existing browser entrypoint; preserve the shared CDP driver and original tests."
+    },
+    {
+      "path": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"transaction-bulk-selection|cdp|assertSelectionActionIcons\" scripts/statement-visual"
+        ],
+        "scope": "Compared existing scenario, CDP helpers and unit tests at the frozen base; retained canonical browser fixture and shared utilities.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/transaction-bulk-selection.mjs",
+            "reason_not_reused": "Original oversized entrypoint remains the orchestrator; extracted helper prevents further monolithic growth and duplication."
+          },
+          {
+            "path": "scripts/statement-visual/cdp.mjs",
+            "reason_not_reused": "Generic browser CDP driver is already reused by the new module; it cannot own issue-specific assertions."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extract deterministic grouped deletion and mixed-status browser scenarios to limit single-file growth; reuse existing navigation/fixture and capture helpers."
+    },
+    {
+      "path": "apps/api/src/repositories/card-invoice-purchase-edit-write.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"totalAmountMinor\" -- apps/api/src/repositories/card-invoice-contracts-core.ts",
+          "git grep -n \"applyEditableCardPurchaseInvoiceChangeInTransaction\" -- apps/api/src/repositories"
+        ],
+        "scope": "Existing purchase edit was inside card-invoice-contracts-core.ts; extracted guarded invoice update into a small existing-transaction helper to preserve concurrency and code growth policy.",
+        "candidates": [
+          {
+            "path": "apps/api/src/repositories/card-invoice-contracts-core.ts",
+            "reason_not_reused": "Existing purchase edit entrypoint delegates its invoice balance mutation to this extracted helper so the main file remains within CODE-GROWTH-001 and the update contract is tested concurrently."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "New helper contains row-level invoice locking, status recheck and nonnegative amount guard, rather than adding duplicate route logic; imported by existing card-invoice-contracts-core.ts."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "withSharedTransaction",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/db.ts",
+        "line": 69
+      },
+      "verified_by": {
+        "command": "git grep -n withSharedTransaction -- apps/api/src/db.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "getPool",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/db.ts",
+        "line": 28
+      },
+      "verified_by": {
+        "command": "git grep -n getPool -- apps/api/src/db.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "deleteSimpleCardPurchaseForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "defined_at": {
+        "path": "apps/api/src/repositories/card-invoice-purchase-delete.ts",
+        "line": 7
+      },
+      "verified_by": {
+        "command": "git grep -n deleteSimpleCardPurchaseForContext -- apps/api/src/repositories/card-invoice-purchase-delete.ts",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "inspectProtectedGroupSelection",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/transaction-bulk-selection.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
+        "line": 5
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "verifyDeletionAndMixedStatuses",
+      "kind": "local",
+      "used_in": "scripts/statement-visual/transaction-bulk-selection.mjs",
+      "defined_at": {
+        "path": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
+        "line": 8
+      },
+      "verified_by": {
+        "command": "npm run typecheck",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
+      "operation": "modified",
+      "scenario": "legacy posted effectiveOn, remuneration groups, transaction rollback and audit",
+      "requirement": "REQUIRED-768-03+04+05",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/api/src/transaction-bulk-actions.integration.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "legacy posted effectiveOn, remuneration groups, transaction rollback and audit"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/transaction-bulk-actions.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "reconciliation eligibility and Golden Screen icon affordance",
+      "requirement": "REQUIRED-768-01+02",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "reconciliation eligibility and Golden Screen icon affordance"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
+      "operation": "modified",
+      "scenario": "selection toolbar responsive layout",
+      "requirement": "REQUIRED-768-07",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "selection toolbar responsive layout"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
+      "operation": "modified",
+      "scenario": "group installment protections",
+      "requirement": "REQUIRED-768-05",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "group installment protections"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/web/src/dev-server/transaction-group-installment-guard.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/transactions-groups.test.ts",
+      "operation": "modified",
+      "scenario": "group projection and server protection propagation",
+      "requirement": "REQUIRED-768-04",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189..056d8ae2124538b78fb70289189985647a5e731a",
+          "rg -n \"bulk|reconcile|group|date\" apps/web/src/dev-server/transactions-groups.test.ts"
+        ],
+        "scope": "Compared the already-existing test at the base with the expanded assertions at the exact material HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api (API) or npm run test (web), reached by Repository CI #42280792881.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/transactions-groups.test.ts",
+            "case": "Existing test was expanded with focused assertions rather than creating a duplicate test suite.",
+            "oracle": "GitHub Actions exact-SHA CRITICAL validation exited success; workflow logs list the invoked test.",
+            "comparison": "File existed at frozen base and is modified at the material HEAD."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend existing registered oracle for issue #768 with discriminating negative and positive assertions; no test removal or conditional skip.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Prior bulk/group status and UI contracts"
+      ],
+      "coverage_after": [
+        "Prior bulk/group status and UI contracts",
+        "group projection and server protection propagation"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/web/src/dev-server/transactions-groups.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Transaction VOIDED retained; rollback fixtures; stale editor waits on a database lock and rejects resurrection after competing delete.",
+      "requirement": "REQ-772-002, REQ-772-003, REQ-772-004",
+      "search": {
+        "queries": [
+          "git diff 5ad67cab..178753 -- apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git grep -n assertSimplePurchaseSoftDelete apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "scope": "Existing card-purchase-edit-contract integration file already handles card, invoice and recurrence flows; append adversarial tests without creating a second runner.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+            "case": "Existing happy path card purchase edit and recurrent/installment restrictions.",
+            "oracle": "assert.rejects and reread of stored PostgreSQL state, not a mocked repository.",
+            "comparison": "Added direct soft delete assertions, transaction rollback and controlled three-connection writer race; no prior tests removed."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Use the same PostgreSQL integration suite and existing tenant/profile fixture with rollback to prevent cross-test contamination.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Card purchase edit and recurring/parcelled contracts."
+      ],
+      "coverage_after": [
+        "VOlDED historic read-back, audit log, invoice and limit, foreign profile, double void, reconciled and installment blocks, lock-contention CAS and rollback of fixtures."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts",
+      "operation": "added",
+      "scenario": "Backfill unchanged historical migration 20261028124500 in a temporary schema; compare manual description/prefix against real automation rows.",
+      "requirement": "REQ-772-005, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n manual_entry -- apps/api/src/manual-entry-fill-rules.integration.test.ts",
+          "find apps/api/src -maxdepth 1 -name \"*migration*.integration.test.ts\""
+        ],
+        "scope": "Migration replay needs old schema/trigger under transactional rollback. Existing manual fill rule integration validates current schema, not migration backfill.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/manual-entry-fill-rules.integration.test.ts",
+            "case": "Manual rule read/write behavior after migrations.",
+            "oracle": "Rule placement and classification after schema exists, not legacy migration replay.",
+            "comparison": "New test needed for actual legacy table creation, backfill and rollback."
+          },
+          {
+            "path": "apps/api/src/account-remuneration-posting-date-migration.integration.test.ts",
+            "case": "Existing isolated historical migration regression fixture.",
+            "oracle": "Uses SQL migration against transaction-scoped database fixture.",
+            "comparison": "Reuse the fixture pattern, but different table and purpose demand new entry."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "A new test is required to exercise historical SQL migration without altering applied migration or existing rule test.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Manual entry rules current-schema behavior is exercised in existing integration suite."
+      ],
+      "coverage_after": [
+        "Five legacy row variants, immutable purpose constraint, manual inactive check, healthy normal automation and rollback after all assertions."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+      "operation": "modified",
+      "scenario": "Two simultaneous open GitHub PRs sharing HEAD are denied by solo attestation, with closed and divergent-HEAD benign controls.",
+      "requirement": "REQ-772-006, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n require_unique_open_pr_head tests/test_solverfin_solo_audit_bootstrap.py",
+          "git diff 5ad67cab..178753 -- tests/test_solverfin_solo_audit_bootstrap.py"
+        ],
+        "scope": "The existing unittest suite is the registered attestation bootstrap test harness; extend it with one unique-HEAD case and benign siblings.",
+        "runner": "python3 -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "case": "Existing GitHub Actions authenticated HEAD and signature provenance checks.",
+            "oracle": "Mocks authenticated PR-association collection and expects ValueError on duplicated open PR.",
+            "comparison": "Added one test with four branches without deleting or replacing existing checks."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "No need for a second audit harness; extend existing unittest bootstrap while preserving previous tests.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Existing signature, workflow and HEAD identity cases before this issue."
+      ],
+      "coverage_after": [
+        "23 unittest cases, including shared open PRs and closed/different HEAD negative/positive alternatives."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "tests/test_solverfin_solo_audit_bootstrap.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
+        "evidence_sha256": "d92f55aae3f54b3228cf391b4ee6b486d9c128ba26e8d6ee88ba75012aa42fc1"
+      }
+    },
+    {
+      "path": "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+      "operation": "added",
+      "scenario": "Generic single void, bulk mixed transaction, status VOIDED installment parent, reversal credit and negative tenant/rollback cases in real PostgreSQL. Merged develop PR #769: card/bank mixed reconciliation and card unreconciliation deny atomically with no invoice mutation.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n voidTransactionForContext apps/api/src/card-purchase-edit-contract.integration.test.ts",
+          "git diff --name-status 5ad67cab..178753ad -- apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+          "git grep -n reconcileInvoiceInstallmentForContext -- apps/api/src"
+        ],
+        "scope": "Repository API transaction routes, card invoice summary, installment reconciliation and PostgreSQL existing purchase contract on both base and HEAD.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-edit-contract.integration.test.ts",
+            "case": "Existing invoice-specific deletion and edit paths, with optimistic concurrency and tenant guard.",
+            "oracle": "Confirms specialized purchase deletion only; does not invoke general void or mixed bulk route.",
+            "comparison": "Separate generic/bulk entrypoints and prior-VOIDED installment parent cannot be proven by invoice-specific test."
+          },
+          {
+            "path": "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
+            "case": "New scenario exercising actual void entrypoints, stored totals and parent VOIDED guards.",
+            "oracle": "PostgreSQL persisted balances, audit count and rejection/rollback of mutations; real tenant and invoice scoping.",
+            "comparison": "Dedicated new integration regression covers separate entrypoint and dependent read surfaces in one rolled-back fixture."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Previous integration test covers only invoice-specific delete. General single, mixed-batch and installment VOIDED-parent routes have distinct financial side effects; independent test protects the two newly discovered escapes.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Invoice-specific simple purchase delete, recurring/installment restrictions and edit concurrency."
+      ],
+      "coverage_after": [
+        "Single generic VOIDED updates invoice and limit, foreign-profile rejection, duplicate idempotency and audit; mixed bulk atomicity, blocked purchase rollback; parent installment hidden/reconciliation blocked and no invoice change; reversal credit delta."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/card-purchase-void-boundaries.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Two PostgreSQL writers reading the same invoice origin cannot both debit it; source invoice closing while move waits rolls back debit, credit, and pointer.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n assertMoveCommonPurchase apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+          "git grep -n assertConcurrentPurchaseEditCannotResurrect apps/api/src/card-purchase-edit-contract.integration.test.ts"
+        ],
+        "scope": "Extend existing invoice move end-to-end PostgreSQL tests with controlled row lock and invoice-close interleavings; no replacement runner needed.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
+            "case": "Prior happy path move and locked invoice rejections",
+            "oracle": "Actual PostgreSQL Invoice totals and Transaction invoiceId readback",
+            "comparison": "Add two concurrent writers with divergent destination faturas plus concurrent invoice closure; verify one success, one conflict and no duplicated monetary effect."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Reuse canonical API integration test with concrete competing SQL writer race.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Ordinary invoice transfer and previously locked invoices"
+      ],
+      "coverage_after": [
+        "Exactly one of two stale-source moves debits origin; closed origin after initial read rejects with rollback of amount and pointer."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/card-purchase-invoice-period-move.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Previously-VOIDED installment cannot be reconciled via generic transaction patch after logical void.",
+      "requirement": "REQ-772-003, REQ-772-004, REQ-772-009",
+      "search": {
+        "queries": [
+          "git grep -n assertIndividualLogicalVoidKeepsInstallmentHistory -- apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "scope": "Existing installment and VOIDED generic mutation PostgreSQL test now includes direct status reconciliation rejection.",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
+            "case": "Original installment concurrency/void integration path",
+            "oracle": "HTTP PATCH returns 409 and readback remains VOIDED",
+            "comparison": "Additional direct transition conflict after VOIDED"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend canonical transaction+installment integration suite rather than adding a separate test.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Canonical installment history and logical void"
+      ],
+      "coverage_after": [
+        "Concurrent canonical status change rejects VOIDED"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    },
+    {
+      "path": "apps/api/src/category-evolution-report.integration.test.ts",
+      "operation": "modified",
+      "scenario": "category report regression isolation under foreign profile and stale shared seeded fixtures",
+      "requirement": "CI-773-ISOLATION-001",
+      "search": {
+        "queries": [
+          "git diff --name-status 5ad67cab183cc26672d837c7f3ded55ba27e9189 cd40692535453ea2cad88e020811428416b88f5c -- apps/api/src/category-evolution-report.integration.test.ts",
+          "git show 5ad67cab183cc26672d837c7f3ded55ba27e9189:apps/api/src/category-evolution-report.integration.test.ts",
+          "git grep -n buildCategoryEvolutionReportForContext -- apps/api/src"
+        ],
+        "scope": "Existing issue #542 integration report test reused; no new test file created; isolated financial profile prevents persisted fixture collisions and explicit other-profile BRL 550 remains outside results.",
+        "runner": "npm run test:integration --workspace @solverfin/api (Repository CI CRITICAL job).",
+        "candidates": [
+          {
+            "path": "apps/api/src/category-evolution-report.integration.test.ts",
+            "case": "Existing monthly report test already asserted BRL amounts and currency separation.",
+            "oracle": "Expected February expense 0 in isolated financial profile despite another profile containing a posted 550-minor expense in the same period.",
+            "comparison": "Previously reused shared seeded profile and unscoped calendar periods; current test uses a transactional temporary profile and rollback."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extends existing report integration test with transaction-scoped fixture isolation and cross-profile negative control rather than adding a duplicate suite.",
+      "disposition": "keep",
+      "coverage_before": [
+        "Existing BRL/USD monthly aggregated incomes, expenses and category hierarchy"
+      ],
+      "coverage_after": [
+        "Existing BRL/USD monthly aggregated incomes, expenses and category hierarchy",
+        "Cross-profile contamination negative case with 550 minor amount and rollback fixture"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+        "reached_tests": [
+          "apps/api/src/category-evolution-report.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
+        "evidence_sha256": "03d713188c177831a83ca37c66267e63962b048e3e4552235d298c1a858eaded"
+      }
+    }
+  ]
+}

@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { TransactionGroupError, type TenantContext } from "@solverfin/domain";
 
 import { withTransaction, type QueryExecutor } from "../db.js";
+import { voidSimpleCardPurchaseInTransaction } from "./card-invoice-purchase-delete.js";
 
 export type TransactionBulkAction = "reconcile" | "unreconcile" | "void";
 
@@ -23,6 +24,7 @@ interface LockedTransactionRow {
   transactionGroupId: string | null;
   cardId: string | null;
   invoiceId: string | null;
+  accountId: string | null;
   isAccountRemuneration: boolean;
 }
 
@@ -81,7 +83,7 @@ export async function executeTransactionBulkActionForContext(
     }
 
     const targetIds = selected.map((transaction) => transaction.id);
-    const changedIds = await applyAction(executeQuery, context, input.action, targetIds);
+    const changedIds = await applyAction(executeQuery, context, input.action, selected);
 
     if (input.action === "void") {
       await deleteSelectedGroups(executeQuery, context, groupIds);
@@ -89,7 +91,19 @@ export async function executeTransactionBulkActionForContext(
       await restoreSelectedGroups(executeQuery, context, groupMembers);
     }
 
-    await insertAudits(executeQuery, context, input.action, selected, groupIds, transactionIds);
+    // The canonical card mutation already writes one SOFT_DELETE audit per purchase.
+    const cardIds =
+      input.action === "void"
+        ? new Set(selected.filter(isInvoiceLinkedCardPurchase).map((row) => row.id))
+        : new Set<string>();
+    await insertAudits(
+      executeQuery,
+      context,
+      input.action,
+      selected.filter((row) => !cardIds.has(row.id)),
+      groupIds,
+      transactionIds.filter((id) => !cardIds.has(id)),
+    );
 
     const changed = new Set(changedIds);
     return {
@@ -130,7 +144,7 @@ async function loadGroupMembers(
 ): Promise<SelectedTransaction[]> {
   if (groupIds.length === 0) return [];
   const rows = await executeQuery<LockedTransactionRow>(
-    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId",
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
             exists(select 1 from "AccountRemuneration" ar
                    where ar."transactionId"=t."id" and ar."organizationId"=$1
                      and ar."financialProfileId"=$2) as "isAccountRemuneration"
@@ -150,7 +164,7 @@ async function loadTransactions(
 ): Promise<LockedTransactionRow[]> {
   if (transactionIds.length === 0) return [];
   return executeQuery<LockedTransactionRow>(
-    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId",
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
             exists(select 1 from "AccountRemuneration" ar
                    where ar."transactionId"=t."id" and ar."organizationId"=$1
                      and ar."financialProfileId"=$2) as "isAccountRemuneration"
@@ -236,8 +250,9 @@ async function applyAction(
   executeQuery: QueryExecutor,
   context: TenantContext,
   action: TransactionBulkAction,
-  transactionIds: string[],
+  selected: SelectedTransaction[],
 ): Promise<string[]> {
+  const transactionIds = selected.map((row) => row.id);
   if (action === "reconcile") {
     const rows = await executeQuery<{ id: string }>(
       `update "Transaction"
@@ -267,16 +282,41 @@ async function applyAction(
     return rows.map((row) => row.id);
   }
 
+  const changedCardIds: string[] = [];
+  const regularIds: string[] = [];
+  for (const transaction of selected) {
+    if (!isInvoiceLinkedCardPurchase(transaction)) {
+      regularIds.push(transaction.id);
+      continue;
+    }
+    if (transaction.invoiceId === null) {
+      throw bulkError(
+        "CARD_PURCHASE_DELETE_RESTRICTED",
+        "Compra de cartão sem fatura válida não pode ser anulada em lote.",
+        409,
+      );
+    }
+    if (transaction.status === "VOIDED") continue;
+    await voidSimpleCardPurchaseInTransaction(
+      executeQuery,
+      context,
+      transaction.cardId,
+      transaction.id,
+    );
+    changedCardIds.push(transaction.id);
+  }
+
   const rows = await executeQuery<{ id: string }>(
     `update "Transaction"
         set "status"='VOIDED', "voidedAt"=coalesce("voidedAt",now()), "reconciledAt"=null,
             "updatedByUserId"=$1, "updatedAt"=now()
       where "organizationId"=$2 and "financialProfileId"=$3
         and "id"=any($4::uuid[]) and "status"<>'VOIDED'
+        and ("cardId" is null or "accountId" is not null)
       returning "id"`,
-    [context.userId, context.organizationId, context.financialProfileId, transactionIds],
+    [context.userId, context.organizationId, context.financialProfileId, regularIds],
   );
-  return rows.map((row) => row.id);
+  return [...changedCardIds, ...rows.map((row) => row.id)];
 }
 
 async function restoreSelectedGroups(
@@ -361,6 +401,12 @@ async function insertAudits(
       ],
     );
   }
+}
+
+function isInvoiceLinkedCardPurchase(
+  transaction: LockedTransactionRow,
+): transaction is LockedTransactionRow & { cardId: string; accountId: null } {
+  return transaction.cardId !== null && transaction.accountId === null;
 }
 
 function normalizeIds(values: string[]): string[] {
