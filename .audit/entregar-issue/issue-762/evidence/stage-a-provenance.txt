@@ -1,6 +1,7 @@
-GitHub official authenticated bundle run 42476360646; base 1b30adacc864341f9aea5113cbdb9be233fbb8a1; material a876e274d861ebc2bc9e6483e287bf37c16485fc.
-Base develop was merged into the PR branch as second parent; prior published head 128664fb733c3bb5ba011bb05ffc53f099bcc994 was retained as first parent.
-CI run 42476360614 is required exact-SHA and must be terminal successful before handoff.
-A-002 regression: optional evidence_provenance omitted for non-quantitative critical certificates, seven signed entries validated, all declared extras verified.
-A-003 GitHub merge preview 66e0ce3ec4466b3f28499b36c6a6247277f5f573; mergeable=true.
-No policy, workflow, ruleset, main or develop changes. Stage B remains deferred.
+Stage A material=937137fb911f537c14f9181cc862688d74ecb136; base develop=1b30adacc864341f9aea5113cbdb9be233fbb8a1; authenticated GitHub Actions bundle run 42478515697 (SHA256 verified).
+Original target previous material=a876e274d861ebc2bc9e6483e287bf37c16485fc; code A-004 correction=937137fb; no force or merge.
+Tests: python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py -> 23 passed.
+Negative mutation: exact original parser fails targeted-remediation test (exit 1); patched parser passes.
+Negative evidence sha256=c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d; positive verbose evidence sha256=4e519b0519785646615648cc5c53ffc4fcd86e6a5a8e18ba47450a3e0c622d2d.
+CI: Repository CI #42478515719 state=completed/success; CRITICAL validation, Delivery V2 gate and merge compatibility succeeded at exact material SHA.
+Policy, workflow, ruleset, develop and main not changed. Stage B deferred.

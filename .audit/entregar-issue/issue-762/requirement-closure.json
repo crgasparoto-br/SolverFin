@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "/mnt/data/pr770_audit/remediation/issue-762/specification-snapshot.json",
-    "sha256": "4a9d6e6bcb11ece57c94f195913886f37f2273715de927032bdfdf51aa070a42"
+    "sha256": "d7c0063406d5957859b3da8dc8f5a1a7c00a646e022424b09d7fdffb96bded10"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -284,7 +284,7 @@
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "Scripts Stage A foram comparados por hash Git com PR #763; mesmo parser em ambas as branches e pacote herdado nao e reutilizado.",
+    "applicability_reason": "Four original Stage A scripts retain their inherited sources; session_review_packet_handoff.py has A-002/A-004 corrections; Stage B must synchronize its parser and verify blobs before trusted installation.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
@@ -300,7 +300,8 @@
     "new_contract_terms": [
       "Etapa A",
       "Etapa B",
-      "JUnit aggregate counts"
+      "JUnit aggregate counts",
+      "A-004 targeted/systemic remediation inventory"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
@@ -329,9 +330,10 @@
     ],
     "evidence": [
       "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 23 passed com controle adicional JUnit inconsistente no HEAD exato a876e274d861ebc2bc9e6483e287bf37c16485fc",
+      "Testes focados 23 passed com controle adicional JUnit inconsistente no HEAD exato 937137fb911f537c14f9181cc862688d74ecb136",
       "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
-      "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared"
+      "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
+      "A-004: 23 tests passed on material HEAD 937137fb911f537c14f9181cc862688d74ecb136; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

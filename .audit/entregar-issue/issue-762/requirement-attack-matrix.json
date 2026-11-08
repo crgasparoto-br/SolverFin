@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+  "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
   "requirements": [
     {
       "requirement_id": "REQ-762-002",
@@ -17,7 +17,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+        "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -27,15 +27,15 @@
           "surface": "unprivileged-parser-test",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "23 directed tests passed at a876e274d861ebc2bc9e6483e287bf37c16485fc; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "23 directed tests passed at 937137fb911f537c14f9181cc862688d74ecb136; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "33e9cca69d1d7b3d9e1310d19776d8668e517ec4afcc11e1fc8c05a817351ee6",
+          "evidence_sha256": "4e519b0519785646615648cc5c53ffc4fcd86e6a5a8e18ba47450a3e0c622d2d",
           "sibling_cases": [
             {
               "id": "NC-002-01-S1",
@@ -51,13 +51,13 @@
           "surface": "trusted-candidate-separation",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "23 directed tests passed at a876e274d861ebc2bc9e6483e287bf37c16485fc; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "23 directed tests passed at 937137fb911f537c14f9181cc862688d74ecb136; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "c4b38034efe358de92263dab9c6dcf415c6e21ad8c3c069aa5ff807c98f2c439",
           "sibling_cases": [
@@ -73,7 +73,7 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],
@@ -113,7 +113,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+        "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -123,15 +123,15 @@
           "surface": "neutral-packet-binding",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_neutral_packet_rederives_issue_and_checks_identity and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "23 directed tests passed at a876e274d861ebc2bc9e6483e287bf37c16485fc; stage A no workflow changes and linked items stay open; test_neutral_packet_rederives_issue_and_checks_identity",
+          "observed": "23 directed tests passed at 937137fb911f537c14f9181cc862688d74ecb136; stage A no workflow changes and linked items stay open; test_neutral_packet_rederives_issue_and_checks_identity",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "33e9cca69d1d7b3d9e1310d19776d8668e517ec4afcc11e1fc8c05a817351ee6",
+          "evidence_sha256": "4e519b0519785646615648cc5c53ffc4fcd86e6a5a8e18ba47450a3e0c622d2d",
           "sibling_cases": [
             {
               "id": "NC-003-01-S1",
@@ -147,13 +147,13 @@
           "surface": "canonical-claims",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with no_workflows_stage_a and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "23 directed tests passed at a876e274d861ebc2bc9e6483e287bf37c16485fc; stage A no workflow changes and linked items stay open; no_workflows_stage_a",
+          "observed": "23 directed tests passed at 937137fb911f537c14f9181cc862688d74ecb136; stage A no workflow changes and linked items stay open; no_workflows_stage_a",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "c4b38034efe358de92263dab9c6dcf415c6e21ad8c3c069aa5ff807c98f2c439",
           "sibling_cases": [
@@ -171,15 +171,15 @@
           "surface": "critical-certificate-inventory",
           "dimension": "optional-and-foreign-artifacts",
           "control_type": "test",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "Reject a compliant certificate when optional provenance is missing, or accept tampered/foreign extras.",
           "plausible_wrong_implementation": "Enforce an exact hard-coded list of eight critical artifact keys or trust declared optional metadata without digest verification.",
           "procedure": "Run pytest tests/test_session_review_packet.py -k critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions",
           "expected": "Seven required/controlled artifacts pass; recognized extras pass; missing mandatory, changed SHA and foreign entries fail closed.",
-          "observed": "Test passed on exact material HEAD a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "observed": "Test passed on exact material HEAD 937137fb911f537c14f9181cc862688d74ecb136",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "33e9cca69d1d7b3d9e1310d19776d8668e517ec4afcc11e1fc8c05a817351ee6",
+          "evidence_sha256": "4e519b0519785646615648cc5c53ffc4fcd86e6a5a8e18ba47450a3e0c622d2d",
           "sibling_cases": [
             {
               "id": "optional-missing",
@@ -194,12 +194,59 @@
               "dimension": "untrusted-entry"
             }
           ]
+        },
+        {
+          "id": "NC-003-REGRESSION-A-004",
+          "risk_family": "structural-contract",
+          "surface": "critical-certificate-remediation-mode",
+          "dimension": "targeted-vs-systemic-artifact-inventory",
+          "control_type": "test",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+          "status": "passed",
+          "failure_mode": "Valid targeted remediation with two required records is refused, or systemic/mixed certificates omit lineage.",
+          "plausible_wrong_implementation": "Require audit_escape_closure and learning_closure for all previous independent rejections regardless of remediation_mode.",
+          "procedure": "Run pytest -q tests/test_session_review_packet.py -k critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions against original and patched modules (old must fail; new must pass).",
+          "expected": "Targeted with audit_remediation+audit_source_result passes; missing either rejects; systemic/mixed fail without escape+learning, pass with both; tampered digest rejects.",
+          "observed": "Original module test exit 1 due to inventory error; patched exact material 23 tests passed. Negative log sha256 c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d",
+          "evidence": "issue-762/evidence/a-004-negative-original.log",
+          "evidence_sha256": "c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d",
+          "sibling_cases": [
+            {
+              "id": "targeted-valid",
+              "status": "passed",
+              "surface": "critical-certificate-remediation-mode",
+              "dimension": "targeted-allow"
+            },
+            {
+              "id": "systemic-absent-lineage",
+              "status": "passed",
+              "surface": "critical-certificate-remediation-mode",
+              "dimension": "systemic-reject"
+            },
+            {
+              "id": "mixed-absent-lineage",
+              "status": "passed",
+              "surface": "critical-certificate-remediation-mode",
+              "dimension": "mixed-reject"
+            },
+            {
+              "id": "tampered-source-digest",
+              "status": "passed",
+              "surface": "critical-certificate-remediation-mode",
+              "dimension": "hash-reject"
+            }
+          ]
         }
       ],
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+          "evidence": "issue-762/evidence/stage-a-pytest.log"
+        },
+        {
+          "status": "passed",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],
@@ -224,6 +271,11 @@
           "risk_family": "structural-contract",
           "surface": "critical-certificate-inventory",
           "reason": "Optional provenance and recognized remediation artefacts must remain authenticated without false refusal."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "critical-certificate-remediation-mode",
+          "reason": "Remediation mode controls the mandatory critical-certificate artifact inventory."
         }
       ],
       "quantitative_evidence_required": false
@@ -242,7 +294,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+        "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -252,13 +304,13 @@
           "surface": "remaining-work-remains-open",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with github_remote_read_open and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "23 directed tests passed at a876e274d861ebc2bc9e6483e287bf37c16485fc; stage A no workflow changes and linked items stay open; github_remote_read_open",
+          "observed": "23 directed tests passed at 937137fb911f537c14f9181cc862688d74ecb136; stage A no workflow changes and linked items stay open; github_remote_read_open",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "c4b38034efe358de92263dab9c6dcf415c6e21ad8c3c069aa5ff807c98f2c439",
           "sibling_cases": [
@@ -274,7 +326,7 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+          "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],

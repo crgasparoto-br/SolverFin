@@ -4,10 +4,10 @@
   "resolution_policy": "all-actionable-items",
   "source": {
     "rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac",
-    "audit_report_sha256": "f7c6f3c2ee8c52b4df6916fe1cb29c465c7a861376b4e0f2d51a0a25ec81702d",
+    "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5",
     "audited_head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352"
   },
-  "candidate_head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+  "candidate_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -26,8 +26,8 @@
         "tests/test_session_review_packet.py: regression test validates seven-item critical certificates, optional specialized artifacts and rejects missing, foreign and corrupted metadata"
       ],
       "validations": [
-        "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 23 passed on a876e274d861ebc2bc9e6483e287bf37c16485fc",
-        "GitHub Repository CI 42476360614 at exact material SHA, subject to terminal success"
+        "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 23 passed on 937137fb911f537c14f9181cc862688d74ecb136",
+        "Repository CI 42478515719 on exact material SHA 937137fb911f537c14f9181cc862688d74ecb136 (completed/success (authenticated GitHub check))"
       ]
     },
     {
@@ -40,12 +40,12 @@
         "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
       ],
       "evidence": [
-        "GitHub merge commit a876e274d861ebc2bc9e6483e287bf37c16485fc with parents old published H and current develop",
+        "GitHub merge commit 937137fb911f537c14f9181cc862688d74ecb136 with parents old published H and current develop",
         "GitHub PR /pulls/770 mergeable=true, mergeable_state=blocked (policy), merge preview 66e0ce3ec4466b3f28499b36c6a6247277f5f573",
         "Offline exact GitHub CI bundle 42476360646 verified and restored"
       ],
       "validations": [
-        "compare GitHub develop 1b30adacc864341f9aea5113cbdb9be233fbb8a1...a876e274d861ebc2bc9e6483e287bf37c16485fc: ahead, no upstream changes discarded; 19 changed files",
+        "compare GitHub develop 1b30adacc864341f9aea5113cbdb9be233fbb8a1...937137fb911f537c14f9181cc862688d74ecb136: ahead, no upstream changes discarded; 19 changed files",
         "GitHub Actions 42476360646 completed/success and Repository CI 42476360614 exact material SHA"
       ]
     }
@@ -62,5 +62,10 @@
       "status": "resolved",
       "reason": "JUnit inconsistent aggregates rejected by test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts."
     }
-  ]
+  ],
+  "internal_followup": {
+    "finding_id": "A-004",
+    "status": "verified-internally",
+    "note": "Corrected the targeted/systemic inventory parser, with 23 local tests and historical mutant rejection. CI and terminal handoff not independently approved."
+  }
 }
