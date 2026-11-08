@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
+  "head_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
   "families": [
     {
       "family": "authorization",
@@ -87,7 +87,8 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-002-02"
+        "NC-002-02",
+        "NC-003-REGRESSION-A-002"
       ],
       "dimensions": [
         {
@@ -95,6 +96,14 @@
           "reason": "Compare protected versus candidate bytes, reject candidate modifications and keep workflow definitions outside the Stage A change.",
           "control_ids": [
             "NC-002-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "critical-certificate-inventory",
+          "reason": "No optional artifact false rejections; reject foreign or corrupted inventory",
+          "control_ids": [
+            "NC-003-REGRESSION-A-002"
           ],
           "status": "passed"
         }

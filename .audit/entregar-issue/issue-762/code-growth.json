@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
-  "base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
-  "comparison_base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
+  "subject_sha": "a876e274d861ebc2bc9e6483e287bf37c16485fc",
+  "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+  "comparison_base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -36,7 +36,7 @@
     {
       "path": "scripts/session_review_packet_handoff.py",
       "lines_before": null,
-      "lines_after": 205
+      "lines_after": 229
     },
     {
       "path": "scripts/session_review_specification.py",

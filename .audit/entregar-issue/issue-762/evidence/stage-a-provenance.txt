@@ -1,7 +1,6 @@
-Source: authenticated GitHub issue #762 and PR #770; exact material 964a5e6e124c3f707d4ddc044e4fb3e852139352.
-PR #770 changed paths: docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md; scripts/prepare_session_review_packet.py; scripts/session_review_certificate.py; scripts/session_review_evidence.py; scripts/session_review_packet_handoff.py; scripts/session_review_specification.py; tests/test_session_review_packet.py; tests/test_session_review_trusted_producers.py.
-No path under .github/workflows or policy/ruleset changed in PR #770. Stage B not installed by this PR.
-GitHub remote read: PR #760 open/unmerged, issue #714 open, epic #702 open.
-GitHub artifact Delivery audit workspace run #42472964317 completed/success, restored via official restore_ci_git_bundle.py with exact base/head identity.
-Python stage A: 22 tests passed in isolated checkout at exact HEAD. Adversarial cases include tampered candidate producer, spoofed metadata and revocation, invalid JUnit aggregate failures/test counts.
-Five producers parity: four unchanged versus PR #763; session_review_evidence.py updated with same blob 7ccfc858515bcabc9ed41f48b6f897bee71b9efa on both PRs.
+GitHub official authenticated bundle run 42476360646; base 1b30adacc864341f9aea5113cbdb9be233fbb8a1; material a876e274d861ebc2bc9e6483e287bf37c16485fc.
+Base develop was merged into the PR branch as second parent; prior published head 128664fb733c3bb5ba011bb05ffc53f099bcc994 was retained as first parent.
+CI run 42476360614 is required exact-SHA and must be terminal successful before handoff.
+A-002 regression: optional evidence_provenance omitted for non-quantitative critical certificates, seven signed entries validated, all declared extras verified.
+A-003 GitHub merge preview 66e0ce3ec4466b3f28499b36c6a6247277f5f573; mergeable=true.
+No policy, workflow, ruleset, main or develop changes. Stage B remains deferred.

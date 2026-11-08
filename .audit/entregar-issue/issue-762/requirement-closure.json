@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "/mnt/data/pr770_audit/remediation/issue-762/specification-snapshot.json",
-    "sha256": "343e950d01f1eaa90a361924f3a33d88896a363440b66b43b9c29ea4c3f0365c"
+    "sha256": "4a9d6e6bcb11ece57c94f195913886f37f2273715de927032bdfdf51aa070a42"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -51,7 +51,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 22 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A."
+      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 23 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A."
     },
     {
       "id": "OBL-003",
@@ -329,8 +329,9 @@
     ],
     "evidence": [
       "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 22 passed com controle adicional JUnit inconsistente no HEAD exato 964a5e6e124c3f707d4ddc044e4fb3e852139352",
-      "Original issue #762 permanece aberta e Stage B explicitamente nao concluida"
+      "Testes focados 23 passed com controle adicional JUnit inconsistente no HEAD exato a876e274d861ebc2bc9e6483e287bf37c16485fc",
+      "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
+      "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
