@@ -52,6 +52,26 @@ def passed_cases(raw: bytes) -> set[str]:
         require(declared_tests is None or (declared_tests.isdecimal()
                 and int(declared_tests) == sum(1 for _ in suite.iter("testcase"))),
                 "JUnit aggregate test count mismatch")
+    # Validate placement before counting. A nested failure or testcase hidden in
+    # metadata must never contribute to positive exact-SHA JUnit evidence.
+    allowed_children = {
+        "testsuites": {"testsuite"},
+        "testsuite": {"testsuite", "testcase", "properties", "system-out", "system-err"},
+        "testcase": {"properties", "system-out", "system-err", "failure", "error", "skipped"},
+        "properties": {"property"},
+        "property": {"value"},
+        "value": set(),
+        "system-out": set(),
+        "system-err": set(),
+    }
+    pending = [(root, None)]
+    while pending:
+        node, parent = pending.pop()
+        require(parent is None or node.tag in allowed_children.get(parent, set()),
+                "JUnit element outside supported hierarchy")
+        require(node.tag not in {"failure", "error", "skipped"},
+                "JUnit includes failing, errored or skipped tests")
+        pending.extend((child, node.tag) for child in node)
     rows = list(root.iter("testcase"))
     require(0 < len(rows) <= 5000, "JUnit test inventory must be complete")
     observed: set[str] = set()
