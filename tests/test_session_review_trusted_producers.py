@@ -222,3 +222,50 @@ def test_namespaced_junit_fails_closed_in_parser_producer_and_consumer(tmp_path,
         archive.writestr("session-review-evidence.json", json.dumps(facts))
     with pytest.raises(ValueError, match="JUnit"):
         evidence.consume_zip(buffer.getvalue())
+
+@pytest.mark.parametrize("xml", [
+    '<testsuites><testcase classname="suite" name="case"/></testsuites>',
+    '<testsuite tests="1"><properties><testcase classname="suite" name="case"/></properties></testsuite>',
+    '<testsuite tests="1"><testcase classname="suite" name="case"><properties><failure/></properties></testcase></testsuite>',
+    '<testsuite tests="1"><testcase classname="suite" name="case"><system-out><error/></system-out></testcase></testsuite>',
+    '<testsuite tests="1"><testcase classname="suite" name="case"><properties><property name="x"><skipped/></property></properties></testcase></testsuite>',
+    '<testsuite tests="1"><testcase classname="suite" name="case"><untrusted/></testcase></testsuite>',
+])
+def test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer(tmp_path, xml):
+    """A-006: reject hidden failures, foreign wrappers, and orphan testcases."""
+    raw = xml.encode()
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.passed_cases(raw)
+    certificate = tmp_path / "handoff-ready.json"
+    certificate.write_text(json.dumps({
+        "schema_version": 2, "status": "ready",
+        "subject": {"repository": REPO, "pull_request_number": 10},
+        "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
+    }))
+    junit = tmp_path / "junit.xml"
+    junit.write_bytes(raw)
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.write_evidence(junit, certificate, tmp_path / "rejected", REPO, 10, BASE, HEAD)
+    assert not (tmp_path / "rejected").exists()
+    valid = b'<testsuites><testsuite tests="1"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+    junit.write_bytes(valid)
+    out = tmp_path / "valid"
+    evidence.write_evidence(junit, certificate, out, REPO, 10, BASE, HEAD)
+    facts = json.loads((out / "session-review-evidence.json").read_text())
+    facts["junit_sha256"] = source.digest(raw)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("junit.xml", raw)
+        archive.writestr("handoff-ready.json", certificate.read_bytes())
+        archive.writestr("session-review-evidence.json", json.dumps(facts))
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.consume_zip(buffer.getvalue())
+
+
+def test_junit_hierarchy_allows_metadata_and_nested_suites():
+    raw = (b'<testsuites><testsuite tests="2" failures="0">'
+           b'<properties><property name="build" value="ok"/></properties>'
+           b'<testcase classname="suite" name="first"><system-out>ok</system-out></testcase>'
+           b'<testsuite tests="1"><testcase classname="suite" name="second"/></testsuite>'
+           b'</testsuite></testsuites>')
+    assert evidence.passed_cases(raw) == {"suite::first", "suite::second"}
