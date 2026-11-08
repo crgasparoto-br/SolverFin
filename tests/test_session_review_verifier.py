@@ -325,3 +325,15 @@ def test_delivery_workspace_supports_both_protected_bases():
     assert "develop|main) ;;" in workflow
     assert 'test "$AUDIT_BASE_REF" = "develop"' not in workflow
     assert "persist-credentials: false" in workflow
+
+
+def test_junit_aggregate_counts_fail_closed_without_workflow_preflight():
+    good = b'<testsuites tests="1"><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="real-tests" name="case"/></testsuite></testsuites>'
+    assert evidence.passed_cases(good) == {"real-tests::case"}
+    for bad in (b'failures="1"', b'errors="1"', b'skipped="1"', b'tests="0"', b'tests="2"', b'tests="not-an-int"'):
+        key = bad.split(b"=", 1)[0]
+        initial = b'tests="1"' if key == b"tests" else key + b'="0"'
+        with pytest.raises(ValueError, match="JUnit"):
+            evidence.passed_cases(good.replace(initial, bad, 1))
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.passed_cases(good.replace(b'<testsuites tests="1">', b'<testsuites tests="0">'))
