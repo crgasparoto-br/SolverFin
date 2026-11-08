@@ -163,3 +163,18 @@ def test_trusted_producer_runs_official_validator_or_fails_closed(tmp_path, monk
         with pytest.raises(ValueError, match="official Skill certificate validation failed"):
             source.produce(REPO, 10, BASE, HEAD, 43, Path("skill"), Path("failed.json"))
     assert not Path("failed.json").exists()
+
+
+def test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts():
+    good = b'<testsuites><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+    assert evidence.passed_cases(good) == {"suite::case"}
+    for attribute in (b'failures="1"', b'errors="1"', b'skipped="1"',
+                      b'tests="0"', b'tests="2"', b'tests="bogus"'):
+        key = attribute.split(b"=", 1)[0]
+        good_value = b'tests="1"' if key == b"tests" else key + b'="0"'
+        malformed = good.replace(good_value, attribute, 1)
+        with pytest.raises(ValueError, match="JUnit"):
+            evidence.passed_cases(malformed)
+    # Also enforce totals on the outer testsuites element, not just the leaf.
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.passed_cases(good.replace(b'<testsuites>', b'<testsuites failures="1">'))
