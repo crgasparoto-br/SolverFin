@@ -1,34 +1,34 @@
-============================= test session starts ==============================
-platform linux -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /opt/pyvenv/bin/python3
-cachedir: .pytest_cache
-metadata: {'Python': '3.13.5', 'Platform': 'Linux-6.18.57-x86_64-with-glibc2.41', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.13.0', 'ddtrace': '4.4.0', 'Faker': '40.1.2', 'asyncio': '1.3.0', 'cov': '7.0.0', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'PLATFORM': 'linux/amd64', 'CI': 'true'}
-rootdir: /mnt/data/pr770-work/source
-plugins: anyio-4.13.0, ddtrace-4.4.0, Faker-40.1.2, asyncio-1.3.0, cov-7.0.0, json-report-1.5.0, metadata-3.1.1
-asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
-collecting ... collected 23 items
-
-tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data PASSED [  4%]
-tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents PASSED [  8%]
-tests/test_session_review_packet.py::test_disabled_policy_does_not_claim_approval PASSED [ 13%]
-tests/test_session_review_packet.py::test_result_only_child_cannot_mutate_application PASSED [ 17%]
-tests/test_session_review_packet.py::test_event_comment_cannot_be_spoofed PASSED [ 21%]
-tests/test_session_review_packet.py::test_file_inventory_rejects_path_traversal_and_oversize PASSED [ 26%]
-tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[develop] PASSED [ 30%]
-tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[main] PASSED [ 34%]
-tests/test_session_review_packet.py::test_issue_reference_accepts_canonical_pr_760_prose PASSED [ 39%]
-tests/test_session_review_packet.py::test_handoff_rejects_base_ref_that_differs_from_authenticated_pr PASSED [ 43%]
-tests/test_session_review_packet.py::test_critical_certificate_rejects_aliases_and_fake_versionless_json PASSED [ 47%]
-tests/test_session_review_packet.py::test_critical_certificate_rejects_cross_target_and_uncovered_requirements PASSED [ 52%]
-tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected PASSED [ 56%]
-tests/test_session_review_packet.py::test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions PASSED [ 60%]
-tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity PASSED [ 65%]
-tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure] PASSED [ 69%]
-tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[cancelled] PASSED [ 73%]
-tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[pending] PASSED [ 78%]
-tests/test_session_review_trusted_producers.py::test_modified_candidate_producer_fails_before_green_status PASSED [ 82%]
-tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected PASSED [ 86%]
-tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green PASSED [ 91%]
-tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed PASSED [ 95%]
-tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts PASSED [100%]
-
-============================== 23 passed in 0.09s ==============================
+Material HEAD: 017655321b0c286f582d74ba713c168e13ddff5f
+Command: python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py
+Observed: 27 passed, 0 failed, 0 skipped on authenticated exact-SHA Git bundle.
+Pre-fix mutant: 4 failed on identical A-005 tests (exit code 1).
+Pre-fix transcript SHA-256: ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e
+Positive transcript SHA-256: de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab
+Reached tests:
+tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data
+tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents
+tests/test_session_review_packet.py::test_disabled_policy_does_not_claim_approval
+tests/test_session_review_packet.py::test_result_only_child_cannot_mutate_application
+tests/test_session_review_packet.py::test_event_comment_cannot_be_spoofed
+tests/test_session_review_packet.py::test_file_inventory_rejects_path_traversal_and_oversize
+tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[develop]
+tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[main]
+tests/test_session_review_packet.py::test_issue_reference_accepts_canonical_pr_760_prose
+tests/test_session_review_packet.py::test_handoff_rejects_base_ref_that_differs_from_authenticated_pr
+tests/test_session_review_packet.py::test_critical_certificate_rejects_aliases_and_fake_versionless_json
+tests/test_session_review_packet.py::test_critical_certificate_rejects_cross_target_and_uncovered_requirements
+tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected
+tests/test_session_review_packet.py::test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions
+tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure]
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[cancelled]
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[pending]
+tests/test_session_review_trusted_producers.py::test_modified_candidate_producer_fails_before_green_status
+tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected
+tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green
+tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed
+tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper]

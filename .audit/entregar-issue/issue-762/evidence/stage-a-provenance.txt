@@ -1,7 +1,7 @@
-Stage A material=937137fb911f537c14f9181cc862688d74ecb136; base develop=1b30adacc864341f9aea5113cbdb9be233fbb8a1; authenticated GitHub Actions bundle run 42478515697 (SHA256 verified).
-Original target previous material=a876e274d861ebc2bc9e6483e287bf37c16485fc; code A-004 correction=937137fb; no force or merge.
-Tests: python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py -> 23 passed.
-Negative mutation: exact original parser fails targeted-remediation test (exit 1); patched parser passes.
-Negative evidence sha256=c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d; positive verbose evidence sha256=4e519b0519785646615648cc5c53ffc4fcd86e6a5a8e18ba47450a3e0c622d2d.
-CI: Repository CI #42478515719 state=completed/success; CRITICAL validation, Delivery V2 gate and merge compatibility succeeded at exact material SHA.
-Policy, workflow, ruleset, develop and main not changed. Stage B deferred.
+Stage A material=017655321b0c286f582d74ba713c168e13ddff5f; protected develop base=1b30adacc864341f9aea5113cbdb9be233fbb8a1.
+GitHub Actions Delivery audit workspace run 42485539937: completed/success, authenticated exact-SHA Git Bundle restored with SHA 017655321b0c286f582d74ba713c168e13ddff5f.
+Material tests: python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py => 27 passed.
+Raw positive log SHA-256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab; negative old-code mutant SHA-256=ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e (4 expected failures).
+Repository CI run 42485539820: completed/success at exact material SHA (observed GitHub Actions).
+Changed material paths: scripts/session_review_evidence.py; tests/test_session_review_trusted_producers.py.
+Protected workflows, policy, rulesets, develop and main unchanged; Stage B deferred; no independent approval or merge.

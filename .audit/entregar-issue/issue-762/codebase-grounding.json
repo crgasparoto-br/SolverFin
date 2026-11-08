@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+  "subject_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
   "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "creations": [
     {
@@ -8,7 +8,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -27,7 +27,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -46,7 +46,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -65,7 +65,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -84,7 +84,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -103,7 +103,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -122,7 +122,7 @@
       "kind": "file",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review|handoff|test\" scripts/ tests/"
         ],
         "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
@@ -147,7 +147,7 @@
       "requirement": "REQ-762-002, REQ-762-003",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review\" tests/ scripts/"
         ],
         "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
@@ -167,7 +167,7 @@
         "status": "passed",
         "command": "python -m pytest -v tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+        "subject_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
         "reached_tests": [
           "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
           "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
@@ -184,7 +184,7 @@
           "tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "3744eb1f1d6ecc3c4a68f17d1b9c0aa7521efe0fd84eaae9d259095f78727897"
+        "evidence_sha256": "1e040a5949d791a110e9347b5e402bfd1d9a62d539c6bc3bca954c5603470922"
       }
     },
     {
@@ -194,7 +194,7 @@
       "requirement": "REQ-762-002, REQ-762-003",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..937137fb911f537c14f9181cc862688d74ecb136",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..017655321b0c286f582d74ba713c168e13ddff5f",
           "rg -n \"session_review\" tests/ scripts/"
         ],
         "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
@@ -208,13 +208,14 @@
         "Only canonical session_review helper in develop; no trusted Stage A producers or dedicated producer tests"
       ],
       "coverage_after": [
-        "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants"
+        "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants",
+        "A-005: namespace-qualified failure/error/skipped/wrapper rejection tested in parser, writer and ZIP consumer; pre-fix mutant fails all four cases."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -v tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+        "subject_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
         "reached_tests": [
           "tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity",
           "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure]",
@@ -224,10 +225,14 @@
           "tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected",
           "tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green",
           "tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed",
-          "tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts"
+          "tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts",
+          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure]",
+          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error]",
+          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped]",
+          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper]"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "3744eb1f1d6ecc3c4a68f17d1b9c0aa7521efe0fd84eaae9d259095f78727897"
+        "evidence_sha256": "1e040a5949d791a110e9347b5e402bfd1d9a62d539c6bc3bca954c5603470922"
       }
     }
   ]

@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "/mnt/data/pr770_audit/remediation/issue-762/specification-snapshot.json",
-    "sha256": "d7c0063406d5957859b3da8dc8f5a1a7c00a646e022424b09d7fdffb96bded10"
+    "sha256": "5eff7553740c1cf3cd9dc70a5457a98bee67df8d6dd3e14d31950d633ed3f9de"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -51,7 +51,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 23 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A."
+      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 23 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A. A-005: namespaced JUnit error, failure, skipped and wrapper rejected end-to-end by 4 additional negative regression cases."
     },
     {
       "id": "OBL-003",
@@ -330,10 +330,11 @@
     ],
     "evidence": [
       "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 23 passed com controle adicional JUnit inconsistente no HEAD exato 937137fb911f537c14f9181cc862688d74ecb136",
+      "Testes focados 27 passed com controle adicional JUnit inconsistente no HEAD exato 017655321b0c286f582d74ba713c168e13ddff5f",
       "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
       "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
-      "A-004: 23 tests passed on material HEAD 937137fb911f537c14f9181cc862688d74ecb136; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes."
+      "A-004: 27 tests passed on material HEAD 017655321b0c286f582d74ba713c168e13ddff5f; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
+      "A-005: 27 tests passed on exact material 017655321b0c286f582d74ba713c168e13ddff5f; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

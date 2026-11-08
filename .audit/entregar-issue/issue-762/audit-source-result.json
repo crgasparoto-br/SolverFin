@@ -1,61 +1,65 @@
 {
-  "audit_report_sha256": "fe7f60a575163590dd459fa28015b4a2a112d31f52e586062f65405c55fef0df",
-  "audit_report_source": "prior independent audit report PR_770_auditoria_independente.md; no change to source SHA or findings",
+  "audit_report_sha256": "c495d287dfd815bac9bff27ad35cb4b084b4cce8001bbc6b9737be7f3c1d96fd",
+  "audit_report_source": "Independent PR #770 audit on prior exact material; report available as immutable local file and sha256; not a GitHub approval.",
   "contract_version": "2026-08-20.3",
   "findings": [
     {
+      "id": "A-005",
       "disposition": "blocking",
-      "evidence_sha256": "021a340c02ef470a527f4191ca63c468c5b4e5ea4563b74d2ad5899c52effeaa",
-      "id": "A-002",
-      "remediation_mode": "targeted-remediation",
-      "requirement_id": "REQ-762-CRITICAL-CERT",
-      "root_cause": "Producer hard-codes evidence_provenance as mandatory and enforces exact artifact key equality instead of official conditional critical artifacts.",
       "status": "open",
-      "surface_id": "SURF-CERT-COMPAT"
-    },
-    {
-      "disposition": "blocking",
-      "evidence_sha256": "1b6792961be8de5ab13f8e9b29679990a66d8abc501f0e16df3e92ba71045922",
-      "id": "A-003",
       "remediation_mode": "targeted-remediation",
-      "requirement_id": "REQ-762-MERGE-CURRENT",
-      "root_cause": "The protected develop branch advanced 114 commits past the certified PR base, leaving the current PR unmergeable (dirty) and without a valid current GitHub merge preview.",
-      "status": "open",
-      "surface_id": "SURF-MERGE-CURRENT"
+      "requirement_id": "REQ-762-002",
+      "surface_id": "junit-evidence-parser",
+      "root_cause": "Namespace-qualified JUnit failure/error/skipped elements evade unqualified child.tag comparisons, allowing failed XML evidence to be approved.",
+      "evidence_sha256": "a5d8fdd880ee325e6496caad800ef2e466cf5ee9852c5a20eb7a54d334548a51"
     }
   ],
-  "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
+  "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
   "historical_prior_findings": [
     {
-      "evidence": "Original #728 foreign handoff replaced by issue-762 subject in previous published result-only child.",
       "id": "A-001",
-      "status": "resolved"
+      "status": "resolved",
+      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
     },
     {
-      "evidence": "Adversarial JUnit counts test and 23 passes on current material.",
       "id": "R-001",
-      "status": "resolved"
+      "status": "resolved",
+      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
+    },
+    {
+      "id": "A-004",
+      "status": "resolved",
+      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
     }
   ],
   "identity": {
-    "base_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
-    "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
+    "repository": "crgasparoto-br/SolverFin",
     "issue_number": 762,
-    "material_head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
-    "published_head_sha": "128664fb733c3bb5ba011bb05ffc53f099bcc994",
     "pull_request_number": 770,
-    "repository": "crgasparoto-br/SolverFin"
+    "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+    "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+    "material_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+    "published_head_sha": "3c378d42eb7a76b538eb8da2dd3ec1ca50f28533"
   },
   "recommendations": [],
-  "rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac",
+  "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
   "schema_version": 1,
   "source_evidence": {
-    "prior_audit_json_sha256": "e9c7613c137ced8f3703cae31731c6411b3ca0042cd0543515a3cd078b6b04d9",
-    "prior_audit_markdown_sha256": "fe7f60a575163590dd459fa28015b4a2a112d31f52e586062f65405c55fef0df",
-    "prior_material_head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
-    "prior_published_head_sha": "128664fb733c3bb5ba011bb05ffc53f099bcc994",
-    "prior_rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac"
+    "prior_audit_markdown_sha256": "c495d287dfd815bac9bff27ad35cb4b084b4cce8001bbc6b9737be7f3c1d96fd",
+    "prior_material_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+    "prior_published_head_sha": "3c378d42eb7a76b538eb8da2dd3ec1ca50f28533",
+    "prior_rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336"
   },
-  "trusted_anchor_sha": "1bf1f84deffda4faea201d5501c0055aba21224b",
+  "trusted_anchor_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "verdict": "REPROVADA"
 }

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+  "subject_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
   "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "comparison_base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "policy": {
@@ -31,7 +31,7 @@
     {
       "path": "scripts/session_review_evidence.py",
       "lines_before": null,
-      "lines_after": 264
+      "lines_after": 270
     },
     {
       "path": "scripts/session_review_packet_handoff.py",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+  "head_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
   "families": [
     {
       "family": "authorization",
@@ -89,7 +89,10 @@
       "control_ids": [
         "NC-002-02",
         "NC-003-REGRESSION-A-002",
-        "NC-003-REGRESSION-A-004"
+        "NC-003-REGRESSION-A-004",
+        "NC-002-A005-PARSER",
+        "NC-002-A005-PRODUCER",
+        "NC-002-A005-CONSUMER"
       ],
       "dimensions": [
         {
@@ -113,6 +116,30 @@
           "reason": "Distinguishes targeted valid records from systemic/mixed lineage requirements using a killed historical mutant.",
           "control_ids": [
             "NC-003-REGRESSION-A-004"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-parser",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained.",
+          "control_ids": [
+            "NC-002-A005-PARSER"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-writer",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained.",
+          "control_ids": [
+            "NC-002-A005-PRODUCER"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-zip-consumer",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained.",
+          "control_ids": [
+            "NC-002-A005-CONSUMER"
           ],
           "status": "passed"
         }

@@ -3,50 +3,32 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac",
-    "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5",
-    "audited_head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352"
+    "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
+    "audit_report_sha256": "ffae9d6f88f81ec055d40f0cb81229af315ff99fad4fb5d0600a5d9df324dcc5",
+    "audited_head_sha": "937137fb911f537c14f9181cc862688d74ecb136"
   },
-  "candidate_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+  "candidate_head_sha": "017655321b0c286f582d74ba713c168e13ddff5f",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-005",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
       "changed_files": [
-        "scripts/session_review_packet_handoff.py",
-        "tests/test_session_review_packet.py",
-        "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
+        "scripts/session_review_evidence.py",
+        "tests/test_session_review_trusted_producers.py"
       ],
       "evidence": [
-        "scripts/session_review_packet_handoff.py: check profile-required subset and conditional extras while authenticating every declared item",
-        "tests/test_session_review_packet.py: regression test validates seven-item critical certificates, optional specialized artifacts and rejects missing, foreign and corrupted metadata"
+        "scripts/session_review_evidence.py: namespace-qualified nodes/attributes rejected before positive JUnit inventory",
+        "tests/test_session_review_trusted_producers.py: 4 parametrized cases span parser, producer and ZIP consumer",
+        "issue-762/evidence/a-005-negative-original.log sha256=ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e demonstrates 4 old-code failures"
       ],
       "validations": [
-        "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 23 passed on 937137fb911f537c14f9181cc862688d74ecb136",
-        "Repository CI 42478515719 on exact material SHA 937137fb911f537c14f9181cc862688d74ecb136 (completed/success (authenticated GitHub check))"
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-003",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
-      ],
-      "evidence": [
-        "GitHub merge commit 937137fb911f537c14f9181cc862688d74ecb136 with parents old published H and current develop",
-        "GitHub PR /pulls/770 mergeable=true, mergeable_state=blocked (policy), merge preview 66e0ce3ec4466b3f28499b36c6a6247277f5f573",
-        "Offline exact GitHub CI bundle 42476360646 verified and restored"
-      ],
-      "validations": [
-        "compare GitHub develop 1b30adacc864341f9aea5113cbdb9be233fbb8a1...937137fb911f537c14f9181cc862688d74ecb136: ahead, no upstream changes discarded; 19 changed files",
-        "GitHub Actions 42476360646 completed/success and Repository CI 42476360614 exact material SHA"
+        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 27 passed on 017655321b0c286f582d74ba713c168e13ddff5f",
+        "Delivery audit workspace #42485539937 completed/success on exact material 017655321b0c286f582d74ba713c168e13ddff5f",
+        "Repository CI #42485539820: completed/success on exact material HEAD"
       ]
     }
   ],
@@ -55,17 +37,27 @@
     {
       "id": "A-001",
       "status": "resolved",
-      "reason": "Foreign inherited certificate was replaced with own issue 762 handoff in previous published H and remains in lineage."
+      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
     },
     {
       "id": "R-001",
       "status": "resolved",
-      "reason": "JUnit inconsistent aggregates rejected by test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts."
+      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+    },
+    {
+      "id": "A-004",
+      "status": "resolved",
+      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
     }
-  ],
-  "internal_followup": {
-    "finding_id": "A-004",
-    "status": "verified-internally",
-    "note": "Corrected the targeted/systemic inventory parser, with 23 local tests and historical mutant rejection. CI and terminal handoff not independently approved."
-  }
+  ]
 }
