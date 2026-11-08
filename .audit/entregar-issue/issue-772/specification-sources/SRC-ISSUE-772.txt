@@ -1,0 +1,32 @@
+## Objetivo
+Fechar pendências técnicas verificáveis identificadas na pré-auditoria da release #771, preservando segurança, rastreabilidade e Golden Screen. Esta entrega não certifica a release.
+
+## Escopo
+- Corrigir a exclusão física de compra simples para anulação lógica de Transaction, preservando identidade e histórico.
+- Reconciliar resumo, listagem, limite utilizado, edição, estorno e transferência de compra entre faturas com o estado VOIDED, inclusive a proteção transacional contra concorrência.
+- Ampliar testes de integração PostgreSQL para histórico, dupla exclusão, perfil, fatura e auditoria.
+- Adicionar regressão isolada do backfill da migration 20261028124500_immutable_manual_rule_purpose, sem editar migration aplicada.
+- Adicionar teste adversarial de duas PRs abertas com mesmo HEAD para atestação solo.
+- Atualizar documentação do contrato e handoff da PR #771.
+
+## Requisitos
+- Exclusão elegível marca Transaction como VOIDED e preenche voidedAt dentro da mesma transação que ajusta a fatura e cria log soft_delete.
+- Compras anuladas são excluídas das listagens, totalizações e limite utilizado, mas permanecem persistidas para auditoria.
+- Não permitir reversão, edição de estorno ou movimentação de fatura de lançamentos anulados; nenhuma ação pode produzir efeitos financeiros após VOIDED.
+- Exclusão repetida, outra organização/perfil, compra conciliada ou vinculada a parcelas/recorrência não geram mutação.
+- Migration classifica regras legadas por prefixo/explicação e preserva automações comuns.
+- Atestação solo recusa duas PRs abertas no mesmo HEAD e aceita somente a PR única elegível.
+- Gates automáticos não são declarados como auditoria independente.
+
+## Critérios de aceite
+- Testes de integração PostgreSQL passam para status, audit log, totalização, limites, isolamento e bloqueios.
+- Testes adversariais de migração e unicidade de HEAD são executados e aprovados no SHA material.
+- CI, lint, typecheck, formatter, integração e Chrome aplicáveis passam.
+- Parecer externo da release permanece pendente até ocorrer revisão independente.
+
+## Invariantes
+- Branch corretiva baseada em develop e procedimentos crgasparoto-br/skill@develop.
+- Não editar migrations existentes, secrets, variables, rulesets ou required checks.
+- Não executar DELETE físico de históricos financeiros neste fluxo.
+- Não representar atestação solo como aprovação de terceiro.
+- Nenhum merge ou exclusão de arquivos neste ciclo.

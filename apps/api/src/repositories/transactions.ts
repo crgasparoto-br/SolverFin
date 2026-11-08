@@ -26,6 +26,12 @@ import {
 import { query, withTransaction } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
 import { updateCardPurchaseForContext } from "./card-invoice-contracts.js";
+import {
+  assertGenericCardEditAllowed,
+  isCanonicalInstallmentReconciliation,
+  updateActiveGenericTransaction,
+} from "./transaction-generic-write.js";
+import { deleteSimpleCardPurchaseForContext } from "./card-invoice-purchase-delete.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 interface TransactionRow {
@@ -144,18 +150,6 @@ export interface UpdateTransactionOptions {
   denyCanonicalInstallmentMutation?: boolean;
 }
 
-function isCanonicalInstallmentReconciliation(
-  currentStatus: TransactionStatus,
-  payload: UpdateTransactionPayloadWithMetadata,
-): boolean {
-  const keys = Object.keys(payload);
-  if (keys.length !== 1 || payload.status === undefined) return false;
-  if (payload.status === "reconciled") {
-    return currentStatus === "planned" || currentStatus === "posted";
-  }
-  return payload.status === "posted" && currentStatus === "reconciled";
-}
-
 type TransactionMetadata = {
   applyToFuturePlanned?: boolean;
 };
@@ -254,6 +248,15 @@ export async function updateTransactionForContext(
   options: UpdateTransactionOptions = {},
 ): Promise<TransactionWithAccountRemuneration> {
   const currentTransaction = await findTransactionRow(context, transactionId);
+  if (
+    isInvoiceLinkedCardTransaction(currentTransaction) &&
+    currentTransaction.status === "voided"
+  ) {
+    throw Object.assign(new Error("Lançamento de cartão anulado não pode ser editado."), {
+      code: "CARD_PURCHASE_NOT_FOUND",
+      statusCode: 404,
+    });
+  }
 
   if (
     options.denyCanonicalInstallmentMutation === true &&
@@ -281,6 +284,8 @@ export async function updateTransactionForContext(
       409,
     );
   }
+
+  assertGenericCardEditAllowed(currentTransaction);
 
   if (isCardInvoicePurchase(currentTransaction)) {
     await updateCardPurchaseForContext(context, currentTransaction.cardId, transactionId, {
@@ -319,22 +324,32 @@ export async function updateTransactionForContext(
     ...(category ? { category } : {}),
   });
   const transaction = attachNote(result.transaction, prepared.note);
+  const reconciliationOnly =
+    currentTransaction !== undefined &&
+    isCanonicalInstallmentReconciliation(currentTransaction.status, payload);
 
   if (prepared.metadata.applyToFuturePlanned === true && currentTransaction?.recurrenceId) {
     assertRecurringTransferSameCurrency(transaction);
   }
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
-    await syncInstallmentById(
+    await updateActiveGenericTransaction(
       executeQuery,
-      context,
-      currentTransaction?.installmentId,
-      transaction.plannedOn,
-      transaction.amountMinor,
-      transaction.currency,
-      transaction.updatedAt,
+      buildTransactionParams(transaction),
+      currentTransaction?.updatedAt,
+      reconciliationOnly,
     );
+    if (!reconciliationOnly) {
+      await syncInstallmentById(
+        executeQuery,
+        context,
+        currentTransaction?.installmentId,
+        transaction.plannedOn,
+        transaction.amountMinor,
+        transaction.currency,
+        transaction.updatedAt,
+      );
+    }
     await insertAuditLogEntry(executeQuery, result.auditEntry);
 
     if (prepared.metadata.applyToFuturePlanned === true) {
@@ -405,11 +420,19 @@ export async function voidTransactionForContext(
       409,
     );
   }
+  if (isInvoiceLinkedCardTransaction(currentTransaction)) {
+    await deleteSimpleCardPurchaseForContext(context, currentTransaction.cardId, transactionId);
+    return getTransactionDomain(context, await findTransactionRow(context, transactionId));
+  }
   const result = voidTransactionDomain(context, currentTransaction, new Date().toISOString());
   const transaction = attachNote(result.transaction, getTransactionNote(currentTransaction));
 
   await withTransaction(async (executeQuery) => {
-    await executeQuery(buildUpdateTransactionSql(), buildTransactionParams(transaction));
+    await updateActiveGenericTransaction(
+      executeQuery,
+      buildTransactionParams(transaction),
+      currentTransaction?.updatedAt,
+    );
     await insertAuditLogEntry(executeQuery, result.auditEntry);
   });
 
@@ -422,17 +445,6 @@ function buildInsertTransactionSql(): string {
      "transferGroupId", "kind", "status", "source", "amountMinor", "currency", "destinationAmountMinor", "destinationCurrency",
      "occurredOn", "plannedOn", "effectiveOn", "description", "note", "reconciledAt", "voidedAt", "createdAt", "updatedAt", "createdByUserId", "updatedByUserId")
    values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25)`;
-}
-
-function buildUpdateTransactionSql(): string {
-  return `update "Transaction" set
-      "accountId" = $4, "destinationAccountId" = $5, "categoryId" = $6, "transferGroupId" = $7,
-      "kind" = $8, "status" = $9, "source" = $10, "amountMinor" = $11, "currency" = $12,
-      "destinationAmountMinor" = $13, "destinationCurrency" = $14,
-      "occurredOn" = $15, "plannedOn" = $16, "effectiveOn" = $17, "description" = $18,
-      "note" = $19, "reconciledAt" = $20, "voidedAt" = $21, "createdAt" = $22, "updatedAt" = $23,
-      "createdByUserId" = $24, "updatedByUserId" = $25
-    where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`;
 }
 
 function buildTransactionParams(transaction: TransactionWithNote): unknown[] {
@@ -591,16 +603,17 @@ function mapTransactionRow(row: TransactionRow): Transaction {
   return transaction;
 }
 
+function isInvoiceLinkedCardTransaction(
+  transaction: Transaction | undefined,
+): transaction is Transaction & { cardId: EntityId; invoiceId: EntityId } {
+  return Boolean(transaction?.cardId && transaction?.invoiceId);
+}
+
 function isCardInvoicePurchase(transaction: Transaction | undefined): transaction is Transaction & {
   cardId: EntityId;
   invoiceId: EntityId;
 } {
-  return (
-    transaction?.kind === "expense" &&
-    transaction.accountId === undefined &&
-    transaction.cardId !== undefined &&
-    transaction.invoiceId !== undefined
-  );
+  return transaction?.kind === "expense" && isInvoiceLinkedCardTransaction(transaction);
 }
 
 function prepareTransactionPayload<

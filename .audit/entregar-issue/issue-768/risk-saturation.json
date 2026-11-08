@@ -1,0 +1,326 @@
+{
+  "schema_version": 1,
+  "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+  "families": [
+    {
+      "family": "semantic-effect",
+      "applicable": true,
+      "reason": "Os requisitos normativos do Extrato alteram o efeito financeiro das ações em massa, a integridade de grupos e a acessibilidade Golden Screen; cada superfície tem controle negativo já executado no SHA material e ligado à matriz de ataques.",
+      "control_ids": [
+        "NEG-01-001",
+        "NEG-01-003",
+        "NEG-01-011",
+        "NEG-01-016",
+        "NEG-02-004",
+        "NEG-02-010",
+        "NEG-02-012",
+        "NEG-02-017",
+        "NEG-04-018",
+        "NEG-05-013",
+        "NEG-05-020",
+        "NEG-05-X04",
+        "NEG-06-015",
+        "NEG-06-023",
+        "NEG-07-002",
+        "NEG-07-007",
+        "NEG-07-019",
+        "NEG-09-025"
+      ],
+      "dimensions": [
+        {
+          "surface": "bulk-action-eligibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-01-001",
+            "NEG-01-003",
+            "NEG-01-011",
+            "NEG-01-016"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "bulk-unreconcile-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-02-004",
+            "NEG-02-010",
+            "NEG-02-012",
+            "NEG-02-017"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "golden-screen-accessibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-07-002",
+            "NEG-07-007",
+            "NEG-07-019"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "group-member-integrity",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-04-018"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "independent-review-separation",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-09-025"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "protected-financial-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-05-013",
+            "NEG-05-020",
+            "NEG-05-X04"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "unrelated-fields-immutability",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material.",
+          "control_ids": [
+            "NEG-06-015",
+            "NEG-06-023"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-04-014",
+        "NEG-04-X01",
+        "NEG-05-X01"
+      ],
+      "dimensions": [
+        {
+          "surface": "server-side-rejection",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-04-014",
+            "NEG-04-X01",
+            "NEG-05-X01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-05-X02"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-05-X02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-09-X01"
+      ],
+      "dimensions": [
+        {
+          "surface": "commit-target-binding",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-09-X01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-08-021",
+        "NEG-08-X02"
+      ],
+      "dimensions": [
+        {
+          "surface": "exact-sha-evidence",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-08-021",
+            "NEG-08-X02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-03-009",
+        "NEG-03-X01"
+      ],
+      "dimensions": [
+        {
+          "surface": "effective-date-fallback",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-03-009",
+            "NEG-03-X01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-04-006",
+        "NEG-04-X02"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-04-006",
+            "NEG-04-X02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-03-005",
+        "NEG-03-X02"
+      ],
+      "dimensions": [
+        {
+          "surface": "transaction-rollback",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-03-005",
+            "NEG-03-X02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-05-024",
+        "NEG-05-X03",
+        "NEG-09-022",
+        "NEG-09-X02",
+        "NEG-09-X03"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-09-022",
+            "NEG-09-X03"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-05-024",
+            "NEG-05-X03",
+            "NEG-09-X02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Avaliacao discriminante executada em CI e Chrome no SHA material exato; registros negativos e siblings vinculados a fixtures reais e fontes citadas.",
+      "control_ids": [
+        "NEG-08-008",
+        "NEG-08-X01"
+      ],
+      "dimensions": [
+        {
+          "surface": "documented-api-contract",
+          "reason": "Provas negativas exatas com cenarios alternativos e verificacao de resultado sob API/Chrome/Git.",
+          "control_ids": [
+            "NEG-08-008",
+            "NEG-08-X01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

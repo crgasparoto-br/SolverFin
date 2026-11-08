@@ -200,3 +200,110 @@ def test_gzip_inflation_is_bounded_and_invalid_data_rejected():
         collector.bounded_gzip_decompress(data, limit=100)
     with pytest.raises(ValueError, match="malformed"):
         collector.bounded_gzip_decompress(b"not-gzip", limit=100)
+
+
+def test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions():
+    """Regression A-002: the official critical certificate need not include provenance."""
+    import session_review_packet_handoff as handoff
+
+    source_docs = {
+        "specification_snapshot": {"schema_version": 1, "repository": REPO,
+                                   "issue": 9, "sources": [{"id": "issue-9"}]},
+        "requirement_closure": {"schema_version": 1, "obligations": [{"candidate_key": "req-9"}],
+                                "pass_c": {"status": "passed"},
+                                "scope_reduction_review": {"status": "passed"}},
+        "requirement_attack_matrix": {"schema_version": 1, "head_sha": MATERIAL,
+                                      "requirements": [{"id": "req-9"}],
+                                      "uncovered_requirements": []},
+        "risk_saturation": {"schema_version": 1, "head_sha": MATERIAL,
+                            "families": [], "material_families_missing_controls": []},
+        "inherited_controls": {"schema_version": 1, "head_sha": MATERIAL,
+                               "controls": [], "unresolved_controls": []},
+        "codebase_grounding": {"schema_version": 1, "subject_sha": MATERIAL,
+                               "base_sha": BASE, "test_decisions": []},
+        "code_growth": {"schema_version": 1, "control_id": "CODE-GROWTH-001",
+                        "subject_sha": MATERIAL, "base_sha": BASE,
+                        "status": "passed", "blocking_files": []},
+    }
+    stored = {}
+    artifacts = {}
+    for key, body in source_docs.items():
+        name = handoff.CRITICAL_ARTIFACT_NAMES[key]
+        data = json.dumps(body, ensure_ascii=False, sort_keys=True)
+        sha = collector.digest(data.encode())
+        stored[name] = (data, sha)
+        artifacts[key] = {"name": name, "sha256": sha,
+                          "logical_sha256": sha, "logical_size": len(data.encode()),
+                          "artifact_transport": {"format": "plain-json", "version": 1}}
+    source_docs["requirement_closure"]["specification_snapshot"] = {
+        "sha256": artifacts["specification_snapshot"]["sha256"]}
+    key = "requirement_closure"
+    data = json.dumps(source_docs[key], ensure_ascii=False, sort_keys=True)
+    sha = collector.digest(data.encode())
+    stored[handoff.CRITICAL_ARTIFACT_NAMES[key]] = (data, sha)
+    artifacts[key].update(sha256=sha, logical_sha256=sha, logical_size=len(data.encode()))
+    cert = {"subject": {"repository": REPO, "issue_number": 9},
+            "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
+            "controls": {"code_growth": {"applicable": True},
+                         "codebase_grounding": {"applicable": True}},
+            "artifacts": artifacts}
+    reads = []
+
+    def reader(repo, path, head):
+        assert repo == REPO and head == HEAD
+        reads.append(path)
+        return stored[path.rsplit("/", 1)[-1]]
+
+    check = lambda c: handoff._verified_certificate_artifacts(
+        REPO, c, HEAD, file_at=reader, api_json=lambda raw: json.loads(raw))
+    check(cert)
+    assert len(reads) == 7 and "evidence_provenance" not in cert["artifacts"]
+
+    # Additional certified, recognized artifacts are authenticated, not rejected.
+    extra_key = "audit_remediation"
+    content = '{"schema_version": 1, "status": "passed"}'
+    checksum = collector.digest(content.encode())
+    name = handoff.CRITICAL_ARTIFACT_NAMES[extra_key]
+    stored[name] = (content, checksum)
+    extended = {**cert, "artifacts": {**artifacts, extra_key: {
+        "name": name, "sha256": checksum, "logical_sha256": checksum,
+        "logical_size": len(content.encode()),
+        "artifact_transport": {"format": "plain-json", "version": 1}}}}
+    reads.clear()
+    check(extended)
+    assert len(reads) == 8
+    with pytest.raises(ValueError, match="digest mismatch"):
+        check({**extended, "artifacts": {**artifacts, extra_key: {
+            **extended["artifacts"][extra_key], "sha256": "0" * 64}}})
+
+    # Conditional provenance is verified when present, and its base must match.
+    provenance = {"schema_version": 1, "material_head_sha": MATERIAL,
+                  "base_sha": BASE, "evidence": [{"id": "test"}]}
+    good = json.dumps(provenance, sort_keys=True)
+    phash = collector.digest(good.encode())
+    stored[handoff.CRITICAL_ARTIFACT_NAMES["evidence_provenance"]] = (good, phash)
+    with_provenance = {**extended, "artifacts": {**extended["artifacts"],
+        "evidence_provenance": {"name": "evidence-provenance.json", "sha256": phash,
+        "logical_sha256": phash, "logical_size": len(good),
+        "artifact_transport": {"format": "plain-json", "version": 1}}}}
+    check(with_provenance)
+    provenance["base_sha"] = HEAD
+    corrupt = json.dumps(provenance, sort_keys=True)
+    corrupt_hash = collector.digest(corrupt.encode())
+    stored["evidence-provenance.json"] = (corrupt, corrupt_hash)
+    with pytest.raises(ValueError, match="provenance"):
+        check({**with_provenance, "artifacts": {**with_provenance["artifacts"],
+            "evidence_provenance": {**with_provenance["artifacts"]["evidence_provenance"],
+                                    "sha256": corrupt_hash,
+                                    "logical_sha256": corrupt_hash,
+                                    "logical_size": len(corrupt)}}})
+
+    # Mandatory, controlled, and foreign records must always fail closed.
+    for missing_key in ("specification_snapshot", "code_growth", "codebase_grounding"):
+        with pytest.raises(ValueError, match="inventory"):
+            check({**cert, "artifacts": {k: v for k, v in artifacts.items()
+                                         if k != missing_key}})
+    with pytest.raises(ValueError, match="inventory"):
+        check({**cert, "artifacts": {**artifacts, "untrusted_custom": {}}})
+    with pytest.raises(ValueError, match="inventory"):
+        check({**cert, "previous_independent_rejection": True})
