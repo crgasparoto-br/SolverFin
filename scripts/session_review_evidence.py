@@ -33,6 +33,19 @@ def passed_cases(raw: bytes) -> set[str]:
             and b"<!ENTITY" not in raw.upper(), "unsafe or oversized JUnit")
     root = ElementTree.fromstring(raw)
     require(root.tag in {"testsuites", "testsuite"}, "JUnit root is invalid")
+    # A producer may invoke this parser without the workflow's separate
+    # JUnit preflight. Reject contradictory aggregate counts here as well.
+    for suite in root.iter():
+        if suite.tag not in {"testsuites", "testsuite"}:
+            continue
+        for failure in ("failures", "errors", "skipped"):
+            declared = suite.get(failure)
+            require(declared is None or declared == "0",
+                    "JUnit declares failing, errored or skipped tests")
+        declared_tests = suite.get("tests")
+        require(declared_tests is None or (declared_tests.isdecimal()
+                and int(declared_tests) == sum(1 for _ in suite.iter("testcase"))),
+                "JUnit aggregate test count mismatch")
     rows = list(root.iter("testcase"))
     require(0 < len(rows) <= 5000, "JUnit test inventory must be complete")
     observed: set[str] = set()
