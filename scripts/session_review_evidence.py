@@ -32,6 +32,12 @@ def passed_cases(raw: bytes) -> set[str]:
     require(len(raw) < MAX_XML and b"<!DOCTYPE" not in raw.upper()
             and b"<!ENTITY" not in raw.upper(), "unsafe or oversized JUnit")
     root = ElementTree.fromstring(raw)
+    # Fail closed on namespaced XML: qualified failure/error/skipped tags
+    # would otherwise evade the unqualified JUnit failure checks below.
+    require(all(isinstance(node.tag, str) and "}" not in node.tag
+                and ":" not in node.tag and all("}" not in key and ":" not in key
+                for key in node.attrib) for node in root.iter()),
+            "JUnit namespaces are unsupported")
     require(root.tag in {"testsuites", "testsuite"}, "JUnit root is invalid")
     # A producer may invoke this parser without the workflow's separate
     # JUnit preflight. Reject contradictory aggregate counts here as well.

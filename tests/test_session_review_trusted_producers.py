@@ -178,3 +178,47 @@ def test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts():
     # Also enforce totals on the outer testsuites element, not just the leaf.
     with pytest.raises(ValueError, match="JUnit"):
         evidence.passed_cases(good.replace(b'<testsuites>', b'<testsuites failures="1">'))
+
+
+@pytest.mark.parametrize("element", ["failure", "error", "skipped", "wrapper"])
+def test_namespaced_junit_fails_closed_in_parser_producer_and_consumer(tmp_path, element):
+    """A-005: a namespaced failure must never become positive exact-SHA evidence."""
+    raw = (
+        '<testsuites><testsuite tests="1" failures="0" errors="0" skipped="0">'
+        '<testcase classname="suite" name="case">'
+        f'<ns:{element} xmlns:ns="urn:untrusted:junit"/>'
+        '</testcase></testsuite></testsuites>'
+    ).encode()
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.passed_cases(raw)
+
+    certificate = tmp_path / "handoff-ready.json"
+    certificate.write_text(json.dumps({
+        "schema_version": 2, "status": "ready",
+        "subject": {"repository": REPO, "pull_request_number": 10},
+        "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
+    }))
+    junit = tmp_path / "junit.xml"
+    junit.write_bytes(raw)
+    rejected_out = tmp_path / "rejected"
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.write_evidence(junit, certificate, rejected_out, REPO, 10, BASE, HEAD)
+    assert not rejected_out.exists()
+
+    # Build a valid archive first, then replace only XML and its authenticated
+    # hash. This exercises semantic validation after byte-integrity checks.
+    junit.write_bytes(
+        b'<testsuites><testsuite tests="1"><testcase classname="suite" name="case"/>'
+        b'</testsuite></testsuites>'
+    )
+    accepted_out = tmp_path / "accepted"
+    evidence.write_evidence(junit, certificate, accepted_out, REPO, 10, BASE, HEAD)
+    facts = json.loads((accepted_out / "session-review-evidence.json").read_text())
+    facts["junit_sha256"] = source.digest(raw)
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, "w") as archive:
+        archive.writestr("junit.xml", raw)
+        archive.writestr("handoff-ready.json", certificate.read_bytes())
+        archive.writestr("session-review-evidence.json", json.dumps(facts))
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.consume_zip(buffer.getvalue())
