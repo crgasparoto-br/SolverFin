@@ -276,6 +276,50 @@ def test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_exten
         check({**extended, "artifacts": {**artifacts, extra_key: {
             **extended["artifacts"][extra_key], "sha256": "0" * 64}}})
 
+    # Regression A-004: targeted corrections require only the audit source and
+    # remediation ledger, while systemic/mixed corrections require lineage.
+    source_key = "audit_source_result"
+    source_name = handoff.CRITICAL_ARTIFACT_NAMES[source_key]
+    stored[source_name] = (content, checksum)
+    source_artifact = {"name": source_name, "sha256": checksum,
+                       "logical_sha256": checksum, "logical_size": len(content),
+                       "artifact_transport": {"format": "plain-json", "version": 1}}
+    targeted = {**cert, "previous_independent_rejection": True,
+                "remediation_mode": "targeted-remediation",
+                "artifacts": {**extended["artifacts"], source_key: source_artifact}}
+    reads.clear()
+    check(targeted)
+    assert len(reads) == 9
+    for missing_key in ("audit_remediation", "audit_source_result"):
+        with pytest.raises(ValueError, match="inventory"):
+            check({**targeted, "artifacts": {
+                key: value for key, value in targeted["artifacts"].items()
+                if key != missing_key}})
+
+    for mode in ("systemic-remediation", "mixed-remediation"):
+        with pytest.raises(ValueError, match="inventory"):
+            check({**targeted, "remediation_mode": mode})
+    lineage = {}
+    for key in ("audit_escape_closure", "learning_closure"):
+        name = handoff.CRITICAL_ARTIFACT_NAMES[key]
+        stored[name] = (content, checksum)
+        lineage[key] = {"name": name, "sha256": checksum,
+                        "logical_sha256": checksum, "logical_size": len(content),
+                        "artifact_transport": {"format": "plain-json", "version": 1}}
+    for mode in ("systemic-remediation", "mixed-remediation"):
+        with_lineage = {**targeted, "remediation_mode": mode,
+                        "artifacts": {**targeted["artifacts"], **lineage}}
+        check(with_lineage)
+        for missing_key in lineage:
+            with pytest.raises(ValueError, match="inventory"):
+                check({**with_lineage, "artifacts": {
+                    key: value for key, value in with_lineage["artifacts"].items()
+                    if key != missing_key}})
+    with pytest.raises(ValueError, match="digest mismatch"):
+        check({**targeted, "artifacts": {
+            **targeted["artifacts"], source_key: {
+                **source_artifact, "sha256": "0" * 64}}})
+
     # Conditional provenance is verified when present, and its base must match.
     provenance = {"schema_version": 1, "material_head_sha": MATERIAL,
                   "base_sha": BASE, "evidence": [{"id": "test"}]}

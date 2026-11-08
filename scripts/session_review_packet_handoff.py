@@ -114,8 +114,9 @@ def _verified_certificate_artifacts(repo: str, cert: dict, head: str, *, file_at
         if (controls.get(key) or {}).get("applicable") is True:
             required.add(key)
     if cert.get("previous_independent_rejection") is True:
-        required.update({"audit_remediation", "audit_source_result",
-                         "audit_escape_closure", "learning_closure"})
+        required.update({"audit_remediation", "audit_source_result"})
+        if cert.get("remediation_mode") in {"systemic-remediation", "mixed-remediation"}:
+            required.update({"audit_escape_closure", "learning_closure"})
     require(isinstance(inventory, dict)
             and required <= set(inventory)
             and set(inventory) <= set(CRITICAL_ARTIFACT_NAMES),
