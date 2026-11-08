@@ -83,7 +83,11 @@ export async function listInstallmentsForContext(
 ): Promise<InstallmentHistoryItem[]> {
   validateFilters(filters);
   const params: unknown[] = [context.organizationId, context.financialProfileId];
-  const where = [`i."organizationId" = $1`, `i."financialProfileId" = $2`];
+  const where = [
+    `i."organizationId" = $1`,
+    `i."financialProfileId" = $2`,
+    `(i."cardId" is null or p."status" is distinct from 'VOIDED')`,
+  ];
 
   addEqualsFilter(where, params, `i."id"`, filters.installmentId);
   addEqualsFilter(where, params, `coalesce(t."id", p."id")`, filters.transactionId);

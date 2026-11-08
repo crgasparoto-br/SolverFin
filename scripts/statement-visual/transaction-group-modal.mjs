@@ -399,7 +399,17 @@ try {
       const originalConfirm = window.confirm;
       window.confirm = () => true;
       document.querySelector('[data-member-id="${created.thirdMemberId}"][data-member-action="void"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 180));
+      // The API and DOM update are asynchronous; assert the settled state,
+      // not an arbitrary 180 ms deadline under a loaded Chrome runner.
+      const deadline = Date.now() + 5_000;
+      while (Date.now() < deadline) {
+        const current = document.querySelector('script[data-group="${created.postedGroupId}"]');
+        const members = current && JSON.parse(current.textContent).members;
+        const status = document.querySelector("[data-group-action-status]").textContent;
+        if (members && members.length === 2 && /Lançamento excluído/.test(status)) break;
+        if (/Não foi possível|Verifique sua conexão/.test(status)) break;
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      }
       const node = document.querySelector('script[data-group="${created.postedGroupId}"]');
       const group = JSON.parse(node.textContent);
       const result = {
