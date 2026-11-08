@@ -5,6 +5,14 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import {
+  manualFinitePlanSetupScript,
+  assertFullRecurringLine,
+} from "./issue-539-account-regression-helpers.mjs";
+import {
+  validatePlannedRecurringAccountEdit,
+  validateUnreconciledRecurringAccountEdit,
+} from "./issue-774-recurring-unreconcile-edit.mjs";
+import {
   validateRecurringScopeDesktop,
   validateRecurringScopeViewports,
 } from "./issue-748-recurring-scope-responsive.mjs";
@@ -41,6 +49,16 @@ try {
   await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
   await validateCardMobile(fixture);
+  await validateUnreconciledRecurringAccountEdit({
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+  });
+  await validatePlannedRecurringAccountEdit({
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+  });
 } finally {
   await browser.close(outputDir);
 }
@@ -68,10 +86,10 @@ async function validateAccountDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
+  await assertFullRecurringLine(browser.cdp, fixture.recurringAccountTransactionId, check);
   const line = await waitForAccountLine(fixture.accountTransactionId);
-  check(line.badge === "", "Fixed recurrence should not display a finite installment badge", line);
-  check(line.hasRecurrenceIndicator, "Recurrence indicator was not preserved", line);
-  check(line.editable, "Installment edit action did not become available", line);
+  check(line.badge === fixture.accountBadge, "Finite plan must keep its installment badge", line);
+  check(!line.hasRecurrenceIndicator, "Finite installment must not acquire a recurring icon", line);
 
   await evaluate(
     browser.cdp,
@@ -605,14 +623,12 @@ function fixtureExpression() {
     const accountInstallments = (await request(
       "/api/installments?recurrenceId=" + accountRecurrence.id + "&status=all"
     )).installments;
-    const accountInstallment = accountInstallments.find(
+    const recurringAccountInstallment = accountInstallments.find(
       (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
     );
+    ${manualFinitePlanSetupScript("2026-07-05", "QA issue 539 parcela manual", 3)}
     const blockedAccountInstallment = accountInstallments.find(
       (item) => item.dueOn === "2026-08-05" && item.transaction?.id,
-    );
-    const conflictAccountInstallment = accountInstallments.find(
-      (item) => item.dueOn === "2026-09-05" && item.transaction?.id,
     );
     let blockedAccountMonth = "";
     if (blockedAccountInstallment?.transaction?.id) {
@@ -662,6 +678,7 @@ function fixtureExpression() {
 
     if (
       !accountInstallment?.transaction?.id ||
+      !recurringAccountInstallment?.transaction?.id ||
       !blockedAccountInstallment?.transaction?.id ||
       !blockedAccountMonth ||
       !conflictAccountInstallment?.transaction?.id ||
@@ -675,6 +692,7 @@ function fixtureExpression() {
       archivedCategoryId: category.id,
       accountInstallmentId: accountInstallment.id,
       accountTransactionId: accountInstallment.transaction.id,
+      recurringAccountTransactionId: recurringAccountInstallment.transaction.id,
       accountBadge: "Parcela " + accountInstallment.sequenceNumber + " de " + accountInstallment.totalInstallments,
       blockedAccountMonth,
       blockedAccountTransactionId: blockedAccountInstallment.transaction.id,

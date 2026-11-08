@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { manualFinitePlanRequestScript } from "./issue-539-account-regression-helpers.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -25,8 +26,8 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const requestScope = await waitForInstallmentLine(fixture.transactionId);
   check(
-    !requestScope.badgePresent,
-    "Fixed recurring entry must not show a parcel badge",
+    requestScope.badgePresent,
+    "Manual finite installment must display its installment badge",
     requestScope,
   );
   check(
@@ -224,23 +225,9 @@ function fixtureExpression() {
       name: "Categoria teclado " + suffix,
       kind: "expense"
     })).category;
-    const recurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-15",
-      endOn: "2026-07-15",
-      amountMinor: 12345,
-      description: "QA issue 539 teclado",
-      kind: "expense",
-      accountId: account.id,
-      categoryId: category.id
-    })).recurrence;
-    await request("/api/recurrences/" + recurrence.id + "/generate-installments", "POST", {
-      through: "2026-07-15",
-      maxOccurrences: 1
-    });
-    const installments = (await request(
-      "/api/installments?recurrenceId=" + recurrence.id + "&status=all"
-    )).installments;
+    // Keep keyboard and attachment coverage on the restricted finite-installment
+    // editor; planned bank recurrences now open the full transaction editor.
+    const installments = (await ${manualFinitePlanRequestScript("2026-07-15", "QA issue 539 teclado", 2)}).installments;
     const installment = installments.find((item) => item.transaction?.id);
     if (!installment?.transaction?.id) throw new Error("Keyboard fixture did not create an installment");
     return { accountId: account.id, transactionId: installment.transaction.id };

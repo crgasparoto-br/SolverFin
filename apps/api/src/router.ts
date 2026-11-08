@@ -14,6 +14,7 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
+import { withSharedTransaction } from "./db.js";
 import type { ApiHeaders } from "./http-headers.js";
 import { auth } from "./auth-service.js";
 import {
@@ -586,33 +587,45 @@ async function updateTransactionHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const transaction = await updateTransactionForContext(
-    context,
-    requireParam(match, "transactionId"),
-    {
-      ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
-      ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
-      ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-      ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
-      ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
-      ...(body.effectiveOn !== undefined
-        ? { effectiveOn: readOptionalDate(body.effectiveOn) }
-        : {}),
-      ...(body.description !== undefined ? { description: String(body.description) } : {}),
-      ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
-      ...(body.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
-      ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-      ...(body.destinationAccountId !== undefined
-        ? { destinationAccountId: String(body.destinationAccountId) }
-        : {}),
-      ...(body.destinationAmountMinor !== undefined
-        ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
-        : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    },
-    { denyCanonicalInstallmentMutation: true },
-  );
+  const transactionId = requireParam(match, "transactionId");
+  const payload = {
+    ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
+    ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
+    ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+    ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+    ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+    ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
+    ...(body.description !== undefined ? { description: String(body.description) } : {}),
+    ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
+    ...(body.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
+    ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.destinationAccountId !== undefined
+      ? { destinationAccountId: String(body.destinationAccountId) }
+      : {}),
+    ...(body.destinationAmountMinor !== undefined
+      ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
+      : {}),
+    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+  };
+  const update = () =>
+    updateTransactionForContext(context, transactionId, payload, {
+      denyCanonicalInstallmentMutation: true,
+    });
+  // A status-only PATCH must read the locked row. Otherwise a reconciliation
+  // based on a stale snapshot can overwrite a concurrent current-only edit.
+  const transaction =
+    Object.keys(body).length === 1 && body.status !== undefined
+      ? await withSharedTransaction(async (executeQuery) => {
+          await executeQuery(
+            `select "id" from "Transaction"
+             where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+             for update`,
+            [transactionId, context.organizationId, context.financialProfileId],
+          );
+          return update();
+        })
+      : await update();
 
   return json(200, { transaction });
 }

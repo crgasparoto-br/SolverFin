@@ -243,3 +243,22 @@ usar a mesma atualizacao exclusivamente de status aceita pelo backend; grupos
 financeiros, compras do cartao, remuneracoes automaticas, sugestoes pendentes e
 lancamentos excluidos continuam sujeitos as restricoes atuais. A conciliacao
 **nao** equivale a editar toda a serie recorrente.
+
+## Editar ocorrência recorrente após desconciliação — issue #774
+
+No Extrato, a ocorrência recorrente desconciliada retorna ao estado
+`posted` e pode ser editada pelo menu de ações e pelo escopo **Somente este
+lançamento**. A mesma edição completa também está disponível quando a
+ocorrência bancária ainda está `planned`, incluindo conta, datas, categoria,
+descrição e valor; parcelas manuais, compras em cartão e lançamentos
+conciliados continuam no editor restrito. O formulário usa
+`PATCH /api/transactions/:id/current-only`; o endpoint genérico continua
+bloqueando mutações não exclusivamente de
+situação em parcelas canônicas. **Este lançamento e os próximos** preserva
+a operação já existente, que alcança somente as futuras elegíveis. A
+alteração individual sincroniza a parcela selecionada sem alterar outras
+ocorrências nem a definição da recorrência. Ocorrências ainda conciliadas,
+recorrências canceladas, parcelas sem recorrência e compras de cartão
+continuam sujeitas a bloqueios do backend. Escolher **Sem categoria** na edição
+individual envia `categoryId: null` e remove o vínculo somente da ocorrência
+selecionada; a conta pode ser alterada sem modificar a regra recorrente.

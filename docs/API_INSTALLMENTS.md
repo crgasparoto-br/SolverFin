@@ -322,3 +322,21 @@ Essa decisao preserva a acao de exclusao logica ja existente no Extrato sem tran
 - A edicao direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteracao, o cliente nao envia `PATCH`. Categoria arquivada vinculada ao historico e preservada no formulario e so e removida quando o usuario escolhe explicitamente **Sem categoria**.
 - Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual. O endpoint generico `PATCH /api/transactions/:transactionId` retorna `409 INSTALLMENT_DIRECT_UPDATE_REQUIRED` para mutacoes de dados de uma transacao com `installmentId`; a unica excecao e o payload exclusivo de situacao usado pela acao operacional existente de conciliar ou desconciliar. A excecao valida o estado atual: `planned|posted -> reconciled` e `reconciled -> posted` sao permitidos; `planned -> posted`, payload combinado e qualquer outro status continuam bloqueados. Assim, indisponibilidade ou atraso da consulta complementar nao libera alteracao de valor, datas, conta, descricao, categoria ou outros campos fora do contrato da parcela.
 - Parcelas com `invoice_linked` sao mantidas em leitura no contrato de parcelas; a edicao operacional continua exclusivamente no endpoint da compra da fatura.
+
+## Edição da ocorrência recorrente após desconciliação — issue #774
+
+A regra de bloqueio do `PATCH /api/transactions/:transactionId` **continua
+vigente** para alterações combinadas de dados de qualquer parcela canônica.
+O endpoint genérico admite somente a conciliação/desconciliação por payload
+exclusivo de situação.
+
+O modal do Extrato oferece **Somente este lançamento** de recorrência de
+conta na rota dedicada `PATCH /api/transactions/:transactionId/current-only`.
+Esta rota permite editar uma ocorrência `planned` ou `posted`, inclusive após
+conciliar e desconciliar, desde que a recorrência não esteja cancelada, não
+pertença a cartão/fatura e a parcela relacionada não esteja bloqueada.
+O servidor rejeita transação sem recorrência, compras de cartão, lançamentos
+ainda conciliados/anulados, mudança de status pelo editor e tentativa de
+expandir o escopo futuro. Tenant e perfil são validados. Valor e data da
+parcela selecionada são sincronizados, sem modificar as demais ocorrências
+ou a regra da recorrência.
