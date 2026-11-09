@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
+  "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
   "families": [
     {
       "family": "authorization",
@@ -44,7 +44,7 @@
       "dimensions": [
         {
           "surface": "bootstrap-policy-safety",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 169/169.",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170.",
           "control_ids": [
             "NEG-010"
           ],

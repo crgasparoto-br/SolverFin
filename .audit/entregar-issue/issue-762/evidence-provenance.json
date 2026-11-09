@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "material_head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
-  "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+  "material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
   "evidence": [
     {
       "evidence_id": "EVID-762-PYTEST",
       "kind": "behavioral",
       "path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-      "sha256": "5c68bc073b3f74c110f58d641cd41bd8bd943d052486a19f2afaf9013d952391",
-      "subject_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
-      "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+      "sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+      "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+      "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
       "freshness_policy": "exact-material-head",
-      "producer": "local-python-pytest-9.0.2; authenticated GitHub CI git bundle run 42621496840",
+      "producer": "pytest 9.0.2 / Python 3.13.5 on authenticated Git checkout of run 42637767672; CI exact-SHA run 42637767915; contract run 42637767620",
       "status": "passed"
     }
   ]

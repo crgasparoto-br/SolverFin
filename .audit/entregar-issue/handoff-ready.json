@@ -16,13 +16,13 @@
     ],
     "parent_issue_must_remain_open": true
   },
-  "created_at": "2026-11-09T13:17:18.575877+00:00",
+  "created_at": "2026-11-09T15:13:54.029402+00:00",
   "identity": {
-    "head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
-    "material_head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
-    "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
-    "merge_preview_sha": "32413ae496bf08ad6327367e17d3182992090a63",
-    "material_merge_preview_sha": "32413ae496bf08ad6327367e17d3182992090a63"
+    "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+    "material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+    "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+    "merge_preview_sha": "96452d0d8f5b69edba3af8ee43890f1fb9ab63e0",
+    "material_merge_preview_sha": "96452d0d8f5b69edba3af8ee43890f1fb9ab63e0"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
@@ -36,9 +36,19 @@
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
-    "material_head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
+    "work_item_start_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+    "material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
     "issue_changed_paths": [
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/issue-762/code-growth.json",
+      ".audit/entregar-issue/issue-762/codebase-grounding.json",
+      ".audit/entregar-issue/issue-762/evidence-provenance.json",
+      ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+      ".audit/entregar-issue/issue-762/inherited-controls.json",
+      ".audit/entregar-issue/issue-762/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-762/requirement-closure.json",
+      ".audit/entregar-issue/issue-762/risk-saturation.json",
+      ".audit/entregar-issue/issue-762/specification-snapshot.json",
       ".github/session-review-policy.json",
       ".github/workflows/delivery-audit-workspace.yml",
       ".github/workflows/prepare-neutral-audit-packet.yml",
@@ -55,7 +65,7 @@
       "tests/test_session_review_certificate.py",
       "tests/test_session_review_verifier.py"
     ],
-    "issue_delta_sha256": "b02a9825483fb51cd54424e0878d63b4e3c5f6e52d0698fa549a436665651a62"
+    "issue_delta_sha256": "aa451730edf67b1a520bb1451dbcbea0dfeea99b22e906b1e866fffa638cd11f"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
@@ -102,9 +112,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "11fe49563d67491d152434ef6339d23bd937ddf543fa772d70687d5196061bbe",
-      "logical_sha256": "11fe49563d67491d152434ef6339d23bd937ddf543fa772d70687d5196061bbe",
-      "logical_size": 721,
+      "sha256": "ca4b0665c0653c9eddbe5c879d45d80bc8959fe7e140b449007603bd446270dc",
+      "logical_sha256": "ca4b0665c0653c9eddbe5c879d45d80bc8959fe7e140b449007603bd446270dc",
+      "logical_size": 714,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -112,8 +122,8 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "18ec76f5db5e9f0f1b3593539635adbfb6a0ce878d7f2fe8d7e9bfdd5d5ec31f",
-      "logical_sha256": "18ec76f5db5e9f0f1b3593539635adbfb6a0ce878d7f2fe8d7e9bfdd5d5ec31f",
+      "sha256": "5364619ac8b895bf167637d4be7b61c3f61463e4f1a77f8d5cef0db89f7abf2b",
+      "logical_sha256": "5364619ac8b895bf167637d4be7b61c3f61463e4f1a77f8d5cef0db89f7abf2b",
       "logical_size": 15636,
       "artifact_transport": {
         "format": "plain-json",
@@ -122,9 +132,9 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "04a1a1b351aedc7b8acdb6cde3a1d316d278c33e9d20f297686a2065b709a6af",
-      "logical_sha256": "04a1a1b351aedc7b8acdb6cde3a1d316d278c33e9d20f297686a2065b709a6af",
-      "logical_size": 22949,
+      "sha256": "c5ade30323c753334e8848ff1d8ba41e1adfb7c0e78b48f829271950919ff5e3",
+      "logical_sha256": "c5ade30323c753334e8848ff1d8ba41e1adfb7c0e78b48f829271950919ff5e3",
+      "logical_size": 25064,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -132,8 +142,8 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "6a202b49563521c5b7d6aee214227d9db9eccf48b0463d12410e331583af70ec",
-      "logical_sha256": "6a202b49563521c5b7d6aee214227d9db9eccf48b0463d12410e331583af70ec",
+      "sha256": "aa960e615b8dd8e6d784cd8ed8a3f98a875cc36f937c271c18c6caee470fe52d",
+      "logical_sha256": "aa960e615b8dd8e6d784cd8ed8a3f98a875cc36f937c271c18c6caee470fe52d",
       "logical_size": 3504,
       "artifact_transport": {
         "format": "plain-json",
@@ -142,8 +152,8 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "57cf7b3072c4ad43c7a5ca1de9ec72feaca2d090682fdb3c5d46dc70bf3d4527",
-      "logical_sha256": "57cf7b3072c4ad43c7a5ca1de9ec72feaca2d090682fdb3c5d46dc70bf3d4527",
+      "sha256": "02a8d959adef3596f7970eefde1df53380622660d60de14a21c4484cfaff5abe",
+      "logical_sha256": "02a8d959adef3596f7970eefde1df53380622660d60de14a21c4484cfaff5abe",
       "logical_size": 180,
       "artifact_transport": {
         "format": "plain-json",
@@ -152,9 +162,9 @@
     },
     "evidence_provenance": {
       "name": "evidence-provenance.json",
-      "sha256": "5b2a863bf7bcb59222491468223746b2aba1761b181b961bd751f6997d13ef19",
-      "logical_sha256": "5b2a863bf7bcb59222491468223746b2aba1761b181b961bd751f6997d13ef19",
-      "logical_size": 716,
+      "sha256": "953838ee241ae3d96e91c59be2fb14db90d151d22a76d20798c67e4be4c7bfaf",
+      "logical_sha256": "953838ee241ae3d96e91c59be2fb14db90d151d22a76d20798c67e4be4c7bfaf",
+      "logical_size": 772,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -162,8 +172,8 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "749e609d486fab2fe91ae587afc49eed7042e20a1685e16e982225326a271616",
-      "logical_sha256": "749e609d486fab2fe91ae587afc49eed7042e20a1685e16e982225326a271616",
+      "sha256": "4fc0c7c45ff42a10663e3ccd6a8e41bb219ff9da990a9b650b1e00750fb4b6d0",
+      "logical_sha256": "4fc0c7c45ff42a10663e3ccd6a8e41bb219ff9da990a9b650b1e00750fb4b6d0",
       "logical_size": 8051,
       "artifact_transport": {
         "format": "plain-json",
@@ -172,8 +182,8 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "55fd75e6c60617748acc813c8e6d0d67ad7d5fcea7b2c4df066ea59039f17646",
-      "logical_sha256": "55fd75e6c60617748acc813c8e6d0d67ad7d5fcea7b2c4df066ea59039f17646",
+      "sha256": "3b480eb0d17af3559ee94d0856e119a5ff3bb089a5824fb56dd50d9c3e393fc7",
+      "logical_sha256": "3b480eb0d17af3559ee94d0856e119a5ff3bb089a5824fb56dd50d9c3e393fc7",
       "logical_size": 807,
       "artifact_transport": {
         "format": "plain-json",
@@ -192,7 +202,7 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
+      "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },
