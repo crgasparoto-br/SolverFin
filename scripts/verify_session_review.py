@@ -18,7 +18,7 @@ from pathlib import Path
 import prepare_session_review_packet as collector
 import session_review_evidence as evidence
 import session_review_github as facts
-from session_review_checks import begin_check, finish_check, paged, review_watermark
+from session_review_checks import begin_check, finish_check, paged, review_watermark, write_api
 from session_review import (
     ASSURANCE, POLICY_PATH, PREFIX, PROVENANCE_TYPE, allowed,
     canonical, digest, latest_review, require, review_snapshot, strict_json,
@@ -43,6 +43,17 @@ TRUSTED_PATHS = (
 )
 
 
+def pages(repo: str, endpoint: str, *, field: str | None = None):
+    """Retain the existing read-only inventory interface for solo audit."""
+    return paged(repo, endpoint, field=field)
+
+
+def api(path: str, *, method: str = "GET", data: dict | None = None, binary: bool = False):
+    """Legacy facade: GET reads and tightly scoped Check Run writes only."""
+    require(not binary and ((method == "GET" and data is None)
+            or (method in {"POST", "PATCH"} and isinstance(data, dict))),
+            "unsupported legacy GitHub operation")
+    return collector.api(path) if method == "GET" else write_api(path, method, data)
 
 
 def trusted_policy_and_code(repo: str, base_sha: str) -> tuple[dict, bytes]:
