@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+  "head_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
   "families": [
     {
       "family": "authorization",
@@ -96,7 +96,7 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "A-76312 requires mode-sensitive provenance and fail-closed Git history.",
+      "reason": "A-76312 requires mode-sensitive provenance and fail-closed Git history. Adversarial regression da query check_name percent-encoded em PR #777.",
       "control_ids": [
         "NEG-A76312-LEGACY",
         "NEG-A76312-MERGE",
@@ -110,7 +110,8 @@
         "NEG-HIST-007-9",
         "NEG-HIST-008-10",
         "NEG-HIST-008-11",
-        "NEG-HIST-008-12"
+        "NEG-HIST-008-12",
+        "NEG-777-CHECK-ENCODING"
       ],
       "dimensions": [
         {
@@ -165,6 +166,14 @@
             "NEG-HIST-005-6",
             "NEG-HIST-007-9",
             "NEG-HIST-008-12"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "check-runs-query-encoding",
+          "reason": "A PR #777 corrige codificacao de CHECK_NAME para check runs; mutante sem quote falha no teste focado de URL e SHA/JSON rejeitados.",
+          "control_ids": [
+            "NEG-777-CHECK-ENCODING"
           ],
           "status": "passed"
         }

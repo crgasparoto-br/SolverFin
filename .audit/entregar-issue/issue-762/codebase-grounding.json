@@ -1,149 +1,52 @@
 {
   "schema_version": 2,
-  "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
-  "creations": [
-    {
-      "path": "scripts/session_review_checks.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git ls-tree -r --name-only 96eca4f0046d07a29dba459a4a048e4bd47df2f4 -- scripts/",
-          "git grep -n \"check_run\" 96eca4f0046d07a29dba459a4a048e4bd47df2f4 -- scripts/"
-        ],
-        "scope": "Existing protected-base verify_session_review.py and session_review_github.py reviewed for reuse.",
-        "candidates": [
-          {
-            "path": "scripts/verify_session_review.py",
-            "reason_not_reused": "Existing monolith continues as caller; new extracted checks module isolates bounded Check Run emission and pagination; duplicate paths removed from verifier."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Extracted only the checks API and pagination to a shared module; legacy solo audit compatibility retained without weakening checks:write boundary."
-    }
-  ],
+  "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+  "creations": [],
   "references": [],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "tests/test_session_review.py",
-      "operation": "added",
-      "scenario": "Trusted GitHub exact-SHA workflow/provenance/session-review validation (including falsification and regression controls).",
-      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
-      "search": {
-        "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
-          "python -m pytest --collect-only -q tests/test_session_review.py"
-        ],
-        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
-        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
-        "candidates": [
-          {
-            "path": "tests/test_session_review.py",
-            "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
-            "comparison": "Newly added file compared against protected base and reached in runner."
-          }
-        ]
-      },
-      "decision": "new-test-required",
-      "justification": "Extend trusted producer and consumer regression coverage without removing legacy tests.",
-      "disposition": "keep",
-      "coverage_before": [],
-      "coverage_after": [
-        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
-      ],
-      "verification": {
-        "status": "passed",
-        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
-        "exit_code": 0,
-        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-        "reached_tests": [
-          "tests/test_session_review.py"
-        ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
-      }
-    },
-    {
-      "path": "tests/test_session_review_certificate.py",
-      "operation": "added",
-      "scenario": "Trusted GitHub exact-SHA workflow/provenance/session-review validation (including falsification and regression controls).",
-      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
-      "search": {
-        "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
-          "python -m pytest --collect-only -q tests/test_session_review_certificate.py"
-        ],
-        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
-        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
-        "candidates": [
-          {
-            "path": "tests/test_session_review_certificate.py",
-            "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
-            "comparison": "Newly added file compared against protected base and reached in runner."
-          }
-        ]
-      },
-      "decision": "new-test-required",
-      "justification": "Extend trusted producer and consumer regression coverage without removing legacy tests.",
-      "disposition": "keep",
-      "coverage_before": [],
-      "coverage_after": [
-        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
-      ],
-      "verification": {
-        "status": "passed",
-        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
-        "exit_code": 0,
-        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-        "reached_tests": [
-          "tests/test_session_review_certificate.py"
-        ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
-      }
-    },
-    {
       "path": "tests/test_session_review_verifier.py",
-      "operation": "added",
-      "scenario": "Validated session routing and trusted Github provenance on PR histories with merge commits; A-76312 full evaluate test.",
-      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "operation": "modified",
+      "scenario": "Garante percent-encoding no filtro check_name com preservacao do watermark e falha fechada em SHA estrangeiro/JSON invalido.",
+      "requirement": "REQ-762-005 (revisao por sessao exata, anti-stale e watermark)",
       "search": {
         "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
-          "python -m pytest --collect-only -q tests/test_session_review_verifier.py"
+          "git diff --name-status 7269fbaf91a587fedf3016abf375fa1b750628c9..241849d93dbbf8a7db4e8338acecaceea8a365c5 -- tests/",
+          "git grep -n review_watermark 7269fbaf91a587fedf3016abf375fa1b750628c9 -- tests/"
         ],
-        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
-        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "scope": "A suite existente test_session_review_verifier.py ja cobre review_watermark, numero de check runs, SHA e JSON; ampliar no mesmo teste preserva descoberta pytest.",
+        "runner": "python -m pytest -q",
         "candidates": [
           {
             "path": "tests/test_session_review_verifier.py",
-            "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
-            "comparison": "Newly added file compared against protected base and reached in runner."
+            "case": "test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection",
+            "oracle": "A URL nao pode conter espaco nem parenteses e query decodificada deve recuperar CHECK_NAME, alem da leitura do watermark.",
+            "comparison": "Extend-existing foi escolhido sobre novo arquivo ou fixture; mantem regressao proxima do consumidor real e mata mutante de query sem encode."
           }
         ]
       },
-      "decision": "new-test-required",
-      "justification": "Non-linear GitHub remains fail-closed on opt-in, while legacy v1 is accepted with authentic separate session references.",
+      "decision": "extend-existing",
+      "justification": "A correcao afeta uma funcao existente; o arquivo de teste ja possui fixtures e mocks de API GitHub necessarios, evitando codigo/teste duplicado.",
       "disposition": "keep",
-      "coverage_before": [],
+      "coverage_before": [
+        "REQ-762-005: rejeicao SHA estrangeiro e parse estrito no watermark"
+      ],
       "coverage_after": [
-        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
+        "REQ-762-005: URL percent-encoded e read-back do watermark",
+        "REQ-762-005: SHA estrangeiro e JSON invalido rejeitados"
       ],
       "verification": {
         "status": "passed",
-        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "command": "python -m pytest -q tests/test_session_review_verifier.py tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
         "reached_tests": [
-          "tests/test_session_review_verifier.py"
+          "tests/test_session_review_verifier.py::test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection"
         ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/pr777-test-reach.log",
+        "evidence_sha256": "51b044259798006252a86aaec704292b23bfbc11eecc60d5896422034306ac42"
       }
     }
   ]

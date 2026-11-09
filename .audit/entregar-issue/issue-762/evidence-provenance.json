@@ -1,17 +1,28 @@
 {
   "schema_version": 1,
-  "material_head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+  "material_head_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
   "evidence": [
     {
-      "evidence_id": "EVID-762-PYTEST",
+      "evidence_id": "EVID-777-EXACT-PYTEST",
       "kind": "behavioral",
-      "path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-      "sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
-      "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-      "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+      "path": ".audit/entregar-issue/issue-762/evidence/pr777-exact-pytest.log",
+      "sha256": "f40a4806607a1ac96d9a770a167af1cd7b1daba22df7d8918ee4ae609c748915",
+      "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+      "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
       "freshness_policy": "exact-material-head",
-      "producer": "pytest 9.0.2 / Python 3.13.5 on CI bundle run 42657603233, artifact 13692267791; solo suite 23 pass; contract run 42657603225",
+      "producer": "Python pytest 175 + unittest 23, restored authenticated GitHub Actions bundle run 42670067008 at exact HEAD; GitHub contract run 42670067822 passed.",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-777-MUTANT-REJECTION",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/issue-762/evidence/pr777-negative-mutant.log",
+      "sha256": "9b6554baeda5c5dc09801c88250dfa72cb6750c37a0fd887f1c5c72bf7ba04db",
+      "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+      "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+      "freshness_policy": "exact-material-head",
+      "producer": "Isolated temporary worktree derived from exact HEAD (not candidate): restores raw unencoded CHECK_NAME, targeted test fails (exit=1) as expected. Does not claim mutant code is certified material.",
       "status": "passed"
     }
   ]

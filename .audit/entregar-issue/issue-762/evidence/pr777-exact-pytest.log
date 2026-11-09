@@ -1,0 +1,17 @@
+REPO=crgasparoto-br/SolverFin
+PR=777
+BASE=7269fbaf91a587fedf3016abf375fa1b750628c9
+HEAD=241849d93dbbf8a7db4e8338acecaceea8a365c5
+RUN: git diff --check BASE..HEAD
+RUN: python -m pytest -q tests/test_session_review_verifier.py tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+........................................................................ [ 41%]
+........................................................................ [ 82%]
+...............................                                          [100%]
+175 passed in 0.31s
+RUN: python -m unittest discover -s tests -p 'test_solverfin_solo_audit_bootstrap.py' -q
+----------------------------------------------------------------------
+Ran 23 tests in 0.068s
+
+OK
+RUN: python -m compileall -q scripts/session_review_checks.py tests/test_session_review_verifier.py
+RESULT=PASS

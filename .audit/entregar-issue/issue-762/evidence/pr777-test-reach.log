@@ -1,0 +1,7 @@
+HEAD: 241849d93dbbf8a7db4e8338acecaceea8a365c5
+COMMAND: python -m pytest -q tests/test_session_review_verifier.py tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review_verifier.py::test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection
+RUN_OUTPUT_SHA256: f40a4806607a1ac96d9a770a167af1cd7b1daba22df7d8918ee4ae609c748915
+OBSERVED: 175 pytest tests passed; individual URL-encoding test included in executed suite.
+NEGATIVE_CONTROL: restoring the original raw CHECK_NAME fails the URL test in an isolated worktree (see pr777-negative-mutant.log).

@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "60858714190c1c399135e5c92bbf049d726f11985c773ee764b4b267e4f1c15b"
+    "sha256": "43ba5513a0e10dbc31b7f4f139250a8d7de18518214c7a884f4a75ada49e1761"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -30,7 +30,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Decisão proposta de equivalência do operador único ainda exige aceitação administrativa explícita; política mantém mode=disabled e esta fonte não representa aceite."
+      "rationale": "M2 permanece pendente: a equiparacao de operador unico a garantia requerida exige aceite expresso; mode=disabled na base develop@7269fbaf; nao ha aprovacao humana de terceiro."
     },
     {
       "id": "OBL-002",
@@ -49,7 +49,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Testes 174/174 incluem adversariais; workflow privilegiado consulta apenas source de protected base e nao executa scripts da branch candidata; .github/workflows/session-review.yml e tests/test_session_review_verifier.py."
+      "rationale": "Suite real no material 241849d9 executou 175/175 pytest e 23/23 unittest. GitHub Actions usa trusted base; esta PR nao altera permissoes ou workflow privilegiado."
     },
     {
       "id": "OBL-003",
@@ -66,7 +66,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "scripts/prepare_session_review_packet.py implementa fontes neutras, Git blobs, base/HEAD/preview e validacao do certificate critical; verificacoes tests/test_session_review_packet.py."
+      "rationale": "Coletores/verificadores de pacote neutro permanecem no material HEAD; testes exatos da suite 175 passaram. Certificacao critical desta PR sera gerada por builder oficial e revalidada antes de publicar result-only child."
     },
     {
       "id": "OBL-004",
@@ -91,7 +91,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Contrato permite o formato SOLVERIT_SESSION_REVIEW_V1, mas a emissão real depende de sessão distinta e de produtores confiáveis ainda não instalados nas branches protegidas."
+      "rationale": "Contrato SOLVERIT_SESSION_REVIEW_V1 existe; a emissao real por operador autenticado e revisao em outra conversa nao ocorreram nesta PR, dependem da implantacao M2 e permanecem diferidas."
     },
     {
       "id": "OBL-005",
@@ -108,7 +108,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "scripts/session_review.py, verify_session_review.py, session_review_checks.py e session_review_evidence.py rejeitam watermark, comentario stale, SHA, usuario, historico CI e artificios; suite de contrato 174/174."
+      "rationale": "Regra de watermark usa urllib.parse.quote(CHECK_NAME,safe=\"\") e preserva SHA/app/json fail-closed. Caso novo verifica consulta URL segura, watermark 19 e rejeita SHA estrangeiro/JSON corrompido. 175 pytest + 23 unittest PASS, mutante com CHECK_NAME cru corretamente falha."
     },
     {
       "id": "OBL-006",
@@ -131,7 +131,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Instalação em develop e main depende de merge/release e é expressamente vedada antes de auditoria e autorização; nenhuma branch protegida foi alterada."
+      "rationale": "Bootstrap de sessao foi integrado em develop pela PR #763 (merge 7269fbaf); main continua sem instalacao equivalente. Esta PR nao executa merge nem altera base protegida: M2 diferida."
     },
     {
       "id": "OBL-007",
@@ -155,7 +155,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Regras atuais foram lidas no GitHub e preservam Delivery V2 gate, porém ainda não exigem o novo check exact-SHA até a homologação M2 real."
+      "rationale": "Rulesets efetivos develop/main lidos no GitHub: Delivery V2 gate, PR obrigatoria e bloqueios de force-push/exclusao ativos. Check novo de sessao nao e exigido antes de M2; criterio continua diferido."
     },
     {
       "id": "OBL-008",
@@ -180,7 +180,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Sem bootstrap protegido não existe ensaio operacional positivo/negativo nem recibo confiável; a PR #760 e a issue #714 permanecem abertas."
+      "rationale": "Ensaio operacional positivo, negativos de revogacao e recibo confiavel para policy enabled ainda nao foram feitos; issue #714 e PR #760 devem permanecer abertas. Falha API anterior provou apenas fail-closed, nao revogacao M2."
     },
     {
       "id": "OBL-009",
@@ -200,7 +200,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Leitura autenticada da PR #760, issue #714 e epica #702 em 05/11/2026: ainda abertas; sem evento de merge ou fechamento."
+      "rationale": "A issue #762 e os work items #714/#760/#702 permanecem sob governanca; nenhum fechamento de F-714-06 foi solicitado nem efetuado nesta PR. O fluxo M2 e mantido explicitamente pendente."
     },
     {
       "id": "OBL-010",
@@ -222,7 +222,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Politica mode=disabled; PR #763 draft; nenhum merge, ruleset, exclusao ou approval; workflows readonly na producao de evidencia e check writer protegido em branch confiavel."
+      "rationale": "Politica mode=disabled no SHA confiavel, branch de correcao PR #777 draft; nenhum ruleset, permissao, merge, exclusao ou approval foi alterado pela correcao de uma linha."
     }
   ],
   "source_coverage": [
@@ -262,14 +262,14 @@
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "A politica e validada a partir de base/default e blobs do GitHub, sem segunda fonte de autoridade em HEAD candidato.",
+    "applicability_reason": "A consulta ao check runs codifica o nome exato sem alterar o nome canônico da constante; a procedencia trusted, app id e SHA continuam autenticados. A fonte da issue e lida de documento versionado verificado por SHA-256.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Comparados AGENTS.md, ADR 0019, docs/quality/SESSION_REVIEW_BOOTSTRAP.md e regras de crgasparoto-br/skill; a politica continua desabilitada e etapas M2 nao sao declaradas concluídas.",
+    "applicability_reason": "Nova PR #777 modifica somente Python de consulta ao GitHub e seu teste. Documentos de governanca, ADR 0019 e policy permanecem inalterados; modo M2 continua disabled, bootstrap develop instalado via #763 e main pendente.",
     "old_contract_terms": [
       "auditoria humana de terceiro",
       "certificado self attested"
@@ -314,14 +314,14 @@
       "OBL-010"
     ],
     "evidence": [
-      "Fonte primaria issue #762 vinculada por SHA-256 da transcricao existente; nenhuma conclusao da PR ou do implementador usada como fonte da especificacao.",
-      "Local authenticated checkout material HEAD 16d4463b: 174/174 testes direcionados PASS, 23/23 testes solo PASS; evidencia bruta evidence/governance-pytest.txt.",
-      "GitHub Actions Repository CI #42637767915 completed/success no HEAD atual; Session review contract #42637767620 e Solo bootstrap #42637767627 success; Delivery workspace #42637767672 success.",
-      "Contratos de protecao nao promovidos: policy mode=disabled, PR em draft, Etapa B ainda sem instalacao correspondente em develop/main e sem ensaios operacionais M2; obrigacoes OBL-001/004/006/007/008 explicitamente deferred.",
-      "Regressao A-001..A-008 e R-001 da PR #770 preservada nos produtores trusted de develop; os testes novos preservam A-008 em UTF-16 e demais JUnit invariants.",
-      "CI material verde nao substitui parecer independente ou certificado final de aprovacao de sessao.",
-      "A-76312 fix: legacy two-session v1 accepted under enabled opt-in, while explicit GitHub recovery is authenticated on entry and before check publication; 4 new full route pytest scenarios at material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-      "Prior issue obligations OBL-001/004/006/007/008 remain deferred; no merge or operational M2 change was made for this fix."
+      "SRC-ISSUE-762.txt preserva integralmente issue #762 com SHA-256 f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60; os 10 candidatos foram reavaliados sem usar a PR como especificacao.",
+      "Git bundle oficial #42670067008 restaurado e verificado com base 7269fbaf91a587fedf3016abf375fa1b750628c9 e material HEAD 241849d93dbbf8a7db4e8338acecaceea8a365c5; parent direto comprovado e 2 changed paths (1 script e 1 teste).",
+      "Execucao real no checkout imutavel 241849d93dbbf8a7db4e8338acecaceea8a365c5: 175 passed pytest, 23 unittest OK, compileall e diff --check PASS; evidencia bruta .audit/entregar-issue/issue-762/evidence/pr777-exact-pytest.log hash f40a4806607a1ac96d9a770a167af1cd7b1daba22df7d8918ee4ae609c748915.",
+      "Mutacao negativa do CHECK_NAME sem urlencode em worktree efemera a partir de 241849d93dbbf8a7db4e8338acecaceea8a365c5: teste test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection (em tests/test_session_review_verifier.py) falhou como esperado; evidencia .audit/entregar-issue/issue-762/evidence/pr777-negative-mutant.log hash 9b6554baeda5c5dc09801c88250dfa72cb6750c37a0fd887f1c5c72bf7ba04db.",
+      "GitHub Actions material #42670067048 Repository CI e #42670067822 Session review contract tests chegaram a completed/success exatamente no material; #42670066534/#42670067441 falharam porque certificado herdado correspondia a PR #763, nao #777.",
+      "As obrigacoes OBL-001/004/006/007/008 seguem deferred ate M2; mode=disabled, sem voto/aprovacao do operador nem simulacao de segundo auditor.",
+      "A alteracao codifica somente o parametro check_name; queries retornam watermark 19, reject foreign SHA e JSON invalido conforme testes.",
+      "A entrega de PR #777 nao representa a conclusao da issue #762 e nao substitui auditoria independente/checagens operacionais M2."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
