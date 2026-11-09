@@ -3,17 +3,15 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
-    "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+    "rejection_id": "audit-rejection:31cdd57f-282c-456a-bc9b-51e542a40f7e",
+    "audit_report_sha256": "f9e305e4d35b33511418c36847c9c04264782608807bfc428b207d2abe6ed187",
     "finding_ids": [
-      "A-001",
-      "A-002",
-      "A-003"
+      "A-002"
     ]
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "Each finding is an issue-local export PDF/layout, missing cross-format test oracle or result-only handoff. There is no evidence of a recurring systemic Skill control failure requiring a global rule."
+    "reason": "The collision is a deterministic PDF encoder defect local to this repository. A focused serializer correction and adversarial Unicode tests close it; no recurring defect in the official generic skill was demonstrated."
   },
   "skill_changes": []
 }

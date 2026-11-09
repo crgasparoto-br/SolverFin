@@ -1,18 +1,18 @@
 {
   "schema_version": 1,
-  "material_head_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
-  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "material_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+  "base_sha": "6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9",
   "evidence": [
     {
       "evidence_id": "EVID-692-QUANT-001",
       "kind": "quantitative",
       "path": ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
-      "sha256": "93aab083b1575b4154a4f8e0406fc419252acd5cdc43bbe16d0bb351abce7f38",
-      "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+      "sha256": "fce98dfdcafcf6fd1aecae7292b7b7678979984735dd33100bad62a92db9ccea",
+      "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions Repository CI CRITICAL validation job 127224621257",
+      "producer": "GitHub Actions Repository CI CRITICAL validation job 129410334480 (run 42690866197)",
       "status": "passed",
-      "claim": "Exact integer monetary fixture values 12345/99887 matched independently decoded CSV/XLSX/PDF cells; no benchmark claimed."
+      "claim": "Exact integer amounts 12345/99887 and Unicode financial text remain semantically equivalent across independently decoded CSV, XLSX and PDF cells; no performance benchmark claimed."
     }
   ]
 }

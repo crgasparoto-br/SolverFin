@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
-  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+  "base_sha": "6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9",
   "creations": [
     {
       "path": "apps/web/src/dev-server/reports-export-common.ts",
@@ -9,7 +9,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-common.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-common.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -28,7 +28,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-evolution.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-evolution.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -47,7 +47,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-installments.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-installments.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -66,7 +66,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-export.test.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-parity.test-helpers.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-parity.test-helpers.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -85,7 +85,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-pdf.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-pdf.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -104,7 +104,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export-serializers.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-serializers.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -123,7 +123,7 @@
       "search": {
         "queries": [
           "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
-          "git diff --name-status 534c492fc2d852ea1b3153eac346c8c0d4a8f29b..f2e28ed4bdd54bc457ece5e88e2c102429fee2ca -- apps/web/src/dev-server/reports-export.ts"
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export.ts"
         ],
         "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
         "candidates": [
@@ -147,7 +147,7 @@
       "requirement": "REQ-692-027",
       "search": {
         "queries": [
-          "git diff 534c492f..f2e28ed4 -- apps/web/src/dev-server/reports-export.test.ts",
+          "git diff 534c492f..fe7dc09f -- apps/web/src/dev-server/reports-export.test.ts",
           "git grep -n \"test\\|describe\\|it\" -- apps/web/src/dev-server/reports-export.test.ts"
         ],
         "scope": "Compared existing repo tests and Node built-in test runner before editing the export and CDP suites.",
@@ -161,12 +161,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+        "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
         "reached_tests": [
           "apps/web/src/dev-server/reports-export.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
-        "evidence_sha256": "93aab083b1575b4154a4f8e0406fc419252acd5cdc43bbe16d0bb351abce7f38"
+        "evidence_sha256": "fce98dfdcafcf6fd1aecae7292b7b7678979984735dd33100bad62a92db9ccea"
       }
     },
     {
@@ -176,7 +176,7 @@
       "requirement": "REQ-692-029",
       "search": {
         "queries": [
-          "git diff 534c492f..f2e28ed4 -- scripts/statement-visual/cdp.test.mjs",
+          "git diff 534c492f..fe7dc09f -- scripts/statement-visual/cdp.test.mjs",
           "git grep -n \"test\\|describe\\|it\" -- scripts/statement-visual/cdp.test.mjs"
         ],
         "scope": "Compared existing repo tests and Node built-in test runner before editing the export and CDP suites.",
@@ -190,12 +190,12 @@
         "status": "passed",
         "command": "node --test scripts/statement-visual/cdp.test.mjs",
         "exit_code": 0,
-        "subject_sha": "f2e28ed4bdd54bc457ece5e88e2c102429fee2ca",
+        "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
         "reached_tests": [
           "scripts/statement-visual/cdp.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/issue-692/evidence/cdp-exact-head-reach.log",
-        "evidence_sha256": "0a44db095cc55266cbb3db3ef14290828a697b608cbb364e08a966eee99a7f74"
+        "evidence_sha256": "62191883a25dabb0c56759fb729aa1d092aa37a0d7334d3a025123fbc663309c"
       }
     }
   ]
