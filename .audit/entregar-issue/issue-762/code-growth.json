@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
-  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
-  "comparison_base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+  "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+  "comparison_base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
@@ -20,18 +20,8 @@
   "files": [
     {
       "path": "scripts/session_review_checks.py",
-      "lines_before": null,
-      "lines_after": 105
-    },
-    {
-      "path": "scripts/session_review_github.py",
-      "lines_before": 204,
-      "lines_after": 218
-    },
-    {
-      "path": "scripts/verify_session_review.py",
-      "lines_before": 506,
-      "lines_after": 300
+      "lines_before": 105,
+      "lines_after": 106
     }
   ],
   "blocking_files": []
