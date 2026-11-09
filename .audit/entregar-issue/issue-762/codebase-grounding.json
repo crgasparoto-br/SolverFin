@@ -1,328 +1,57 @@
 {
   "schema_version": 2,
-  "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-  "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
-  "creations": [
-    {
-      "path": "scripts/prepare_session_review_packet.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "scripts/session_review_certificate.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "scripts/session_review_evidence.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "scripts/session_review_packet_handoff.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "scripts/session_review_specification.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "tests/test_session_review_packet.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    },
-    {
-      "path": "tests/test_session_review_trusted_producers.py",
-      "kind": "file",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-          "rg -n \"session_review|handoff|test\" scripts/ tests/"
-        ],
-        "scope": "Examined existing common session_review canonical helper, existing GitHub workflow path expectations, and Stage B source blobs before adding Stage A producers.",
-        "candidates": [
-          {
-            "path": "scripts/session_review.py",
-            "reason_not_reused": "Existing canonical helper retained and imported; new file isolates a distinct read-only evidence producer or its adversarial test responsibility."
-          }
-        ]
-      },
-      "decision": "create",
-      "justification": "Bootstrap the missing trusted producer module / targeted test without altering the existing canonical session_review helper or privileged workflows."
-    }
-  ],
+  "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+  "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+  "creations": [],
   "references": [],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "tests/test_session_review_packet.py",
-      "operation": "added",
-      "scenario": "Adversarial fail-closed producer and neutral packet verification of identity, JUnit counts and source tampering",
-      "requirement": "REQ-762-002, REQ-762-003",
-      "search": {
-        "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
-          "rg -n \"session_review\" tests/ scripts/"
-        ],
-        "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
-        "runner": "pytest -v directed Stage A (Python tests)",
-        "candidates": []
-      },
-      "decision": "new-test-required",
-      "justification": "No dedicated Stage A trusted certificate/JUnit-aggregate or neutral package tests existed on base; these are new adversarial families.",
-      "disposition": "keep",
-      "coverage_before": [
-        "Only canonical session_review helper in develop; no trusted Stage A producers or dedicated producer tests"
-      ],
-      "coverage_after": [
-        "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants",
-        "A-006 fail-closed XML hierarchy control: 6 invalid placement cases in parser, writer and ZIP consumer; positive nested suites/properties case."
-      ],
-      "verification": {
-        "status": "passed",
-        "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
-        "exit_code": 0,
-        "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-        "reached_tests": [
-          "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
-          "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
-          "tests/test_session_review_packet.py::test_disabled_policy_does_not_claim_approval",
-          "tests/test_session_review_packet.py::test_result_only_child_cannot_mutate_application",
-          "tests/test_session_review_packet.py::test_event_comment_cannot_be_spoofed",
-          "tests/test_session_review_packet.py::test_file_inventory_rejects_path_traversal_and_oversize",
-          "tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[develop]",
-          "tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[main]",
-          "tests/test_session_review_packet.py::test_issue_reference_accepts_canonical_pr_760_prose",
-          "tests/test_session_review_packet.py::test_handoff_rejects_base_ref_that_differs_from_authenticated_pr",
-          "tests/test_session_review_packet.py::test_critical_certificate_rejects_aliases_and_fake_versionless_json",
-          "tests/test_session_review_packet.py::test_critical_certificate_rejects_cross_target_and_uncovered_requirements",
-          "tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected",
-          "tests/test_session_review_packet.py::test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions",
-          "tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure]",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[cancelled]",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[pending]",
-          "tests/test_session_review_trusted_producers.py::test_modified_candidate_producer_fails_before_green_status",
-          "tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected",
-          "tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green",
-          "tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed",
-          "tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuites><testcase classname=\"suite\" name=\"case\"/></testsuites>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><properties><testcase classname=\"suite\" name=\"case\"/></properties></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><failure/></properties></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><system-out><error/></system-out></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><property name=\"x\"><skipped/></property></properties></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><untrusted/></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"2\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status=\"failed\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status=\"skipped\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"failed\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"skipped\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"error\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"notrun\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"ignored\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"unknown\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"PASSED\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]"
-        ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "670dc073ae387cc63af3c81cae78a2523c5df0ce24d0b9d28455408043f1e512"
-      }
-    },
-    {
       "path": "tests/test_session_review_trusted_producers.py",
-      "operation": "added",
-      "scenario": "Adversarial fail-closed producer and neutral packet verification of identity, JUnit counts and source tampering",
-      "requirement": "REQ-762-002, REQ-762-003",
+      "operation": "modified",
+      "scenario": "Canonical SHA compare succeeds; invalid owner/repository namespaces and paths never invoke gh.",
+      "requirement": "REQ-762-002",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
-          "rg -n \"session_review\" tests/ scripts/"
+          "git diff --name-status f0b82f29230e64faca7f4cd49b4bfadd8793d0b3 68f9c697d409cc11b326bf06fba19da8fa109379 -- tests/",
+          "git grep -n \"test_trusted_github_api_allows_exact_sha_compare_but_never_traversal\" 68f9c697d409cc11b326bf06fba19da8fa109379 -- tests/"
         ],
-        "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
-        "runner": "pytest -v directed Stage A (Python tests)",
-        "candidates": []
+        "scope": "Existing tests/test_session_review_trusted_producers.py and tests/test_session_review_packet.py were re-run on exact Git material.",
+        "runner": "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_trusted_producers.py",
+            "case": "test_trusted_github_api_allows_exact_sha_compare_but_never_traversal",
+            "oracle": "mocked subprocess not called for invalid paths and called once for valid 40hex...40hex",
+            "comparison": "New negative namespace cases absent in original d306 and in protected base, proven as discriminating original mutation."
+          },
+          {
+            "path": "tests/test_session_review_packet.py",
+            "case": "Existing packet and SHA validation behavior",
+            "oracle": "61 exact SHA tests PASS",
+            "comparison": "Inherited producer and JUnit semantic contract retained."
+          }
+        ]
       },
       "decision": "new-test-required",
-      "justification": "No dedicated Stage A trusted certificate/JUnit-aggregate or neutral package tests existed on base; these are new adversarial families.",
+      "justification": "Prior regression ignored dot and doubled-dot segments in owner/repo; add discriminating cases to existing suite rather than duplicate test modules.",
       "disposition": "keep",
       "coverage_before": [
-        "Only canonical session_review helper in develop; no trusted Stage A producers or dedicated producer tests"
+        "TRUSTED-SHA-COMPARE-001 canonical path, partial traversal cases"
       ],
       "coverage_after": [
-        "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants",
-        "A-005: namespace-qualified failure/error/skipped/wrapper rejection tested in parser, writer and ZIP consumer; pre-fix mutant fails all four cases.",
-        "A-006 fail-closed XML hierarchy control: 6 invalid placement cases in parser, writer and ZIP consumer; positive nested suites/properties case.",
-        "A-007: 14 fail-closed status/disabled adversarial cases in parser, writer and ZIP consumer, plus 4 positive forms; 14 pre-fix mutant failures.",
-        "A-008: six DTD fail-closed permutations and two UTF-8/UTF-16 positive cases, parser/writer/ZIP; original parser fails 3 UTF-16 cases."
+        "TRUSTED-SHA-COMPARE-001 canonical path and unsafe namespace traversal cases"
       ],
       "verification": {
         "status": "passed",
-        "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
+        "command": "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+        "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
         "reached_tests": [
-          "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
-          "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
-          "tests/test_session_review_packet.py::test_disabled_policy_does_not_claim_approval",
-          "tests/test_session_review_packet.py::test_result_only_child_cannot_mutate_application",
-          "tests/test_session_review_packet.py::test_event_comment_cannot_be_spoofed",
-          "tests/test_session_review_packet.py::test_file_inventory_rejects_path_traversal_and_oversize",
-          "tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[develop]",
-          "tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[main]",
-          "tests/test_session_review_packet.py::test_issue_reference_accepts_canonical_pr_760_prose",
-          "tests/test_session_review_packet.py::test_handoff_rejects_base_ref_that_differs_from_authenticated_pr",
-          "tests/test_session_review_packet.py::test_critical_certificate_rejects_aliases_and_fake_versionless_json",
-          "tests/test_session_review_packet.py::test_critical_certificate_rejects_cross_target_and_uncovered_requirements",
-          "tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected",
-          "tests/test_session_review_packet.py::test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions",
-          "tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure]",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[cancelled]",
-          "tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[pending]",
-          "tests/test_session_review_trusted_producers.py::test_modified_candidate_producer_fails_before_green_status",
-          "tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected",
-          "tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green",
-          "tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed",
-          "tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped]",
-          "tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuites><testcase classname=\"suite\" name=\"case\"/></testsuites>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><properties><testcase classname=\"suite\" name=\"case\"/></properties></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><failure/></properties></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><system-out><error/></system-out></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><property name=\"x\"><skipped/></property></properties></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><untrusted/></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"2\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled=\"1\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status=\"failed\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status=\"skipped\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"failed\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"skipped\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"error\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"notrun\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"ignored\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"unknown\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"PASSED\"]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected \"forged-success\">]>-utf-8]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected \"forged-success\">]>-utf-16]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM \"https://untrusted.invalid/dtd\">-utf-8]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM \"https://untrusted.invalid/dtd\">-utf-16]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-8]",
-          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-16]",
-          "tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-8]",
-          "tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-16]"
+          "tests/test_session_review_trusted_producers.py"
         ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "670dc073ae387cc63af3c81cae78a2523c5df0ce24d0b9d28455408043f1e512"
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/pr776-exact-pytest.log",
+        "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
       }
     }
   ]

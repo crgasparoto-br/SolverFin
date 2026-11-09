@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+  "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
   "requirements": [
     {
       "requirement_id": "REQ-762-002",
@@ -17,8 +17,8 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-        "evidence": "issue-762/evidence/stage-a-pytest.log"
+        "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+        "evidence": "issue-762/evidence/pr776-exact-pytest.log"
       },
       "negative_controls": [
         {
@@ -27,13 +27,13 @@
           "surface": "unprivileged-parser-test",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -51,13 +51,13 @@
           "surface": "trusted-candidate-separation",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
@@ -75,13 +75,13 @@
           "surface": "junit-evidence-parser",
           "dimension": "namespace-qualified-test-result",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -99,13 +99,13 @@
           "surface": "junit-evidence-writer",
           "dimension": "namespace-failure-does-not-write-evidence",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -123,13 +123,13 @@
           "surface": "junit-zip-consumer",
           "dimension": "namespace-failure-with-valid-hashes",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -147,13 +147,13 @@
           "surface": "junit-evidence-parser",
           "dimension": "nested-failure-and-orphan-testcase",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
           "procedure": "Run test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer against exact material; replace only the parser with its previous Git version and rerun the same test.",
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
-          "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -177,13 +177,13 @@
           "surface": "junit-evidence-writer",
           "dimension": "no-evidence-on-invalid-junit-hierarchy",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
           "procedure": "Run test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer against exact material; replace only the parser with its previous Git version and rerun the same test.",
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
-          "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -207,13 +207,13 @@
           "surface": "junit-zip-consumer",
           "dimension": "invalid-hierarchy-with-consistent-archive-hashes",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
           "procedure": "Run test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer against exact material; replace only the parser with its previous Git version and rerun the same test.",
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
-          "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -237,13 +237,13 @@
           "surface": "junit-evidence-parser",
           "dimension": "junit-status-disabled-attribute",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
           "procedure": "Run pytest -vv on material HEAD; compare 14 new negative A-007 cases against prior parser commit b00de9f8. Old implementation fails all 14; corrected parser, writer and ZIP consumer reject all. Original mutation log in issue-762/evidence/a-007-negative-original.log.",
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
-          "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -267,13 +267,13 @@
           "surface": "junit-evidence-writer",
           "dimension": "no-false-positive-evidence-output",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
           "procedure": "Run pytest -vv on material HEAD; compare 14 new negative A-007 cases against prior parser commit b00de9f8. Old implementation fails all 14; corrected parser, writer and ZIP consumer reject all. Original mutation log in issue-762/evidence/a-007-negative-original.log.",
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
-          "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -297,13 +297,13 @@
           "surface": "junit-zip-consumer",
           "dimension": "valid-hash-malicious-status-xml",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
           "procedure": "Run pytest -vv on material HEAD; compare 14 new negative A-007 cases against prior parser commit b00de9f8. Old implementation fails all 14; corrected parser, writer and ZIP consumer reject all. Original mutation log in issue-762/evidence/a-007-negative-original.log.",
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
-          "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -327,13 +327,13 @@
           "surface": "junit-evidence-parser",
           "dimension": "utf16-entity-expansion",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
           "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
           "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
           "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/a-008-negative-original.log",
           "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
           "sibling_cases": [
@@ -357,13 +357,13 @@
           "surface": "junit-evidence-writer",
           "dimension": "utf16-dtd-output-rejection",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
           "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
           "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
           "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/a-008-negative-original.log",
           "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
           "sibling_cases": [
@@ -387,13 +387,13 @@
           "surface": "junit-zip-consumer",
           "dimension": "utf16-dtd-valid-archive-hashes",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
           "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
           "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
           "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/a-008-negative-original.log",
           "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
           "sibling_cases": [
@@ -410,30 +410,56 @@
               "dimension": "valid-utf16-no-dtd"
             }
           ]
+        },
+        {
+          "id": "NC-002-PR776-TRAVERSAL",
+          "risk_family": "structural-contract",
+          "surface": "trusted-github-compare-path",
+          "dimension": "unsafe-owner-repo-dot-segments",
+          "control_type": "test",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "status": "passed",
+          "failure_mode": "A trusted GitHub compare API exception permits traversal in repository path segments.",
+          "plausible_wrong_implementation": "Treat any path matching /repos/<token>/<token>/compare/<SHA>...<SHA> as safe even when token is a dot or contains two dots.",
+          "procedure": "Run test_trusted_github_api_allows_exact_sha_compare_but_never_traversal at authenticated material SHA; compare mutation negative log from d306 material.",
+          "expected": "Canonical owner/repository plus immutable SHA compare succeeds. Dot, double-dot, encoded or extra path segments cannot reach subprocess.run.",
+          "observed": "All six newly added namespace cases rejected without gh subprocess; original d306 implementation accepted four representative invalid cases; exact material 61 pytest cases PASS.",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5",
+          "sibling_cases": [
+            {
+              "id": "NC-002-PR776-TRAVERSAL-S1",
+              "status": "passed",
+              "surface": "trusted-github-compare-path",
+              "dimension": "valid-canonical-immutable-sha-compare"
+            }
+          ]
         }
       ],
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/stage-a-pytest.log"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         },
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/a-005-negative-original.log",
-          "evidence_sha256": "ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         },
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/a-006-negative-original.log",
-          "evidence_sha256": "656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         },
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/stage-a-pytest.log"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         }
       ],
       "obligation_control_map": [
@@ -482,6 +508,11 @@
           "risk_family": "structural-contract",
           "surface": "junit-zip-consumer",
           "reason": "A-008: byte-encoding-independent XML DOCTYPE rejection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "trusted-github-compare-path",
+          "reason": "Trust boundary limits SHA compare to validated owner/repository and immutable 40-hex refs while rejecting dot and double-dot segments, covered by exact negative mutation."
         }
       ],
       "quantitative_evidence_required": false
@@ -502,8 +533,8 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-        "evidence": "issue-762/evidence/stage-a-pytest.log"
+        "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+        "evidence": "issue-762/evidence/pr776-exact-pytest.log"
       },
       "negative_controls": [
         {
@@ -512,13 +543,13 @@
           "surface": "neutral-packet-binding",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_neutral_packet_rederives_issue_and_checks_identity and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_neutral_packet_rederives_issue_and_checks_identity",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -536,13 +567,13 @@
           "surface": "canonical-claims",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with no_workflows_stage_a and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; no_workflows_stage_a",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
@@ -560,13 +591,13 @@
           "surface": "critical-certificate-inventory",
           "dimension": "optional-and-foreign-artifacts",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "Reject a compliant certificate when optional provenance is missing, or accept tampered/foreign extras.",
           "plausible_wrong_implementation": "Enforce an exact hard-coded list of eight critical artifact keys or trust declared optional metadata without digest verification.",
           "procedure": "Run pytest tests/test_session_review_packet.py -k critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions",
           "expected": "Seven required/controlled artifacts pass; recognized extras pass; missing mandatory, changed SHA and foreign entries fail closed.",
-          "observed": "Test passed on exact material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
           "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
@@ -590,13 +621,13 @@
           "surface": "critical-certificate-remediation-mode",
           "dimension": "targeted-vs-systemic-artifact-inventory",
           "control_type": "test",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "Valid targeted remediation with two required records is refused, or systemic/mixed certificates omit lineage.",
           "plausible_wrong_implementation": "Require audit_escape_closure and learning_closure for all previous independent rejections regardless of remediation_mode.",
           "procedure": "Run pytest -q tests/test_session_review_packet.py -k critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions against original and patched modules (old must fail; new must pass).",
           "expected": "Targeted with audit_remediation+audit_source_result passes; missing either rejects; systemic/mixed fail without escape+learning, pass with both; tampered digest rejects.",
-          "observed": "Original module test exit 1 due to inventory error; patched exact material 27 tests passed. Negative log sha256 c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/a-004-negative-original.log",
           "evidence_sha256": "c1f8e2bd02593fbd4ef388c0f8b9b181258e71ccc9e0a8b0e51086dba9f92c7d",
           "sibling_cases": [
@@ -630,13 +661,15 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/stage-a-pytest.log"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         },
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/stage-a-pytest.log"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         }
       ],
       "obligation_control_map": [
@@ -683,8 +716,8 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-        "evidence": "issue-762/evidence/stage-a-pytest.log"
+        "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+        "evidence": "issue-762/evidence/pr776-exact-pytest.log"
       },
       "negative_controls": [
         {
@@ -693,13 +726,13 @@
           "surface": "remaining-work-remains-open",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with github_remote_read_open and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; github_remote_read_open",
+          "observed": "61 directed tests passed on authenticated current HEAD, including prior Stage A JUnit and certificate negative controls; named cases/outputs are recorded verbatim in pr776-exact-pytest.log. Original d306 PR776 namespace vulnerability reproduced separately.",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
           "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
@@ -715,8 +748,9 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-          "evidence": "issue-762/evidence/stage-a-pytest.log"
+          "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+          "evidence": "issue-762/evidence/pr776-exact-pytest.log",
+          "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
         }
       ],
       "obligation_control_map": [

@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+  "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+  "evidence": [
+    {
+      "evidence_id": "PR776-EXACT-PYTEST",
+      "kind": "behavioral",
+      "path": "issue-762/evidence/pr776-exact-pytest.log",
+      "sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5",
+      "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+      "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+      "freshness_policy": "exact-material-head",
+      "producer": "pytest 9.0.2 and trusted GitHub Actions bundle run 42627744660",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "PR776-MUTANT-NEGATIVE",
+      "kind": "structural",
+      "path": "issue-762/evidence/pr776-negative-original.log",
+      "sha256": "5612bb9d8a8c6ddaad2e74243917c76a050ac6faacd5541842a62b503fe4631c",
+      "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+      "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+      "freshness_policy": "exact-material-head",
+      "producer": "isolated d306 original code with mocked GitHub GET; corrected exact SHA control",
+      "status": "passed"
+    }
+  ]
+}
