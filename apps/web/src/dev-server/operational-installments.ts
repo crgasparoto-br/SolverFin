@@ -391,6 +391,26 @@ export function operationalInstallmentsController(): string {
           }
           const editButton = row.querySelector('[data-edit="' + transactionId + '"]');
           if (!editButton) return;
+          // Eligible planned and posted bank recurrences use the full
+          // transaction scope modal; reconciled/card/manual installments
+          // retain their restricted editor.
+          const recurringAccountOccurrence = Boolean(
+            installment.recurrenceId &&
+            installment.transaction?.recurrenceId === installment.recurrenceId &&
+            ["planned", "posted"].includes(installment.transaction?.status) &&
+            ["planned", "posted"].includes(installment.status) &&
+            installment.recurrence &&
+            installment.recurrence.status !== "cancelled" &&
+            !installment.invoice &&
+            !installment.card &&
+            !installment.cardInstrument &&
+            !installment.transaction.cardId &&
+            !installment.transaction.invoiceId
+          );
+          if (recurringAccountOccurrence) {
+            editButton.title = "Editar lançamento recorrente";
+            return;
+          }
           editButton.dataset.installmentEdit = installment.id;
           editButton.dataset.installmentEditable = String(installment.editable === true || installment.amountEditable === true);
           const label = editButton.querySelector("span");

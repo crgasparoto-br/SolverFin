@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+  "audit_report_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a",
+  "audit_report_source": "Previous separate ChatGPT independent review; provided original report parecer-pr-770.md with SHA-256. No GitHub approval or third-party identity claimed.",
+  "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+  "trusted_anchor_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 762,
+    "pull_request_number": 770,
+    "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+    "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+    "material_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+    "published_head_sha": "78599a6f62c70ddb2be1281006d2c1a58bef6596"
+  },
+  "findings": [
+    {
+      "id": "A-008",
+      "disposition": "blocking",
+      "status": "open",
+      "remediation_mode": "targeted-remediation",
+      "requirement_id": "REQ-762-002",
+      "surface_id": "junit-evidence-parser",
+      "root_cause": "Raw ASCII <!DOCTYPE and <!ENTITY byte search fails on valid UTF-16 XML, allowing ElementTree to expand declared internal entities into false positive JUnit testcase names.",
+      "evidence_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a"
+    }
+  ],
+  "recommendations": [],
+  "historical_prior_findings": [
+    {
+      "id": "A-001",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-004",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-005",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-006",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-007",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "R-001",
+      "status": "resolved",
+      "evidence": "Covered by 60-test regression at exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    }
+  ],
+  "source_evidence": {
+    "prior_audit_markdown_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a",
+    "prior_material_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+    "prior_published_head_sha": "78599a6f62c70ddb2be1281006d2c1a58bef6596",
+    "prior_rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+    "audit_probe": "prior independent review source at scripts/session_review_evidence.py lines 31-35 and JUnit UTF-16 input; negative-original log included in current Stage A package"
+  },
+  "handoff_revalidation": {
+    "material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+    "note": "Prior rejected audit identity immutable; current code restored from GitHub CI bundle and tested on exact material."
+  }
+}

@@ -31,6 +31,13 @@ def bounded_gzip_decompress(raw: bytes, *, limit: int = MAX_TOTAL) -> bytes:
         raise ValueError("malformed sharded gzip artifact") from exc
 
 
+# The official Skill defines five mandatory critical artefacts. All other
+# recognised artefacts are conditional on the certified controls/review state.
+# Every *declared* artefact is authenticated, including optional ones.
+CRITICAL_REQUIRED_ARTIFACTS = frozenset({
+    "specification_snapshot", "requirement_closure", "requirement_attack_matrix",
+    "risk_saturation", "inherited_controls",
+})
 CRITICAL_ARTIFACT_NAMES = {
     "specification_snapshot": "specification-snapshot.json",
     "requirement_closure": "requirement-closure.json",
@@ -40,11 +47,16 @@ CRITICAL_ARTIFACT_NAMES = {
     "evidence_provenance": "evidence-provenance.json",
     "codebase_grounding": "codebase-grounding.json",
     "code_growth": "code-growth.json",
+    "standard_evidence": "standard-evidence.json",
+    "audit_remediation": "audit-remediation.json",
+    "audit_source_result": "audit-source-result.json",
+    "audit_escape_closure": "audit-escape-closure.json",
+    "learning_closure": "learning-closure.json",
 }
 
 
 def validate_critical_payloads(cert: dict, documents: dict[str, dict]) -> None:
-    """Bind the eight critical documents to the certified issue, base and material."""
+    """Bind all required and declared critical documents to the issue and material."""
     subject, identity = cert["subject"], cert["identity"]
     material, base = identity["material_head_sha"], identity["base_sha"]
     snapshot = documents["specification_snapshot"]
@@ -72,20 +84,23 @@ def validate_critical_payloads(cert: dict, documents: dict[str, dict]) -> None:
                 and (key != "requirement_attack_matrix" or bool(data[rows]))
                 and data.get(gaps) == [],
                 "critical control inventory stale or unresolved: " + key)
-    provenance = documents["evidence_provenance"]
-    require(provenance.get("material_head_sha") == material
-            and provenance.get("base_sha") == base
-            and isinstance(provenance.get("evidence"), list) and bool(provenance["evidence"]),
-            "critical evidence provenance missing or stale")
-    grounding = documents["codebase_grounding"]
-    require(grounding.get("subject_sha") == material and grounding.get("base_sha") == base
-            and isinstance(grounding.get("test_decisions"), list),
-            "critical codebase grounding missing or stale")
-    growth = documents["code_growth"]
-    require(growth.get("control_id") == "CODE-GROWTH-001"
-            and growth.get("subject_sha") == material and growth.get("base_sha") == base
-            and growth.get("status") == "passed" and growth.get("blocking_files") == [],
-            "critical code growth control did not pass")
+    if "evidence_provenance" in documents:
+        provenance = documents["evidence_provenance"]
+        require(provenance.get("material_head_sha") == material
+                and provenance.get("base_sha") == base
+                and isinstance(provenance.get("evidence"), list) and bool(provenance["evidence"]),
+                "critical evidence provenance missing or stale")
+    if "codebase_grounding" in documents:
+        grounding = documents["codebase_grounding"]
+        require(grounding.get("subject_sha") == material and grounding.get("base_sha") == base
+                and isinstance(grounding.get("test_decisions"), list),
+                "critical codebase grounding missing or stale")
+    if "code_growth" in documents:
+        growth = documents["code_growth"]
+        require(growth.get("control_id") == "CODE-GROWTH-001"
+                and growth.get("subject_sha") == material and growth.get("base_sha") == base
+                and growth.get("status") == "passed" and growth.get("blocking_files") == [],
+                "critical code growth control did not pass")
 
 
 def _verified_certificate_artifacts(repo: str, cert: dict, head: str, *, file_at, api_json) -> None:
@@ -93,8 +108,18 @@ def _verified_certificate_artifacts(repo: str, cert: dict, head: str, *, file_at
     sub = cert["subject"]
     prefix = f".audit/entregar-issue/issue-{sub['issue_number']}/"
     inventory = cert.get("artifacts")
+    controls = cert.get("controls") or {}
+    required = set(CRITICAL_REQUIRED_ARTIFACTS)
+    for key in ("codebase_grounding", "code_growth"):
+        if (controls.get(key) or {}).get("applicable") is True:
+            required.add(key)
+    if cert.get("previous_independent_rejection") is True:
+        required.update({"audit_remediation", "audit_source_result"})
+        if cert.get("remediation_mode") in {"systemic-remediation", "mixed-remediation"}:
+            required.update({"audit_escape_closure", "learning_closure"})
     require(isinstance(inventory, dict)
-            and set(inventory) == set(CRITICAL_ARTIFACT_NAMES),
+            and required <= set(inventory)
+            and set(inventory) <= set(CRITICAL_ARTIFACT_NAMES),
             "critical certificate artifact inventory missing or foreign")
     documents: dict[str, dict] = {}
     seen_names: set[str] = set()

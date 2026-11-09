@@ -2,15 +2,23 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool, query } from "./db.js";
+import { closePool, getPool, query } from "./db.js";
+import { createAccountForContext } from "./repositories/accounts.js";
 import { createCreditCardAccountForContext } from "./repositories/card-instruments.js";
+import { createCategoryForContext } from "./repositories/categories.js";
 import { handleCreditCardAccountsApiRequest } from "./credit-card-accounts-dispatcher.js";
 import { handleMvpApiRequest } from "./mvp.js";
+import { handleApiRequest } from "./router.js";
 import type { ApiRequest } from "./router.js";
 import {
   createRecurrenceForContext,
   generateInstallmentsForContext,
+  getRecurrenceForContext,
 } from "./repositories/recurrences.js";
+import {
+  createTransactionForContext,
+  getTransactionForContext,
+} from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
@@ -140,6 +148,226 @@ async function main(): Promise<void> {
   assert.deepEqual(await readOccurrences(recurrence.id), expandedOccurrences);
 
   await assertRecurringEditGuards(token, purchasePath, recurrence.id);
+
+  const bypassCard = await authenticatedPatch(
+    token,
+    `/api/transactions/${selected.transactionId}/current-only`,
+    { amountMinor: 8_900 },
+  );
+  assert.equal(bypassCard.statusCode, 409, "account-only route must reject card recurrence");
+  await assertUnreconciledAccountRecurrenceEdit(token, suffix);
+}
+
+async function assertUnreconciledAccountRecurrenceEdit(
+  token: string,
+  suffix: string,
+): Promise<void> {
+  const account = await createAccountForContext(CONTEXT, {
+    name: `Conta da recorrência após desconciliação ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 0,
+  });
+  const destinationAccount = await createAccountForContext(CONTEXT, {
+    name: `Conta de destino após desconciliação ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 0,
+  });
+  const originalCategory = await createCategoryForContext(CONTEXT, {
+    name: `Categoria original da ocorrência ${suffix}`,
+    kind: "expense",
+  });
+  const replacementCategory = await createCategoryForContext(CONTEXT, {
+    name: `Categoria corrigida da ocorrência ${suffix}`,
+    kind: "expense",
+  });
+  const recurrence = await createRecurrenceForContext(CONTEXT, {
+    kind: "expense",
+    frequency: "monthly",
+    startOn: "2028-07-08",
+    amountMinor: 3_500,
+    description: `Recorrência original ${suffix}`,
+    accountId: account.id,
+    categoryId: originalCategory.id,
+  });
+  await generateInstallmentsForContext(CONTEXT, recurrence.id, "2028-09-08", 3);
+  const before = await readOccurrences(recurrence.id);
+  assert.equal(before.length, 3);
+  const selected = before[1]!;
+  assert.equal(selected.transactionAccountId, account.id);
+  assert.equal(selected.transactionCategoryId, originalCategory.id);
+  const path = `/api/transactions/${selected.transactionId}`;
+
+  const reconciled = await authenticatedPatch(token, path, { status: "reconciled" });
+  assert.equal(reconciled.statusCode, 200, "status-only reconciliation stays available");
+  const whileReconciled = await authenticatedPatch(token, path + "/current-only", {
+    amountMinor: 4_200,
+    status: "reconciled",
+  });
+  assert.equal(whileReconciled.statusCode, 409, "current-only must not edit reconciled rows");
+
+  const unreconciled = await authenticatedPatch(token, path, { status: "posted" });
+  assert.equal(unreconciled.statusCode, 200, "status-only unreconciliation stays available");
+  assert.equal((await getTransactionForContext(CONTEXT, selected.transactionId)).status, "posted");
+
+  const generic = await authenticatedPatch(token, path, {
+    status: "posted",
+    description: "tentativa generica",
+  });
+  assert.equal(generic.statusCode, 409);
+  assert.equal(
+    (generic.body as { error?: { code?: string } }).error?.code,
+    "INSTALLMENT_DIRECT_UPDATE_REQUIRED",
+    "generic installment mutation must remain closed",
+  );
+
+  const statusBypass = await authenticatedPatch(token, path + "/current-only", {
+    status: "reconciled",
+    description: "tentativa de contornar conciliação",
+  });
+  assert.equal(statusBypass.statusCode, 409, "scope edit cannot change status");
+  const futureBypass = await authenticatedPatch(token, path + "/current-only", {
+    amountMinor: 9_999,
+    applyToFuturePlanned: true,
+  });
+  assert.equal(futureBypass.statusCode, 409, "current-only cannot expand its scope");
+
+  const updated = await authenticatedPatch(token, path + "/current-only", {
+    editScope: "current_only",
+    status: "posted",
+    kind: "expense",
+    accountId: destinationAccount.id,
+    categoryId: replacementCategory.id,
+    amountMinor: 4_200,
+    occurredOn: "2028-08-12",
+    plannedOn: "2028-08-12",
+    description: `Ocorrência editada após desconciliar ${suffix}`,
+    note: "Edição da ocorrência sem alterar a regra",
+  });
+  assert.equal(updated.statusCode, 200, JSON.stringify(updated.body));
+
+  const after = await readOccurrences(recurrence.id);
+  assert.equal(after.length, 3);
+  assertOccurrenceUnchanged(before[0], after[0]);
+  assertOccurrenceUnchanged(before[2], after[2]);
+  assert.equal(after[1]?.transactionAmountMinor, 4_200);
+  assert.equal(after[1]?.installmentAmountMinor, 4_200);
+  assert.equal(after[1]?.transactionOccurredOn, "2028-08-12");
+  assert.equal(after[1]?.installmentDueOn, "2028-08-12");
+  assert.equal(after[1]?.transactionDescription, `Ocorrência editada após desconciliar ${suffix}`);
+  assert.equal(after[1]?.transactionAccountId, destinationAccount.id);
+  assert.equal(after[1]?.transactionCategoryId, replacementCategory.id);
+  const selectedUpdated = await getTransactionForContext(CONTEXT, selected.transactionId);
+  assert.equal(selectedUpdated.status, "posted");
+  assert.equal(selectedUpdated.accountId, destinationAccount.id);
+  assert.equal(selectedUpdated.categoryId, replacementCategory.id);
+  assert.equal(selectedUpdated.recurrenceId, recurrence.id);
+  assert.ok(selectedUpdated.installmentId);
+  const rule = await getRecurrenceForContext(CONTEXT, recurrence.id);
+  assert.equal(rule.amountMinor, 3_500);
+  assert.equal(rule.description, `Recorrência original ${suffix}`);
+  assert.equal(rule.accountId, account.id);
+  assert.equal(rule.categoryId, originalCategory.id);
+
+  // The selection explicitly clears a previously saved category, without
+  // clearing the recurrence rule or any other occurrence.
+  const clearCategory = await authenticatedPatch(token, path + "/current-only", {
+    categoryId: null,
+  });
+  assert.equal(clearCategory.statusCode, 200, JSON.stringify(clearCategory.body));
+  const withoutCategory = await readOccurrences(recurrence.id);
+  assertOccurrenceUnchanged(before[0], withoutCategory[0]);
+  assertOccurrenceUnchanged(before[2], withoutCategory[2]);
+  assert.equal(withoutCategory[1]?.transactionCategoryId, null);
+  assert.equal(withoutCategory[1]?.transactionAccountId, destinationAccount.id);
+  assert.equal(withoutCategory[1]?.transactionAmountMinor, 4_200);
+  assert.equal(
+    (await getTransactionForContext(CONTEXT, selected.transactionId)).categoryId,
+    undefined,
+  );
+  assert.equal(
+    (await getRecurrenceForContext(CONTEXT, recurrence.id)).categoryId,
+    originalCategory.id,
+  );
+
+  // A concurrent status-only request must see the row after it acquires the
+  // lock; otherwise it can overwrite newer data with a pre-lock snapshot.
+  const concurrentDescription = `Concorrência preservada ${suffix}`;
+  const editingConnection = await getPool().connect();
+  let edited = false;
+  try {
+    await editingConnection.query("BEGIN");
+    await editingConnection.query(
+      `update "Transaction" set "description" = $3
+         where "id" = $1 and "organizationId" = $2`,
+      [selected.transactionId, CONTEXT.organizationId, concurrentDescription],
+    );
+    const reconciliationInFlight = authenticatedPatch(token, path, { status: "reconciled" });
+    const completedBeforeCommit = await Promise.race([
+      reconciliationInFlight.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 80)),
+    ]);
+    assert.equal(completedBeforeCommit, false, "reconciliation must wait for the row lock");
+    await editingConnection.query("COMMIT");
+    edited = true;
+    const reconciliationResult = await reconciliationInFlight;
+    assert.equal(reconciliationResult.statusCode, 200);
+    assert.equal(
+      (await getTransactionForContext(CONTEXT, selected.transactionId)).description,
+      concurrentDescription,
+    );
+    const reverted = await authenticatedPatch(token, path, { status: "posted" });
+    assert.equal(reverted.statusCode, 200);
+  } finally {
+    if (!edited) await editingConnection.query("ROLLBACK");
+    editingConnection.release();
+  }
+
+  const ordinary = await createTransactionForContext(CONTEXT, {
+    accountId: account.id,
+    kind: "expense",
+    status: "posted",
+    amountMinor: 1_200,
+    occurredOn: "2028-08-15",
+    description: `Transação não recorrente ${suffix}`,
+  });
+  const bypassOrdinary = await authenticatedPatch(
+    token,
+    `/api/transactions/${ordinary.id}/current-only`,
+    { description: "tentativa sem recorrência" },
+  );
+  assert.equal(bypassOrdinary.statusCode, 409, "manual transaction cannot use recurring route");
+  assert.equal(
+    (await getTransactionForContext(CONTEXT, ordinary.id)).description,
+    ordinary.description,
+  );
+
+  // Negative control: an in-flight cancellation must win over an editor that
+  // has already locked the selected transaction and is waiting for the rule.
+  const cancelledSnapshot = await readOccurrences(recurrence.id);
+  const blocker = await getPool().connect();
+  let committed = false;
+  try {
+    await blocker.query("BEGIN");
+    await blocker.query(
+      `update "Recurrence" set "status" = 'CANCELLED'
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+      [recurrence.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+    );
+    const inFlight = authenticatedPatch(token, path + "/current-only", { amountMinor: 5_000 });
+    const completedBeforeCommit = await Promise.race([
+      inFlight.then(() => true),
+      new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 80)),
+    ]);
+    await blocker.query("COMMIT");
+    committed = true;
+    const cancelled = await inFlight;
+    assert.equal(completedBeforeCommit, false, "editor must wait for locked cancellation");
+    assert.equal(cancelled.statusCode, 409, "cancelled recurrence must remain locked");
+    assert.deepEqual(await readOccurrences(recurrence.id), cancelledSnapshot);
+  } finally {
+    if (!committed) await blocker.query("ROLLBACK");
+    blocker.release();
+  }
 }
 
 async function assertRecurringEditGuards(
@@ -274,7 +502,8 @@ async function authenticatedPatch(token: string, path: string, body: unknown) {
     headers: { authorization: `Bearer ${token}` },
     body,
   };
-  const response = await handleCreditCardAccountsApiRequest(request);
+  const response =
+    (await handleCreditCardAccountsApiRequest(request)) ?? (await handleApiRequest(request));
   assert.ok(response, `Expected response for ${path}`);
   return response;
 }
@@ -295,6 +524,8 @@ async function readOccurrences(recurrenceId: string): Promise<OccurrenceRow[]> {
        i."sequenceNumber",
        t."amountMinor" as "transactionAmountMinor",
        i."amountMinor" as "installmentAmountMinor",
+       t."accountId" as "transactionAccountId",
+       t."categoryId" as "transactionCategoryId",
        t."description" as "transactionDescription",
        to_char(t."occurredOn", 'YYYY-MM-DD') as "transactionOccurredOn",
        to_char(i."dueOn", 'YYYY-MM-DD') as "installmentDueOn"
@@ -330,6 +561,8 @@ interface OccurrenceRow {
   sequenceNumber: number;
   transactionAmountMinor: number;
   installmentAmountMinor: number;
+  transactionAccountId: string | null;
+  transactionCategoryId: string | null;
   transactionDescription: string;
   transactionOccurredOn: string;
   installmentDueOn: string;

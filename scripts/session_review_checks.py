@@ -103,4 +103,3 @@ def review_watermark(repo: str, head: str) -> int:
             require(type(value) is int and value >= 0, "review watermark corrupted")
             watermark = max(watermark, value)
     return watermark
-

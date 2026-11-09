@@ -160,11 +160,11 @@ canônica não participam da seleção até serem desagrupados.
 
 As ações em massa disponíveis são:
 
-- marcar lançamentos efetivados como conciliados;
-- desmarcar a conciliação de lançamentos conciliados;
+- marcar lançamentos previstos ou efetivados como conciliados, efetivando os previstos na data UTC da ação;
+- desmarcar a conciliação de lançamentos conciliados sem efetivar os previstos da seleção;
 - excluir logicamente os lançamentos selecionados e remover somente os agrupamentos selecionados.
 
-O servidor deduplica IDs, rejeita alteração direta de membro agrupado sem o respectivo grupo, respeita
+O servidor deduplica IDs, rejeita a conciliação de itens protegidos (cartão/fatura ou remuneração automática), rejeita alteração direta de membro agrupado sem o respectivo grupo, respeita
 organização e perfil financeiro, executa a operação de forma atômica e registra apenas metadados
 redigidos de auditoria. Conciliação e desconciliação preservam o grupo; exclusão lógica remove os
 grupos selecionados sem criar nova movimentação financeira.
@@ -243,3 +243,22 @@ usar a mesma atualizacao exclusivamente de status aceita pelo backend; grupos
 financeiros, compras do cartao, remuneracoes automaticas, sugestoes pendentes e
 lancamentos excluidos continuam sujeitos as restricoes atuais. A conciliacao
 **nao** equivale a editar toda a serie recorrente.
+
+## Editar ocorrência recorrente após desconciliação — issue #774
+
+No Extrato, a ocorrência recorrente desconciliada retorna ao estado
+`posted` e pode ser editada pelo menu de ações e pelo escopo **Somente este
+lançamento**. A mesma edição completa também está disponível quando a
+ocorrência bancária ainda está `planned`, incluindo conta, datas, categoria,
+descrição e valor; parcelas manuais, compras em cartão e lançamentos
+conciliados continuam no editor restrito. O formulário usa
+`PATCH /api/transactions/:id/current-only`; o endpoint genérico continua
+bloqueando mutações não exclusivamente de
+situação em parcelas canônicas. **Este lançamento e os próximos** preserva
+a operação já existente, que alcança somente as futuras elegíveis. A
+alteração individual sincroniza a parcela selecionada sem alterar outras
+ocorrências nem a definição da recorrência. Ocorrências ainda conciliadas,
+recorrências canceladas, parcelas sem recorrência e compras de cartão
+continuam sujeitas a bloqueios do backend. Escolher **Sem categoria** na edição
+individual envia `categoryId: null` e remove o vínculo somente da ocorrência
+selecionada; a conta pode ser alterada sem modificar a regra recorrente.

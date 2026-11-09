@@ -1,6 +1,9 @@
 # Session review — bootstrap e limites de garantia
 
-**Estado atual:** Issue #762; politica `mode=disabled`.
+**Estado atual (09/11/2026):** Issue #762, Etapa A integrada em `develop` via PR #770 no merge `f0b82f29230e64faca7f4cd49b4bfadd8793d0b3`; politica `mode=disabled`. Esta PR #763 implementa o bootstrap B com workflows e verificadores; nao ativa checks de aprovacao nem decide a equivalencia de garantia.
+
+**Identidade e certificacao:** O material reconciliado sobre a nova `develop` exige testes e certificado `critical` NOVOS para o HEAD e merge preview correntes. O handoff result-only antigo de #763 (`8ce159847efa608f89c79677e3934733ed314b3a`) e os certificados da #770 pertencem a SHAs anteriores e NAO validam esta entrega. A instalacao em `main`, testes reais de revogacao e decisao administrativa permanecem M2. Os itens A-763-03..11 abaixo representam historico, nao readiness atual.
+
 **Fonte oficial:** `crgasparoto-br/skill@a28be10db466631cd5e5e4dbe0429da250cd8b42`, `docs/WEB_INDEPENDENT_AUDIT.md`.
 
 Este bootstrap **nao fecha F-714-06** nem comprova parecer independente, embora ja inclua em branch candidata o codigo de verificacao e publicacao do futuro Check Run. A politica desabilitada recusa qualquer sucesso de revisao; a instalacao e o opt-in em duas bases confiaveis continuam necessarios. O modo futuro sera `operator-attested-session-review`, explicitamente sem prova de segunda identidade.

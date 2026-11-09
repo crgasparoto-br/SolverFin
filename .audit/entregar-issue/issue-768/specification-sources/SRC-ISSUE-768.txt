@@ -1,0 +1,44 @@
+## Contexto
+Na tela de Extrato `/lancamentos?accountId=...`, a barra de ações em massa desabilita conciliar e desconciliar quando a seleção inclui movimentos `planned`, embora a conciliação individual Golden Screen aceite `planned` → `reconciled`. O endpoint em lote também bloqueia essas transições. Relato de usuário de 05/11/2026. Referências: #702, docs/GOLDEN_STATEMENT.md, docs/TRANSACTIONS.md, docs/API_TRANSACTION_BULK_ACTIONS.md e docs/TRANSACTION_DATES.md.
+
+## Objetivo
+Restabelecer ações de conciliação em massa para seleções elegíveis, com estados, feedback, acesso por teclado e semântica financeira equivalentes à Golden Screen, em uma PR contra `develop`.
+
+## Escopo
+- Corrigir a elegibilidade de **Marcar como conciliado** quando houver itens `planned` ou `posted` selecionados, inclusive combinados com `reconciled`.
+- Habilitar **Desmarcar conciliado** quando houver ao menos um `reconciled`, preservando `planned` e `posted` da seleção.
+- Atualizar a transação atômica do endpoint em lote para conciliar `planned` e `posted` sem data efetiva, seguindo as mesmas regras de data que a transição individual do domínio.
+- Preservar membros de agrupamentos, isolamento de tenant/perfil, auditoria minimizada, reversão transacional e operações idempotentes.
+- Garantir opções, estados neutros, títulos acessíveis, feedback e responsividade no padrão Golden Screen.
+- Cobrir os fluxos positivos, negativos e regressões no teste e documentação já existentes.
+
+## Requisitos
+- `planned` → `reconciled` recebe data efetiva UTC da transição; `posted` sem data efetiva recebe o fallback canônico, sem alterar `occurredOn` nem `plannedOn`.
+- `unreconcile` altera somente `reconciled` → `posted`; `planned` e `posted` permanecem inalterados.
+- Seleções válidas mistas acionam a operação solicitada apenas sobre os itens cuja situação deve mudar.
+- Seleção somente `reconciled` não oferece nova conciliação, e seleção sem conciliados não oferece desconciliação.
+- Itens excluídos/sugestões pendentes e demais movimentos não elegíveis continuam protegidos.
+- O servidor faz validação transacional; o frontend nunca é a única barreira.
+- Sem alteração de valor, moeda, conta, categoria, parcelas irmãs nem regras de recorrência.
+
+## Critérios de aceite
+- [ ] Seleção `planned + posted` habilita conciliar; resultado persiste situação e datas corretas.
+- [ ] Seleção `planned + reconciled` habilita as duas ações de acordo com o alvo; desconciliar não efetiva o previsto.
+- [ ] Seleção `posted + reconciled` habilita as duas ações; agrupamentos continuam íntegros.
+- [ ] Ausência de alvos habilitados não permite operação vazia via UI e informa motivo acessível.
+- [ ] Itens proibidos e seleção entre tenants são rejeitados sem alteração parcial.
+- [ ] Testes de regressão (frontend e backend), typecheck, lint, build e CI no SHA exato; evidência Chrome desktop/mobile quando disponível.
+
+## Invariantes
+- Usar `develop` como base, fonte canônica `crgasparoto-br/skill` em `develop` e Golden Screen aprovada.
+- Não alterar regras genéricas de agrupamento, movimentação de caixa ou operação de exclusão.
+- Não misturar moedas, não expor dados financeiros, não enfraquecer controles de autorização.
+- Auditoria independente em contexto separado; CI verde isoladamente não significa aprovação; sem merge automático.
+
+## Fora de escopo
+- Modificar conciliação individual e criação de lançamentos; redesenhar a tela completa.
+- Habilitar conciliação de cartões/faturas ou remuneração automática pela seleção em massa.
+
+## Validação obrigatória
+- Testes positivos, negativos e regressões com SQL/fixture fictícios.
+- `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run test`, `npm run build`; visual Chrome se ambiente e fixture suportarem.

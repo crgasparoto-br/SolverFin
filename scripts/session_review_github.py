@@ -120,3 +120,85 @@ def authenticated_implementation_provenance(identity: dict, metadata: dict, page
             "handoff": {"artifact_id": metadata["artifact_id"], "digest": metadata["artifact_digest"]}}
 
 
+def certified_evidence(identity: dict, checks: dict, directory: Path, *, api, unpack,
+                       authenticated_certificate_event, authenticated_preview_reconciliation,
+                       root: Path) -> tuple[dict, set[str]]:
+    """Technical workflow authentication is reused, not replaced by check-name matching."""
+    from verify_independent_pr_audit import HANDOFF, required_checks_green, trusted_workflow_check
+    repo, number = identity["repository"], identity["pull_request"]
+    head, base = identity["head_sha"], identity["base_sha"]
+    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
+    require(bool(token), "GitHub credential missing")
+    trust = lambda name, check: trusted_workflow_check(repo, number, name, check, head, base, token)
+    # Session mode certifies all targets, including main. The legacy human route is unchanged.
+    required_checks_green(checks, head, "develop", trust)
+    candidates = [c for c in checks["check_runs"] if c.get("name") == HANDOFF and c.get("head_sha") == head and trust(HANDOFF, c)]
+    chosen = max(candidates, key=lambda c: c["id"])
+    run_id = int(re.search(r"/actions/runs/(\d+)/", chosen["details_url"])[1])
+    artifacts = api(f"/repos/{repo}/actions/runs/{run_id}/artifacts?per_page=100")
+    require(artifacts.get("total_count") == len(artifacts.get("artifacts", [])), "artifact inventory truncated")
+    name = f"handoff-evidence-{number}-{head}"
+    matches = [a for a in artifacts["artifacts"] if a.get("name") == name and not a.get("expired")]
+    require(len(matches) == 1, "exact-SHA evidence artifact missing or ambiguous")
+    artifact = matches[0]
+    raw = api(f"/repos/{repo}/actions/artifacts/{artifact['id']}/zip", binary=True)
+    require(artifact.get("digest") == "sha256:" + digest(raw), "artifact transport digest mismatch")
+    unpack(raw, directory)
+    sys.path.insert(0, str(root / "entregar-issue/scripts"))
+    from build_test_candidate_index import collect
+    from require_actions_handoff_certificate import verify
+    event = authenticated_certificate_event(identity)
+    recorded_raw = (directory / "certification-event.json").read_bytes()
+    recorded = strict_json(recorded_raw.decode())
+    recorded_pr = recorded.get("pull_request")
+    require(isinstance(recorded_pr, dict),
+            "certification event altered or stale against authenticated PR")
+    certified_sha = recorded_pr.get("merge_commit_sha")
+    # The authenticated live event is the template. Only the test-merge object
+    # may differ; all other bytes remain bound to the trusted PR/issue.
+    expected = copy.deepcopy(event)
+    expected["pull_request"]["merge_commit_sha"] = certified_sha
+    require(recorded == expected, "certification event altered or stale against authenticated PR")
+    proof = authenticated_preview_reconciliation(identity, certified_sha)
+    # The original pre-test preview and the preview written into the handoff
+    # may differ from GitHub's current synthetic merge without changing code.
+    # Authenticate the third commit before giving the strict legacy verifier
+    # a temporary event; never rewrite the ZIP or its original-event digest.
+    preflight_snapshot = strict_json((directory / "handoff-preflight.json").read_text(encoding="utf-8"))
+    original_preview = recorded_pr.get("merge_commit_sha")
+    require(isinstance(preflight_snapshot, dict)
+            and isinstance(preflight_snapshot.get("identity"), dict)
+            and preflight_snapshot["identity"].get("merge_preview_sha") == original_preview,
+            "pre-test merge preview differs from authenticated snapshot")
+    certificate = strict_json((directory / ".audit/entregar-issue/handoff-ready.json").read_text(encoding="utf-8"))
+    certificate_identity = certificate.get("identity") if isinstance(certificate, dict) else None
+    require(isinstance(certificate_identity, dict), "certified handoff identity is missing")
+    certificate_preview = certificate_identity.get("material_merge_preview_sha")
+    require(isinstance(certificate_preview, str) and SHA.fullmatch(certificate_preview)
+            and certificate_identity.get("merge_preview_sha") == certificate_preview,
+            "certified handoff merge preview is missing or inconsistent")
+    certificate_reconciliation = authenticated_preview_reconciliation(identity, certificate_preview)
+    verified_event = copy.deepcopy(recorded)
+    verified_event["pull_request"]["merge_commit_sha"] = certificate_preview
+    event_path = directory / "trusted-event.json"
+    event_path.write_bytes(canonical(verified_event))
+    verify(directory, event_path, identity["base_ref"])
+    preflight = json.loads((directory / "handoff-preflight.json").read_bytes())
+    require(preflight["identity"]["issue_number"] == identity["issue"]
+            and preflight["identity"]["base_sha"] == base, "certificate issue/base mismatch")
+    require(preflight["source"]["issue_body_sha256"] == identity["issue_sha256"], "canonical issue changed since certification")
+    facts = json.loads((directory / "test-execution-facts.json").read_bytes())
+    require(facts.get("subject_sha") == head and facts.get("verification") == "passed"
+            and facts.get("execution", {}).get("exit_code") == 0, "test execution not proven")
+    require(digest((directory / "pytest-exact-head.log").read_bytes()) == facts["execution"]["log_sha256"], "test log digest mismatch")
+    junit = directory / "pytest-exact-head.xml"
+    require(not any(marker in junit.read_bytes().upper() for marker in (b"<!DOCTYPE", b"<!ENTITY")), "unsafe JUnit XML")
+    index = collect(junit, head)
+    require(index["counts"]["failure"] == 0 and index["counts"]["error"] == 0, "JUnit contains failing tests")
+    metadata = {"artifact_digest": artifact["digest"], "artifact_id": artifact["id"], "certified_at": chosen["completed_at"],
+                "technical_check_ids": sorted(c["id"] for c in checks["check_runs"] if c.get("name") in
+                                             {"Structure and tests", "Offline authorization tests", HANDOFF})}
+    metadata["merge_preview_reconciliation"] = proof
+    metadata["certified_handoff_preview_reconciliation"] = certificate_reconciliation
+    metadata["certification_event_sha256"] = digest(recorded_raw)
+    return metadata, {t["id"] for t in index["tests"] if t["status"] == "passed"}

@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+    "audit_report_sha256": "848ec508837bd77d0ed76ab541f85adc30690cec35dd8ae39000c09935adf33b",
+    "audited_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+  },
+  "candidate_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+  "remediation_mode": "targeted-remediation",
+  "status": "closed",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-008",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "scripts/session_review_evidence.py",
+        "tests/test_session_review_trusted_producers.py",
+        "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
+      ],
+      "evidence": [
+        "ElementTree.XMLParser with TreeBuilder.doctype refuses DTD at parser event, even UTF-16",
+        "Six A-008 adversarial DTD cases in parser/producer/ZIP and two valid XML controls",
+        "Original code: 3 UTF-16 failures + 3 UTF-8 passes; evidence/issue-762/evidence/a-008-negative-original.log sha256=cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be"
+      ],
+      "validations": [
+        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 60 passed, 0 failed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+        "CODE-GROWTH-001 READY: 5 production scripts <=300 lines",
+        "Source from authenticated GitHub bundle run 42609551407"
+      ]
+    }
+  ],
+  "historical_prior_findings": [
+    {
+      "id": "A-001",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-004",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-005",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-006",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-007",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "R-001",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    }
+  ]
+}
