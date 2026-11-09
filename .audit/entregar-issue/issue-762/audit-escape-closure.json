@@ -4,7 +4,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 762,
     "pull_request_number": 770,
-    "material_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    "material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
   },
   "escapes": [
     {
@@ -17,7 +17,7 @@
         "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
         "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5"
       },
-      "revalidated_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
       "plausible_wrong_implementation": "Hard-coded eight critical artifact keys reject a valid seven-artifact certificate.",
       "literal_case": {
         "status": "passed",
@@ -84,7 +84,7 @@
         "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
         "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5"
       },
-      "revalidated_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
       "plausible_wrong_implementation": "Published certification remained bound to an outdated base, resulting in dirty merge state.",
       "literal_case": {
         "status": "passed",
@@ -151,7 +151,7 @@
         "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
         "audit_report_sha256": "ffae9d6f88f81ec055d40f0cb81229af315ff99fad4fb5d0600a5d9df324dcc5"
       },
-      "revalidated_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
       "plausible_wrong_implementation": "Only look for exact, unqualified XML failure/error/skipped tags while accepting namespace-qualified children.",
       "literal_case": {
         "status": "passed",
@@ -229,7 +229,7 @@
         "head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
         "audit_report_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32"
       },
-      "revalidated_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
       "plausible_wrong_implementation": "Ignore non-XML-node JUnit disabled and testcase status failure indicators, counting disabled and failed cases as green evidence.",
       "literal_case": {
         "status": "passed",
@@ -292,6 +292,84 @@
         "testcase status failed",
         "testcase status skipped",
         "false green evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-008",
+      "escape_class": "encoded-xml-doctype-raw-byte-check-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+        "finding_id": "A-008",
+        "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "audit_report_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Pre-scan raw XML bytes for ASCII <!DOCTYPE and <!ENTITY while ElementTree decodes UTF-16 and expands internal entities.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run UTF-16 JUnit with internal DTD/entity against old and new code",
+        "expected": "Old parser yields a successful testcase; new parser rejects at DTD declaration in parser/writer/ZIP",
+        "observed": "Old parser: 3 UTF-16 DTD mutants fail new tests; corrected parser: 60/60 directed tests pass at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+        "evidence": "issue-762/evidence/a-008-negative-original.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "a008-external",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-external-dtd",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a008-element",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-element-declaration-valid-hashes",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a008-positive",
+          "surface": "junit-evidence-parser",
+          "dimension": "valid-utf16-predefined-entity",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "utf16-entity-expansion"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-dtd-output-rejection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-dtd-valid-archive-hashes"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/session_review_evidence.py:_RejectJUnitDoctype",
+        "evidence": "60 directed tests at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+      },
+      "detection_change": {
+        "skill_or_gate": "tests/test_session_review_trusted_producers.py",
+        "control_id": "NC-002-A008-PARSER",
+        "evidence": "issue-762/evidence/a-008-negative-original.log"
+      },
+      "trigger_terms": [
+        "JUnit XML UTF-16",
+        "DTD entity expansion",
+        "ASCII raw byte XML scan"
       ],
       "required_risk_families": [
         "structural-contract"

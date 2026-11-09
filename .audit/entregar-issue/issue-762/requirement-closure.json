@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "e34ff88367722443725adc5ec46f5be630d204ddc600c235f9229e30d49d32bf"
+    "sha256": "fe0cce661e84a72218451a0f50edcb53822f7c9f5b109fe8fc686b259562cf4b"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -303,7 +303,8 @@
       "JUnit aggregate counts",
       "A-004 targeted/systemic remediation inventory",
       "A-006 JUnit hierarchy fail-closed",
-      "A-007 JUnit disabled/status fail-closed"
+      "A-007 JUnit disabled/status fail-closed",
+      "A-008 XML DTD/ENTITY blocked by parser events across encodings"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
@@ -337,8 +338,9 @@
       "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
       "A-004: 27 tests passed on material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
       "A-005: 27 tests passed on exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
-      "A-006: 34 exact material tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy.",
-      "A-007: old parser rejected by 14 distinct status/disabled mutation tests; fixed exact-head 52/52 passing, GitHub authenticated bundle run 42553528354."
+      "A-006: 34 exact material tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy.",
+      "A-007: old parser rejected by 14 distinct status/disabled mutation tests; fixed exact-head 60/60 passing, GitHub authenticated bundle run 42553528354.",
+      "A-008: six DTD-negative combinations across UTF-8/UTF-16 in parser, producer and ZIP; old parser fails 3 UTF-16 cases and corrected 60/60 pass at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1. Negative original log evidence/a-008-negative-original.log sha256=cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

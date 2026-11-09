@@ -1,4 +1,4 @@
-HEAD: 98c39e91f2dfa8f4bd10f670bc2059909033a0f1
+HEAD: 04f3f76a20a2b1d6b957679e2acd7d923d682cc1
 COMMAND: python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py
 EXIT_CODE: 0
 REACHED: tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data
@@ -53,3 +53,11 @@ REACHED: tests/test_session_review_trusted_producers.py::test_junit_successful_s
 REACHED: tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]
 REACHED: tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]
 REACHED: tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected "forged-success">]>-utf-8]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected "forged-success">]>-utf-16]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM "https://untrusted.invalid/dtd">-utf-8]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM "https://untrusted.invalid/dtd">-utf-16]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-8]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-16]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-8]
+REACHED: tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-16]

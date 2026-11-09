@@ -1,9 +1,10 @@
 Repository: crgasparoto-br/SolverFin
-Issue: 762; PR: 770; protected develop base: 1b30adacc864341f9aea5113cbdb9be233fbb8a1
-Candidate material HEAD: 98c39e91f2dfa8f4bd10f670bc2059909033a0f1
-Previous rejected material: b00de9f8c38f145a8bd732c195a7fad32ed77c51; published: d82479a683bce3897f13df4f6a2aaf21781b3424
-Authenticated read-only workspace run: 42553528354 completed/success; bundle restored with exact Git tree.
-Full Stage A pytest: 52 passed, 0 failed; stdout sha256: 1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79
-A-007 14 pre-fix mutants failed as expected; log sha256 b5d3b7cc279c013f5f5a6beb1319e41880e0c633cea62d3ab0c4657470307c53
-CODE-GROWTH-001: READY at exact material, 296 lines in JUnit evidence parser.
-Repository CI #42553528348: completed/success, including CRITICAL validation and Delivery V2 gate at exact material SHA.
+Issue: 762
+PR: 770
+Base SHA: 1b30adacc864341f9aea5113cbdb9be233fbb8a1
+Material SHA: 04f3f76a20a2b1d6b957679e2acd7d923d682cc1
+Source: GitHub Actions Delivery audit workspace run 42609551407, trusted-audit-git-bundle-04f3f76a20a2b1d6b957679e2acd7d923d682cc1
+Bundle digest: sha256:23348118061597909f2fa9dfff2df4161d3fa5b5234e4e62117e71ceed4c47ba
+Repo bundle refs restored offline; commit/tree verified by git and tests executed on exact material checkout.
+Targeted Python: 60 passed, 0 failed. Original-parser A-008 negative: 3 failed, 3 passed.
+Stage B remains deferred; no workflow/policy/ruleset change or independent approval.

@@ -3,17 +3,17 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
-    "audit_report_sha256": "d61a91f6c9ebd3021afdea5f2c3e22c1eb6acc327fde72a55fa4d0e0ffd3270b",
-    "audited_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51"
+    "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+    "audit_report_sha256": "848ec508837bd77d0ed76ab541f85adc30690cec35dd8ae39000c09935adf33b",
+    "audited_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
   },
-  "candidate_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+  "candidate_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
   "remediation_mode": "targeted-remediation",
   "status": "closed",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-007",
+      "source_id": "A-008",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
@@ -23,14 +23,14 @@
         "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
       ],
       "evidence": [
-        "scripts/session_review_evidence.py: disabled counts on testsuites and testsuite, and test case status/disabled must be absent or successful",
-        "tests/test_session_review_trusted_producers.py: 14 parametrized negatives across parser, writer and ZIP, 4 successes preserved",
-        "issue-762/evidence/a-007-negative-original.log sha256=b5d3b7cc279c013f5f5a6beb1319e41880e0c633cea62d3ab0c4657470307c53 demonstrates 14 pre-fix rejections fail on previous implementation; new version passes 52/52"
+        "ElementTree.XMLParser with TreeBuilder.doctype refuses DTD at parser event, even UTF-16",
+        "Six A-008 adversarial DTD cases in parser/producer/ZIP and two valid XML controls",
+        "Original code: 3 UTF-16 failures + 3 UTF-8 passes; evidence/issue-762/evidence/a-008-negative-original.log sha256=cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be"
       ],
       "validations": [
-        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 52 passed at exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
-        "CODE-GROWTH-001 READY: five production scripts under 300 lines, evidence in code-growth.json",
-        "Delivery audit workspace #42553528354 completed/success and authenticated Git bundle material SHA 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 60 passed, 0 failed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+        "CODE-GROWTH-001 READY: 5 production scripts <=300 lines",
+        "Source from authenticated GitHub bundle run 42609551407"
       ]
     }
   ],
@@ -38,37 +38,42 @@
     {
       "id": "A-001",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
-    },
-    {
-      "id": "R-001",
-      "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     },
     {
       "id": "A-002",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     },
     {
       "id": "A-003",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     },
     {
       "id": "A-004",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     },
     {
       "id": "A-005",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     },
     {
       "id": "A-006",
       "status": "resolved",
-      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "A-007",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    },
+    {
+      "id": "R-001",
+      "status": "resolved",
+      "reason": "Existing prior remediation preserved; 60-test regression executed at current exact material 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
     }
   ]
 }

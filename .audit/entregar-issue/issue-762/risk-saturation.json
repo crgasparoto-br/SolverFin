@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
   "families": [
     {
       "family": "authorization",
@@ -98,7 +98,10 @@
         "NC-002-A006-CONSUMER",
         "NC-002-A007-PARSER",
         "NC-002-A007-PRODUCER",
-        "NC-002-A007-CONSUMER"
+        "NC-002-A007-CONSUMER",
+        "NC-002-A008-PARSER",
+        "NC-002-A008-PRODUCER",
+        "NC-002-A008-CONSUMER"
       ],
       "dimensions": [
         {
@@ -127,28 +130,31 @@
         },
         {
           "surface": "junit-evidence-parser",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces.",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
           "control_ids": [
             "NC-002-A005-PARSER",
-            "NC-002-A006-PARSER"
+            "NC-002-A006-PARSER",
+            "NC-002-A008-PARSER"
           ],
           "status": "passed"
         },
         {
           "surface": "junit-evidence-writer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces.",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
           "control_ids": [
             "NC-002-A005-PRODUCER",
-            "NC-002-A006-PRODUCER"
+            "NC-002-A006-PRODUCER",
+            "NC-002-A008-PRODUCER"
           ],
           "status": "passed"
         },
         {
           "surface": "junit-zip-consumer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces.",
+          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
           "control_ids": [
             "NC-002-A005-CONSUMER",
-            "NC-002-A006-CONSUMER"
+            "NC-002-A006-CONSUMER",
+            "NC-002-A008-CONSUMER"
           ],
           "status": "passed"
         }

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+  "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
   "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "creations": [
     {
@@ -168,7 +168,7 @@
         "status": "passed",
         "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
         "reached_tests": [
           "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
           "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
@@ -224,7 +224,7 @@
           "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "f21d0f83e6073b4ac382b86d2fd5eabe13d8eafb799c80667d44bf668431d32f"
+        "evidence_sha256": "670dc073ae387cc63af3c81cae78a2523c5df0ce24d0b9d28455408043f1e512"
       }
     },
     {
@@ -251,13 +251,14 @@
         "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants",
         "A-005: namespace-qualified failure/error/skipped/wrapper rejection tested in parser, writer and ZIP consumer; pre-fix mutant fails all four cases.",
         "A-006 fail-closed XML hierarchy control: 6 invalid placement cases in parser, writer and ZIP consumer; positive nested suites/properties case.",
-        "A-007: 14 fail-closed status/disabled adversarial cases in parser, writer and ZIP consumer, plus 4 positive forms; 14 pre-fix mutant failures."
+        "A-007: 14 fail-closed status/disabled adversarial cases in parser, writer and ZIP consumer, plus 4 positive forms; 14 pre-fix mutant failures.",
+        "A-008: six DTD fail-closed permutations and two UTF-8/UTF-16 positive cases, parser/writer/ZIP; original parser fails 3 UTF-16 cases."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
         "reached_tests": [
           "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
           "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
@@ -310,10 +311,18 @@
           "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None]",
           "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]",
           "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]",
-          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]"
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected \"forged-success\">]>-utf-8]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected \"forged-success\">]>-utf-16]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM \"https://untrusted.invalid/dtd\">-utf-8]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM \"https://untrusted.invalid/dtd\">-utf-16]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-8]",
+          "tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-16]",
+          "tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-8]",
+          "tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-16]"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "f21d0f83e6073b4ac382b86d2fd5eabe13d8eafb799c80667d44bf668431d32f"
+        "evidence_sha256": "670dc073ae387cc63af3c81cae78a2523c5df0ce24d0b9d28455408043f1e512"
       }
     }
   ]

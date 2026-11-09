@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
   "requirements": [
     {
       "requirement_id": "REQ-762-002",
@@ -17,7 +17,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -27,15 +27,15 @@
           "surface": "unprivileged-parser-test",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-01-S1",
@@ -51,15 +51,15 @@
           "surface": "trusted-candidate-separation",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_modified_candidate_producer_fails_before_green_status and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_modified_candidate_producer_fails_before_green_status",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
-          "evidence_sha256": "95d00fc2280b291f83a16a84d20a6d11f5c2b9f28575fd42a982f15753f163d8",
+          "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
             {
               "id": "NC-002-02-S1",
@@ -75,15 +75,15 @@
           "surface": "junit-evidence-parser",
           "dimension": "namespace-qualified-test-result",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A005-PARSER-S1",
@@ -99,15 +99,15 @@
           "surface": "junit-evidence-writer",
           "dimension": "namespace-failure-does-not-write-evidence",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A005-PRODUCER-S1",
@@ -123,15 +123,15 @@
           "surface": "junit-zip-consumer",
           "dimension": "namespace-failure-with-valid-hashes",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "Namespace-qualified JUnit failure might be accepted as passing exact-SHA evidence.",
           "plausible_wrong_implementation": "Compare ElementTree tags to unqualified failure/error/skipped without rejecting namespace-qualified nodes.",
           "procedure": "Run test_namespaced_junit_fails_closed_in_parser_producer_and_consumer on exact material; compare with the original parser mutant (4 expected failures).",
           "expected": "A namespaced XML node causes a fail-closed ValueError before positive evidence is written or consumed.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; pre-fix mutant failed 4 cases; new code rejects malicious XML in parser/writer/ZIP consumer.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A005-CONSUMER-S1",
@@ -147,7 +147,7 @@
           "surface": "junit-evidence-parser",
           "dimension": "nested-failure-and-orphan-testcase",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
@@ -155,7 +155,7 @@
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
           "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A006-PARSER-S1",
@@ -177,7 +177,7 @@
           "surface": "junit-evidence-writer",
           "dimension": "no-evidence-on-invalid-junit-hierarchy",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
@@ -185,7 +185,7 @@
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
           "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A006-PRODUCER-S1",
@@ -207,7 +207,7 @@
           "surface": "junit-zip-consumer",
           "dimension": "invalid-hierarchy-with-consistent-archive-hashes",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A nested failure or orphan testcase is counted as a passing test.",
           "plausible_wrong_implementation": "Count root.iter(testcase) without enforcing the XML parent-child grammar and inspect only direct failure children.",
@@ -215,7 +215,7 @@
           "expected": "All six invalid XML cases fail closed at the parser/writer/ZIP consumer, and the old parser fails the new regression.",
           "observed": "34 tests passed on 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; the original parser at 017655321b0c286f582d74ba713c168e13ddff5f failed six A-006 parametrizations with exit code 1.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A006-CONSUMER-S1",
@@ -237,7 +237,7 @@
           "surface": "junit-evidence-parser",
           "dimension": "junit-status-disabled-attribute",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
@@ -245,7 +245,7 @@
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
           "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A007-PARSER-S1",
@@ -267,7 +267,7 @@
           "surface": "junit-evidence-writer",
           "dimension": "no-false-positive-evidence-output",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
@@ -275,7 +275,7 @@
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
           "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A007-PRODUCER-S1",
@@ -297,7 +297,7 @@
           "surface": "junit-zip-consumer",
           "dimension": "valid-hash-malicious-status-xml",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "JUnit disabled or unsuccessful testcase status silently counted as passing.",
           "plausible_wrong_implementation": "Treat disabled=1 and testcase status=failed/skipped as successful whenever XML child failure/error/skipped tags are absent.",
@@ -305,7 +305,7 @@
           "expected": "Fail closed for 14 disabled or non-successful status variants in all 3 consumers, while 4 legitimate positive variants remain valid.",
           "observed": "14 new cases passed on authenticated material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; 14 new cases failed on old parser; full suite 52 passed and 0 failed.",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-002-A007-CONSUMER-S1",
@@ -320,25 +320,120 @@
               "dimension": "failed-vs-skipped-status-with-authenticated-hash"
             }
           ]
+        },
+        {
+          "id": "NC-002-A008-PARSER",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "utf16-entity-expansion",
+          "control_type": "test",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "status": "passed",
+          "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
+          "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
+          "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
+          "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "evidence": "issue-762/evidence/a-008-negative-original.log",
+          "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
+          "sibling_cases": [
+            {
+              "id": "NC-002-A008-PARSER-S1",
+              "status": "passed",
+              "surface": "junit-evidence-parser",
+              "dimension": "utf8-dtd-rejection"
+            },
+            {
+              "id": "NC-002-A008-PARSER-S2",
+              "status": "passed",
+              "surface": "junit-evidence-parser",
+              "dimension": "valid-utf16-no-dtd"
+            }
+          ]
+        },
+        {
+          "id": "NC-002-A008-PRODUCER",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-dtd-output-rejection",
+          "control_type": "test",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "status": "passed",
+          "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
+          "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
+          "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
+          "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "evidence": "issue-762/evidence/a-008-negative-original.log",
+          "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
+          "sibling_cases": [
+            {
+              "id": "NC-002-A008-PRODUCER-S1",
+              "status": "passed",
+              "surface": "junit-evidence-writer",
+              "dimension": "utf8-dtd-rejection"
+            },
+            {
+              "id": "NC-002-A008-PRODUCER-S2",
+              "status": "passed",
+              "surface": "junit-evidence-writer",
+              "dimension": "valid-utf16-no-dtd"
+            }
+          ]
+        },
+        {
+          "id": "NC-002-A008-CONSUMER",
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-dtd-valid-archive-hashes",
+          "control_type": "test",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "status": "passed",
+          "failure_mode": "UTF-16 DTD bypasses ASCII raw byte check and is counted as successful JUnit",
+          "plausible_wrong_implementation": "Look for ASCII <!DOCTYPE bytes in raw XML instead of parsing DOCTYPE declarations",
+          "procedure": "Run test_junit_dtd_rejected_in_parser_producer_and_zip_consumer with UTF-8/UTF-16, three DTD variants; assert all boundaries reject; run negative historical code to confirm three UTF-16 failures.",
+          "expected": "Reject DTD with any XML encoding and prevent evidence writing/consumption even with valid hashes.",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; historical parser failed three UTF-16 DTD tests, proving discriminator",
+          "evidence": "issue-762/evidence/a-008-negative-original.log",
+          "evidence_sha256": "cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be",
+          "sibling_cases": [
+            {
+              "id": "NC-002-A008-CONSUMER-S1",
+              "status": "passed",
+              "surface": "junit-zip-consumer",
+              "dimension": "utf8-dtd-rejection"
+            },
+            {
+              "id": "NC-002-A008-CONSUMER-S2",
+              "status": "passed",
+              "surface": "junit-zip-consumer",
+              "dimension": "valid-utf16-no-dtd"
+            }
+          ]
         }
       ],
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         },
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/a-005-negative-original.log",
           "evidence_sha256": "ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e"
         },
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/a-006-negative-original.log",
           "evidence_sha256": "656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518"
+        },
+        {
+          "status": "passed",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+          "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],
       "obligation_control_map": [
@@ -372,6 +467,21 @@
           "risk_family": "structural-contract",
           "surface": "junit-zip-consumer",
           "reason": "A-005: namespace-safe fail-closed JUnit exact-SHA evidence handling verified by old-code mutant and new-code regression."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "reason": "A-008: byte-encoding-independent XML DOCTYPE rejection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "reason": "A-008: byte-encoding-independent XML DOCTYPE rejection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "reason": "A-008: byte-encoding-independent XML DOCTYPE rejection"
         }
       ],
       "quantitative_evidence_required": false
@@ -392,7 +502,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -402,15 +512,15 @@
           "surface": "neutral-packet-binding",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with test_neutral_packet_rederives_issue_and_checks_identity and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-pytest.log",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; stage A no workflow changes and linked items stay open; test_neutral_packet_rederives_issue_and_checks_identity",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; test_neutral_packet_rederives_issue_and_checks_identity",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "NC-003-01-S1",
@@ -426,15 +536,15 @@
           "surface": "canonical-claims",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with no_workflows_stage_a and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; stage A no workflow changes and linked items stay open; no_workflows_stage_a",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; no_workflows_stage_a",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
-          "evidence_sha256": "95d00fc2280b291f83a16a84d20a6d11f5c2b9f28575fd42a982f15753f163d8",
+          "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
             {
               "id": "NC-003-02-S1",
@@ -450,7 +560,7 @@
           "surface": "critical-certificate-inventory",
           "dimension": "optional-and-foreign-artifacts",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "Reject a compliant certificate when optional provenance is missing, or accept tampered/foreign extras.",
           "plausible_wrong_implementation": "Enforce an exact hard-coded list of eight critical artifact keys or trust declared optional metadata without digest verification.",
@@ -458,7 +568,7 @@
           "expected": "Seven required/controlled artifacts pass; recognized extras pass; missing mandatory, changed SHA and foreign entries fail closed.",
           "observed": "Test passed on exact material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
           "evidence": "issue-762/evidence/stage-a-pytest.log",
-          "evidence_sha256": "1b707930e9c3e4c6e6d72541a033b28f3ab6c819e6980006484396cf3e845a79",
+          "evidence_sha256": "0f1fffd3c74346d17cc3d28d78cb5ed4a196bc474524df8d51398ab3c1e24c7d",
           "sibling_cases": [
             {
               "id": "optional-missing",
@@ -480,7 +590,7 @@
           "surface": "critical-certificate-remediation-mode",
           "dimension": "targeted-vs-systemic-artifact-inventory",
           "control_type": "test",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "Valid targeted remediation with two required records is refused, or systemic/mixed certificates omit lineage.",
           "plausible_wrong_implementation": "Require audit_escape_closure and learning_closure for all previous independent rejections regardless of remediation_mode.",
@@ -520,12 +630,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         },
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],
@@ -573,7 +683,7 @@
       "plausible_wrong_implementation": "A candidate producer could treat its own code or stale metadata as trusted and misleadingly assert that the governance milestone is complete.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
         "evidence": "issue-762/evidence/stage-a-pytest.log"
       },
       "negative_controls": [
@@ -583,15 +693,15 @@
           "surface": "remaining-work-remains-open",
           "dimension": "wrong-source-or-lifecycle-binding",
           "control_type": "procedure",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "status": "passed",
           "failure_mode": "A proof generated from candidate or foreign identity is mistakenly accepted.",
           "plausible_wrong_implementation": "Trust the candidate source instead of the protected base, or certify incorrect issue / SHA / governance status.",
           "procedure": "Run pytest stage-A with github_remote_read_open and inspect authenticated GitHub path/state for exact material SHA; see evidence/stage-a-provenance.txt",
           "expected": "Reject tampering or retain the explicit non-approved Stage B boundary.",
-          "observed": "52 directed tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; stage A no workflow changes and linked items stay open; github_remote_read_open",
+          "observed": "60 directed tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; stage A no workflow changes and linked items stay open; github_remote_read_open",
           "evidence": "issue-762/evidence/stage-a-provenance.txt",
-          "evidence_sha256": "95d00fc2280b291f83a16a84d20a6d11f5c2b9f28575fd42a982f15753f163d8",
+          "evidence_sha256": "0600ac33b6dba3852f6b5c805e9acfab53c45f204187edd0d8020f77dcb3c1a0",
           "sibling_cases": [
             {
               "id": "NC-009-01-S1",
@@ -605,7 +715,7 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+          "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
           "evidence": "issue-762/evidence/stage-a-pytest.log"
         }
       ],
