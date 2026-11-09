@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+  "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
   "families": [
     {
       "family": "authorization",
@@ -101,7 +101,8 @@
         "NC-002-A007-CONSUMER",
         "NC-002-A008-PARSER",
         "NC-002-A008-PRODUCER",
-        "NC-002-A008-CONSUMER"
+        "NC-002-A008-CONSUMER",
+        "NC-002-PR776-TRAVERSAL"
       ],
       "dimensions": [
         {
@@ -155,6 +156,14 @@
             "NC-002-A005-CONSUMER",
             "NC-002-A006-CONSUMER",
             "NC-002-A008-CONSUMER"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "trusted-github-compare-path",
+          "reason": "Canonical 40hex...40hex compare is required for trusted attestation, but dot/double-dot owner and repository namespace traversal must fail closed; observed mutant and current negative suite.",
+          "control_ids": [
+            "NC-002-PR776-TRAVERSAL"
           ],
           "status": "passed"
         }

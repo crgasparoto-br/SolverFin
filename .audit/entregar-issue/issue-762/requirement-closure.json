@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "fe0cce661e84a72218451a0f50edcb53822f7c9f5b109fe8fc686b259562cf4b"
+    "sha256": "100d4743debcdcffe243b1c661cf733eb2caf2380a0f8914054c4f4ddeb22a41"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -32,7 +32,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "A equivalencia governamental de operador unico depende de decisao formal e dos checks ativados em bases protegidas; a etapa A preserva explicitamente o modo fail-closed e nao atesta terceiros."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-002",
@@ -51,7 +51,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 52 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A. A-005: namespaced JUnit error, failure, skipped and wrapper rejected end-to-end by 4 additional negative regression cases. A-007: 14 testes adversariais discriminantes de atributos JUnit, 4 positivos, comprovados no parser/produtor/ZIP; 14 falhas no codigo anterior."
+      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
     },
     {
       "id": "OBL-003",
@@ -68,7 +68,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Coletor read-only cria pacote neutro de fontes exatas; parser de handoff e certificados validam blobs, URLs e identidades. CI real e preparo de certificado ficam vinculados ao SHA atual."
+      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
     },
     {
       "id": "OBL-004",
@@ -95,7 +95,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "O emissor e o verificador autenticados SOLVERIT_SESSION_REVIEW_V1 estao na futura etapa B. A etapa A fornece apenas produtores para que o workflow trusted possa existir."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-005",
@@ -118,7 +118,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Os controles de rejeicao real de parecer revogado/stale e CI autenticado dependem de workflows e ensaios operacionais da etapa B; nesta etapa foram testados apenas parsers e produtores."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-006",
@@ -143,7 +143,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Instalacao em branches protegidas e permissao de merge sao atos posteriores que necessitam revisao e autorizacao; nenhum workflow ou ruleset foi alterado nesta PR."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-007",
@@ -169,7 +169,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Leitura efetiva de rulesets e configuracao de required checks dependem do deployment administrativo nas duas bases protegidas, nao pertencem ao bootstrap de produtores."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-008",
@@ -196,7 +196,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Ensaio real, aprovacao em sessao separada, recibo de governanca e fechamento de F-714-06 estao condicionados a integracao revisada das etapas A e B."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     },
     {
       "id": "OBL-009",
@@ -216,7 +216,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Consultas GitHub da issue #714 e PR #760, bem como da epica #702, mostram que permanecem abertas, sem efeitos colaterais desta etapa."
+      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
     },
     {
       "id": "OBL-010",
@@ -244,7 +244,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "A etapa A mantem policy, workflows e rulesets intactos; a ativacao condicionada exige instalacao protegida, revisao e read-back posteriores."
+      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
     }
   ],
   "source_coverage": [
@@ -284,14 +284,14 @@
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "Four original Stage A scripts retain their inherited sources; session_review_packet_handoff.py has A-002/A-004 corrections; Stage B must synchronize its parser and verify blobs before trusted installation.",
+    "applicability_reason": "The trusted canonical parser remains at scripts/prepare_session_review_packet.py in develop; the candidate changes only its SHA comparison path guard and adversarial tests, without creating duplicate producers.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "Procedimento de bootstrap deixa Stage B explicitamente pendente e confirma ausencia de workflow/policy/ruleset no diff.",
+    "applicability_reason": "No normative documentation or workflow file changed; the policy remains disabled and the issue explicitly retains Stage B operational obligations.",
     "old_contract_terms": [
       "session review trusted",
       "F-714-06",
@@ -310,9 +310,9 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "scripts/session_review_evidence.py",
-      "PR #763 scripts/session_review_evidence.py"
+      "scripts/prepare_session_review_packet.py",
+      "tests/test_session_review_trusted_producers.py",
+      ".github/workflows/session-review-certificate.yml"
     ]
   },
   "scope_reduction_review": {
@@ -332,15 +332,13 @@
       "OBL-009"
     ],
     "evidence": [
-      "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 52 passed com controle adicional JUnit inconsistente no HEAD exato 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
-      "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
-      "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
-      "A-004: 27 tests passed on material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
-      "A-005: 27 tests passed on exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
-      "A-006: 34 exact material tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy.",
-      "A-007: old parser rejected by 14 distinct status/disabled mutation tests; fixed exact-head 60/60 passing, GitHub authenticated bundle run 42553528354.",
-      "A-008: six DTD-negative combinations across UTF-8/UTF-16 in parser, producer and ZIP; old parser fails 3 UTF-16 cases and corrected 60/60 pass at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1. Negative original log evidence/a-008-negative-original.log sha256=cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be"
+      "Current issue #762 source content confirmed unchanged; SHA-256 primary 762 issue snapshot bound to exact material.",
+      "Current PR #776 changes only authenticated GET SHA compare parser plus its negative regression test, preserving protected-base trusted boundary; git diff base..material exactly 2 paths.",
+      "Code from protected base rejects legitimate compare due ellipsis; PR #776 permits immutable 40-hex...40-hex only while preventing traversal/doubled dot in owner/repo (negative oracle distinguishes old d306 accept from corrected 68f9 reject).",
+      "61 pytest directed cases and 23 unittest solo cases passed against authenticated GitHub material SHA 68f9c697d409cc11b326bf06fba19da8fa109379; raw hashed evidence pr776-exact-pytest.log plus original mutation pr776-negative-original.log.",
+      "CI authenticated GitHub Repository CI run #42627744684 and Delivery audit workspace #42627744660 completed/success at material head.",
+      "No workflow/policy/ruleset/branch change, no self-approval. OBL-001/004/005/006/007/008/010 remain deferred; PRs #760 and #763 and issues #762/#714/#702 open.",
+      "No independent auditor conclusion asserted; the current delivery is a partial prerequisite hotfix for Stage B."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,
