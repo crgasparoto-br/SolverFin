@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "ca4b0665c0653c9eddbe5c879d45d80bc8959fe7e140b449007603bd446270dc"
+    "sha256": "60858714190c1c399135e5c92bbf049d726f11985c773ee764b4b267e4f1c15b"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -49,7 +49,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Testes 170/170 incluem adversariais; workflow privilegiado consulta apenas source de protected base e nao executa scripts da branch candidata; .github/workflows/session-review.yml e tests/test_session_review_verifier.py."
+      "rationale": "Testes 174/174 incluem adversariais; workflow privilegiado consulta apenas source de protected base e nao executa scripts da branch candidata; .github/workflows/session-review.yml e tests/test_session_review_verifier.py."
     },
     {
       "id": "OBL-003",
@@ -108,7 +108,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "scripts/session_review.py, verify_session_review.py, session_review_checks.py e session_review_evidence.py rejeitam watermark, comentario stale, SHA, usuario, historico CI e artificios; suite de contrato 170/170."
+      "rationale": "scripts/session_review.py, verify_session_review.py, session_review_checks.py e session_review_evidence.py rejeitam watermark, comentario stale, SHA, usuario, historico CI e artificios; suite de contrato 174/174."
     },
     {
       "id": "OBL-006",
@@ -315,11 +315,13 @@
     ],
     "evidence": [
       "Fonte primaria issue #762 vinculada por SHA-256 da transcricao existente; nenhuma conclusao da PR ou do implementador usada como fonte da especificacao.",
-      "Local authenticated checkout material HEAD 16d4463b: 170/170 testes direcionados PASS, 23/23 testes solo PASS; evidencia bruta evidence/governance-pytest.txt.",
+      "Local authenticated checkout material HEAD 16d4463b: 174/174 testes direcionados PASS, 23/23 testes solo PASS; evidencia bruta evidence/governance-pytest.txt.",
       "GitHub Actions Repository CI #42637767915 completed/success no HEAD atual; Session review contract #42637767620 e Solo bootstrap #42637767627 success; Delivery workspace #42637767672 success.",
       "Contratos de protecao nao promovidos: policy mode=disabled, PR em draft, Etapa B ainda sem instalacao correspondente em develop/main e sem ensaios operacionais M2; obrigacoes OBL-001/004/006/007/008 explicitamente deferred.",
       "Regressao A-001..A-008 e R-001 da PR #770 preservada nos produtores trusted de develop; os testes novos preservam A-008 em UTF-16 e demais JUnit invariants.",
-      "CI material verde nao substitui parecer independente ou certificado final de aprovacao de sessao."
+      "CI material verde nao substitui parecer independente ou certificado final de aprovacao de sessao.",
+      "A-76312 fix: legacy two-session v1 accepted under enabled opt-in, while explicit GitHub recovery is authenticated on entry and before check publication; 4 new full route pytest scenarios at material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+      "Prior issue obligations OBL-001/004/006/007/008 remain deferred; no merge or operational M2 change was made for this fix."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

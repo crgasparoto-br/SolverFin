@@ -1,17 +1,17 @@
 {
   "schema_version": 1,
-  "material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+  "material_head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
   "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
   "evidence": [
     {
       "evidence_id": "EVID-762-PYTEST",
       "kind": "behavioral",
       "path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-      "sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
-      "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+      "sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+      "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
       "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
       "freshness_policy": "exact-material-head",
-      "producer": "pytest 9.0.2 / Python 3.13.5 on authenticated Git checkout of run 42637767672; CI exact-SHA run 42637767915; contract run 42637767620",
+      "producer": "pytest 9.0.2 / Python 3.13.5 on CI bundle run 42657603233, artifact 13692267791; solo suite 23 pass; contract run 42657603225",
       "status": "passed"
     }
   ]

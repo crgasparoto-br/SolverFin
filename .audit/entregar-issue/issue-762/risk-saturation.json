@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+  "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
   "families": [
     {
       "family": "authorization",
@@ -44,7 +44,7 @@
       "dimensions": [
         {
           "surface": "bootstrap-policy-safety",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170.",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174.",
           "control_ids": [
             "NEG-010"
           ],
@@ -95,25 +95,97 @@
     },
     {
       "family": "structural-contract",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "A-76312 requires mode-sensitive provenance and fail-closed Git history.",
+      "control_ids": [
+        "NEG-A76312-LEGACY",
+        "NEG-A76312-MERGE",
+        "NEG-HIST-002-1",
+        "NEG-HIST-003-3",
+        "NEG-HIST-005-4",
+        "NEG-HIST-005-5",
+        "NEG-HIST-005-6",
+        "NEG-HIST-007-7",
+        "NEG-HIST-007-8",
+        "NEG-HIST-007-9",
+        "NEG-HIST-008-10",
+        "NEG-HIST-008-11",
+        "NEG-HIST-008-12"
+      ],
+      "dimensions": [
+        {
+          "surface": "review-provenance-routing",
+          "reason": "Four actual integration cases cover V1/opt-in and linear/merge combinations.",
+          "control_ids": [
+            "NEG-A76312-LEGACY",
+            "NEG-A76312-MERGE"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "critical-certificate-inventory",
+          "reason": "Inherited audit escape A-002, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-002-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "trusted-candidate-separation",
+          "reason": "Inherited audit escape A-003, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-003-3"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-parser",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-4",
+            "NEG-HIST-007-7",
+            "NEG-HIST-008-10"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-writer",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-5",
+            "NEG-HIST-007-8",
+            "NEG-HIST-008-11"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-zip-consumer",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-6",
+            "NEG-HIST-007-9",
+            "NEG-HIST-008-12"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "documentation",
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NEG-762-DOCS"
+        "NEG-762-DOCS",
+        "NEG-HIST-002-2"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
           "reason": "ADR 0019 e manual declaram mode=disabled e nao afirmam M2 como executado.",
           "control_ids": [
-            "NEG-762-DOCS"
+            "NEG-762-DOCS",
+            "NEG-HIST-002-2"
           ],
           "status": "passed"
         }

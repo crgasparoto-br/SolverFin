@@ -1,30 +1,23 @@
-HEAD: fc93807c92bf5bc4bbfaa0e83161c597245280d4
-MATERIAL_HEAD_SHA: fc93807c92bf5bc4bbfaa0e83161c597245280d4
-BASE_SHA: 96eca4f0046d07a29dba459a4a048e4bd47df2f4
-SOURCE: authenticated GitHub Delivery audit workspace run 42637767672 artifact 13684511214; Git objects restored and verified
+Repository: crgasparoto-br/SolverFin
+PR: #763 | issue: #762 | base: 96eca4f0046d07a29dba459a4a048e4bd47df2f4
+Current material HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+Git bundle: Delivery audit workspace run 42657603233, artifact 13692267791
+python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+174 passed (pytest on immutable restored Git bundle, exit 0)
+python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -q
+23 tests OK, exit 0
+A-76312 integration cases: legacy-with-merge success, github-linear success, github-with-merge failure, malformed-legacy failure.
+No weakening of git history validation, policy enablement, Check Run writer or user identity controls.
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
 COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
 EXIT_CODE: 0
 REACHED: tests/test_session_review.py
-REACHED: tests/test_session_review_certificate.py
-REACHED: tests/test_session_review_verifier.py
-REACHED: tests/test_session_review_packet.py
-REACHED: tests/test_session_review_trusted_producers.py
-........................................................................ [ 42%]
-........................................................................ [ 84%]
-..........................                                               [100%]
-170 passed in 0.29s
-COMMAND: python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -q
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
 EXIT_CODE: 0
-----------------------------------------------------------------------
-Ran 23 tests in 0.106s
-
-OK
-COMMAND: git diff --check BASE MATERIAL
-EXIT_CODE: 0; no output
-GITHUB: Repository CI run 42637767915 completed/success at material exact SHA
-GITHUB: Session review contract tests 42637767620 completed/success at material exact SHA
-GITHUB: Solo audit bootstrap 42637767627 completed/success at material exact SHA
-GITHUB: Delivery audit workspace 42637767672 completed/success at material exact SHA
-NEGATIVE ENVIRONMENT CHECK: Verify certified handoff provenance run 42637767655 correctly BLOCKED handoff base mismatch for stale previous certificate.
-NEGATIVE ENVIRONMENT CHECK: Session review evidence run 42637767621 correctly BLOCKED exact SHA certificate is not bound to this PR.
-These blocked workflows are NOT counted as green; a new certificate must be published and rechecked.
+REACHED: tests/test_session_review_certificate.py
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review_verifier.py
+REACHED: test_complete_review_route_selects_provenance_without_bypassing_trust

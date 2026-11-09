@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+  "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
   "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
   "creations": [
     {
@@ -33,7 +33,7 @@
       "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
       "search": {
         "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..fc93807c92bf5bc4bbfaa0e83161c597245280d4 -- tests/",
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
           "python -m pytest --collect-only -q tests/test_session_review.py"
         ],
         "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
@@ -42,7 +42,7 @@
           {
             "path": "tests/test_session_review.py",
             "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 170 exact material pass",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
             "comparison": "Newly added file compared against protected base and reached in runner."
           }
         ]
@@ -52,18 +52,18 @@
       "disposition": "keep",
       "coverage_before": [],
       "coverage_after": [
-        "Failure-mode and authentic exact-SHA behavior verified in 170-case material suite."
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
         "reached_tests": [
           "tests/test_session_review.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
       }
     },
     {
@@ -73,7 +73,7 @@
       "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
       "search": {
         "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..fc93807c92bf5bc4bbfaa0e83161c597245280d4 -- tests/",
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
           "python -m pytest --collect-only -q tests/test_session_review_certificate.py"
         ],
         "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
@@ -82,7 +82,7 @@
           {
             "path": "tests/test_session_review_certificate.py",
             "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 170 exact material pass",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
             "comparison": "Newly added file compared against protected base and reached in runner."
           }
         ]
@@ -92,28 +92,28 @@
       "disposition": "keep",
       "coverage_before": [],
       "coverage_after": [
-        "Failure-mode and authentic exact-SHA behavior verified in 170-case material suite."
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
         "reached_tests": [
           "tests/test_session_review_certificate.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
       }
     },
     {
       "path": "tests/test_session_review_verifier.py",
       "operation": "added",
-      "scenario": "Trusted GitHub exact-SHA workflow/provenance/session-review validation (including falsification and regression controls).",
+      "scenario": "Validated session routing and trusted Github provenance on PR histories with merge commits; A-76312 full evaluate test.",
       "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
       "search": {
         "queries": [
-          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..fc93807c92bf5bc4bbfaa0e83161c597245280d4 -- tests/",
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
           "python -m pytest --collect-only -q tests/test_session_review_verifier.py"
         ],
         "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
@@ -122,28 +122,28 @@
           {
             "path": "tests/test_session_review_verifier.py",
             "case": "Real positive, negative and regression cases in newly added file",
-            "oracle": "pytest exit 0 and fail-closed asserts; 170 exact material pass",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
             "comparison": "Newly added file compared against protected base and reached in runner."
           }
         ]
       },
       "decision": "new-test-required",
-      "justification": "Extend trusted producer and consumer regression coverage without removing legacy tests.",
+      "justification": "Non-linear GitHub remains fail-closed on opt-in, while legacy v1 is accepted with authentic separate session references.",
       "disposition": "keep",
       "coverage_before": [],
       "coverage_after": [
-        "Failure-mode and authentic exact-SHA behavior verified in 170-case material suite."
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
         "reached_tests": [
           "tests/test_session_review_verifier.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
       }
     }
   ]

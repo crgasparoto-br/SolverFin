@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+  "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
   "requirements": [
     {
       "requirement_id": "REQ-762-002",
@@ -17,12 +17,12 @@
       "positive_control": {
         "id": "POS-002",
         "status": "passed",
-        "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
+        "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
-        "observed": "170/170 targeted pytest cases passed on authenticated material HEAD; 23/23 solo cases passed; CI Repository #42637767915 terminal success.",
+        "observed": "174/174 pytest cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd; solo 23 OK; evidence in governance-pytest.txt.",
         "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
         "evidence_kind": "behavioral",
         "evidence_id": "EVID-762-PYTEST"
       },
@@ -35,13 +35,13 @@
           "failure_mode": "Executar o codigo candidato no contexto privilegiado de checks:write, produzindo aprovacao autoinduzida.",
           "plausible_wrong_implementation": "Executar o codigo candidato no contexto privilegiado de checks:write, produzindo aprovacao autoinduzida.",
           "control_type": "test",
-          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py; conferir test_workflow_never_checkout_candidate_under_writable_token e casos similares no arquivo de testes.",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "behavioral",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -57,11 +57,11 @@
         {
           "id": "REG-002",
           "status": "passed",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
-          "observed": "170 passed in material exact HEAD; 23 solo passed; GitHub contract check #42637767620 succeeded.",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "observed": "174 passed on authenticated material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
         }
       ],
       "obligation_control_map": [
@@ -74,7 +74,7 @@
         {
           "risk_family": "semantic-effect",
           "surface": "trusted-runner-boundary",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170."
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174."
         }
       ],
       "quantitative_evidence_required": false
@@ -94,12 +94,12 @@
       "positive_control": {
         "id": "POS-003",
         "status": "passed",
-        "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
+        "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
-        "observed": "170/170 targeted pytest cases passed on authenticated material HEAD; 23/23 solo cases passed; CI Repository #42637767915 terminal success.",
+        "observed": "174/174 pytest cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd; solo 23 OK; evidence in governance-pytest.txt.",
         "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
         "evidence_kind": "behavioral",
         "evidence_id": "EVID-762-PYTEST"
       },
@@ -112,13 +112,13 @@
           "failure_mode": "Aceitar certificado autodeclarado por SHA de arquivo sem validar o produtor trusted na base protegida.",
           "plausible_wrong_implementation": "Aceitar certificado autodeclarado por SHA de arquivo sem validar o produtor trusted na base protegida.",
           "control_type": "test",
-          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py; conferir test_trusted_producer_runs_official_validator_or_fails_closed e casos similares no arquivo de testes.",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "behavioral",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -134,11 +134,11 @@
         {
           "id": "REG-003",
           "status": "passed",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
-          "observed": "170 passed in material exact HEAD; 23 solo passed; GitHub contract check #42637767620 succeeded.",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "observed": "174 passed on authenticated material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
         }
       ],
       "obligation_control_map": [
@@ -151,7 +151,7 @@
         {
           "risk_family": "semantic-effect",
           "surface": "critical-certificate-provenance",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170."
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174."
         }
       ],
       "quantitative_evidence_required": false
@@ -162,7 +162,8 @@
         "OBL-005"
       ],
       "risk_families": [
-        "semantic-effect"
+        "semantic-effect",
+        "structural-contract"
       ],
       "source_texts": [
         "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente."
@@ -171,12 +172,12 @@
       "positive_control": {
         "id": "POS-005",
         "status": "passed",
-        "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
+        "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
-        "observed": "170/170 targeted pytest cases passed on authenticated material HEAD; 23/23 solo cases passed; CI Repository #42637767915 terminal success.",
+        "observed": "174/174 pytest cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd; solo 23 OK; evidence in governance-pytest.txt.",
         "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
         "evidence_kind": "behavioral",
         "evidence_id": "EVID-762-PYTEST"
       },
@@ -189,13 +190,13 @@
           "failure_mode": "Reutilizar CI verde de outra PR ou base anterior com o mesmo HEAD, ignorando um inventario parcial.",
           "plausible_wrong_implementation": "Reutilizar CI verde de outra PR ou base anterior com o mesmo HEAD, ignorando um inventario parcial.",
           "control_type": "test",
-          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py; conferir test_foreign_pr_or_stale_base_cannot_reuse_green_technical_ci e casos similares no arquivo de testes.",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "behavioral",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -205,17 +206,502 @@
               "status": "passed"
             }
           ]
+        },
+        {
+          "id": "NEG-A76312-LEGACY",
+          "risk_family": "structural-contract",
+          "surface": "review-provenance-routing",
+          "dimension": "legacy-v1-versus-opt-in-history",
+          "failure_mode": "Optional GitHub history validation is applied to v1 or skipped for explicit recovery.",
+          "plausible_wrong_implementation": "Unconditional GitHub linearity blocks legitimate V1; disabling it globally accepts forged GitHub recovery.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py -k complete_review_route_selects_provenance_without_bypassing_trust",
+          "expected": "V1 two real sessions accepted without Git linearization on merged PR; malformed v1 rejected",
+          "observed": "Four new parameterized cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-A76312-LEGACY-S1",
+              "surface": "review-provenance-routing",
+              "dimension": "alternate-legacy-v1-versus-opt-in-history",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-A76312-MERGE",
+          "risk_family": "structural-contract",
+          "surface": "review-provenance-routing",
+          "dimension": "nonlinear-merge-fail-closed",
+          "failure_mode": "Optional GitHub history validation is applied to v1 or skipped for explicit recovery.",
+          "plausible_wrong_implementation": "Unconditional GitHub linearity blocks legitimate V1; disabling it globally accepts forged GitHub recovery.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py -k complete_review_route_selects_provenance_without_bypassing_trust",
+          "expected": "Explicit GitHub recovered history with merge commit is rejected, linear recovered history accepted and rechecked",
+          "observed": "Four new parameterized cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "NEG-A76312-MERGE-S1",
+              "surface": "review-provenance-routing",
+              "dimension": "alternate-nonlinear-merge-fail-closed",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-002-1",
+          "risk_family": "structural-contract",
+          "surface": "critical-certificate-inventory",
+          "dimension": "optional-and-foreign-artifacts",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Hard-coded eight critical artifact keys reject a valid seven-artifact certificate.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Seven canonical controlled critical items are accepted; tampered/foreign optional items are rejected.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "seven-items",
+              "surface": "critical-certificate-inventory",
+              "dimension": "no-provenance",
+              "status": "passed",
+              "evidence": "tests/test_session_review_packet.py"
+            },
+            {
+              "id": "tampered-declared",
+              "surface": "critical-certificate-inventory",
+              "dimension": "digest-mismatch",
+              "status": "passed",
+              "evidence": "tests/test_session_review_packet.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-003-3",
+          "risk_family": "structural-contract",
+          "surface": "trusted-candidate-separation",
+          "dimension": "wrong-source-or-lifecycle-binding",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Published certification remained bound to an outdated base, resulting in dirty merge state.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Base is an ancestor of new material, GitHub reports mergeable and publishes merge preview.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "current-develop",
+              "surface": "trusted-candidate-separation",
+              "dimension": "parent-ancestry",
+              "status": "passed",
+              "evidence": "GitHub verified commit ancestry and original workflow runs"
+            },
+            {
+              "id": "no-policy-bypass",
+              "surface": "trusted-candidate-separation",
+              "dimension": "protected-branch-unchanged",
+              "status": "passed",
+              "evidence": "GitHub verified commit ancestry and original workflow runs"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-005-4",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "namespace-qualified-test-result",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Only look for exact, unqualified XML failure/error/skipped tags while accepting namespace-qualified children.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old code accepts malicious XML and new code rejects it in all 3 code paths.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a005-error",
+              "surface": "junit-evidence-parser",
+              "dimension": "namespace-qualified-test-result",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-skipped",
+              "surface": "junit-evidence-writer",
+              "dimension": "namespace-failure-does-not-write-evidence",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "namespace-failure-with-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-005-5",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "namespace-failure-does-not-write-evidence",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Only look for exact, unqualified XML failure/error/skipped tags while accepting namespace-qualified children.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old code accepts malicious XML and new code rejects it in all 3 code paths.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a005-error",
+              "surface": "junit-evidence-parser",
+              "dimension": "namespace-qualified-test-result",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-skipped",
+              "surface": "junit-evidence-writer",
+              "dimension": "namespace-failure-does-not-write-evidence",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "namespace-failure-with-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-005-6",
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "namespace-failure-with-valid-hashes",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Only look for exact, unqualified XML failure/error/skipped tags while accepting namespace-qualified children.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old code accepts malicious XML and new code rejects it in all 3 code paths.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a005-error",
+              "surface": "junit-evidence-parser",
+              "dimension": "namespace-qualified-test-result",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-skipped",
+              "surface": "junit-evidence-writer",
+              "dimension": "namespace-failure-does-not-write-evidence",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a005-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "namespace-failure-with-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-007-7",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "junit-status-disabled-attribute",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Ignore non-XML-node JUnit disabled and testcase status failure indicators, counting disabled and failed cases as green evidence.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "14 tests fail on original; corrected code rejects input in parser/producer/ZIP with coherent metadata hashes.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a007-parser",
+              "surface": "junit-evidence-parser",
+              "dimension": "disabled-suite-aggregate",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-writer",
+              "surface": "junit-evidence-writer",
+              "dimension": "failed-testcase-no-output",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "untrusted-status-with-consistent-hash",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-007-8",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "no-false-positive-evidence-output",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Ignore non-XML-node JUnit disabled and testcase status failure indicators, counting disabled and failed cases as green evidence.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "14 tests fail on original; corrected code rejects input in parser/producer/ZIP with coherent metadata hashes.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a007-parser",
+              "surface": "junit-evidence-parser",
+              "dimension": "disabled-suite-aggregate",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-writer",
+              "surface": "junit-evidence-writer",
+              "dimension": "failed-testcase-no-output",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "untrusted-status-with-consistent-hash",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-007-9",
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "valid-hash-malicious-status-xml",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Ignore non-XML-node JUnit disabled and testcase status failure indicators, counting disabled and failed cases as green evidence.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "14 tests fail on original; corrected code rejects input in parser/producer/ZIP with coherent metadata hashes.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a007-parser",
+              "surface": "junit-evidence-parser",
+              "dimension": "disabled-suite-aggregate",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-writer",
+              "surface": "junit-evidence-writer",
+              "dimension": "failed-testcase-no-output",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a007-zip",
+              "surface": "junit-zip-consumer",
+              "dimension": "untrusted-status-with-consistent-hash",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-008-10",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "utf16-entity-expansion",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Pre-scan raw XML bytes for ASCII <!DOCTYPE and <!ENTITY while ElementTree decodes UTF-16 and expands internal entities.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old parser yields a successful testcase; new parser rejects at DTD declaration in parser/writer/ZIP",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a008-external",
+              "surface": "junit-evidence-writer",
+              "dimension": "utf16-external-dtd",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-element",
+              "surface": "junit-zip-consumer",
+              "dimension": "utf16-element-declaration-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-positive",
+              "surface": "junit-evidence-parser",
+              "dimension": "valid-utf16-predefined-entity",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-008-11",
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-dtd-output-rejection",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Pre-scan raw XML bytes for ASCII <!DOCTYPE and <!ENTITY while ElementTree decodes UTF-16 and expands internal entities.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old parser yields a successful testcase; new parser rejects at DTD declaration in parser/writer/ZIP",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a008-external",
+              "surface": "junit-evidence-writer",
+              "dimension": "utf16-external-dtd",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-element",
+              "surface": "junit-zip-consumer",
+              "dimension": "utf16-element-declaration-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-positive",
+              "surface": "junit-evidence-parser",
+              "dimension": "valid-utf16-predefined-entity",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
+        },
+        {
+          "id": "NEG-HIST-008-12",
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-dtd-valid-archive-hashes",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Pre-scan raw XML bytes for ASCII <!DOCTYPE and <!ENTITY while ElementTree decodes UTF-16 and expands internal entities.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Old parser yields a successful testcase; new parser rejects at DTD declaration in parser/writer/ZIP",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "a008-external",
+              "surface": "junit-evidence-writer",
+              "dimension": "utf16-external-dtd",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-element",
+              "surface": "junit-zip-consumer",
+              "dimension": "utf16-element-declaration-valid-hashes",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            },
+            {
+              "id": "a008-positive",
+              "surface": "junit-evidence-parser",
+              "dimension": "valid-utf16-predefined-entity",
+              "status": "passed",
+              "evidence": "tests/test_session_review_trusted_producers.py"
+            }
+          ]
         }
       ],
       "regression_controls": [
         {
           "id": "REG-005",
           "status": "passed",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
-          "observed": "170 passed in material exact HEAD; 23 solo passed; GitHub contract check #42637767620 succeeded.",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "observed": "174 passed on authenticated material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
+        },
+        {
+          "id": "REG-A76312",
+          "status": "passed",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py -k complete_review_route_selects_provenance_without_bypassing_trust",
+          "observed": "All four A-76312 cases passed; no check-success for malformed or non-linear GitHub recovery.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
         }
       ],
       "obligation_control_map": [
@@ -228,7 +714,37 @@
         {
           "risk_family": "semantic-effect",
           "surface": "stale-ci-run-selection",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170."
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "review-provenance-routing",
+          "reason": "A-76312 regression: legacy v1 and explicit GitHub recovery must take independent paths without bypassing history authentication."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "critical-certificate-inventory",
+          "reason": "Cumulative audit escape A-002 replays target trusted producer/consumer contract."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "trusted-candidate-separation",
+          "reason": "Cumulative audit escape A-003 replays target trusted producer/consumer contract."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "reason": "Cumulative audit escape A-005 replays target trusted producer/consumer contract."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "reason": "Cumulative audit escape A-005 replays target trusted producer/consumer contract."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "reason": "Cumulative audit escape A-005 replays target trusted producer/consumer contract."
         }
       ],
       "quantitative_evidence_required": false
@@ -248,12 +764,12 @@
       "positive_control": {
         "id": "POS-009",
         "status": "passed",
-        "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
+        "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
-        "observed": "170/170 targeted pytest cases passed on authenticated material HEAD; 23/23 solo cases passed; CI Repository #42637767915 terminal success.",
+        "observed": "174/174 pytest cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd; solo 23 OK; evidence in governance-pytest.txt.",
         "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
         "evidence_kind": "behavioral",
         "evidence_id": "EVID-762-PYTEST"
       },
@@ -266,13 +782,13 @@
           "failure_mode": "Fechar F-714-06 e PR #760 apenas porque scripts estao presentes, sem atestacao real.",
           "plausible_wrong_implementation": "Fechar F-714-06 e PR #760 apenas porque scripts estao presentes, sem atestacao real.",
           "control_type": "test",
-          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py; conferir test_disabled_or_missing_policy_can_only_publish_failure e casos similares no arquivo de testes.",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "behavioral",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -288,11 +804,11 @@
         {
           "id": "REG-009",
           "status": "passed",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
-          "observed": "170 passed in material exact HEAD; 23 solo passed; GitHub contract check #42637767620 succeeded.",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "observed": "174 passed on authenticated material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
         }
       ],
       "obligation_control_map": [
@@ -305,7 +821,7 @@
         {
           "risk_family": "semantic-effect",
           "surface": "open-issue-guard",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170."
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174."
         }
       ],
       "quantitative_evidence_required": false
@@ -326,12 +842,12 @@
       "positive_control": {
         "id": "POS-010",
         "status": "passed",
-        "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
+        "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "expected": "Execucao completa dos cenarios direcionados no material HEAD.",
-        "observed": "170/170 targeted pytest cases passed on authenticated material HEAD; 23/23 solo cases passed; CI Repository #42637767915 terminal success.",
+        "observed": "174/174 pytest cases passed at exact material HEAD d6b74862c721cccc3977e3cb5723ec2bc4560acd; solo 23 OK; evidence in governance-pytest.txt.",
         "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-        "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
         "evidence_kind": "behavioral",
         "evidence_id": "EVID-762-PYTEST"
       },
@@ -344,13 +860,13 @@
           "failure_mode": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
           "plausible_wrong_implementation": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
           "control_type": "test",
-          "procedure": "Executar python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py; conferir test_disabled_or_missing_policy_can_only_publish_failure e casos similares no arquivo de testes.",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "Controles negativos exigem ValueError/falha fechada sem Check Run success e sem executar codigo nao confiavel.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "behavioral",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -369,13 +885,13 @@
           "failure_mode": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
           "plausible_wrong_implementation": "Marcar mode=enabled e introduzir o check requerido antes da instalacao e dos ensaios protegidos.",
           "control_type": "procedure",
-          "procedure": "Inspecionar .github/session-review-policy.json e ADR 0019 no HEAD fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
           "expected": "A politica permanece disabled e a documentacao nao declara aprovacao M2.",
-          "observed": "Passed fail-closed tests from the 170-case material suite at current exact HEAD; see named cases in source and raw test transcript.",
+          "observed": "Named fail-closed controls passed among the 174 executed cases at material HEAD; transcript and source are available.",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
           "evidence_kind": "documentation",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "status": "passed",
           "sibling_cases": [
             {
@@ -385,17 +901,50 @@
               "status": "passed"
             }
           ]
+        },
+        {
+          "id": "NEG-HIST-002-2",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "wrong-source-or-lifecycle-binding",
+          "failure_mode": "Previously observed audit escape violates this contract dimension.",
+          "plausible_wrong_implementation": "Hard-coded eight critical artifact keys reject a valid seven-artifact certificate.",
+          "control_type": "test",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "expected": "Seven canonical controlled critical items are accepted; tampered/foreign optional items are rejected.",
+          "observed": "Full 174-case current material suite passed, preserving previous case and negative/regression tests; historical escape proven by original audit lineage.",
+          "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+          "evidence_kind": "behavioral",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "status": "passed",
+          "sibling_cases": [
+            {
+              "id": "seven-items",
+              "surface": "canonical-claims",
+              "dimension": "no-provenance",
+              "status": "passed",
+              "evidence": "tests/test_session_review_packet.py"
+            },
+            {
+              "id": "tampered-declared",
+              "surface": "canonical-claims",
+              "dimension": "digest-mismatch",
+              "status": "passed",
+              "evidence": "tests/test_session_review_packet.py"
+            }
+          ]
         }
       ],
       "regression_controls": [
         {
           "id": "REG-010",
           "status": "passed",
-          "head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
-          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py tests/test_session_review_trusted_producers.py",
-          "observed": "170 passed in material exact HEAD; 23 solo passed; GitHub contract check #42637767620 succeeded.",
+          "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+          "procedure": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+          "observed": "174 passed on authenticated material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
           "evidence": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
-          "evidence_sha256": "a7b34b60cb6777a87936aeb6050d68ef6ded1a1b3a584d89896e0df9e1f1b3fd"
+          "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
         }
       ],
       "obligation_control_map": [
@@ -408,7 +957,7 @@
         {
           "risk_family": "temporal-consistency",
           "surface": "bootstrap-policy-safety",
-          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 170/170."
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174."
         },
         {
           "risk_family": "documentation",
