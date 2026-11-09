@@ -20,7 +20,7 @@ import session_review_evidence as evidence
 import session_review_github as facts
 from session_review_checks import begin_check, finish_check, paged, review_watermark, write_api
 from session_review import (
-    ASSURANCE, POLICY_PATH, PREFIX, PROVENANCE_TYPE, allowed,
+    ASSURANCE, POLICY_PATH, PREFIX, allowed,
     canonical, digest, latest_review, require, review_snapshot, strict_json,
     validate_policy, verify_review,
 )
@@ -88,8 +88,6 @@ def same_head_not_shared(repo: str, number: int, head: str) -> None:
     active = [p for p in prs if p.get("state") == "open" and p.get("head", {}).get("sha") == head]
     require(len(active) == 1 and active[0].get("number") == number,
             "more than one open PR shares this commit; Check Runs are not per-PR")
-
-
 
 
 def event_watermark(policy: dict) -> int:
@@ -167,9 +165,6 @@ def prepare(repo: str, number: int, issue_number: int, initial: dict) -> tuple[d
                   "current_sha": ident["merge_preview_sha"], "mode": "exact"},
               "certification_event_sha256": digest(canonical(native["merge_preview"])),
               "sources": native["files"]}
-    if policy.get("implementation_provenance") == {"mode": "enabled", "type": PROVENANCE_TYPE}:
-        packet["implementation_provenance"] = facts.authenticated_implementation_provenance(
-            ident, packet, paged, collector.api)
     return packet, policy, passed
 
 
@@ -196,6 +191,9 @@ def evaluate(repo: str, number: int, issue_number: int, run_id: str) -> int:
         selected = latest_review(comments, policy, watermark=receipt["minimum_comment_id"])
         snap = review_snapshot(selected, repo, number)
         authenticate_operator(repo, selected["user"])
+        if facts.uses_github_implementation_session(selected, PREFIX):
+            packet["implementation_provenance"] = facts.authenticated_implementation_provenance(
+                packet["identity"], packet, paged, collector.api)
         valid = verify_review(selected, packet, policy, packet["sources"], passed)
         receipt.update(valid)
         # Inputs are mutable. Rebuild all authority and inspect the latest
@@ -209,6 +207,10 @@ def evaluate(repo: str, number: int, issue_number: int, run_id: str) -> int:
         require(review_snapshot(selected_again, repo, number) == snap,
                 "review superseded or revoked")
         same_head_not_shared(repo, number, head)
+        if "implementation_provenance" in packet:
+            require(facts.authenticated_implementation_provenance(
+                current, packet, paged, collector.api) == packet["implementation_provenance"],
+                "GitHub implementation provenance changed before publication")
         # Recheck the current technical gate and artifact identity. No cached
         # success is permitted after a new failing run or a changed artifact.
         fresh, _ = evidence.collect_verified(

@@ -50,6 +50,13 @@ nao pode produzir prova valida apenas por manter o nome do check.
 
 Antes da instalacao, preservar snapshot de rulesets e plano de rollback, mantendo `Delivery V2 gate`, PR obrigatoria e bloqueios de exclusao/force-push. Esta PR nao altera rulesets, nao faz merge e nao encerra a #714.
 
+**Compatibilidade A-76312:** a coleta de procedencia linear do GitHub e executada somente quando
+o parecer seleciona explicitamente `github-implementation-provenance`. Um parecer v1
+com duas referencias reais de sessao segue validado pelo contrato original, sem
+exigir linearidade da PR. Para a alternativa GitHub, a cadeia e autenticada no
+inicio e novamente antes da publicacao do Check Run; merges e tampering continuam
+bloqueados por falha fechada. Os testes de integracao exercitam o fluxo completo.
+
 ## Correcoes da auditoria A-763-03 a A-763-07 (05/11/2026)
 
 - **A-763-03:** referencia da PR atualizada para `Refs #762;`, sem relaxar o parser canonico.

@@ -94,6 +94,20 @@ def reconcile_target(packet: dict, live_identity: dict,
     return proof
 
 
+
+def uses_github_implementation_session(comment: dict, prefix: str) -> bool:
+    """Select optional GitHub history only for a review that explicitly uses it.
+
+    Malformed reviews are still rejected by verify_review; this routing helper
+    cannot turn a missing/invalid session into a valid legacy reference.
+    """
+    body = comment.get("body")
+    require(isinstance(body, str) and body.startswith(prefix), "review marker missing")
+    report = strict_json(body[len(prefix):])
+    sessions = report.get("sessions")
+    return isinstance(sessions, dict) and isinstance(sessions.get("implementation"), dict)
+
+
 def authenticated_implementation_provenance(identity: dict, metadata: dict, pages, api) -> dict:
     """Rebuild the linear material commit chain using only authenticated GitHub API."""
     repo, number = identity["repository"], identity["pull_request"]

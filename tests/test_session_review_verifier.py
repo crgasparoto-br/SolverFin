@@ -337,3 +337,102 @@ def test_junit_aggregate_counts_fail_closed_without_workflow_preflight():
             evidence.passed_cases(good.replace(initial, bad, 1))
     with pytest.raises(ValueError, match="JUnit"):
         evidence.passed_cases(good.replace(b'<testsuites tests="1">', b'<testsuites tests="0">'))
+
+@pytest.mark.parametrize("mode, expected", [
+    ("legacy-with-merge", "success"),
+    ("github-linear", "success"),
+    ("github-with-merge", "failure"),
+    ("malformed-legacy", "failure"),
+])
+def test_complete_review_route_selects_provenance_without_bypassing_trust(mode, expected):
+    """A-76312: run prepare -> select review -> verify -> final Check Run.
+
+    Optional GitHub linearity must not block real v1 session URLs on a merged
+    PR; an explicit recovered GitHub history must remain strictly linear.
+    """
+    from test_session_review import fixtures, policy, recovered_fixture
+
+    if mode.startswith("github"):
+        packet, report, comment, files, passed, selected_policy = recovered_fixture()
+        report["sessions"]["implementation"]["github"]["commits"] = ["f" * 40, HEAD]
+    else:
+        packet, report, comment, files, passed = fixtures()
+        selected_policy = policy()
+        selected_policy["implementation_provenance"] = {
+            "mode": "enabled", "type": verifier.facts.PROVENANCE_TYPE}
+        if mode == "malformed-legacy":
+            report["sessions"]["implementation"] = None
+
+    raw_policy = b"trusted-policy-bytes"
+    identity = {**packet["identity"], "policy_sha256": verifier.digest(raw_policy)}
+    report["identity"] = identity
+    comment.update({
+        "body": verifier.PREFIX + json.dumps(report),
+        "url": f"https://api.github.com/repos/{REPO}/issues/comments/20",
+        "issue_url": f"https://api.github.com/repos/{REPO}/issues/10",
+    })
+    native = {
+        "identity": identity, "requirements": packet["requirements"], "files": files,
+        "handoff": {"material_head_sha": MATERIAL, "certificate_sha256": "0" * 64},
+        "merge_preview": {"sha": identity["merge_preview_sha"]},
+    }
+    metadata = {
+        "artifact_id": packet.get("artifact_id", 42), "artifact_digest": packet["artifact_digest"],
+        "technical_check_ids": packet["technical_check_ids"],
+        "certified_at": packet["certified_at"],
+    }
+    workflow = (verifier.ROOT / evidence.WORKFLOW).read_text(encoding="utf-8")
+    published = []
+    git_reads = []
+
+    def file_at(_repo, path, _sha):
+        if path == verifier.POLICY_PATH:
+            return raw_policy.decode(), "0" * 64
+        if path == evidence.WORKFLOW:
+            return workflow, "1" * 64
+        if path == ".audit/entregar-issue/handoff-ready.json":
+            return "{}", "0" * 64
+        raise AssertionError("unexpected source: " + path)
+
+    def page(_repo, path, **_kwargs):
+        if path == "issues/10/comments":
+            return [comment]
+        if path == "pulls/10/commits":
+            git_reads.append(path)
+            return [{"sha": "f" * 40}, {"sha": HEAD}]
+        raise AssertionError("unexpected inventory: " + path)
+
+    def api(path):
+        if path == f"/repos/{REPO}/issues/comments/20":
+            return comment
+        if "/git/commits/" in path:
+            git_reads.append(path)
+            sha = path.rsplit("/", 1)[-1]
+            parents = [BASE] if sha == "f" * 40 else ["f" * 40]
+            if mode == "github-with-merge" and sha == HEAD:
+                parents.append("e" * 40)
+            return {"sha": sha, "parents": [{"sha": p} for p in parents]}
+        return {"head": {"sha": HEAD}, "base": {"sha": BASE}}
+
+    with patch.object(verifier, "begin_check", return_value=88), \
+         patch.object(verifier, "finish_check", side_effect=lambda *args: published.append(args)), \
+         patch.object(verifier, "review_watermark", return_value=0), \
+         patch.object(verifier, "event_watermark", return_value=0), \
+         patch.object(verifier, "same_head_not_shared"), \
+         patch.object(verifier, "live_identity", return_value=identity), \
+         patch.object(verifier, "trusted_policy_and_code", return_value=(selected_policy, raw_policy)), \
+         patch.object(verifier, "authenticate_operator"), \
+         patch.object(verifier, "reconcile"), \
+         patch.object(verifier, "native_material", return_value=MATERIAL), \
+         patch.object(verifier, "paged", side_effect=page), \
+         patch.object(verifier.collector, "file_at", side_effect=file_at), \
+         patch.object(verifier.collector, "collect", return_value=native), \
+         patch.object(verifier.collector, "api", side_effect=api), \
+         patch.object(verifier.evidence, "collect_verified", return_value=(metadata, passed)):
+        exit_code = verifier.evaluate(REPO, 10, 9, "12345")
+
+    assert exit_code == (0 if expected == "success" else 2)
+    assert len(published) == 1 and published[0][5] is (expected == "success")
+    assert (len(git_reads) == 0) if mode.startswith("legacy") or mode == "malformed-legacy" else len(git_reads) > 0
+    if mode == "github-linear":
+        assert git_reads.count("pulls/10/commits") == 2  # initial + final recheck
