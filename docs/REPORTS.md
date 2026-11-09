@@ -252,9 +252,68 @@ Na Projeção de caixa, **Todas as moedas** pode apresentar mais de dois blocos 
 - `filter-error`: erro local antes da consulta financeira, preservando os valores enviados para correcao;
 - `api-error`: falha segura ao carregar contas, cartoes ou relatorio, sem sucesso parcial.
 
+## Exportações CSV, XLSX e PDF — issue #692
+
+Em cada uma das visões `category-evolution` (evolução por categoria), `installments`
+(parcelas consolidadas) e `cash-flow` (projeção de caixa), os links **Baixar CSV**,
+**Baixar Excel** e **Baixar PDF** aparecem após os filtros quando o recorte canônico
+foi carregado, inclusive em estado vazio. O download é atendido por
+`GET /relatorios/export?view=<visao>&format=csv|xlsx|pdf`, dentro da sessão web
+autenticada, sem criar uma segunda fonte de cálculo. As três serializações recebem
+uma representação tabular comum construída exclusivamente dos dados da mesma API
+que alimenta a página: `/api/reports/category-evolution`, `/api/installments` ou
+`/api/cash-flow-projection`.
+
+A navegação de exportação envia os filtros selecionados da URL: visão, período,
+origem `accountId` ou `cardId` (quando a visão permite), categoria, status,
+horizonte, moeda e `profileId` opcional. `profileId` é enviado apenas à API
+canônica, que continua responsável por verificar autorização e isolamento;
+não há override livre de organização ou perfil financeiro. Valores e filtros
+inválidos são rejeitados, sem produzir arquivo ou corrigir silenciosamente a
+solicitação. Os downloads têm `Cache-Control: private, no-store` e
+`Content-Disposition: attachment`.
+
+**Conteúdo:** todos os arquivos identificam `view`, período e filtros
+aplicados. Cada tabela identifica sua moeda; a seleção `currency=all` produz
+blocos separados por moeda, sem conversão ou total multi-moeda. A evolução inclui
+períodos (chave, descrição e limites), receitas, despesas, resultado e hierarquia
+com série por período, total, média e percentuais originais da API, todos os
+montantes em unidades menores (`*_centavos`). Parcelas inclui indicadores,
+agrupamentos e parcelas consideradas; valores vêm do view-model compartilhado
+com a tela, incluindo exclusão de canceladas dos totais. Projeção inclui posição
+inicial/final, série diária integral e evidências por data/origem, usando
+diretamente os saldos e movimentos calculados pelo backend, incluindo valor
+em unidades menores e identidade das evidências.
+
+**Formatos e limites:**
+
+- **CSV:** UTF-8 com BOM, separador `;`, aspas escapadas, linhas de metadados
+  `view`/`period`/`filter` e seção `currency`/`table` antes dos cabeçalhos.
+  Célula sem valor (`null`) é campo vazio sem aspas; texto vazio é `""`,
+  permitindo reconstrução distinta.
+- **XLSX:** planilha OpenXML com aba `Contexto` e uma aba por tabela/seção de
+  moeda, valores numéricos preservados como células de número e textos como
+  strings, não fórmulas. Cabeçalhos fixos e larguras ajustadas facilitam a leitura;
+  planilhas são geradas sem macros. Células nulas são gravadas como células
+  vazias; texto vazio permanece uma string vazia tipada.
+- **PDF:** relatório A4 paginado, legível, com período, filtros e linhas de
+  detalhes por moeda. Para caracteres sem glifo na fonte WinAnsi padrão, exibe
+  uma referência visível `[U+XXXX]` e incorpora o texto Unicode original em
+  `/ActualText` (UTF-16BE), preservando cópia, extração e distinção semântica
+  entre um caractere e uma sequência textual literal semelhante. O PDF identifica
+  cada registro e sua seção/moeda; as linhas quebram por largura de fonte e
+  margens A4, inclusive em descrições longas. Células nulas são identificadas
+  como `<nulo>`. Não é relatório contábil/fiscal oficial.
+
+Texto controlado pelo usuário (nomes, descrições e rótulos) é neutralizado contra
+**formula injection** no CSV e XLSX, inclusive após quebras de linha. Recortes
+sem movimentos produzem arquivos válidos, com contexto e indicação de tabela
+sem dados. Não são exportados anexos, dados de outros perfis nem valores
+intermediários que não façam parte do relatório canônico.
+
 ## Fora do escopo atual
 
-Exportacao PDF/CSV/Excel, impressao formatada, comparacao com orcamento, drilldown da evolucao quando nao existir destino canonico fiel ao recorte, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
+Impressao formatada, comparacao com orcamento, drilldown da evolucao quando nao existir destino canonico fiel ao recorte, multiplas contas ou cartoes simultaneos, combinacao conta+cartao, conversao cambial e persistencia do estado da arvore.
 
 ## Testes
 

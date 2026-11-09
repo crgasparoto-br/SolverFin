@@ -13,6 +13,7 @@ import { renderInstallmentsView } from "./reports-installments-view.js";
 import {
   escapeReportHtml as escapeHtml,
   renderReportCurrencyOptions,
+  renderReportExportActions,
   renderReportHeading as renderHeading,
   renderReportState as renderState,
   renderReportsShell as renderShell,
@@ -96,7 +97,7 @@ interface ReportCategoryNode {
   children: ReportCategoryNode[];
 }
 
-interface CategoryEvolutionReport {
+export interface CategoryEvolutionReport {
   interval: ReportInterval;
   start: string;
   periodCount: number;
@@ -283,6 +284,16 @@ async function renderCategoryEvolutionView(
     availableCards,
     report.currencyBlocks.map((block) => block.currency),
   );
+  const exportParams = new URLSearchParams({
+    interval: filters.interval,
+    start: filters.start,
+    periods: String(filters.periods),
+    currency: filters.currency ?? "all",
+    ...(filters.profileId ? { profileId: filters.profileId } : {}),
+    ...(filters.accountId ? { accountId: filters.accountId } : {}),
+    ...(filters.cardId ? { cardId: filters.cardId } : {}),
+  });
+  const exportLinks = renderReportExportActions("category-evolution", exportParams);
   const visibleCurrencyBlocks = filters.currency
     ? report.currencyBlocks.filter((block) => block.currency === filters.currency)
     : report.currencyBlocks;
@@ -291,6 +302,7 @@ async function renderCategoryEvolutionView(
       heading +
         navigation +
         readyForm +
+        exportLinks +
         renderState(
           "empty",
           filters.currency
@@ -309,6 +321,7 @@ async function renderCategoryEvolutionView(
     heading +
       navigation +
       readyForm +
+      exportLinks +
       `<div data-report-state="ready" class="currency-report-list">${visibleCurrencyBlocks
         .map((block, blockIndex) => renderCategoryEvolutionAnalysis(report, block, blockIndex))
         .join("")}</div>` +
@@ -679,7 +692,7 @@ function formatPercentage(value: number): string {
   return new Intl.NumberFormat("pt-BR", { maximumFractionDigits: 2 }).format(value);
 }
 
-function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
+export function readEvolutionFilters(url: URL, referenceDate: Date): EvolutionFilters {
   const draft = readEvolutionFilterDraft(url, referenceDate);
   if (draft.invalid.currency) {
     throw new Error("Moeda inválida. Selecione uma moeda disponível ou Todas as moedas.");

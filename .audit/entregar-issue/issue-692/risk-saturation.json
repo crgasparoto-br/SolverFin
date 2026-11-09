@@ -1,0 +1,218 @@
+{
+  "schema_version": 1,
+  "head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-008-01",
+        "N692-008-02",
+        "N692-011-01",
+        "N692-011-02",
+        "N692-023-01",
+        "N692-023-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "request-target-override",
+          "reason": "Specific authorization scenario: all three SSR report links match current query; foreign profile rejected by API. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-008-02",
+            "N692-011-02",
+            "N692-023-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "session-target-binding",
+          "reason": "Specific authorization scenario: all three SSR report links match current query; foreign profile rejected by API. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-008-01",
+            "N692-011-01",
+            "N692-023-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-010-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "export-link-context",
+          "reason": "Specific reference-liveness scenario: SSR link exact query checks in all three views and error states. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-010-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-010-02",
+        "N692-013-01",
+        "N692-015-01",
+        "N692-023-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "period-filter-preservation",
+          "reason": "Specific temporal-consistency scenario: all three SSR report links match current query; foreign profile rejected by API. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-010-02",
+            "N692-013-01",
+            "N692-015-01",
+            "N692-023-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-010-03",
+        "N692-013-02",
+        "N692-015-02",
+        "N692-023-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "period-context-consistency",
+          "reason": "Specific temporal-destination scenario: all three SSR report links match current query; foreign profile rejected by API. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-010-03",
+            "N692-013-02",
+            "N692-015-02",
+            "N692-023-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-022-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once.",
+          "control_ids": [
+            "N692-022-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-006-01",
+        "N692-022-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "N692-006-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "single-canonical-producer",
+          "reason": "Specific structural-contract scenario: one API request per report snapshot; three serializers consume same canonical rows. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-022-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "N692-028-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Specific documentation scenario: docs/REPORTS.md documents CSV/XLSX/PDF and explicit currency/empty/PDF limits. Existing suite includes the indicated divergent outcome.",
+          "control_ids": [
+            "N692-028-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

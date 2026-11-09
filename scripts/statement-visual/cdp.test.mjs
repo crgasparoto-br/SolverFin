@@ -4,7 +4,31 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import test from "node:test";
 
-import { screenshot } from "./cdp.mjs";
+import { parseChromeDebugPort, screenshot } from "./cdp.mjs";
+
+test("accepts Chrome stderr DevTools readiness when profile-port evidence is delayed", () => {
+  const stderr = [
+    "[chrome] dbus not available",
+    "DevTools listening on ws://127.0.0.1:45491/devtools/browser/audit-session",
+  ].join("\n");
+  assert.equal(parseChromeDebugPort(stderr), 45491);
+});
+
+test("rejects invalid, foreign and missing DevTools listeners", () => {
+  assert.equal(parseChromeDebugPort(""), undefined);
+  assert.equal(
+    parseChromeDebugPort("DevTools listening on ws://192.168.0.1:45491/devtools/browser/a"),
+    undefined,
+  );
+  assert.equal(
+    parseChromeDebugPort("DevTools listening on ws://127.0.0.1:0/devtools/browser/a"),
+    undefined,
+  );
+  assert.equal(
+    parseChromeDebugPort("DevTools listening on ws://127.0.0.1:65536/devtools/browser/a"),
+    undefined,
+  );
+});
 
 test("screenshot retries one transient Chrome compositor timeout and preserves evidence", async () => {
   const dir = await mkdtemp(join(tmpdir(), "solverfin-cdp-test-"));

@@ -269,6 +269,19 @@ async function waitForExpression(cdp, expression, timeout = 10_000) {
   throw new Error(`Timed out waiting for expression: ${expression}`);
 }
 
+/**
+ * Chrome with an ephemeral debugging port may expose its listening socket in
+ * stderr before DevToolsActivePort becomes visible in the profile directory.
+ * The endpoint is still actively checked through /json/version before use.
+ */
+export function parseChromeDebugPort(output) {
+  const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d{1,5})\/devtools\/browser\//.exec(
+    output,
+  );
+  const port = Number(match?.[1]);
+  return Number.isInteger(port) && port > 0 && port <= 65_535 ? port : undefined;
+}
+
 async function waitForChromeDebugUrl({ chrome, profile, requestedPort, output, timeout = 30_000 }) {
   const started = Date.now();
   let debugPort = requestedPort > 0 ? requestedPort : undefined;
@@ -279,7 +292,7 @@ async function waitForChromeDebugUrl({ chrome, profile, requestedPort, output, t
     }
 
     if (debugPort === undefined) {
-      debugPort = await readDevToolsPort(profile);
+      debugPort = (await readDevToolsPort(profile)) ?? parseChromeDebugPort(output());
     }
 
     if (debugPort !== undefined) {
