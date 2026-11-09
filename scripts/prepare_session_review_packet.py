@@ -51,10 +51,13 @@ def api(path: str) -> dict | list:
     # GitHub's authenticated SHA compare endpoint uses a literal "..." separator.
     # Preserve the traversal guard for every other endpoint: only a canonical
     # immutable 40-hex SHA-to-SHA comparison may contain doubled dots.
-    safe_compare = re.fullmatch(
-        r"/repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/compare/[0-9a-f]{40}\.\.\.[0-9a-f]{40}",
+    compare_match = re.fullmatch(
+        r"/repos/[A-Za-z0-9][A-Za-z0-9-]*/([A-Za-z0-9][A-Za-z0-9_.-]*)"
+        r"/compare/[0-9a-f]{40}\.\.\.[0-9a-f]{40}",
         path,
-    ) is not None
+    )
+    # The only permitted doubled dots belong to the fixed three-dot SHA separator.
+    safe_compare = compare_match is not None and ".." not in compare_match.group(1)
     require(path.startswith("/repos/") and (".." not in path or safe_compare),
             "unsafe GitHub endpoint")
     process = subprocess.run(["gh", "api", "--method", "GET", path],

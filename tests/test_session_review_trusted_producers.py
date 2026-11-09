@@ -358,6 +358,12 @@ def test_trusted_github_api_allows_exact_sha_compare_but_never_traversal():
         f"/repos/{REPO}/compare/{BASE}...{HEAD}/extra",
         f"/repos/{REPO}/compare/{BASE}...refs/heads/develop",
         f"/repos/{REPO}/compare/{BASE}..{HEAD}",
+        f"/repos/../SolverFin/compare/{BASE}...{HEAD}",
+        f"/repos/./SolverFin/compare/{BASE}...{HEAD}",
+        f"/repos/crgasparoto-br/../compare/{BASE}...{HEAD}",
+        f"/repos/crgasparoto-br/./compare/{BASE}...{HEAD}",
+        f"/repos/crgasparoto..br/SolverFin/compare/{BASE}...{HEAD}",
+        f"/repos/crgasparoto-br/SolverFin..backup/compare/{BASE}...{HEAD}",
         f"/repos/{REPO}/contents/../private",
     ):
         with patch.object(collector.subprocess, "run") as run:
