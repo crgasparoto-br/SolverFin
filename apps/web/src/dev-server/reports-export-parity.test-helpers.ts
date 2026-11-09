@@ -182,9 +182,7 @@ function readPdfLines(pdf: Buffer): string[] {
     const marked = match[3] !== undefined;
     assert.equal(marked, originalHex !== undefined, "marked PDF text requires /ActualText");
     lines.push(
-      originalHex
-        ? pdfActualText(originalHex)
-        : (match[2] ?? "").replace(/\\([\\()])/gu, "$1"),
+      originalHex ? pdfActualText(originalHex) : (match[2] ?? "").replace(/\\([\\()])/gu, "$1"),
     );
   }
   return lines;

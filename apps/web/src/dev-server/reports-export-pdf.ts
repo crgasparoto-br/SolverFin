@@ -115,13 +115,7 @@ function pdfTextOperation(line: PdfLine): string {
   if (line.original === line.display) return text + " T*";
   // Helvetica is limited to WinAnsi. Preserve unsupported Unicode exactly in
   // accessible/copyable PDF text while showing a visible U+XXXX fallback.
-  return (
-    "/Span << /ActualText <" +
-    unicodePdfHex(line.original) +
-    "> >> BDC " +
-    text +
-    " EMC T*"
-  );
+  return "/Span << /ActualText <" + unicodePdfHex(line.original) + "> >> BDC " + text + " EMC T*";
 }
 
 export function serializeReportPdf(report: CanonicalReportExport): Buffer {
