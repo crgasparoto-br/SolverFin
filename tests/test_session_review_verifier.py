@@ -436,3 +436,25 @@ def test_complete_review_route_selects_provenance_without_bypassing_trust(mode, 
     assert (len(git_reads) == 0) if mode.startswith("legacy") or mode == "malformed-legacy" else len(git_reads) > 0
     if mode == "github-linear":
         assert git_reads.count("pulls/10/commits") == 2  # initial + final recheck
+
+
+def test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection():
+    """Real GitHub read must not send whitespace in the check_name query."""
+    from urllib.parse import parse_qs, urlsplit
+
+    prior = {"name": checks.CHECK_NAME, "head_sha": HEAD, "app": {"id": 15368},
+             "output": {"text": json.dumps({"review_comment_id": 17, "minimum_comment_id": 19})}}
+    with patch.object(checks, "paged", return_value=[prior]) as page:
+        assert checks.review_watermark(REPO, HEAD) == 19
+    path = page.call_args.args[1]
+    assert " " not in path and "(" not in path and ")" not in path
+    assert parse_qs(urlsplit("https://api.github.com/repos/" + REPO + "/" + path).query) == {
+        "check_name": [checks.CHECK_NAME], "filter": ["all"]}
+    assert page.call_args.kwargs == {"field": "check_runs"}
+
+    with patch.object(checks, "paged", return_value=[{**prior, "head_sha": BASE}]):
+        with pytest.raises(ValueError, match="foreign SHA"):
+            checks.review_watermark(REPO, HEAD)
+    with patch.object(checks, "paged", return_value=[{**prior, "output": {"text": "not-json"}}]):
+        with pytest.raises(ValueError):
+            checks.review_watermark(REPO, HEAD)

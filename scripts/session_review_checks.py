@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import subprocess
+from urllib.parse import quote
 
 import prepare_session_review_packet as collector
 from session_review import CHECK_NAME, canonical, require, strict_json
@@ -87,7 +88,7 @@ def finish_check(repo: str, head: str, check_id: int, run_id: str, receipt: dict
 
 
 def review_watermark(repo: str, head: str) -> int:
-    records = paged(repo, f"commits/{head}/check-runs?check_name={CHECK_NAME}&filter=all",
+    records = paged(repo, f"commits/{head}/check-runs?check_name={quote(CHECK_NAME, safe='')}&filter=all",
                     field="check_runs")
     watermark = 0
     for record in records:
