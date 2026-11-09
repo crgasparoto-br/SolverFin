@@ -48,7 +48,15 @@ def api_json(payload: bytes) -> dict | list:
 
 
 def api(path: str) -> dict | list:
-    require(path.startswith("/repos/") and ".." not in path, "unsafe GitHub endpoint")
+    # GitHub's authenticated SHA compare endpoint uses a literal "..." separator.
+    # Preserve the traversal guard for every other endpoint: only a canonical
+    # immutable 40-hex SHA-to-SHA comparison may contain doubled dots.
+    safe_compare = re.fullmatch(
+        r"/repos/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/compare/[0-9a-f]{40}\.\.\.[0-9a-f]{40}",
+        path,
+    ) is not None
+    require(path.startswith("/repos/") and (".." not in path or safe_compare),
+            "unsafe GitHub endpoint")
     process = subprocess.run(["gh", "api", "--method", "GET", path],
                              stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                              check=False, timeout=75)

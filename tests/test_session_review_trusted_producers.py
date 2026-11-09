@@ -338,3 +338,29 @@ def test_junit_valid_predefined_entities_remain_accepted(tmp_path, encoding):
             z.write(out / item, arcname=item)
     _, cases, _ = evidence.consume_zip(archive.getvalue())
     assert cases == {"suite::valid&safe"}
+
+
+def test_trusted_github_api_allows_exact_sha_compare_but_never_traversal():
+    """Trusted provenance must compare Git commits without weakening path safety."""
+    from types import SimpleNamespace
+    import prepare_session_review_packet as collector
+
+    canonical = f"/repos/{REPO}/compare/{BASE}...{HEAD}"
+    with patch.object(collector.subprocess, "run", return_value=SimpleNamespace(
+            returncode=0, stdout=b"{}", stderr=b"")) as run:
+        assert collector.api(canonical) == {}
+        run.assert_called_once()
+        assert run.call_args.args[0] == ["gh", "api", "--method", "GET", canonical]
+
+    for unsafe in (
+        f"/repos/{REPO}/../../compare/{BASE}...{HEAD}",
+        f"/repos/{REPO}/compare/{BASE}...{HEAD}/../secrets",
+        f"/repos/{REPO}/compare/{BASE}...{HEAD}/extra",
+        f"/repos/{REPO}/compare/{BASE}...refs/heads/develop",
+        f"/repos/{REPO}/compare/{BASE}..{HEAD}",
+        f"/repos/{REPO}/contents/../private",
+    ):
+        with patch.object(collector.subprocess, "run") as run:
+            with pytest.raises(ValueError, match="unsafe GitHub endpoint"):
+                collector.api(unsafe)
+            run.assert_not_called()
