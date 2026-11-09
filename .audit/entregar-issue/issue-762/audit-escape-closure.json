@@ -1,0 +1,381 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 762,
+    "pull_request_number": 770,
+    "material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+  },
+  "escapes": [
+    {
+      "escape_id": "A-002",
+      "escape_class": "critical-certificate-compatibility",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac",
+        "finding_id": "A-002",
+        "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
+        "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Hard-coded eight critical artifact keys reject a valid seven-artifact certificate.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Execute targeted regression on exact material to distinguish missing optional, foreign and modified artifacts.",
+        "expected": "Seven canonical controlled critical items are accepted; tampered/foreign optional items are rejected.",
+        "observed": "23 local Python tests passed including missing optional, conditional, foreign and digest attack variants.",
+        "evidence": "tests/test_session_review_packet.py"
+      },
+      "sibling_cases": [
+        {
+          "id": "seven-items",
+          "surface": "A-002",
+          "dimension": "no-provenance",
+          "status": "passed",
+          "evidence": "tests/test_session_review_packet.py"
+        },
+        {
+          "id": "tampered-declared",
+          "surface": "A-002",
+          "dimension": "digest-mismatch",
+          "status": "passed",
+          "evidence": "tests/test_session_review_packet.py"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "critical-certificate-inventory",
+          "dimension": "optional-and-foreign-artifacts"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "wrong-source-or-lifecycle-binding"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "session_review_packet_handoff.py",
+        "evidence": "tests/test_session_review_packet.py"
+      },
+      "detection_change": {
+        "skill_or_gate": "pytest critical certificate replay",
+        "control_id": "NC-003-REGRESSION-A-002",
+        "evidence": "issue-762/evidence/stage-a-pytest.log"
+      },
+      "trigger_terms": [
+        "certificate artifact inventory",
+        "stage A current develop",
+        "independent audit lineage"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-003",
+      "escape_class": "integration-base-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:16c9a843-cd9a-41c0-95da-f6695813b6ac",
+        "finding_id": "A-003",
+        "head_sha": "964a5e6e124c3f707d4ddc044e4fb3e852139352",
+        "audit_report_sha256": "9c4e7e7d6861d5d4b50ce7a3b7acc39a6d6c492de998090ce94feb5b71d866e5"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Published certification remained bound to an outdated base, resulting in dirty merge state.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Check GitHub PR mergeability after merging current develop into branch and revalidate source/bundle lineage.",
+        "expected": "Base is an ancestor of new material, GitHub reports mergeable and publishes merge preview.",
+        "observed": "PR 770 mergeable=true with authenticated current base and source bundle.",
+        "evidence": "GitHub pull/770 remote mergeable state and CI bundle"
+      },
+      "sibling_cases": [
+        {
+          "id": "current-develop",
+          "surface": "A-003",
+          "dimension": "parent-ancestry",
+          "status": "passed",
+          "evidence": "GitHub verified commit ancestry and original workflow runs"
+        },
+        {
+          "id": "no-policy-bypass",
+          "surface": "A-003",
+          "dimension": "protected-branch-unchanged",
+          "status": "passed",
+          "evidence": "GitHub verified commit ancestry and original workflow runs"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "trusted-candidate-separation",
+          "dimension": "wrong-source-or-lifecycle-binding"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "wrong-source-or-lifecycle-binding"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "merge commit with exact current develop parent",
+        "evidence": "GitHub PR API authenticated new SHA"
+      },
+      "detection_change": {
+        "skill_or_gate": "GitHub mergeability gate",
+        "control_id": "GATE-MERGE-CURRENT",
+        "evidence": "issue-762/evidence/stage-a-provenance.txt"
+      },
+      "trigger_terms": [
+        "certificate artifact inventory",
+        "stage A current develop",
+        "independent audit lineage"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "documentation"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-005",
+      "escape_class": "junit-namespace-failure-evidence-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
+        "finding_id": "A-005",
+        "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
+        "audit_report_sha256": "ffae9d6f88f81ec055d40f0cb81229af315ff99fad4fb5d0600a5d9df324dcc5"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Only look for exact, unqualified XML failure/error/skipped tags while accepting namespace-qualified children.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Execute four new A-005 tests against old and new code in separate source snapshots.",
+        "expected": "Old code accepts malicious XML and new code rejects it in all 3 code paths.",
+        "observed": "Old code: four tests fail (exit=1). Patched material: 27 tests pass (exit=0).",
+        "evidence": "issue-762/evidence/a-005-negative-original.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "a005-error",
+          "surface": "junit-evidence-parser",
+          "dimension": "namespace-qualified-test-result",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a005-skipped",
+          "surface": "junit-evidence-writer",
+          "dimension": "namespace-failure-does-not-write-evidence",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a005-zip",
+          "surface": "junit-zip-consumer",
+          "dimension": "namespace-failure-with-valid-hashes",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "namespace-qualified-test-result"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "namespace-failure-does-not-write-evidence"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "namespace-failure-with-valid-hashes"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/session_review_evidence.py",
+        "evidence": "tests/test_session_review_trusted_producers.py"
+      },
+      "detection_change": {
+        "skill_or_gate": "Stage A pytest 27 cases with old-code mutant",
+        "control_id": "NC-002-A005-PARSER",
+        "evidence": "issue-762/evidence/a-005-negative-original.log"
+      },
+      "trigger_terms": [
+        "JUnit XML namespaced failure",
+        "ElementTree qualified tags",
+        "false green evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-007",
+      "escape_class": "junit-disability-and-testcase-status-evidence-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
+        "finding_id": "A-007",
+        "head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+        "audit_report_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Ignore non-XML-node JUnit disabled and testcase status failure indicators, counting disabled and failed cases as green evidence.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run 14 A-007 parametrized negative cases against original parser and the corrected material head.",
+        "expected": "14 tests fail on original; corrected code rejects input in parser/producer/ZIP with coherent metadata hashes.",
+        "observed": "14 old-parser test failures, 52/52 complete tests green on material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "evidence": "issue-762/evidence/a-007-negative-original.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "a007-parser",
+          "surface": "junit-evidence-parser",
+          "dimension": "disabled-suite-aggregate",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a007-writer",
+          "surface": "junit-evidence-writer",
+          "dimension": "failed-testcase-no-output",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a007-zip",
+          "surface": "junit-zip-consumer",
+          "dimension": "untrusted-status-with-consistent-hash",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "junit-status-disabled-attribute"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "no-false-positive-evidence-output"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "valid-hash-malicious-status-xml"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/session_review_evidence.py",
+        "evidence": "tests/test_session_review_trusted_producers.py"
+      },
+      "detection_change": {
+        "skill_or_gate": "52 directed Stage A pytest cases plus 14 failing pre-fix mutants",
+        "control_id": "NC-002-A007-PARSER",
+        "evidence": "issue-762/evidence/a-007-negative-original.log"
+      },
+      "trigger_terms": [
+        "JUnit disabled",
+        "testcase status failed",
+        "testcase status skipped",
+        "false green evidence"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-008",
+      "escape_class": "encoded-xml-doctype-raw-byte-check-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+        "finding_id": "A-008",
+        "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "audit_report_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a"
+      },
+      "revalidated_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+      "plausible_wrong_implementation": "Pre-scan raw XML bytes for ASCII <!DOCTYPE and <!ENTITY while ElementTree decodes UTF-16 and expands internal entities.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run UTF-16 JUnit with internal DTD/entity against old and new code",
+        "expected": "Old parser yields a successful testcase; new parser rejects at DTD declaration in parser/writer/ZIP",
+        "observed": "Old parser: 3 UTF-16 DTD mutants fail new tests; corrected parser: 60/60 directed tests pass at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+        "evidence": "issue-762/evidence/a-008-negative-original.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "a008-external",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-external-dtd",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a008-element",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-element-declaration-valid-hashes",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        },
+        {
+          "id": "a008-positive",
+          "surface": "junit-evidence-parser",
+          "dimension": "valid-utf16-predefined-entity",
+          "status": "passed",
+          "evidence": "tests/test_session_review_trusted_producers.py"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-parser",
+          "dimension": "utf16-entity-expansion"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-evidence-writer",
+          "dimension": "utf16-dtd-output-rejection"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "junit-zip-consumer",
+          "dimension": "utf16-dtd-valid-archive-hashes"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "scripts/session_review_evidence.py:_RejectJUnitDoctype",
+        "evidence": "60 directed tests at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+      },
+      "detection_change": {
+        "skill_or_gate": "tests/test_session_review_trusted_producers.py",
+        "control_id": "NC-002-A008-PARSER",
+        "evidence": "issue-762/evidence/a-008-negative-original.log"
+      },
+      "trigger_terms": [
+        "JUnit XML UTF-16",
+        "DTD entity expansion",
+        "ASCII raw byte XML scan"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "status": "passed"
+    }
+  ],
+  "previous_snapshot_status": "absent-by-git-tree-check; issue-762 audit-escape-closure.json absent at prior material 964a5e6e124c3f707d4ddc044e4fb3e852139352"
+}

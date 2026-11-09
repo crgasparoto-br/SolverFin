@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 762,
+  "created_at": "2026-11-08T10:49:30.475924+00:00",
+  "primary_source_id": "SRC-ISSUE-762",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-762",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-762.txt",
+      "locator": "/mnt/data/pr770_audit/remediation/issue-762.txt",
+      "sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 20
+    }
+  ],
+  "revalidated_material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+  "revalidated_at": "2026-11-09T11:39:36.871814+00:00"
+}

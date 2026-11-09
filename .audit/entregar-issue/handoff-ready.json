@@ -3,137 +3,99 @@
   "status": "ready",
   "phase": "final",
   "completion": {
-    "issue_completion": "complete",
-    "deferred_obligation_ids": [],
-    "remaining_issue_ids": [],
-    "parent_issue_must_remain_open": false
+    "issue_completion": "partial",
+    "deferred_obligation_ids": [
+      "OBL-001",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-010"
+    ],
+    "remaining_issue_ids": [
+      762
+    ],
+    "parent_issue_must_remain_open": true
   },
-  "created_at": "2026-11-07T13:50:25.541880+00:00",
+  "created_at": "2026-11-09T11:42:46.874594+00:00",
   "identity": {
-    "head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
-    "material_head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
-    "base_sha": "9b4cd5a23ccbb37eae8a8afe9332f32dba2d581c",
-    "merge_preview_sha": "f2fc7ee4c3b73a378235d3a2c5551def5bdfb0ed",
-    "material_merge_preview_sha": "f2fc7ee4c3b73a378235d3a2c5551def5bdfb0ed"
+    "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+    "material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+    "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+    "merge_preview_sha": "9f12bb0ecfb692b07a1797411e6ce6498109f2f4",
+    "material_merge_preview_sha": "9f12bb0ecfb692b07a1797411e6ce6498109f2f4"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 772,
-    "pull_request_number": 773,
+    "issue_number": 762,
+    "pull_request_number": 770,
     "work_item_kind": "issue",
-    "work_item_number": 772,
-    "pull_request": 773,
+    "work_item_number": 762,
+    "pull_request": 770,
     "base_ref": "develop",
-    "head_ref": "fix/issue-772-release-771-history-controls"
+    "head_ref": "chore/762-trusted-ci-producers-stage-a"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
-    "material_head_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+    "work_item_start_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
+    "material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
     "issue_changed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-768/audit-escape-closure.json",
-      ".audit/entregar-issue/issue-768/audit-remediation.json",
-      ".audit/entregar-issue/issue-768/audit-source-result.json",
-      ".audit/entregar-issue/issue-768/code-growth.json",
-      ".audit/entregar-issue/issue-768/codebase-grounding.json",
-      ".audit/entregar-issue/issue-768/evidence-provenance.json",
-      ".audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
-      ".audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
-      ".audit/entregar-issue/issue-768/evidence/issue-768-saturation-after.log",
-      ".audit/entregar-issue/issue-768/evidence/issue-768-saturation-before.log",
-      ".audit/entregar-issue/issue-768/inherited-controls.json",
-      ".audit/entregar-issue/issue-768/learning-closure.json",
-      ".audit/entregar-issue/issue-768/previous-audit-escape-closure.json",
-      ".audit/entregar-issue/issue-768/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-768/requirement-closure.json",
-      ".audit/entregar-issue/issue-768/risk-saturation.json",
-      ".audit/entregar-issue/issue-768/specification-snapshot.json",
-      ".audit/entregar-issue/issue-768/specification-sources/SRC-ISSUE-768.txt",
-      ".audit/entregar-issue/issue-768/standard-evidence.json",
-      ".audit/entregar-issue/issue-772/code-growth.json",
-      ".audit/entregar-issue/issue-772/codebase-grounding.json",
-      ".audit/entregar-issue/issue-772/evidence/ci-classifier-local.log",
-      ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-      ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-      ".audit/entregar-issue/issue-772/evidence/source-probes.log",
-      ".audit/entregar-issue/issue-772/inherited-controls.json",
-      ".audit/entregar-issue/issue-772/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-772/requirement-attack-matrix.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/requirement-closure.json",
-      ".audit/entregar-issue/issue-772/requirement-closure.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/risk-saturation.json",
-      ".audit/entregar-issue/issue-772/risk-saturation.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/specification-snapshot.json",
-      ".audit/entregar-issue/issue-772/specification-sources/SRC-ISSUE-772.txt",
-      ".audit/entregar-issue/specification-snapshot.json",
-      "apps/api/src/card-purchase-edit-contract.integration.test.ts",
-      "apps/api/src/card-purchase-invoice-period-move.integration.test.ts",
-      "apps/api/src/card-purchase-void-boundaries.integration.test.ts",
-      "apps/api/src/category-evolution-report.integration.test.ts",
-      "apps/api/src/installment-concurrency-and-void-contract.integration.test.ts",
-      "apps/api/src/manual-entry-fill-rules-migration.integration.test.ts",
-      "apps/api/src/repositories/card-invoice-contracts-core.ts",
-      "apps/api/src/repositories/card-invoice-contracts.ts",
-      "apps/api/src/repositories/card-invoice-installment-amount.ts",
-      "apps/api/src/repositories/card-invoice-purchase-delete.ts",
-      "apps/api/src/repositories/card-invoice-purchase-edit-write.ts",
-      "apps/api/src/repositories/card-invoice-purchase-reverse.ts",
-      "apps/api/src/repositories/card-invoice-reversal-edit.ts",
-      "apps/api/src/repositories/card-purchase-invoice-period-move-core.ts",
-      "apps/api/src/repositories/card-purchase-invoice-period-move-write.ts",
-      "apps/api/src/repositories/installments.ts",
-      "apps/api/src/repositories/transaction-bulk-actions.ts",
-      "apps/api/src/repositories/transaction-generic-write.ts",
-      "apps/api/src/repositories/transaction-groups.ts",
-      "apps/api/src/repositories/transactions.ts",
-      "apps/api/src/transaction-bulk-actions.integration.test.ts",
-      "apps/web/src/dev-server/cards-page-v2-script-purchases.ts",
-      "apps/web/src/dev-server/statement-status.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.test.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-layout-enhancement.ts",
-      "apps/web/src/dev-server/transaction-group-installment-guard.test.ts",
-      "apps/web/src/dev-server/transaction-group-installment-guard.ts",
-      "apps/web/src/dev-server/transactions-groups.test.ts",
-      "apps/web/src/dev-server/transactions-page-v2.ts",
-      "apps/web/src/dev-server/transactions-statement.ts",
-      "docs/API_CREDIT_CARDS_INVOICES.md",
-      "docs/API_TRANSACTION_BULK_ACTIONS.md",
-      "docs/GOLDEN_STATEMENT.md",
-      "docs/TRANSACTIONS.md",
-      "scripts/statement-visual/transaction-bulk-selection-helpers.mjs",
-      "scripts/statement-visual/transaction-bulk-selection-keyboard.mjs",
-      "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
-      "scripts/statement-visual/transaction-bulk-selection.mjs",
-      "scripts/statement-visual/transaction-group-modal.mjs",
-      "tests/test_solverfin_solo_audit_bootstrap.py"
+      ".audit/entregar-issue/issue-762/audit-escape-closure.json",
+      ".audit/entregar-issue/issue-762/audit-remediation.json",
+      ".audit/entregar-issue/issue-762/audit-source-result.json",
+      ".audit/entregar-issue/issue-762/code-growth.json",
+      ".audit/entregar-issue/issue-762/codebase-grounding.json",
+      ".audit/entregar-issue/issue-762/evidence/a-004-negative-original.log",
+      ".audit/entregar-issue/issue-762/evidence/a-005-negative-original.log",
+      ".audit/entregar-issue/issue-762/evidence/a-006-negative-original.log",
+      ".audit/entregar-issue/issue-762/evidence/a-007-negative-original.log",
+      ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
+      ".audit/entregar-issue/issue-762/evidence/stage-a-provenance.txt",
+      ".audit/entregar-issue/issue-762/evidence/stage-a-pytest.log",
+      ".audit/entregar-issue/issue-762/inherited-controls.json",
+      ".audit/entregar-issue/issue-762/learning-closure.json",
+      ".audit/entregar-issue/issue-762/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-762/requirement-closure.json",
+      ".audit/entregar-issue/issue-762/risk-saturation.json",
+      ".audit/entregar-issue/issue-762/specification-snapshot.json",
+      ".audit/entregar-issue/issue-762/specification-sources/SRC-ISSUE-762.txt",
+      "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
+      "scripts/prepare_session_review_packet.py",
+      "scripts/session_review_certificate.py",
+      "scripts/session_review_evidence.py",
+      "scripts/session_review_packet_handoff.py",
+      "scripts/session_review_specification.py",
+      "tests/test_session_review_packet.py",
+      "tests/test_session_review_trusted_producers.py"
     ],
-    "issue_delta_sha256": "2cde22d236540f4bbfbfbcc25eb7d7da32c2fa3d1581c943fed9ba2acec118c3"
+    "issue_delta_sha256": "872bdf93ed864e6687f00fff8cdfe091ebac7856d4e1afa21a97516ceb0c05e9"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-772/code-growth.json",
-      ".audit/entregar-issue/issue-772/codebase-grounding.json",
-      ".audit/entregar-issue/issue-772/evidence/ci-technical.log",
-      ".audit/entregar-issue/issue-772/evidence/solo-bootstrap-local.log",
-      ".audit/entregar-issue/issue-772/evidence/source-probes.log",
-      ".audit/entregar-issue/issue-772/inherited-controls.json",
-      ".audit/entregar-issue/issue-772/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-772/requirement-attack-matrix.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/requirement-closure.json",
-      ".audit/entregar-issue/issue-772/requirement-closure.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/risk-saturation.json",
-      ".audit/entregar-issue/issue-772/risk-saturation.parts/part-000.b64",
-      ".audit/entregar-issue/issue-772/specification-snapshot.json"
+      ".audit/entregar-issue/issue-762/audit-escape-closure.json",
+      ".audit/entregar-issue/issue-762/audit-remediation.json",
+      ".audit/entregar-issue/issue-762/audit-source-result.json",
+      ".audit/entregar-issue/issue-762/code-growth.json",
+      ".audit/entregar-issue/issue-762/codebase-grounding.json",
+      ".audit/entregar-issue/issue-762/evidence/a-008-negative-original.log",
+      ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
+      ".audit/entregar-issue/issue-762/evidence/stage-a-provenance.txt",
+      ".audit/entregar-issue/issue-762/evidence/stage-a-pytest.log",
+      ".audit/entregar-issue/issue-762/inherited-controls.json",
+      ".audit/entregar-issue/issue-762/learning-closure.json",
+      ".audit/entregar-issue/issue-762/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-762/requirement-closure.json",
+      ".audit/entregar-issue/issue-762/risk-saturation.json",
+      ".audit/entregar-issue/issue-762/specification-snapshot.json"
     ]
   },
   "contract_version": "2026-08-20.3",
   "evidence_profile": "critical",
-  "remediation_mode": null,
+  "remediation_mode": "targeted-remediation",
   "producer": {
     "skill": "entregar-issue",
     "skill_sha256": "1b1872db4640f75c6c26c49bcd6663aef42be5706fc46199f44a740385767e6a"
@@ -161,9 +123,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "68bfb2c735da779ad2d2bbd7042e3b5d02ab5b6d29769969568b4f1247a8c16a",
-      "logical_sha256": "68bfb2c735da779ad2d2bbd7042e3b5d02ab5b6d29769969568b4f1247a8c16a",
-      "logical_size": 586,
+      "sha256": "fe0cce661e84a72218451a0f50edcb53822f7c9f5b109fe8fc686b259562cf4b",
+      "logical_sha256": "fe0cce661e84a72218451a0f50edcb53822f7c9f5b109fe8fc686b259562cf4b",
+      "logical_size": 714,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -171,75 +133,79 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "e9436ce8bbee37e292d6dc6b1115927690cc558007e448ff61b0fa79f4555a99",
-      "logical_sha256": "b3e16bd9202c04da622f6f6411a9597f3cfdb2964c99945a6e380da338696131",
-      "logical_size": 25182,
+      "sha256": "df1bbd1168793631eba809f2c14670c539f67270683c02b71a05563010b08638",
+      "logical_sha256": "df1bbd1168793631eba809f2c14670c539f67270683c02b71a05563010b08638",
+      "logical_size": 17737,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 7092,
-        "decoded_size": 25182,
-        "decoded_sha256": "b3e16bd9202c04da622f6f6411a9597f3cfdb2964c99945a6e380da338696131",
-        "encoded_sha256": "06361afb9020f121832067ba87dd87899b30ce60084d5fb73f671b99b5db02ff",
-        "parts": [
-          {
-            "path": "requirement-closure.parts/part-000.b64",
-            "size": 7092,
-            "sha256": "06361afb9020f121832067ba87dd87899b30ce60084d5fb73f671b99b5db02ff"
-          }
-        ]
+        "format": "plain-json",
+        "version": 1
       }
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "ad1949df8fb07f844cfd2d7157af551384308bafc0804dbbc4ef849b3af96a1e",
-      "logical_sha256": "319db0d0c2f7fc1a2de8df0029a2cad198cd0c045abab0cda65e1052a6988bf2",
-      "logical_size": 75502,
+      "sha256": "532bae48e4b93f1940dce30318ae5cfaf7374bba2d23c3d841827068e29630ae",
+      "logical_sha256": "532bae48e4b93f1940dce30318ae5cfaf7374bba2d23c3d841827068e29630ae",
+      "logical_size": 40208,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 12048,
-        "decoded_size": 75502,
-        "decoded_sha256": "319db0d0c2f7fc1a2de8df0029a2cad198cd0c045abab0cda65e1052a6988bf2",
-        "encoded_sha256": "9737b7628a0686fb67d7cff4ee4165f0c334923e256a5e6a9a36409afc218f26",
-        "parts": [
-          {
-            "path": "requirement-attack-matrix.parts/part-000.b64",
-            "size": 12048,
-            "sha256": "9737b7628a0686fb67d7cff4ee4165f0c334923e256a5e6a9a36409afc218f26"
-          }
-        ]
+        "format": "plain-json",
+        "version": 1
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "9545c066f730160eda45e2ca50819c7e6f66bd895004e0ba8aec23c640bcb85e",
-      "logical_sha256": "81bbb01141742e27ac90c19bd7dbf53e0cdf5009264a66f46945fd7e27faa8f5",
-      "logical_size": 8202,
+      "sha256": "bdf15d0579b9b891c6ae853b941b8573f8c8407a75d6a6fdaa740c7d0d1215f5",
+      "logical_sha256": "bdf15d0579b9b891c6ae853b941b8573f8c8407a75d6a6fdaa740c7d0d1215f5",
+      "logical_size": 6281,
       "artifact_transport": {
-        "format": "base64-shards-v1",
-        "version": 1,
-        "compression": "gzip",
-        "encoded_size": 1568,
-        "decoded_size": 8202,
-        "decoded_sha256": "81bbb01141742e27ac90c19bd7dbf53e0cdf5009264a66f46945fd7e27faa8f5",
-        "encoded_sha256": "30fcf8a25b06882f4c908fe9e2555210c790c9efd17db7ec621db85dff21ee41",
-        "parts": [
-          {
-            "path": "risk-saturation.parts/part-000.b64",
-            "size": 1568,
-            "sha256": "30fcf8a25b06882f4c908fe9e2555210c790c9efd17db7ec621db85dff21ee41"
-          }
-        ]
+        "format": "plain-json",
+        "version": 1
       }
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "9233a378ea22b59697cf26270e50abbd737a341acf3983b78025abc202e3c204",
-      "logical_sha256": "9233a378ea22b59697cf26270e50abbd737a341acf3983b78025abc202e3c204",
-      "logical_size": 180,
+      "sha256": "c71668f193ca33071aa0456b349d6462c9037f394fbf41a609042e4b29e9d3dc",
+      "logical_sha256": "c71668f193ca33071aa0456b349d6462c9037f394fbf41a609042e4b29e9d3dc",
+      "logical_size": 154,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_escape_closure": {
+      "name": "audit-escape-closure.json",
+      "sha256": "b7bac21d95cb5cf3e2a6f625a83bf712b99bd17db96ed09061e814429dd6f8e5",
+      "logical_sha256": "b7bac21d95cb5cf3e2a6f625a83bf712b99bd17db96ed09061e814429dd6f8e5",
+      "logical_size": 15306,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "learning_closure": {
+      "name": "learning-closure.json",
+      "sha256": "4b304cdaeb5770398a4c701d33bc74a82ba29c5893f62952af12eb30d8c4d9e5",
+      "logical_sha256": "4b304cdaeb5770398a4c701d33bc74a82ba29c5893f62952af12eb30d8c4d9e5",
+      "logical_size": 816,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_remediation": {
+      "name": "audit-remediation.json",
+      "sha256": "97055f5f7d13dc886f8eb6798ae391bf933bc9f56890d1ccaaa1b945c2782fbc",
+      "logical_sha256": "97055f5f7d13dc886f8eb6798ae391bf933bc9f56890d1ccaaa1b945c2782fbc",
+      "logical_size": 3401,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "audit_source_result": {
+      "name": "audit-source-result.json",
+      "sha256": "848ec508837bd77d0ed76ab541f85adc30690cec35dd8ae39000c09935adf33b",
+      "logical_sha256": "848ec508837bd77d0ed76ab541f85adc30690cec35dd8ae39000c09935adf33b",
+      "logical_size": 3690,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -247,9 +213,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "28dddacc68f84092729111ab179e84d1ae46ad30d5995f850869dee6291903f9",
-      "logical_sha256": "28dddacc68f84092729111ab179e84d1ae46ad30d5995f850869dee6291903f9",
-      "logical_size": 37167,
+      "sha256": "733d380effdfd0082ff36ab91cf1b26fcbe746354027c8df849078bfbfe0958b",
+      "logical_sha256": "733d380effdfd0082ff36ab91cf1b26fcbe746354027c8df849078bfbfe0958b",
+      "logical_size": 27570,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -257,9 +223,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "6df9d9990da0af9f3da22ef67d60047249dbaf518a3c78243a64facad7a74fd1",
-      "logical_sha256": "6df9d9990da0af9f3da22ef67d60047249dbaf518a3c78243a64facad7a74fd1",
-      "logical_size": 2652,
+      "sha256": "63257180769bf1e24fa0dc9062e989237eaf212bc3f0f8e1d8e444ffe25c7199",
+      "logical_sha256": "63257180769bf1e24fa0dc9062e989237eaf212bc3f0f8e1d8e444ffe25c7199",
+      "logical_size": 1186,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -277,9 +243,9 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "cd40692535453ea2cad88e020811428416b88f5c",
+      "subject_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },
-  "previous_independent_rejection": false
+  "previous_independent_rejection": true
 }

@@ -1,0 +1,350 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "fe0cce661e84a72218451a0f50edcb53822f7c9f5b109fe8fc686b259562cf4b"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-762",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "173a30dfd5deba07b1247fad098bbdb29303ed093b23dff2acbfdf26b408c4f7",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 5,
+      "source_text": "Adotar o modo `operator-attested-session-review` para **operador único** com `third_party_identity_proven=false`, reconhecendo explicitamente que duas sessões declaradas não constituem dois auditores humanos independentes. A #714 só poderá considerar esse modo suficiente após aceitação explícita desta equivalência governamental e ativação verificável dos checks nas branches protegidas.",
+      "flags": [
+        "negative",
+        "temporal",
+        "atomicity",
+        "aftermath"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "Adotar o modo `operator-attested-session-review` para **operador único** com `third_party_identity_proven=false`, reconhecendo explicitamente que duas sessões declaradas não constituem dois auditores humanos independentes. A #714 só poderá considerar esse modo suficiente após aceitação explícita desta equivalência governamental e ativação verificável dos checks nas branches protegidas.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "A equivalencia governamental de operador unico depende de decisao formal e dos checks ativados em bases protegidas; a etapa A preserva explicitamente o modo fail-closed e nao atesta terceiros."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "c2e15d128fb39ea7d7cb92d8bea764826c63101c7077813de5048494236cb48d",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 8,
+      "source_text": "[ ] Implementar os contratos/validadores e testes adversariais sem executar código de PR em workflow privilegiado.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 52 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A. A-005: namespaced JUnit error, failure, skipped and wrapper rejected end-to-end by 4 additional negative regression cases. A-007: 14 testes adversariais discriminantes de atributos JUnit, 4 positivos, comprovados no parser/produtor/ZIP; 14 falhas no codigo anterior."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "69496a277fefd9f7e47a06b771fa1645251e9d090db060655a0da56b32b3e53f",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 9,
+      "source_text": "[ ] Implementar pacote neutro com issue, diff/blob, base/HEAD/merge preview, evidência CI material e vínculo do certificado `critical`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Coletor read-only cria pacote neutro de fontes exatas; parser de handoff e certificados validam blobs, URLs e identidades. CI real e preparo de certificado ficam vinculados ao SHA atual."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "9080e808cbf5c578a37d7087a440c6eec32afcde09169c8549fe124781580651",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 10,
+      "source_text": "[ ] Permitir emissão de `SOLVERIT_SESSION_REVIEW_V1` por conta autenticada `crgasparoto-br`, com revisão efetuada em **conversa realmente separada**, referência real e cobertura por obrigação.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Permitir emissão de `SOLVERIT_SESSION_REVIEW_V1` por conta autenticada `crgasparoto-br`, com revisão efetuada em **conversa realmente separada**, referência real e cobertura por obrigação.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "O emissor e o verificador autenticados SOLVERIT_SESSION_REVIEW_V1 estao na futura etapa B. A etapa A fornece apenas produtores para que o workflow trusted possa existir."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "60fd3ac6df330e308d70977657e7acfb071795e0f2dd1d6f8df574ec592ddc09",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 11,
+      "source_text": "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente.",
+      "flags": [],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Os controles de rejeicao real de parecer revogado/stale e CI autenticado dependem de workflows e ensaios operacionais da etapa B; nesta etapa foram testados apenas parsers e produtores."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "f5d8ac9b6042264c3235c99e25674254ea031a8b77e2883afc371315bb273bda",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 12,
+      "source_text": "[ ] Instalar código/workflows idênticos nas branches protegidas `develop` e `main`, com bootstrap que **não exige a própria aprovação**.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Instalar código/workflows idênticos nas branches protegidas `develop` e `main`, com bootstrap que **não exige a própria aprovação**.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Instalacao em branches protegidas e permissao de merge sao atos posteriores que necessitam revisao e autorizacao; nenhum workflow ou ruleset foi alterado nesta PR."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "febced78173719b94af24acb2d1b70d5b02efa925ee683413b616082e280d190",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 13,
+      "source_text": "[ ] Ler as proteções efetivas e comprovar checks `exact SHA`, sem eliminar `Delivery V2 gate`, proteção contra force-push/exclusão ou revisão obrigatória.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Ler as proteções efetivas e comprovar checks `exact SHA`, sem eliminar `Delivery V2 gate`, proteção contra force-push/exclusão ou revisão obrigatória.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Leitura efetiva de rulesets e configuracao de required checks dependem do deployment administrativo nas duas bases protegidas, nao pertencem ao bootstrap de produtores."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "07e23a2b124a6170b2a1bb0ce5ecd84bde842851d4670266b0482585113f1e58",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 14,
+      "source_text": "[ ] Ensaio positivo e testes negativos reais; aprovação em sessão distinta; publicação de recibo confiável; vincular #714/#760 e fechar F-714-06 somente com evidência válida.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "[ ] Ensaio positivo e testes negativos reais; aprovação em sessão distinta; publicação de recibo confiável; vincular #714/#760 e fechar F-714-06 somente com evidência válida.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Ensaio real, aprovacao em sessao separada, recibo de governanca e fechamento de F-714-06 estao condicionados a integracao revisada das etapas A e B."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "a4763514e7874440780681a78063f3021951e8289a334485a5a518701f06cf99",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 15,
+      "source_text": "[ ] A PR #760, a issue #714 e a épica #702 ficam abertas enquanto a revisão formal não ocorrer.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-762-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Consultas GitHub da issue #714 e PR #760, bem como da epica #702, mostram que permanecem abertas, sem efeitos colaterais desta etapa."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "86003a4bb6e8f0c453b70656486aa8267d2fcda806d8c41b7ad144a0d0fdf9f5",
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "source_line": 18,
+      "source_text": "Nenhuma alteração de ruleset, merge, exclusão, simulação de identidade de auditor, assinatura falsa ou autoaprovação GitHub. Implementar primeiro em branch `develop` com política fail-closed, ativar somente depois de instalação/revisão e read-back.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "temporal",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-762-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-762",
+        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+        "decision_locator": "Nenhuma alteração de ruleset, merge, exclusão, simulação de identidade de auditor, assinatura falsa ou autoaprovação GitHub. Implementar primeiro em branch `develop` com política fail-closed, ativar somente depois de instalação/revisão e read-back.",
+        "target_issue": 762,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "A etapa A mantem policy, workflows e rulesets intactos; a ativacao condicionada exige instalacao protegida, revisao e read-back posteriores."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-762",
+      "source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
+      "candidate_count": 10,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Nao ha obrigacoes cobertas com flags structural/canonical-path/precedence. Fronteira de privilégio e inspecionada em controles de teste de Stage A.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Stage A nao introduz modelo de leitura de negocio nem altera dados persistidos.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Four original Stage A scripts retain their inherited sources; session_review_packet_handoff.py has A-002/A-004 corrections; Stage B must synchronize its parser and verify blobs before trusted installation.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Procedimento de bootstrap deixa Stage B explicitamente pendente e confirma ausencia de workflow/policy/ruleset no diff.",
+    "old_contract_terms": [
+      "session review trusted",
+      "F-714-06",
+      "CODE-GROWTH-001"
+    ],
+    "new_contract_terms": [
+      "Etapa A",
+      "Etapa B",
+      "JUnit aggregate counts",
+      "A-004 targeted/systemic remediation inventory",
+      "A-006 JUnit hierarchy fail-closed",
+      "A-007 JUnit disabled/status fail-closed",
+      "A-008 XML DTD/ENTITY blocked by parser events across encodings"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
+      "scripts/session_review_evidence.py",
+      "PR #763 scripts/session_review_evidence.py"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-762-002",
+      "REQ-762-003",
+      "REQ-762-009"
+    ],
+    "obligation_ids": [
+      "OBL-002",
+      "OBL-003",
+      "OBL-009"
+    ],
+    "evidence": [
+      "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
+      "Testes focados 52 passed com controle adicional JUnit inconsistente no HEAD exato 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+      "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
+      "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
+      "A-004: 27 tests passed on material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
+      "A-005: 27 tests passed on exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
+      "A-006: 34 exact material tests passed at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy.",
+      "A-007: old parser rejected by 14 distinct status/disabled mutation tests; fixed exact-head 60/60 passing, GitHub authenticated bundle run 42553528354.",
+      "A-008: six DTD-negative combinations across UTF-8/UTF-16 in parser, producer and ZIP; old parser fails 3 UTF-16 cases and corrected 60/60 pass at 04f3f76a20a2b1d6b957679e2acd7d923d682cc1. Negative original log evidence/a-008-negative-original.log sha256=cb6c171b04201c5a9ad6cc6de4e773a0ae3ffb4370c65bccb96a85d3c8b868be"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
