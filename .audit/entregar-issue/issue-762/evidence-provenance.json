@@ -1,28 +1,17 @@
 {
   "schema_version": 1,
-  "material_head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
-  "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+  "material_head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
   "evidence": [
     {
-      "evidence_id": "PR776-EXACT-PYTEST",
+      "evidence_id": "EVID-762-PYTEST",
       "kind": "behavioral",
-      "path": "issue-762/evidence/pr776-exact-pytest.log",
-      "sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5",
-      "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
-      "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
+      "path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+      "sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a",
+      "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+      "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
       "freshness_policy": "exact-material-head",
-      "producer": "pytest 9.0.2 and trusted GitHub Actions bundle run 42627744660",
-      "status": "passed"
-    },
-    {
-      "evidence_id": "PR776-MUTANT-NEGATIVE",
-      "kind": "structural",
-      "path": "issue-762/evidence/pr776-negative-original.log",
-      "sha256": "5612bb9d8a8c6ddaad2e74243917c76a050ac6faacd5541842a62b503fe4631c",
-      "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
-      "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
-      "freshness_policy": "exact-material-head",
-      "producer": "isolated d306 original code with mocked GitHub GET; corrected exact SHA control",
+      "producer": "pytest 9.0.2 / Python 3.13.5 on CI bundle run 42657603233, artifact 13692267791; solo suite 23 pass; contract run 42657603225",
       "status": "passed"
     }
   ]

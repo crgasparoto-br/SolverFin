@@ -1,57 +1,149 @@
 {
   "schema_version": 2,
-  "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
-  "base_sha": "f0b82f29230e64faca7f4cd49b4bfadd8793d0b3",
-  "creations": [],
+  "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+  "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+  "creations": [
+    {
+      "path": "scripts/session_review_checks.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only 96eca4f0046d07a29dba459a4a048e4bd47df2f4 -- scripts/",
+          "git grep -n \"check_run\" 96eca4f0046d07a29dba459a4a048e4bd47df2f4 -- scripts/"
+        ],
+        "scope": "Existing protected-base verify_session_review.py and session_review_github.py reviewed for reuse.",
+        "candidates": [
+          {
+            "path": "scripts/verify_session_review.py",
+            "reason_not_reused": "Existing monolith continues as caller; new extracted checks module isolates bounded Check Run emission and pagination; duplicate paths removed from verifier."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extracted only the checks API and pagination to a shared module; legacy solo audit compatibility retained without weakening checks:write boundary."
+    }
+  ],
   "references": [],
   "replacements": [],
   "test_decisions": [
     {
-      "path": "tests/test_session_review_trusted_producers.py",
-      "operation": "modified",
-      "scenario": "Canonical SHA compare succeeds; invalid owner/repository namespaces and paths never invoke gh.",
-      "requirement": "REQ-762-002",
+      "path": "tests/test_session_review.py",
+      "operation": "added",
+      "scenario": "Trusted GitHub exact-SHA workflow/provenance/session-review validation (including falsification and regression controls).",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
       "search": {
         "queries": [
-          "git diff --name-status f0b82f29230e64faca7f4cd49b4bfadd8793d0b3 68f9c697d409cc11b326bf06fba19da8fa109379 -- tests/",
-          "git grep -n \"test_trusted_github_api_allows_exact_sha_compare_but_never_traversal\" 68f9c697d409cc11b326bf06fba19da8fa109379 -- tests/"
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review.py"
         ],
-        "scope": "Existing tests/test_session_review_trusted_producers.py and tests/test_session_review_packet.py were re-run on exact Git material.",
-        "runner": "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
+        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "candidates": [
           {
-            "path": "tests/test_session_review_trusted_producers.py",
-            "case": "test_trusted_github_api_allows_exact_sha_compare_but_never_traversal",
-            "oracle": "mocked subprocess not called for invalid paths and called once for valid 40hex...40hex",
-            "comparison": "New negative namespace cases absent in original d306 and in protected base, proven as discriminating original mutation."
-          },
-          {
-            "path": "tests/test_session_review_packet.py",
-            "case": "Existing packet and SHA validation behavior",
-            "oracle": "61 exact SHA tests PASS",
-            "comparison": "Inherited producer and JUnit semantic contract retained."
+            "path": "tests/test_session_review.py",
+            "case": "Real positive, negative and regression cases in newly added file",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
+            "comparison": "Newly added file compared against protected base and reached in runner."
           }
         ]
       },
       "decision": "new-test-required",
-      "justification": "Prior regression ignored dot and doubled-dot segments in owner/repo; add discriminating cases to existing suite rather than duplicate test modules.",
+      "justification": "Extend trusted producer and consumer regression coverage without removing legacy tests.",
       "disposition": "keep",
-      "coverage_before": [
-        "TRUSTED-SHA-COMPARE-001 canonical path, partial traversal cases"
-      ],
+      "coverage_before": [],
       "coverage_after": [
-        "TRUSTED-SHA-COMPARE-001 canonical path and unsafe namespace traversal cases"
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
       ],
       "verification": {
         "status": "passed",
-        "command": "python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
         "reached_tests": [
-          "tests/test_session_review_trusted_producers.py"
+          "tests/test_session_review.py"
         ],
-        "evidence_path": ".audit/entregar-issue/issue-762/evidence/pr776-exact-pytest.log",
-        "evidence_sha256": "47e3992012b66beb2ee4e0c2fb1a64c1e83b2e551abb302919c72184e76cb4c5"
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
+      }
+    },
+    {
+      "path": "tests/test_session_review_certificate.py",
+      "operation": "added",
+      "scenario": "Trusted GitHub exact-SHA workflow/provenance/session-review validation (including falsification and regression controls).",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review_certificate.py"
+        ],
+        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_certificate.py",
+            "case": "Real positive, negative and regression cases in newly added file",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
+            "comparison": "Newly added file compared against protected base and reached in runner."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Extend trusted producer and consumer regression coverage without removing legacy tests.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "exit_code": 0,
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "reached_tests": [
+          "tests/test_session_review_certificate.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
+      }
+    },
+    {
+      "path": "tests/test_session_review_verifier.py",
+      "operation": "added",
+      "scenario": "Validated session routing and trusted Github provenance on PR histories with merge commits; A-76312 full evaluate test.",
+      "requirement": "REQ-762-002, REQ-762-003, REQ-762-005",
+      "search": {
+        "queries": [
+          "git diff --name-status 96eca4f0046d07a29dba459a4a048e4bd47df2f4..d6b74862c721cccc3977e3cb5723ec2bc4560acd -- tests/",
+          "python -m pytest --collect-only -q tests/test_session_review_verifier.py"
+        ],
+        "scope": "Repo pytest tests path; tests executed on the authenticated material checkout.",
+        "runner": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_verifier.py",
+            "case": "Real positive, negative and regression cases in newly added file",
+            "oracle": "pytest exit 0 and fail-closed asserts; 174 exact material pass",
+            "comparison": "Newly added file compared against protected base and reached in runner."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Non-linear GitHub remains fail-closed on opt-in, while legacy v1 is accepted with authentic separate session references.",
+      "disposition": "keep",
+      "coverage_before": [],
+      "coverage_after": [
+        "A-76312 positive, negative and complete full-flow regression; 174-case exact material suite PASSED."
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "exit_code": 0,
+        "subject_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+        "reached_tests": [
+          "tests/test_session_review_verifier.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/governance-pytest.txt",
+        "evidence_sha256": "c5f45d12b14894fb7be6afa48fb64d9abc90cb7198af069e7f6cbcda3ecf961a"
       }
     }
   ]

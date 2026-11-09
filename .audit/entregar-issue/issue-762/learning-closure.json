@@ -3,17 +3,17 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:65d4a41b-d313-4945-8a03-d2a98bc778d0",
+    "rejection_id": "audit-rejection:9c9cb253-dd67-4444-a2ac-621a024df03e",
     "finding_ids": [
-      "A-008"
+      "A-76312"
     ],
-    "audit_report_sha256": "bf869d1a1b7a260fbe07cc32b9e157096ba36969c20e273717ea19c63403224a",
-    "audited_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
-    "revalidated_material_head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1"
+    "audit_report_sha256": "2269c4f6eb2784bfa18a20f2f4c11d55292f6e25360dfd27ede66942d0d7acae",
+    "audited_head_sha": "2857b6a050e502ab896119142aa97ba532c9ecf8",
+    "revalidated_material_head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "A-008 is a bounded XML parser bypass in one code path shared by JUnit parser, producer and ZIP reader; encoding-aware DOCTYPE callback plus positive/negative tests cover all three, without changing global Skill."
+    "reason": "Targeted, mode-specific regression fixed within existing provenance router with four end-to-end control cases; no change to official Skill trust model."
   },
   "skill_changes": []
 }

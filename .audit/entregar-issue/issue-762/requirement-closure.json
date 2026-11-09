@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "100d4743debcdcffe243b1c661cf733eb2caf2380a0f8914054c4f4ddeb22a41"
+    "sha256": "60858714190c1c399135e5c92bbf049d726f11985c773ee764b4b267e4f1c15b"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -20,9 +20,7 @@
         "aftermath"
       ],
       "disposition": "deferred",
-      "requirement_ids": [
-        "REQ-762-001"
-      ],
+      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": {
@@ -32,7 +30,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "rationale": "Decisão proposta de equivalência do operador único ainda exige aceitação administrativa explícita; política mantém mode=disabled e esta fonte não representa aceite."
     },
     {
       "id": "OBL-002",
@@ -51,7 +49,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
+      "rationale": "Testes 174/174 incluem adversariais; workflow privilegiado consulta apenas source de protected base e nao executa scripts da branch candidata; .github/workflows/session-review.yml e tests/test_session_review_verifier.py."
     },
     {
       "id": "OBL-003",
@@ -68,7 +66,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
+      "rationale": "scripts/prepare_session_review_packet.py implementa fontes neutras, Git blobs, base/HEAD/preview e validacao do certificate critical; verificacoes tests/test_session_review_packet.py."
     },
     {
       "id": "OBL-004",
@@ -83,9 +81,7 @@
         "review-surface"
       ],
       "disposition": "deferred",
-      "requirement_ids": [
-        "REQ-762-004"
-      ],
+      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": {
@@ -95,7 +91,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "rationale": "Contrato permite o formato SOLVERIT_SESSION_REVIEW_V1, mas a emissão real depende de sessão distinta e de produtores confiáveis ainda não instalados nas branches protegidas."
     },
     {
       "id": "OBL-005",
@@ -105,20 +101,14 @@
       "source_line": 11,
       "source_text": "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente.",
       "flags": [],
-      "disposition": "deferred",
+      "disposition": "covered",
       "requirement_ids": [
         "REQ-762-005"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": {
-        "decision_source_id": "SRC-ISSUE-762",
-        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
-        "decision_locator": "[ ] Rejeitar parecer ausente/stale, edição/revogação, usuário indevido, issue/head/base/preview divergentes, evidência ou CI insuficiente, ou controle negativo ausente.",
-        "target_issue": 762,
-        "parent_issue_must_remain_open": true
-      },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "scope_decision": null,
+      "rationale": "scripts/session_review.py, verify_session_review.py, session_review_checks.py e session_review_evidence.py rejeitam watermark, comentario stale, SHA, usuario, historico CI e artificios; suite de contrato 174/174."
     },
     {
       "id": "OBL-006",
@@ -131,9 +121,7 @@
         "negative"
       ],
       "disposition": "deferred",
-      "requirement_ids": [
-        "REQ-762-006"
-      ],
+      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": {
@@ -143,7 +131,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "rationale": "Instalação em develop e main depende de merge/release e é expressamente vedada antes de auditoria e autorização; nenhuma branch protegida foi alterada."
     },
     {
       "id": "OBL-007",
@@ -157,9 +145,7 @@
         "review-surface"
       ],
       "disposition": "deferred",
-      "requirement_ids": [
-        "REQ-762-007"
-      ],
+      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": {
@@ -169,7 +155,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "rationale": "Regras atuais foram lidas no GitHub e preservam Delivery V2 gate, porém ainda não exigem o novo check exact-SHA até a homologação M2 real."
     },
     {
       "id": "OBL-008",
@@ -184,9 +170,7 @@
         "negative"
       ],
       "disposition": "deferred",
-      "requirement_ids": [
-        "REQ-762-008"
-      ],
+      "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": {
@@ -196,7 +180,7 @@
         "target_issue": 762,
         "parent_issue_must_remain_open": true
       },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "rationale": "Sem bootstrap protegido não existe ensaio operacional positivo/negativo nem recibo confiável; a PR #760 e a issue #714 permanecem abertas."
     },
     {
       "id": "OBL-009",
@@ -216,7 +200,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Covered by existing trusted producer suite in protected base and the new exact-SHA PR #776 regression run; only the canonical compare path fix is newly implemented in this PR; no claim of global issue completion."
+      "rationale": "Leitura autenticada da PR #760, issue #714 e epica #702 em 05/11/2026: ainda abertas; sem evento de merge ou fechamento."
     },
     {
       "id": "OBL-010",
@@ -231,20 +215,14 @@
         "temporal",
         "review-surface"
       ],
-      "disposition": "deferred",
+      "disposition": "covered",
       "requirement_ids": [
         "REQ-762-010"
       ],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": {
-        "decision_source_id": "SRC-ISSUE-762",
-        "decision_source_sha256": "f2f8758f4763361e3132d149a2219e008e517a03865e5133cc32279106376d60",
-        "decision_locator": "Nenhuma alteração de ruleset, merge, exclusão, simulação de identidade de auditor, assinatura falsa ou autoaprovação GitHub. Implementar primeiro em branch `develop` com política fail-closed, ativar somente depois de instalação/revisão e read-back.",
-        "target_issue": 762,
-        "parent_issue_must_remain_open": true
-      },
-      "rationale": "Explicitly deferred by issue-wide partial delivery; operational requirement cannot be inferred from a trusted producer hotfix, green CI or one-person internal review. PR #763 and independent Stage B remain prerequisites."
+      "scope_decision": null,
+      "rationale": "Politica mode=disabled; PR #763 draft; nenhum merge, ruleset, exclusao ou approval; workflows readonly na producao de evidencia e check writer protegido em branch confiavel."
     }
   ],
   "source_coverage": [
@@ -271,48 +249,43 @@
   "observable_assertions": [],
   "structural_invariant_closures": {
     "status": "not-applicable",
-    "applicability_reason": "Nao ha obrigacoes cobertas com flags structural/canonical-path/precedence. Fronteira de privilégio e inspecionada em controles de teste de Stage A.",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
     "entries": [],
     "unresolved_invariants": []
   },
   "read_model_closures": {
     "status": "not-applicable",
-    "applicability_reason": "Stage A nao introduz modelo de leitura de negocio nem altera dados persistidos.",
+    "applicability_reason": "Mudancas exclusivamente de automacao GitHub Actions, governanca e scripts Python; nenhum read model de negocio ou API financeira.",
     "entries": [],
     "unconsumed_outputs": [],
     "unmapped_required_fields": []
   },
   "canonical_source_consistency": {
     "status": "passed",
-    "applicability_reason": "The trusted canonical parser remains at scripts/prepare_session_review_packet.py in develop; the candidate changes only its SHA comparison path guard and adversarial tests, without creating duplicate producers.",
+    "applicability_reason": "A politica e validada a partir de base/default e blobs do GitHub, sem segunda fonte de autoridade em HEAD candidato.",
     "entries": [],
     "unverified_surfaces": [],
     "missing_divergent_tests": []
   },
   "documentation_consistency": {
     "status": "passed",
-    "applicability_reason": "No normative documentation or workflow file changed; the policy remains disabled and the issue explicitly retains Stage B operational obligations.",
+    "applicability_reason": "Comparados AGENTS.md, ADR 0019, docs/quality/SESSION_REVIEW_BOOTSTRAP.md e regras de crgasparoto-br/skill; a politica continua desabilitada e etapas M2 nao sao declaradas concluídas.",
     "old_contract_terms": [
-      "session review trusted",
-      "F-714-06",
-      "CODE-GROWTH-001"
+      "auditoria humana de terceiro",
+      "certificado self attested"
     ],
     "new_contract_terms": [
-      "Etapa A",
-      "Etapa B",
-      "JUnit aggregate counts",
-      "A-004 targeted/systemic remediation inventory",
-      "A-006 JUnit hierarchy fail-closed",
-      "A-007 JUnit disabled/status fail-closed",
-      "A-008 XML DTD/ENTITY blocked by parser events across encodings"
+      "operator-attested-session-review",
+      "third_party_identity_proven=false"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "scripts/prepare_session_review_packet.py",
-      "tests/test_session_review_trusted_producers.py",
-      ".github/workflows/session-review-certificate.yml"
+      "AGENTS.md",
+      "docs/quality/SESSION_REVIEW_BOOTSTRAP.md",
+      "docs/adr/0019-operator-attested-session-review.md",
+      ".github/session-review-policy.json"
     ]
   },
   "scope_reduction_review": {
@@ -324,21 +297,31 @@
     "requirement_ids": [
       "REQ-762-002",
       "REQ-762-003",
-      "REQ-762-009"
+      "REQ-762-005",
+      "REQ-762-009",
+      "REQ-762-010"
     ],
     "obligation_ids": [
+      "OBL-001",
       "OBL-002",
       "OBL-003",
-      "OBL-009"
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010"
     ],
     "evidence": [
-      "Current issue #762 source content confirmed unchanged; SHA-256 primary 762 issue snapshot bound to exact material.",
-      "Current PR #776 changes only authenticated GET SHA compare parser plus its negative regression test, preserving protected-base trusted boundary; git diff base..material exactly 2 paths.",
-      "Code from protected base rejects legitimate compare due ellipsis; PR #776 permits immutable 40-hex...40-hex only while preventing traversal/doubled dot in owner/repo (negative oracle distinguishes old d306 accept from corrected 68f9 reject).",
-      "61 pytest directed cases and 23 unittest solo cases passed against authenticated GitHub material SHA 68f9c697d409cc11b326bf06fba19da8fa109379; raw hashed evidence pr776-exact-pytest.log plus original mutation pr776-negative-original.log.",
-      "CI authenticated GitHub Repository CI run #42627744684 and Delivery audit workspace #42627744660 completed/success at material head.",
-      "No workflow/policy/ruleset/branch change, no self-approval. OBL-001/004/005/006/007/008/010 remain deferred; PRs #760 and #763 and issues #762/#714/#702 open.",
-      "No independent auditor conclusion asserted; the current delivery is a partial prerequisite hotfix for Stage B."
+      "Fonte primaria issue #762 vinculada por SHA-256 da transcricao existente; nenhuma conclusao da PR ou do implementador usada como fonte da especificacao.",
+      "Local authenticated checkout material HEAD 16d4463b: 174/174 testes direcionados PASS, 23/23 testes solo PASS; evidencia bruta evidence/governance-pytest.txt.",
+      "GitHub Actions Repository CI #42637767915 completed/success no HEAD atual; Session review contract #42637767620 e Solo bootstrap #42637767627 success; Delivery workspace #42637767672 success.",
+      "Contratos de protecao nao promovidos: policy mode=disabled, PR em draft, Etapa B ainda sem instalacao correspondente em develop/main e sem ensaios operacionais M2; obrigacoes OBL-001/004/006/007/008 explicitamente deferred.",
+      "Regressao A-001..A-008 e R-001 da PR #770 preservada nos produtores trusted de develop; os testes novos preservam A-008 em UTF-16 e demais JUnit invariants.",
+      "CI material verde nao substitui parecer independente ou certificado final de aprovacao de sessao.",
+      "A-76312 fix: legacy two-session v1 accepted under enabled opt-in, while explicit GitHub recovery is authenticated on entry and before check publication; 4 new full route pytest scenarios at material d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+      "Prior issue obligations OBL-001/004/006/007/008 remain deferred; no merge or operational M2 change was made for this fix."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

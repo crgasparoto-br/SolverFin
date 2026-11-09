@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "68f9c697d409cc11b326bf06fba19da8fa109379",
+  "head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
   "families": [
     {
       "family": "authorization",
@@ -36,11 +36,22 @@
     },
     {
       "family": "temporal-consistency",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-010"
+      ],
+      "dimensions": [
+        {
+          "surface": "bootstrap-policy-safety",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174.",
+          "control_ids": [
+            "NEG-010"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "temporal-destination",
@@ -85,85 +96,75 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
+      "reason": "A-76312 requires mode-sensitive provenance and fail-closed Git history.",
       "control_ids": [
-        "NC-002-02",
-        "NC-003-REGRESSION-A-002",
-        "NC-003-REGRESSION-A-004",
-        "NC-002-A005-PARSER",
-        "NC-002-A005-PRODUCER",
-        "NC-002-A005-CONSUMER",
-        "NC-002-A006-PARSER",
-        "NC-002-A006-PRODUCER",
-        "NC-002-A006-CONSUMER",
-        "NC-002-A007-PARSER",
-        "NC-002-A007-PRODUCER",
-        "NC-002-A007-CONSUMER",
-        "NC-002-A008-PARSER",
-        "NC-002-A008-PRODUCER",
-        "NC-002-A008-CONSUMER",
-        "NC-002-PR776-TRAVERSAL"
+        "NEG-A76312-LEGACY",
+        "NEG-A76312-MERGE",
+        "NEG-HIST-002-1",
+        "NEG-HIST-003-3",
+        "NEG-HIST-005-4",
+        "NEG-HIST-005-5",
+        "NEG-HIST-005-6",
+        "NEG-HIST-007-7",
+        "NEG-HIST-007-8",
+        "NEG-HIST-007-9",
+        "NEG-HIST-008-10",
+        "NEG-HIST-008-11",
+        "NEG-HIST-008-12"
       ],
       "dimensions": [
         {
-          "surface": "trusted-candidate-separation",
-          "reason": "Compare protected versus candidate bytes, reject candidate modifications and keep workflow definitions outside the Stage A change.",
+          "surface": "review-provenance-routing",
+          "reason": "Four actual integration cases cover V1/opt-in and linear/merge combinations.",
           "control_ids": [
-            "NC-002-02"
+            "NEG-A76312-LEGACY",
+            "NEG-A76312-MERGE"
           ],
           "status": "passed"
         },
         {
           "surface": "critical-certificate-inventory",
-          "reason": "No optional artifact false rejections; reject foreign or corrupted inventory",
+          "reason": "Inherited audit escape A-002, replayed with 174 pytest cases",
           "control_ids": [
-            "NC-003-REGRESSION-A-002"
+            "NEG-HIST-002-1"
           ],
           "status": "passed"
         },
         {
-          "surface": "critical-certificate-remediation-mode",
-          "reason": "Distinguishes targeted valid records from systemic/mixed lineage requirements using a killed historical mutant.",
+          "surface": "trusted-candidate-separation",
+          "reason": "Inherited audit escape A-003, replayed with 174 pytest cases",
           "control_ids": [
-            "NC-003-REGRESSION-A-004"
+            "NEG-HIST-003-3"
           ],
           "status": "passed"
         },
         {
           "surface": "junit-evidence-parser",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
           "control_ids": [
-            "NC-002-A005-PARSER",
-            "NC-002-A006-PARSER",
-            "NC-002-A008-PARSER"
+            "NEG-HIST-005-4",
+            "NEG-HIST-007-7",
+            "NEG-HIST-008-10"
           ],
           "status": "passed"
         },
         {
           "surface": "junit-evidence-writer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
           "control_ids": [
-            "NC-002-A005-PRODUCER",
-            "NC-002-A006-PRODUCER",
-            "NC-002-A008-PRODUCER"
+            "NEG-HIST-005-5",
+            "NEG-HIST-007-8",
+            "NEG-HIST-008-11"
           ],
           "status": "passed"
         },
         {
           "surface": "junit-zip-consumer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
           "control_ids": [
-            "NC-002-A005-CONSUMER",
-            "NC-002-A006-CONSUMER",
-            "NC-002-A008-CONSUMER"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "trusted-github-compare-path",
-          "reason": "Canonical 40hex...40hex compare is required for trusted attestation, but dot/double-dot owner and repository namespace traversal must fail closed; observed mutant and current negative suite.",
-          "control_ids": [
-            "NC-002-PR776-TRAVERSAL"
+            "NEG-HIST-005-6",
+            "NEG-HIST-007-9",
+            "NEG-HIST-008-12"
           ],
           "status": "passed"
         }
@@ -175,14 +176,16 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-003-02"
+        "NEG-762-DOCS",
+        "NEG-HIST-002-2"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Bootstrap documentation must not claim production trust or Stage B activation by an unmerged PR.",
+          "reason": "ADR 0019 e manual declaram mode=disabled e nao afirmam M2 como executado.",
           "control_ids": [
-            "NC-003-02"
+            "NEG-762-DOCS",
+            "NEG-HIST-002-2"
           ],
           "status": "passed"
         }

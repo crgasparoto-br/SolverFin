@@ -1,483 +1,279 @@
 #!/usr/bin/env python3
-"""Trusted GitHub-hosted review reader/publisher. Never executes candidate code."""
+"""Trusted exact-SHA session-review Check Run verifier for SolverFin.
+
+This script must run from protected base/default code with checks:write. It
+never checks out, imports or executes candidate Python/Node code. A successful
+unit/CI run, a handoff, or a comment alone is never an approval.
+"""
 from __future__ import annotations
 
 import argparse
-import base64
-import difflib
-import io
 import json
 import os
 import re
-import stat
 import subprocess
 import sys
-import tempfile
-import zipfile
 from pathlib import Path
-from urllib.parse import quote
 
-import session_review_github as github_facts
+import prepare_session_review_packet as collector
+import session_review_evidence as evidence
+import session_review_github as facts
+from session_review_checks import begin_check, finish_check, paged, review_watermark, write_api
 from session_review import (
-    ASSURANCE,
-    CHECK_NAME,
-    POLICY_PATH,
-    PREFIX,
-    PROVENANCE_TYPE,
-    allowed,
-    canonical,
-    digest,
-    latest_review,
-    require,
-    review_snapshot,
-    safe_path,
-    strict_json,
-    validate_policy,
-    verify_review,
+    ASSURANCE, POLICY_PATH, PREFIX, allowed,
+    canonical, digest, latest_review, require, review_snapshot, strict_json,
+    validate_policy, verify_review,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
-MAX_BYTES = 32 * 1024 * 1024
-WORKFLOW = ".github/workflows/session-review.yml"
-# Both the emitter and its verification policy must already exist in trusted base.
-TRUSTED_PATHS = (WORKFLOW, POLICY_PATH, "scripts/session_review.py", "scripts/session_review_github.py",
-                 "scripts/verify_session_review.py",
-                 "scripts/verify_independent_pr_audit.py", "entregar-issue/scripts/specification.py",
-                 "entregar-issue/scripts/require_actions_handoff_certificate.py",
-                 "entregar-issue/scripts/handoff_merge_preview.py",
-                 "entregar-issue/scripts/handoff_postcondition.py", "entregar-issue/scripts/handoff_postcondition_records.py",
-                 "entregar-issue/scripts/certificate_postcondition_replay.py", "entregar-issue/scripts/certificate_replay_io.py",
-                 "entregar-issue/scripts/certificate_replay_source.py", "entregar-issue/scripts/audit_artifact_io.py",
-                 "entregar-issue/scripts/certificate_replay_inputs.py",
-                 "entregar-issue/scripts/build_test_candidate_index.py")
+TRUSTED_PATHS = (
+    ".github/workflows/session-review.yml",
+    ".github/workflows/session-review-evidence.yml",
+    POLICY_PATH,
+    "scripts/session_review.py",
+    "scripts/session_review_specification.py",
+    "scripts/session_review_github.py",
+    "scripts/prepare_session_review_packet.py",
+    "scripts/session_review_packet_handoff.py",
+    "scripts/session_review_certificate.py",
+    ".github/workflows/session-review-certificate.yml",
+    "scripts/session_review_evidence.py",
+    "scripts/session_review_checks.py",
+    "scripts/verify_session_review.py",
+)
+
+
+def pages(repo: str, endpoint: str, *, field: str | None = None):
+    """Retain the existing read-only inventory interface for solo audit."""
+    return paged(repo, endpoint, field=field)
 
 
 def api(path: str, *, method: str = "GET", data: dict | None = None, binary: bool = False):
-    """gh is used only for authenticated GitHub calls, never model inference."""
-    require(path.startswith("/repos/") and ".." not in path, "unexpected GitHub endpoint")
-    command = ["gh", "api", "--method", method, path]
-    if data is not None:
-        command.extend(["--input", "-"])
-    result = subprocess.run(command, input=canonical(data) if data is not None else None,
-                            capture_output=True, check=False, timeout=90)
-    if result.returncode != 0:
-        # GitHub CLI reports HTTP status on stderr. Never print stderr, which
-        # could contain sensitive response data, or query parameters.
-        match = re.search(rb"\bHTTP\s+([1-5][0-9]{2})\b", result.stderr, re.IGNORECASE)
-        status = f"HTTP {match.group(1).decode('ascii')}" if match else "HTTP status unavailable"
-        resource = path.split("?", 1)[0]
-        raise ValueError(f"authenticated GitHub {method} {resource} request failed ({status})")
-    require(len(result.stdout) <= MAX_BYTES, "GitHub response exceeds size limit")
-    return result.stdout if binary else json.loads(result.stdout)
+    """Legacy facade: GET reads and tightly scoped Check Run writes only."""
+    require(not binary and ((method == "GET" and data is None)
+            or (method in {"POST", "PATCH"} and isinstance(data, dict))),
+            "unsupported legacy GitHub operation")
+    return collector.api(path) if method == "GET" else write_api(path, method, data)
 
 
-def pages(repo: str, endpoint: str, *, field: str | None = None) -> list[dict]:
-    output = []
-    total = None
-    for page in range(1, 26):
-        separator = "&" if "?" in endpoint else "?"
-        batch = api(f"/repos/{repo}/{endpoint}{separator}per_page=100&page={page}")
-        if field:
-            count = batch.get("total_count") if isinstance(batch, dict) else None
-            require(type(count) is int and count >= 0 and (total is None or total == count),
-                    "paginated inventory changed or is malformed")
-            total, batch = count, batch.get(field)
-        require(isinstance(batch, list) and all(isinstance(x, dict) for x in batch), "invalid paginated response")
-        output.extend(batch)
-        if total is not None:
-            require(len(output) <= total, "paginated inventory exceeds declared total")
-            if len(output) == total:
-                return output
-        if len(batch) < 100:
-            require(total is None, "paginated inventory truncated")
-            return output
-    raise ValueError("incomplete paginated inventory")
-
-
-def content(repo: str, path: str, sha: str) -> tuple[bytes, str]:
-    require(safe_path(path), "unsafe source path")
-    obj = api(f"/repos/{repo}/contents/{quote(path, safe='/')}?ref={sha}")
-    require(isinstance(obj, dict) and obj.get("type") == "file" and obj.get("encoding") == "base64",
-            "source must be a complete regular file")
-    raw = base64.b64decode("".join(obj["content"].split()), validate=True)
-    require(len(raw) <= 2 * 1024 * 1024, "source exceeds audit size limit")
-    return raw, obj["sha"]
-
-
-def target(repo: str, number: int, issue_number: int, policy_raw: bytes, *, pr: dict | None = None) -> tuple[dict, dict]:
-    pr = api(f"/repos/{repo}/pulls/{number}") if pr is None else pr
-    issue = api(f"/repos/{repo}/issues/{issue_number}")
-    require(pr.get("state") == "open" and not pr.get("draft"), "open, non-draft PR required")
-    require(pr["head"]["repo"]["full_name"] == repo and pr["base"]["repo"]["full_name"] == repo,
-            "cross-repository candidate requires separate policy")
-    require(issue.get("number") == issue_number and "pull_request" not in issue and isinstance(issue.get("body"), str),
-            "canonical issue is missing")
-    refs = {int(x) for x in re.findall(r"(?im)^\s*(?:closes|fixes|refs)\s+#([1-9][0-9]*)\s*$", pr.get("body") or "")}
-    require(refs == {issue_number}, "canonical issue reference missing or ambiguous")
-    identity = {"repository": repo, "pull_request": number, "issue": issue_number,
-                "base_ref": pr["base"]["ref"], "base_sha": pr["base"]["sha"], "head_sha": pr["head"]["sha"],
-                "merge_preview_sha": pr.get("merge_commit_sha"), "issue_sha256": digest(issue["body"].encode()),
-                "policy_sha256": digest(policy_raw)}
-    return identity, issue
-
-
-def requirements(repo: str, issue: dict) -> list[dict]:
-    # Reuse the canonical parser, with LIVE issue bytes, not a candidate-supplied list.
-    sys.path.insert(0, str(ROOT / "entregar-issue/scripts"))
-    from specification import extract_candidates
-    with tempfile.TemporaryDirectory() as temporary:
-        directory = Path(temporary)
-        source = directory / "issue.txt"
-        source.write_text(issue["body"], encoding="utf-8")
-        sid = f"SRC-ISSUE-{issue['number']}"
-        snapshot = {"schema_version": 1, "repository": repo, "issue": issue["number"],
-                    "primary_source_id": sid, "sources": [{"id": sid, "kind": "issue-body", "textual": True,
-                    "path": "issue.txt", "sha256": digest(source.read_bytes())}]}
-        path = directory / "snapshot.json"
-        path.write_bytes(canonical(snapshot))
-        errors = []
-        _, _, rows = extract_candidates(path, errors)
-        require(not errors and bool(rows), "canonical obligation extraction failed")
-    return rows
-
-
-def unpack(raw: bytes, directory: Path) -> None:
-    with zipfile.ZipFile(io.BytesIO(raw)) as archive:
-        names = set()
-        total = 0
-        for info in archive.infolist():
-            total += info.file_size
-            require(safe_path(info.filename) and info.filename not in names and total <= MAX_BYTES,
-                    "unsafe, duplicated or oversized evidence archive")
-            require(not stat.S_ISLNK(info.external_attr >> 16), "symlink in evidence archive")
-            names.add(info.filename)
-        archive.extractall(directory)
-
-
-def authenticated_certificate_event(identity: dict) -> dict:
-    return github_facts.authenticated_certificate_event(identity, api)
-
-
-def authenticated_preview_reconciliation(identity: dict, certified_sha: str) -> dict:
-    return github_facts.authenticated_preview_reconciliation(identity, certified_sha, api)
-
-
-def reconcile_target(packet: dict, live_identity: dict) -> dict | None:
-    return github_facts.reconcile_target(
-        packet, live_identity, authenticated_certificate_event, authenticated_preview_reconciliation)
-
-
-def authenticated_implementation_provenance(identity: dict, metadata: dict) -> dict:
-    return github_facts.authenticated_implementation_provenance(identity, metadata, pages, api)
-
-
-def certified_evidence(identity: dict, checks: dict, directory: Path) -> tuple[dict, set[str]]:
-    return github_facts.certified_evidence(
-        identity, checks, directory, api=api, unpack=unpack,
-        authenticated_certificate_event=authenticated_certificate_event,
-        authenticated_preview_reconciliation=authenticated_preview_reconciliation, root=ROOT)
-
-
-def freeze_files(repo: str, changed: list[dict], base: str, head: str) -> tuple[dict, dict]:
-    files, diffs = {}, {}
-    total = 0
-    for item in changed:
-        status, path = item.get("status"), item["filename"]
-        require(status in {"added", "removed", "modified", "renamed"}, "unsupported file change requires separate evidence")
-        old_path = item.get("previous_filename", path)
-        before = b"" if status == "added" else content(repo, old_path, base)[0]
-        after = b"" if status == "removed" else content(repo, path, head)[0]
-        total += len(before) + len(after)
-        require(total <= MAX_BYTES, "source inventory exceeds audit budget; no silent truncation")
-        before_text, after_text = before.decode("utf-8"), after.decode("utf-8")
-        if status != "added":
-            files["base/" + old_path] = before_text
-        if status != "removed":
-            files["head/" + path] = after_text
-        diffs[path] = "".join(difflib.unified_diff(before_text.splitlines(keepends=True),
-            after_text.splitlines(keepends=True), fromfile="base/" + old_path, tofile="head/" + path))
-    return files, diffs
-
-
-def authorized_operator(repo: str, user: dict) -> bool:
-    repository = api(f"/repos/{repo}")
-    owner = repository.get("owner") or {}
-    if owner.get("type") == "User" and owner.get("id") == user.get("id") and owner.get("login") == user.get("login"):
-        return True
-    from verify_independent_pr_audit import is_authorized_reviewer
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    return is_authorized_reviewer(repo, user["login"], token)
-
-
-def prepare(repo: str, number: int, issue_number: int, *, require_enabled: bool) -> tuple[dict, dict, dict, set[str]]:
-    pr = api(f"/repos/{repo}/pulls/{number}")
-    base = pr["base"]["sha"]
-    policy_raw, _ = content(repo, POLICY_PATH, base)
-    policy = strict_json(policy_raw.decode())
-    if require_enabled:
-        validate_policy(policy)
+def trusted_policy_and_code(repo: str, base_sha: str) -> tuple[dict, bytes]:
+    repository = collector.api(f"/repos/{repo}")
+    default = repository.get("default_branch")
+    require(isinstance(default, str) and bool(default), "default branch unavailable")
+    default_branch = collector.api(f"/repos/{repo}/branches/{default}")
+    default_sha = (default_branch.get("commit") or {}).get("sha")
+    require(isinstance(default_sha, str) and bool(collector.SHA_RE.fullmatch(default_sha)),
+            "default branch SHA unavailable")
     for path in TRUSTED_PATHS:
-        trusted, _ = content(repo, path, base)
-        require((ROOT / path).read_bytes() == trusted, "execution policy differs from trusted base")
-    identity, issue = target(repo, number, issue_number, policy_raw)
-    require(identity["base_sha"] == base and identity["head_sha"] == pr["head"]["sha"],
-            "PR changed before source collection")
-    changed = pages(repo, f"pulls/{number}/files")
-    require(len(changed) == pr["changed_files"] and bool(changed), "changed-file inventory incomplete")
-    files, diffs = freeze_files(repo, changed, base, identity["head_sha"])
-    checks = api(f"/repos/{repo}/commits/{identity['head_sha']}/check-runs?per_page=100")
-    with tempfile.TemporaryDirectory() as temporary:
-        metadata, passed = certified_evidence(identity, checks, Path(temporary))
-    # The material SHA and base are fixed. The certified synthetic merge
-    # remains the stable review identity even when GitHub recreates its commit.
-    stable = {**identity, "merge_preview_sha": metadata["merge_preview_reconciliation"]["certified_sha"]}
-    packet = {"schema_version": 1, "identity": stable, "requirements": requirements(repo, issue), **metadata,
-              "allowed_assurance": ASSURANCE, "sources": files, "diffs": diffs, "passed_tests": sorted(passed),
-              "canonical_issue": {k: issue[k] for k in ("number", "title", "body")},
-              "disposition": "RAW_INPUT_ONLY_NOT_REVIEW_APPROVAL"}
-    current, _ = target(repo, number, issue_number, policy_raw)
-    reconcile_target(packet, current)
-    return packet, policy, files, passed
+        base_text, _ = collector.file_at(repo, path, base_sha)
+        default_text, _ = collector.file_at(repo, path, default_sha)
+        require(base_text == default_text == (ROOT / path).read_text(encoding="utf-8"),
+                "trusted runner, default and protected base source differ: " + path)
+    raw = (ROOT / POLICY_PATH).read_bytes()
+    policy = strict_json(raw.decode())
+    validate_policy(policy)
+    return policy, raw
 
 
-def review_journal(repo: str, sha: str) -> tuple[int, list[dict]]:
-    watermark = 0
-    entries = []
-    checks = pages(repo, f"commits/{sha}/check-runs?check_name={quote(CHECK_NAME)}&filter=all", field="check_runs")
-    require(len({check.get("id") for check in checks}) == len(checks), "duplicated review journal entry")
-    for check in checks:
-        if check.get("name") != CHECK_NAME or (check.get("app") or {}).get("id") != 15368:
-            continue
-        require(type(check.get("id")) is int and check["id"] > 0 and check.get("head_sha") == sha,
-                "review journal check identity mismatch")
-        try:
-            receipt = strict_json((check.get("output") or {}).get("text") or "{}")
-        except (ValueError, RecursionError):
-            raise ValueError("invalid prior review receipt") from None
-        value = receipt.get("review_comment_id", 0)
-        minimum = receipt.get("minimum_comment_id", 0)
-        require(type(value) is int and value >= 0 and type(minimum) is int and minimum >= 0, "invalid review watermark")
-        watermark = max(watermark, value, minimum)
-        entries.append(check)
-    return watermark, entries
+def authenticate_operator(repo: str, user: dict) -> None:
+    repository = collector.api(f"/repos/{repo}")
+    owner = repository.get("owner") or {}
+    require(owner.get("type") == "User" and owner.get("id") == user.get("id")
+            and str(owner.get("login", "")).casefold() == str(user.get("login", "")).casefold(),
+            "reviewer is not the authenticated owner; no external identity is claimed")
 
 
-def begin_check(repo: str, sha: str, receipt: dict, previous: list[dict]) -> int:
-    """The workflow serializes writers; retain the watermark when reusing its check."""
-    latest = max(previous, key=lambda item: item["id"]) if previous else None
-    body = {"name": CHECK_NAME, "status": "in_progress",
-            "output": {"title": "Revalidating session review", "text": json.dumps(receipt, sort_keys=True),
-                       "summary": "Approval is withheld until live evidence is verified."}}
-    if latest:
-        result = api(f"/repos/{repo}/check-runs/{latest['id']}", method="PATCH", data=body)
-        require(result.get("head_sha") == sha and result.get("id") == latest["id"]
-                and result.get("name") == CHECK_NAME, "existing check identity changed during revalidation")
-        if result.get("status") == "completed":
-            # GitHub can retain a terminal status instead of reopening the old check.
-            # Start a new pending check so a stale approved result cannot remain latest.
-            result = api(f"/repos/{repo}/check-runs", method="POST", data={**body, "head_sha": sha})
-    else:
-        result = api(f"/repos/{repo}/check-runs", method="POST", data={**body, "head_sha": sha})
-    # GitHub can finalize a POST immediately. The verification may continue only
-    # if the observed state cannot satisfy a required check without this review.
-    status, conclusion = result.get("status"), result.get("conclusion")
-    blocked = ((status in {"queued", "in_progress"} and conclusion is None)
-               or (status == "completed" and conclusion == "failure"))
-    observed = status if status in {"queued", "in_progress", "completed"} else "unexpected"
-    require(result.get("head_sha") == sha and type(result.get("id")) is int
-            and result["id"] > 0 and blocked,
-            f"check identity or fail-closed state not confirmed ({observed})")
-    return result["id"]
+def same_head_not_shared(repo: str, number: int, head: str) -> None:
+    prs = paged(repo, f"commits/{head}/pulls")
+    active = [p for p in prs if p.get("state") == "open" and p.get("head", {}).get("sha") == head]
+    require(len(active) == 1 and active[0].get("number") == number,
+            "more than one open PR shares this commit; Check Runs are not per-PR")
 
 
-def event_review_id(policy: dict) -> int:
-    path = os.environ.get("GITHUB_EVENT_PATH")
-    if not path:
+def event_watermark(policy: dict) -> int:
+    event_path = os.environ.get("GITHUB_EVENT_PATH")
+    if not event_path:
         return 0
-    event = json.loads(Path(path).read_bytes())
+    event = strict_json(Path(event_path).read_text(encoding="utf-8"))
+    if event.get("action") not in {"edited", "deleted"}:
+        return 0
     comment = event.get("comment") or {}
-    previous = (event.get("changes", {}).get("body") or {}).get("from", "")
-    is_review = str(comment.get("body", "")).startswith(PREFIX) or str(previous).startswith(PREFIX)
-    if allowed(comment, policy) and is_review:
-        return int(comment["id"]) + (1 if event.get("action") in {"edited", "deleted"} else 0)
+    prior_body = (event.get("changes", {}).get("body") or {}).get("from")
+    marker = str(comment.get("body") or "").startswith(PREFIX) or str(prior_body or "").startswith(PREFIX)
+    if marker and allowed(comment, policy) and type(comment.get("id")) is int:
+        return comment["id"] + 1
     return 0
 
 
-def recheck_inputs(packet: dict) -> None:
-    from verify_independent_pr_audit import required_checks_green, trusted_workflow_check
-    ident = packet["identity"]
-    repo, head, base = ident["repository"], ident["head_sha"], ident["base_sha"]
-    token = os.environ.get("GH_TOKEN") or os.environ.get("GITHUB_TOKEN")
-    checks = api(f"/repos/{repo}/commits/{head}/check-runs?per_page=100")
-    required_checks_green(checks, head, "develop", lambda name, check: trusted_workflow_check(
-        repo, ident["pull_request"], name, check, head, base, token))
-    ids = sorted(c["id"] for c in checks["check_runs"] if c.get("name") in {
-        "Structure and tests", "Offline authorization tests", "collect / Require certified semantic handoff (exact SHA)"})
-    require(ids == packet["technical_check_ids"], "technical evidence changed during verification")
-    artifact = api(f"/repos/{repo}/actions/artifacts/{packet['artifact_id']}")
-    require(not artifact.get("expired") and artifact.get("digest") == packet["artifact_digest"],
-            "certified artifact expired or changed")
-    observed, _ = target(repo, ident["pull_request"], ident["issue"], (ROOT / POLICY_PATH).read_bytes())
-    reconcile_target(packet, observed)
-    if "implementation_provenance" in packet:
-        verified = authenticated_implementation_provenance(ident, packet)
-        require(verified == packet["implementation_provenance"],
-                "GitHub implementation history changed during review")
+def live_identity(repo: str, number: int, issue_number: int, policy_raw: bytes) -> dict:
+    pr = collector.api(f"/repos/{repo}/pulls/{number}")
+    issue = collector.api(f"/repos/{repo}/issues/{issue_number}")
+    require(pr.get("state") == "open" and pr.get("draft") is False,
+            "only a ready PR can be approved")
+    require(pr.get("head", {}).get("repo", {}).get("full_name") == repo
+            and pr.get("base", {}).get("repo", {}).get("full_name") == repo,
+            "cross-repository PR not accepted")
+    require(collector.issue_reference(pr) == issue_number, "canonical issue changed")
+    identity = {"repository": repo, "pull_request": number, "issue": issue_number,
+                "base_ref": pr["base"]["ref"], "base_sha": pr["base"]["sha"],
+                "head_sha": pr["head"]["sha"], "merge_preview_sha": pr.get("merge_commit_sha"),
+                "issue_sha256": digest(issue["body"].encode()),
+                "policy_sha256": digest(policy_raw)}
+    require(identity["base_ref"] in {"develop", "main"}
+            and all(isinstance(identity[k], str) and collector.SHA_RE.fullmatch(identity[k])
+                    for k in ("base_sha", "head_sha", "merge_preview_sha")),
+            "PR identity incomplete")
+    return identity
 
 
-def publish(repo: str, sha: str, conclusion: str, summary: str, receipt: dict, run_id: str,
-            check_id: int | None = None) -> None:
-    require(run_id.isdecimal(), "authenticated Actions run required for publication")
-    require(conclusion in {"success", "failure"}, "invalid check conclusion")
-    require(conclusion != "success" or (receipt.get("identity") or {}).get("head_sha") == sha,
-            "approved evidence does not authorize this check SHA")
-    body = {"name": CHECK_NAME, "head_sha": sha, "status": "completed", "conclusion": conclusion,
-            "external_id": receipt.get("fingerprint", "blocked"),
-            "details_url": f"https://github.com/{repo}/actions/runs/{run_id}",
-            "output": {"title": "Operator-attested session review", "summary": summary,
-                       "text": json.dumps(receipt, sort_keys=True)}}
-    # Failure publication must remain possible when reading the journal failed.
-    if check_id is None:
-        result = api(f"/repos/{repo}/check-runs", method="POST", data=body)
-    else:
-        current = api(f"/repos/{repo}/check-runs/{check_id}")
-        require(current.get("head_sha") == sha and current.get("name") == CHECK_NAME
-                and (current.get("app") or {}).get("id") == 15368,
-                "existing check belongs to another target or publisher")
-        body.pop("head_sha")
-        result = api(f"/repos/{repo}/check-runs/{check_id}", method="PATCH", data=body)
-    require(result.get("head_sha") == sha and result.get("conclusion") == conclusion,
-            "check publication was not confirmed")
+def reconcile(packet: dict, current: dict) -> None:
+    facts.reconcile_target(packet, current,
+                           lambda identity: facts.authenticated_certificate_event(identity, collector.api),
+                           lambda identity, certified: facts.authenticated_preview_reconciliation(
+                               identity, certified, collector.api))
 
 
-def evaluate(repo: str, number: int, issue_number: int, packet_out: Path | None = None) -> int:
-    receipt = {"third_party_identity_proven": False}
-    pr = api(f"/repos/{repo}/pulls/{number}")
-    head = pr["head"]["sha"]
-    check_id = None
+def prepare(repo: str, number: int, issue_number: int, initial: dict) -> tuple[dict, dict, set[str]]:
+    policy, raw = trusted_policy_and_code(repo, initial["base_sha"])
+    require(digest(raw) == initial["policy_sha256"], "policy changed during review")
+    # A pull_request workflow can read an untrusted HEAD. Its YAML must be
+    # unchanged from protected base or its JUnit could be fabricated.
+    candidate_workflow, _ = collector.file_at(
+        repo, evidence.WORKFLOW, initial["head_sha"])
+    require(candidate_workflow == (ROOT / evidence.WORKFLOW).read_text(encoding="utf-8"),
+            "candidate modified trusted evidence workflow")
+    native = collector.collect(repo, number)
+    ident = native["identity"]
+    require(ident == initial and ident["issue"] == issue_number,
+            "issue, PR, policy, base, HEAD or preview changed during collection")
+    handoff = native["handoff"]
+    visual_required = any(path.startswith(("head/apps/web/", "head/docs/GOLDEN_STATEMENT.md",
+                                                "head/docs/adr/0018-golden-statement"))
+                          for path in native["files"])
+    metadata, passed = evidence.collect_verified(
+        repo, number, ident["base_sha"], ident["head_sha"],
+        handoff["material_head_sha"], handoff["certificate_sha256"],
+        visual_required=visual_required)
+    packet = {"identity": ident, "requirements": native["requirements"],
+              "artifact_id": metadata["artifact_id"],
+              "artifact_digest": metadata["artifact_digest"],
+              "technical_check_ids": metadata["technical_check_ids"],
+              "certified_at": metadata["certified_at"],
+              "passed_tests": sorted(passed),
+              "merge_preview_reconciliation": {
+                  "certified_sha": ident["merge_preview_sha"],
+                  "current_sha": ident["merge_preview_sha"], "mode": "exact"},
+              "certification_event_sha256": digest(canonical(native["merge_preview"])),
+              "sources": native["files"]}
+    return packet, policy, passed
+
+
+def evaluate(repo: str, number: int, issue_number: int, run_id: str) -> int:
+    pr = collector.api(f"/repos/{repo}/pulls/{number}")
+    head = (pr.get("head") or {}).get("sha")
+    require(isinstance(head, str) and collector.SHA_RE.fullmatch(head), "PR HEAD missing")
+    # Establish the blocking check before any fallible history read.
+    check_id = begin_check(repo, head, number, run_id)
+    receipt = {"minimum_comment_id": 0, "third_party_identity_proven": False,
+               "assurance": ASSURANCE, "identity": {"repository": repo, "pull_request": number,
+                                                   "head_sha": head}}
     try:
-        watermark, previous = review_journal(repo, head) if not packet_out else (0, [])
+        watermark = review_watermark(repo, head)
         receipt["minimum_comment_id"] = watermark
-        if not packet_out:
-            check_id = begin_check(repo, head, receipt, previous)
-        policy_raw = (ROOT / POLICY_PATH).read_bytes()
-        local_policy = strict_json(policy_raw.decode())
-        watermark = max(watermark, event_review_id(local_policy)) if not packet_out else watermark
-        receipt["minimum_comment_id"] = watermark
-        require(type(issue_number) is int and issue_number > 0, "canonical issue reference missing or ambiguous")
-        initial, _ = target(repo, number, issue_number, policy_raw, pr=pr)
-        packet, policy, files, passed = prepare(repo, number, issue_number, require_enabled=not packet_out)
-        try:
-            reconcile_target(packet, initial)
-        except ValueError as exc:
-            raise ValueError("target changed between initial observation and evidence collection") from exc
-        require(initial["head_sha"] == head, "target changed between initial observation and evidence collection")
-        if packet_out:
-            if policy.get("implementation_provenance") == {"mode": "enabled", "type": PROVENANCE_TYPE}:
-                packet["implementation_provenance"] = authenticated_implementation_provenance(packet["identity"], packet)
-            packet_out.parent.mkdir(parents=True, exist_ok=True)
-            packet_out.write_bytes(canonical(packet) + b"\n")
-            print("RAW PACKET: no reviewer identity or approval is asserted")
-            return 0
-        comments = pages(repo, f"issues/{number}/comments")
-        watermark = max(watermark, event_review_id(policy))
-        receipt["minimum_comment_id"] = watermark
-        selected = latest_review(comments, policy, watermark=watermark)
-        # Historical v1 reviews do not depend on the optional GitHub recovery
-        # capability, even when the trusted policy has opted into that feature.
-        report_hint = strict_json(selected["body"][len(PREFIX):])
-        declared = report_hint.get("sessions")
-        wants_provenance = isinstance(declared, dict) and isinstance(declared.get("implementation"), dict)
-        if wants_provenance and policy.get("implementation_provenance") == {
-                "mode": "enabled", "type": PROVENANCE_TYPE}:
-            packet["implementation_provenance"] = authenticated_implementation_provenance(packet["identity"], packet)
-        snapshot = review_snapshot(selected, repo, number)
-        receipt["review_comment_id"] = selected["id"]
-        # A write-capable, currently authorized operator is required in addition to
-        # the numeric account allowlist. The PR author's account may be that operator.
-        require(authorized_operator(repo, selected["user"]), "reviewer's permission was revoked")
-        receipt = verify_review(selected, packet, policy, files, passed)
-        # Re-read every mutable authority and input after verifying the review.
-        latest = api(f"/repos/{repo}/issues/comments/{selected['id']}")
-        require(review_snapshot(latest, repo, number) == snapshot, "review changed during verification")
-        selected_now = latest_review(pages(repo, f"issues/{number}/comments"), policy, watermark=selected["id"])
-        require(review_snapshot(selected_now, repo, number) == snapshot,
-                "a newer review superseded this approval")
-        recheck_inputs(packet)
-        refreshed, _ = target(repo, number, issue_number, (ROOT / POLICY_PATH).read_bytes())
-        try:
-            proof = reconcile_target(packet, refreshed)
-        except ValueError as exc:
-            raise ValueError("target changed before publication") from exc
-        if proof is not None:
-            receipt["merge_preview_reconciliation"] = proof
-            receipt["fingerprint"] = digest(canonical({k: v for k, v in receipt.items() if k != "fingerprint"}))
-        require(authorized_operator(repo, selected["user"]), "reviewer permission changed")
-        # Repeat the mutable-review check after every other revalidation. A review
-        # edited, deleted, rejected or superseded while the target/evidence checks
-        # were running must never leave a stale success behind.
-        final_review = api(f"/repos/{repo}/issues/comments/{selected['id']}")
-        require(review_snapshot(final_review, repo, number) == snapshot,
-                "review changed during final publication revalidation")
-        final_selected = latest_review(
-            pages(repo, f"issues/{number}/comments"), policy, watermark=selected["id"]
-        )
-        require(review_snapshot(final_selected, repo, number) == snapshot,
-                "a newer review superseded this approval during final publication revalidation")
-        # Last live authority check after the final comment read. GitHub may
-        # regenerate its test merge during the review, or concurrently mutate
-        # the base/HEAD; neither change may silently authorize publication.
-        terminal, _ = target(repo, number, issue_number, (ROOT / POLICY_PATH).read_bytes())
-        terminal_proof = reconcile_target(packet, terminal)
-        if terminal_proof is not None:
-            receipt["merge_preview_reconciliation"] = terminal_proof
-            receipt["fingerprint"] = digest(canonical({k: v for k, v in receipt.items() if k != "fingerprint"}))
-        summary = "Verified evidence-bound session review. Session separation is operator-attested, NOT third-party identity."
-        publish(repo, head, "success", summary, receipt, os.environ.get("GITHUB_RUN_ID", ""), check_id)
-        print(summary)
+        require(type(issue_number) is int and issue_number > 0, "unambiguous canonical issue required")
+        initial_policy_text, _ = collector.file_at(repo, POLICY_PATH, pr["base"]["sha"])
+        initial = live_identity(repo, number, issue_number, initial_policy_text.encode())
+        require(initial["head_sha"] == head, "PR changed after review check began")
+        same_head_not_shared(repo, number, head)
+        packet, policy, passed = prepare(repo, number, issue_number, initial)
+        receipt["minimum_comment_id"] = max(watermark, event_watermark(policy))
+        comments = paged(repo, f"issues/{number}/comments")
+        selected = latest_review(comments, policy, watermark=receipt["minimum_comment_id"])
+        snap = review_snapshot(selected, repo, number)
+        authenticate_operator(repo, selected["user"])
+        if facts.uses_github_implementation_session(selected, PREFIX):
+            packet["implementation_provenance"] = facts.authenticated_implementation_provenance(
+                packet["identity"], packet, paged, collector.api)
+        valid = verify_review(selected, packet, policy, packet["sources"], passed)
+        receipt.update(valid)
+        # Inputs are mutable. Rebuild all authority and inspect the latest
+        # comment again before allowing the terminal Check Run to succeed.
+        current = live_identity(repo, number, issue_number, (ROOT / POLICY_PATH).read_bytes())
+        reconcile(packet, current)
+        latest = collector.api(f"/repos/{repo}/issues/comments/{selected['id']}")
+        require(review_snapshot(latest, repo, number) == snap, "review edited or deleted")
+        selected_again = latest_review(paged(repo, f"issues/{number}/comments"), policy,
+                                       watermark=selected["id"])
+        require(review_snapshot(selected_again, repo, number) == snap,
+                "review superseded or revoked")
+        same_head_not_shared(repo, number, head)
+        if "implementation_provenance" in packet:
+            require(facts.authenticated_implementation_provenance(
+                current, packet, paged, collector.api) == packet["implementation_provenance"],
+                "GitHub implementation provenance changed before publication")
+        # Recheck the current technical gate and artifact identity. No cached
+        # success is permitted after a new failing run or a changed artifact.
+        fresh, _ = evidence.collect_verified(
+            repo, number, current["base_sha"], current["head_sha"],
+            native_material(packet, repo, number),
+            collector.file_at(repo, ".audit/entregar-issue/handoff-ready.json", head)[1],
+            visual_required=any(path.startswith(("head/apps/web/", "head/docs/GOLDEN_STATEMENT.md",
+                                                 "head/docs/adr/0018-golden-statement"))
+                                for path in packet["sources"]))
+        require(fresh["artifact_digest"] == packet["artifact_digest"]
+                and fresh["artifact_id"] == packet["artifact_id"],
+                "technical audit evidence changed")
+        rechecked_policy, rechecked_raw = trusted_policy_and_code(repo, current["base_sha"])
+        require(rechecked_policy == policy and digest(rechecked_raw) == current["policy_sha256"],
+                "default/base trust policy changed during final revalidation")
+        finish_check(repo, head, check_id, run_id, receipt, True,
+                     "Exact-SHA review accepted. Separate session declared by one operator, NOT independently authenticated third party.")
         return 0
-    except (ValueError, KeyError, TypeError, OSError, zipfile.BadZipFile, subprocess.SubprocessError) as exc:
-        reason = f"BLOCK: {type(exc).__name__}: {exc}"
-        if not packet_out:
-            publish(repo, head, "failure", reason[:4000], receipt, os.environ.get("GITHUB_RUN_ID", ""), check_id)
-        print(reason, file=sys.stderr)
+    except (ValueError, KeyError, TypeError, OSError, subprocess.SubprocessError,
+            json.JSONDecodeError) as exc:
+        receipt["error_class"] = type(exc).__name__
+        message = f"BLOCK: {type(exc).__name__}: {exc}"
+        finish_check(repo, head, check_id, run_id, receipt, False, message)
+        print(message, file=sys.stderr)
         return 2
 
 
-def linked_issue(pr: dict) -> int:
-    refs = {int(x) for x in re.findall(r"(?im)^\s*(?:closes|fixes|refs)\s+#([1-9][0-9]*)\s*$", pr.get("body") or "")}
-    require(len(refs) == 1, "PR must reference exactly one canonical issue")
-    return next(iter(refs))
+def native_material(packet: dict, repo: str, number: int) -> str:
+    cert = collector.inspect_handoff(repo, number, packet["identity"]["base_sha"],
+                                     packet["identity"]["head_sha"])
+    return cert["material_head_sha"]
 
 
-def resolve_targets(repo: str, event: dict) -> list[tuple[int, int]]:
-    require(event.get("repository", {}).get("full_name") == repo, "event repository mismatch")
-    numbers = []
+def targets(repo: str, event: dict) -> list[tuple[int, int]]:
+    require((event.get("repository") or {}).get("full_name") == repo, "event repository mismatch")
     if isinstance(event.get("pull_request"), dict):
-        numbers = [event["pull_request"]["number"]]
-    elif event.get("issue", {}).get("pull_request"):
-        numbers = [event["issue"]["number"]]
-    elif event.get("inputs", {}).get("pull_request"):
-        numbers = [int(event["inputs"]["pull_request"])]
-    elif event.get("workflow_run"):
+        prs = [event["pull_request"]["number"]]
+    elif isinstance(event.get("issue"), dict) and event["issue"].get("pull_request"):
+        comment = event.get("comment") or {}
+        if event.get("action") == "created" and not str(comment.get("body") or "").startswith(PREFIX):
+            return []
+        prs = [event["issue"]["number"]]
+    elif isinstance(event.get("workflow_run"), dict):
         run = event["workflow_run"]
-        require(run.get("event") == "pull_request", "not a PR technical workflow")
-        numbers = [p["number"] for p in run.get("pull_requests", [])]
-        if not numbers:
-            numbers = [p["number"] for p in pages(repo, f"commits/{run['head_sha']}/pulls") if p.get("state") == "open"]
+        if run.get("event") != "pull_request":
+            return []
+        prs = [p["number"] for p in run.get("pull_requests", [])]
+        if not prs:
+            prs = [p["number"] for p in paged(repo, f"commits/{run['head_sha']}/pulls")]
     else:
-        numbers = [p["number"] for p in pages(repo, "pulls?state=open")]
+        prs = [p["number"] for p in paged(repo, "pulls?state=open")]
     result = []
-    for number in sorted(set(numbers)):
-        pr = api(f"/repos/{repo}/pulls/{number}")
+    for number in sorted(set(prs)):
+        pr = collector.api(f"/repos/{repo}/pulls/{number}")
         if pr.get("state") != "open" or pr.get("base", {}).get("ref") not in {"develop", "main"}:
             continue
         try:
-            issue = linked_issue(pr)
+            issue = collector.issue_reference(pr)
         except ValueError:
-            issue = 0  # Keep the PR target so evaluate revokes a previous approval.
-        if issue and event.get("issue") and not event["issue"].get("pull_request") and event["issue"]["number"] != issue:
-            continue
+            issue = 0  # Keep target to revoke any earlier success on an ambiguous issue.
+        if isinstance(event.get("issue"), dict) and not event["issue"].get("pull_request"):
+            if issue != event["issue"].get("number"):
+                continue
         result.append((number, issue))
     return result
 
@@ -485,21 +281,19 @@ def resolve_targets(repo: str, event: dict) -> list[tuple[int, int]]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo", required=True)
-    parser.add_argument("--pr", type=int)
-    parser.add_argument("--issue", type=int)
-    parser.add_argument("--event", type=Path)
-    parser.add_argument("--packet-out", type=Path)
+    parser.add_argument("--event", type=Path, required=True)
     args = parser.parse_args()
-    require(bool(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repo)), "invalid repository")
-    if args.event:
-        require(not args.pr and not args.issue and not args.packet_out, "event mode does not take explicit targets")
-        targets = resolve_targets(args.repo, json.loads(args.event.read_bytes()))
-    else:
-        require(type(args.pr) is int and args.pr > 0 and type(args.issue) is int and args.issue > 0,
-                "positive PR and issue required")
-        targets = [(args.pr, args.issue)]
-    results = [evaluate(args.repo, number, issue, args.packet_out) for number, issue in targets]
-    return max(results, default=0)
+    require(re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", args.repo) is not None,
+            "unexpected repository")
+    run_id = os.environ.get("GITHUB_RUN_ID", "")
+    require(run_id.isdecimal(), "trusted Actions run id is required")
+    try:
+        event = strict_json(args.event.read_text(encoding="utf-8"))
+        selected = targets(args.repo, event)
+        return max((evaluate(args.repo, number, issue, run_id) for number, issue in selected), default=0)
+    except (ValueError, KeyError, TypeError) as exc:
+        print(f"BLOCK: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return 2
 
 
 if __name__ == "__main__":
