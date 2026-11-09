@@ -48,6 +48,9 @@ def passed_cases(raw: bytes) -> set[str]:
             declared = suite.get(failure)
             require(declared is None or declared == "0",
                     "JUnit declares failing, errored or skipped tests")
+        require(suite.get("disabled") in (None, "0")
+                and suite.get("status") in (None, "passed", "success", "run"),
+                "JUnit suite disabled or not successful")
         declared_tests = suite.get("tests")
         require(declared_tests is None or (declared_tests.isdecimal()
                 and int(declared_tests) == sum(1 for _ in suite.iter("testcase"))),
@@ -79,6 +82,9 @@ def passed_cases(raw: bytes) -> set[str]:
         name, classname = row.get("name"), row.get("classname")
         require(isinstance(name, str) and bool(name) and isinstance(classname, str)
                 and bool(classname), "JUnit test identity missing")
+        require(row.get("disabled") in (None, "0")
+                and row.get("status") in (None, "passed", "success", "run"),
+                "JUnit testcase disabled or not successful")
         key = classname + "::" + name
         require(key not in observed and len(key) <= 1200, "JUnit test identity duplicate or oversized")
         observed.add(key)

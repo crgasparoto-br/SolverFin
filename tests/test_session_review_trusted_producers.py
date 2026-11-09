@@ -192,36 +192,8 @@ def test_namespaced_junit_fails_closed_in_parser_producer_and_consumer(tmp_path,
     with pytest.raises(ValueError, match="JUnit"):
         evidence.passed_cases(raw)
 
-    certificate = tmp_path / "handoff-ready.json"
-    certificate.write_text(json.dumps({
-        "schema_version": 2, "status": "ready",
-        "subject": {"repository": REPO, "pull_request_number": 10},
-        "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
-    }))
-    junit = tmp_path / "junit.xml"
-    junit.write_bytes(raw)
-    rejected_out = tmp_path / "rejected"
-    with pytest.raises(ValueError, match="JUnit"):
-        evidence.write_evidence(junit, certificate, rejected_out, REPO, 10, BASE, HEAD)
-    assert not rejected_out.exists()
+    assert_junit_rejected_across_boundaries(tmp_path, raw)
 
-    # Build a valid archive first, then replace only XML and its authenticated
-    # hash. This exercises semantic validation after byte-integrity checks.
-    junit.write_bytes(
-        b'<testsuites><testsuite tests="1"><testcase classname="suite" name="case"/>'
-        b'</testsuite></testsuites>'
-    )
-    accepted_out = tmp_path / "accepted"
-    evidence.write_evidence(junit, certificate, accepted_out, REPO, 10, BASE, HEAD)
-    facts = json.loads((accepted_out / "session-review-evidence.json").read_text())
-    facts["junit_sha256"] = source.digest(raw)
-    buffer = io.BytesIO()
-    with zipfile.ZipFile(buffer, "w") as archive:
-        archive.writestr("junit.xml", raw)
-        archive.writestr("handoff-ready.json", certificate.read_bytes())
-        archive.writestr("session-review-evidence.json", json.dumps(facts))
-    with pytest.raises(ValueError, match="JUnit"):
-        evidence.consume_zip(buffer.getvalue())
 
 @pytest.mark.parametrize("xml", [
     '<testsuites><testcase classname="suite" name="case"/></testsuites>',
@@ -236,6 +208,22 @@ def test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer(tmp_pa
     raw = xml.encode()
     with pytest.raises(ValueError, match="JUnit"):
         evidence.passed_cases(raw)
+    assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+
+def test_junit_hierarchy_allows_metadata_and_nested_suites():
+    raw = (b'<testsuites><testsuite tests="2" failures="0">'
+           b'<properties><property name="build" value="ok"/></properties>'
+           b'<testcase classname="suite" name="first"><system-out>ok</system-out></testcase>'
+           b'<testsuite tests="1"><testcase classname="suite" name="second"/></testsuite>'
+           b'</testsuite></testsuites>')
+    assert evidence.passed_cases(raw) == {"suite::first", "suite::second"}
+
+
+def assert_junit_rejected_across_boundaries(tmp_path, raw):
+    """Parser, producer and ZIP consumer must all reject the same bad XML."""
+    with pytest.raises(ValueError, match="JUnit"):
+        evidence.passed_cases(raw)
     certificate = tmp_path / "handoff-ready.json"
     certificate.write_text(json.dumps({
         "schema_version": 2, "status": "ready",
@@ -247,11 +235,11 @@ def test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer(tmp_pa
     with pytest.raises(ValueError, match="JUnit"):
         evidence.write_evidence(junit, certificate, tmp_path / "rejected", REPO, 10, BASE, HEAD)
     assert not (tmp_path / "rejected").exists()
-    valid = b'<testsuites><testsuite tests="1"><testcase classname="suite" name="case"/></testsuite></testsuites>'
-    junit.write_bytes(valid)
-    out = tmp_path / "valid"
-    evidence.write_evidence(junit, certificate, out, REPO, 10, BASE, HEAD)
-    facts = json.loads((out / "session-review-evidence.json").read_text())
+    junit.write_bytes(b'<testsuites><testsuite tests="1"><testcase classname="suite" '
+                      b'name="case"/></testsuite></testsuites>')
+    accepted = tmp_path / "accepted"
+    evidence.write_evidence(junit, certificate, accepted, REPO, 10, BASE, HEAD)
+    facts = json.loads((accepted / "session-review-evidence.json").read_text())
     facts["junit_sha256"] = source.digest(raw)
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
@@ -262,10 +250,53 @@ def test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer(tmp_pa
         evidence.consume_zip(buffer.getvalue())
 
 
-def test_junit_hierarchy_allows_metadata_and_nested_suites():
-    raw = (b'<testsuites><testsuite tests="2" failures="0">'
-           b'<properties><property name="build" value="ok"/></properties>'
-           b'<testcase classname="suite" name="first"><system-out>ok</system-out></testcase>'
-           b'<testsuite tests="1"><testcase classname="suite" name="second"/></testsuite>'
-           b'</testsuite></testsuites>')
-    assert evidence.passed_cases(raw) == {"suite::first", "suite::second"}
+@pytest.mark.parametrize("level, attribute", [
+    ("testsuites", 'disabled="1"'),
+    ("testsuite", 'disabled="1"'),
+    ("testsuite", 'disabled="2"'),
+    ("testcase", 'disabled="1"'),
+    ("testsuites", 'status="failed"'),
+    ("testsuite", 'status="skipped"'),
+    ("testcase", 'status="failed"'),
+    ("testcase", 'status="skipped"'),
+    ("testcase", 'status="error"'),
+    ("testcase", 'status="notrun"'),
+    ("testcase", 'status="ignored"'),
+    ("testcase", 'status="unknown"'),
+    ("testcase", 'status=""'),
+    ("testcase", 'status="PASSED"'),
+])
+def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+    """A-007: producer and archive verifier cannot upgrade failed tests."""
+    attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+             "testcase": 'classname="suite" name="case"'}
+    attrs[level] += " " + attribute
+    raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+           f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+    assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+
+@pytest.mark.parametrize("status", [None, "passed", "success", "run"])
+def test_junit_successful_statuses_and_zero_disabled_remain_valid(tmp_path, status):
+    suffix = "" if status is None else f' status="{status}"'
+    xml = (f'<testsuites tests="1" disabled="0" status="passed">'
+           f'<testsuite tests="1" failures="0" errors="0" skipped="0" disabled="0" status="run">'
+           f'<testcase classname="suite" name="case" disabled="0"{suffix}/>'
+           f'</testsuite></testsuites>').encode()
+    assert evidence.passed_cases(xml) == {"suite::case"}
+    certificate = tmp_path / "handoff-ready.json"
+    certificate.write_text(json.dumps({
+        "schema_version": 2, "status": "ready",
+        "subject": {"repository": REPO, "pull_request_number": 10},
+        "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
+    }))
+    junit = tmp_path / "junit.xml"
+    junit.write_bytes(xml)
+    out = tmp_path / "positive"
+    evidence.write_evidence(junit, certificate, out, REPO, 10, BASE, HEAD)
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w") as archive:
+        for item in ("junit.xml", "handoff-ready.json", "session-review-evidence.json"):
+            archive.write(out / item, arcname=item)
+    _, cases, _ = evidence.consume_zip(buf.getvalue())
+    assert cases == {"suite::case"}
