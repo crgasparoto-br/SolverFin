@@ -300,3 +300,41 @@ def test_junit_successful_statuses_and_zero_disabled_remain_valid(tmp_path, stat
             archive.write(out / item, arcname=item)
     _, cases, _ = evidence.consume_zip(buf.getvalue())
     assert cases == {"suite::case"}
+
+@pytest.mark.parametrize("encoding", ["utf-8", "utf-16"])
+@pytest.mark.parametrize("declaration", [
+    '<!DOCTYPE testsuites [<!ENTITY injected "forged-success">]>',
+    '<!DOCTYPE testsuites SYSTEM "https://untrusted.invalid/dtd">',
+    '<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>',
+])
+def test_junit_dtd_rejected_in_parser_producer_and_zip_consumer(tmp_path, encoding, declaration):
+    """A-008: event-based DTD detection is independent of XML byte encoding."""
+    raw = (f'<?xml version="1.0" encoding="{encoding}"?>'
+           f'{declaration}<testsuites><testsuite tests="1">'
+           f'<testcase classname="suite" name="case"/></testsuite></testsuites>').encode(encoding)
+    assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+
+@pytest.mark.parametrize("encoding", ["utf-8", "utf-16"])
+def test_junit_valid_predefined_entities_remain_accepted(tmp_path, encoding):
+    raw = (f'<?xml version="1.0" encoding="{encoding}"?>'
+           '<testsuites><testsuite tests="1" failures="0" errors="0" skipped="0">'
+           '<testcase classname="suite" name="valid&amp;safe"/>'
+           '</testsuite></testsuites>').encode(encoding)
+    assert evidence.passed_cases(raw) == {"suite::valid&safe"}
+    certificate = tmp_path / "handoff-ready.json"
+    certificate.write_text(json.dumps({
+        "schema_version": 2, "status": "ready",
+        "subject": {"repository": REPO, "pull_request_number": 10},
+        "identity": {"base_sha": BASE, "material_head_sha": MATERIAL},
+    }))
+    junit = tmp_path / "junit.xml"
+    junit.write_bytes(raw)
+    out = tmp_path / f"valid-{encoding}"
+    evidence.write_evidence(junit, certificate, out, REPO, 10, BASE, HEAD)
+    archive = io.BytesIO()
+    with zipfile.ZipFile(archive, "w") as z:
+        for item in ("junit.xml", "handoff-ready.json", "session-review-evidence.json"):
+            z.write(out / item, arcname=item)
+    _, cases, _ = evidence.consume_zip(archive.getvalue())
+    assert cases == {"suite::valid&safe"}
