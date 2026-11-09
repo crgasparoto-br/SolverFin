@@ -1,7 +1,8 @@
 {
   "schema_version": 1,
-  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
-  "controls": [],
+  "head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
   "source_audits": [],
+  "controls": [],
+  "retired_controls": [],
   "unresolved_controls": []
 }

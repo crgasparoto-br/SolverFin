@@ -1,0 +1,25 @@
+HEAD: 16d4463b4a9782f72562e11ed728f863c80859c0
+BASE: f0b82f29230e64faca7f4cd49b4bfadd8793d0b3
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review.py
+REACHED: tests/test_session_review_certificate.py
+REACHED: tests/test_session_review_verifier.py
+
+RUNNER OUTPUT (material checkout restored from run 42621496840):
+........................................................................ [ 42%]
+........................................................................ [ 85%]
+.........................                                                [100%]
+169 passed in 0.24s
+
+COMMAND: python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -q
+EXIT_CODE: 0
+----------------------------------------------------------------------
+Ran 23 tests in 0.062s
+
+OK
+
+GITHUB CI: https://github.com/crgasparoto-br/SolverFin/actions/runs/42621496868
+GITHUB CONTRACT: https://github.com/crgasparoto-br/SolverFin/actions/runs/42621496885
+GITHUB SOLO: https://github.com/crgasparoto-br/SolverFin/actions/runs/42621496867
+GITHUB GIT BUNDLE: run 42621496840, artifact 13676857122

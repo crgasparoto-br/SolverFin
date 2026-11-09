@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "04f3f76a20a2b1d6b957679e2acd7d923d682cc1",
+  "head_sha": "16d4463b4a9782f72562e11ed728f863c80859c0",
   "families": [
     {
       "family": "authorization",
@@ -36,11 +36,22 @@
     },
     {
       "family": "temporal-consistency",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-010"
+      ],
+      "dimensions": [
+        {
+          "surface": "bootstrap-policy-safety",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 169/169.",
+          "control_ids": [
+            "NEG-010"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "temporal-destination",
@@ -84,96 +95,25 @@
     },
     {
       "family": "structural-contract",
-      "applicable": true,
-      "reason": "Derived from requirement attack matrix.",
-      "control_ids": [
-        "NC-002-02",
-        "NC-003-REGRESSION-A-002",
-        "NC-003-REGRESSION-A-004",
-        "NC-002-A005-PARSER",
-        "NC-002-A005-PRODUCER",
-        "NC-002-A005-CONSUMER",
-        "NC-002-A006-PARSER",
-        "NC-002-A006-PRODUCER",
-        "NC-002-A006-CONSUMER",
-        "NC-002-A007-PARSER",
-        "NC-002-A007-PRODUCER",
-        "NC-002-A007-CONSUMER",
-        "NC-002-A008-PARSER",
-        "NC-002-A008-PRODUCER",
-        "NC-002-A008-CONSUMER"
-      ],
-      "dimensions": [
-        {
-          "surface": "trusted-candidate-separation",
-          "reason": "Compare protected versus candidate bytes, reject candidate modifications and keep workflow definitions outside the Stage A change.",
-          "control_ids": [
-            "NC-002-02"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "critical-certificate-inventory",
-          "reason": "No optional artifact false rejections; reject foreign or corrupted inventory",
-          "control_ids": [
-            "NC-003-REGRESSION-A-002"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "critical-certificate-remediation-mode",
-          "reason": "Distinguishes targeted valid records from systemic/mixed lineage requirements using a killed historical mutant.",
-          "control_ids": [
-            "NC-003-REGRESSION-A-004"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "junit-evidence-parser",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
-          "control_ids": [
-            "NC-002-A005-PARSER",
-            "NC-002-A006-PARSER",
-            "NC-002-A008-PARSER"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "junit-evidence-writer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
-          "control_ids": [
-            "NC-002-A005-PRODUCER",
-            "NC-002-A006-PRODUCER",
-            "NC-002-A008-PRODUCER"
-          ],
-          "status": "passed"
-        },
-        {
-          "surface": "junit-zip-consumer",
-          "reason": "A-005 negative regression rejected on old code and passed on patched code; trusted parser semantics retained. A-006 hierarchy attack rejects masked failures and non-canonical testcase placement on all surfaces. A-008 validates DTD rejection across UTF-8/UTF-16 at the XML parser boundary.",
-          "control_ids": [
-            "NC-002-A005-CONSUMER",
-            "NC-002-A006-CONSUMER",
-            "NC-002-A008-CONSUMER"
-          ],
-          "status": "passed"
-        }
-      ],
-      "status": "passed"
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
     },
     {
       "family": "documentation",
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-003-02"
+        "NEG-762-DOCS"
       ],
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Bootstrap documentation must not claim production trust or Stage B activation by an unmerged PR.",
+          "reason": "ADR 0019 e manual declaram mode=disabled e nao afirmam M2 como executado.",
           "control_ids": [
-            "NC-003-02"
+            "NEG-762-DOCS"
           ],
           "status": "passed"
         }
