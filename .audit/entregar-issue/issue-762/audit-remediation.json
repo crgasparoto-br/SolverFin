@@ -3,37 +3,17 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
-    "audit_report_sha256": "ec9d1b3806a0eca0d3616a5eb0f47501dc74f5c0e20612d2b4f884c0889c9080",
-    "audited_head_sha": "937137fb911f537c14f9181cc862688d74ecb136"
+    "rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
+    "audit_report_sha256": "d61a91f6c9ebd3021afdea5f2c3e22c1eb6acc327fde72a55fa4d0e0ffd3270b",
+    "audited_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51"
   },
-  "candidate_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+  "candidate_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
   "remediation_mode": "targeted-remediation",
+  "status": "closed",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-005",
-      "remediation_mode": "targeted-remediation",
-      "status": "fixed",
-      "closure_kind": "behavioral-fix",
-      "changed_files": [
-        "scripts/session_review_evidence.py",
-        "tests/test_session_review_trusted_producers.py"
-      ],
-      "evidence": [
-        "scripts/session_review_evidence.py: namespace-qualified nodes/attributes rejected before positive JUnit inventory",
-        "tests/test_session_review_trusted_producers.py: 4 parametrized cases span parser, producer and ZIP consumer",
-        "issue-762/evidence/a-005-negative-original.log sha256=ad4cadbc593016f24ee64139ec0c744fd413922a57f4eee3da6c7292dfa3112e demonstrates 4 old-code failures"
-      ],
-      "validations": [
-        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 34 passed on b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-        "Delivery audit workspace #42485539937 completed/success on exact material b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-        "Repository CI #42485539820: completed/success on exact material HEAD"
-      ]
-    },
-    {
-      "source_kind": "finding",
-      "source_id": "A-006",
+      "source_id": "A-007",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
       "closure_kind": "behavioral-fix",
@@ -43,48 +23,52 @@
         "docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md"
       ],
       "evidence": [
-        "Six adversarial cases fail on the original parser at 017655321b0c286f582d74ba713c168e13ddff5f (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518).",
-        "34 tests passed on exact material b00de9f8c38f145a8bd732c195a7fad32ed77c51 (sha256=c3186ac98173ce850103d07dddc8fc74dce6f9d206acf675ebd2465c72bf7918).",
-        "A-006 originates in the prior chat audit, without an external signed approval; source audit A-005 continues to be preserved as immutable history."
+        "scripts/session_review_evidence.py: disabled counts on testsuites and testsuite, and test case status/disabled must be absent or successful",
+        "tests/test_session_review_trusted_producers.py: 14 parametrized negatives across parser, writer and ZIP, 4 successes preserved",
+        "issue-762/evidence/a-007-negative-original.log sha256=b5d3b7cc279c013f5f5a6beb1319e41880e0c633cea62d3ab0c4657470307c53 demonstrates 14 pre-fix rejections fail on previous implementation; new version passes 52/52"
       ],
       "validations": [
-        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 34 passed",
-        "compileall PASS, CODE-GROWTH-001 READY on b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-        "GitHub Actions exact-SHA runs checked separately in terminal CI preflight"
+        "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py: 52 passed at exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+        "CODE-GROWTH-001 READY: five production scripts under 300 lines, evidence in code-growth.json",
+        "Delivery audit workspace #42553528354 completed/success and authenticated Git bundle material SHA 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
       ]
     }
   ],
-  "status": "closed",
   "historical_prior_findings": [
     {
       "id": "A-001",
       "status": "resolved",
-      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     },
     {
       "id": "R-001",
       "status": "resolved",
-      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     },
     {
       "id": "A-002",
       "status": "resolved",
-      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     },
     {
       "id": "A-003",
       "status": "resolved",
-      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     },
     {
       "id": "A-004",
       "status": "resolved",
-      "reason": "Historical targeted remediation remains in lineage; not a current rejection."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
+    },
+    {
+      "id": "A-005",
+      "status": "resolved",
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     },
     {
       "id": "A-006",
       "status": "resolved",
-      "reason": "Current chat review finding, verified by six killed pre-fix mutants; no external signed approval claimed."
+      "reason": "Historical ledger preserved, regression suite re-executed on new material."
     }
   ]
 }

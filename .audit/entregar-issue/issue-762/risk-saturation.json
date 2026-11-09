@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+  "head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
   "families": [
     {
       "family": "authorization",
@@ -95,7 +95,10 @@
         "NC-002-A005-CONSUMER",
         "NC-002-A006-PARSER",
         "NC-002-A006-PRODUCER",
-        "NC-002-A006-CONSUMER"
+        "NC-002-A006-CONSUMER",
+        "NC-002-A007-PARSER",
+        "NC-002-A007-PRODUCER",
+        "NC-002-A007-CONSUMER"
       ],
       "dimensions": [
         {

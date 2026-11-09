@@ -3,17 +3,17 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
+    "rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
     "finding_ids": [
-      "A-005"
+      "A-007"
     ],
-    "audit_report_sha256": "ffae9d6f88f81ec055d40f0cb81229af315ff99fad4fb5d0600a5d9df324dcc5",
-    "audited_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-    "revalidated_material_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51"
+    "audit_report_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32",
+    "audited_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+    "revalidated_material_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "A-005 is a targeted defect of the candidate JUnit XML parser. Fail-closed namespace verification and discriminating tests in parser, writer and ZIP consumer fix the class without modifying global protected Skill policy."
+    "reason": "A-007 is a directly bounded JUnit XML status/disabled validation gap in this candidate. Added 14 discriminator cases in all three consumers and preserves trusted Skill unchanged. Cross-repo policy change is not required."
   },
   "skill_changes": []
 }

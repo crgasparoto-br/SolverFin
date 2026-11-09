@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+  "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
   "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "creations": [
     {
@@ -147,7 +147,7 @@
       "requirement": "REQ-762-002, REQ-762-003",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
           "rg -n \"session_review\" tests/ scripts/"
         ],
         "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
@@ -168,7 +168,7 @@
         "status": "passed",
         "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+        "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
         "reached_tests": [
           "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
           "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
@@ -203,10 +203,28 @@
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><system-out><error/></system-out></testcase></testsuite>]",
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><property name=\"x\"><skipped/></property></properties></testcase></testsuite>]",
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><untrusted/></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites"
+          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"2\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status=\"failed\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status=\"skipped\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"failed\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"skipped\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"error\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"notrun\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"ignored\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"unknown\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"PASSED\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "f99f4a353e9917789d7d39858c62e0188dd5e6946484e873184b8c2f2a43ec8e"
+        "evidence_sha256": "f21d0f83e6073b4ac382b86d2fd5eabe13d8eafb799c80667d44bf668431d32f"
       }
     },
     {
@@ -216,7 +234,7 @@
       "requirement": "REQ-762-002, REQ-762-003",
       "search": {
         "queries": [
-          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+          "git diff --name-status 1b30adacc864341f9aea5113cbdb9be233fbb8a1..98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
           "rg -n \"session_review\" tests/ scripts/"
         ],
         "scope": "Checked pytest discovery, existing review runner and new trusted bootstrap producer coverage",
@@ -232,13 +250,14 @@
       "coverage_after": [
         "Negative controls for candidate tampering, stale CI and authenticated source; JUnit metadata aggregate mismatch; read-only packet and handoff invariants",
         "A-005: namespace-qualified failure/error/skipped/wrapper rejection tested in parser, writer and ZIP consumer; pre-fix mutant fails all four cases.",
-        "A-006 fail-closed XML hierarchy control: 6 invalid placement cases in parser, writer and ZIP consumer; positive nested suites/properties case."
+        "A-006 fail-closed XML hierarchy control: 6 invalid placement cases in parser, writer and ZIP consumer; positive nested suites/properties case.",
+        "A-007: 14 fail-closed status/disabled adversarial cases in parser, writer and ZIP consumer, plus 4 positive forms; 14 pre-fix mutant failures."
       ],
       "verification": {
         "status": "passed",
         "command": "python -m pytest -vv tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py",
         "exit_code": 0,
-        "subject_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+        "subject_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
         "reached_tests": [
           "tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data",
           "tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents",
@@ -273,10 +292,28 @@
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><system-out><error/></system-out></testcase></testsuite>]",
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><properties><property name=\"x\"><skipped/></property></properties></testcase></testsuite>]",
           "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests=\"1\"><testcase classname=\"suite\" name=\"case\"><untrusted/></testcase></testsuite>]",
-          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites"
+          "tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled=\"2\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled=\"1\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status=\"failed\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status=\"skipped\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"failed\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"skipped\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"error\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"notrun\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"ignored\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"unknown\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=\"PASSED\"]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success]",
+          "tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run]"
         ],
         "evidence_path": ".audit/entregar-issue/issue-762/evidence/issue-762-test-reach.log",
-        "evidence_sha256": "f99f4a353e9917789d7d39858c62e0188dd5e6946484e873184b8c2f2a43ec8e"
+        "evidence_sha256": "f21d0f83e6073b4ac382b86d2fd5eabe13d8eafb799c80667d44bf668431d32f"
       }
     }
   ]

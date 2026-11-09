@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "specification-snapshot.json",
-    "sha256": "eecd9c51049055946219b742e97fdbf7968858f4a0c33a5faea2441de66891d4"
+    "sha256": "e34ff88367722443725adc5ec46f5be630d204ddc600c235f9229e30d49d32bf"
   },
   "primary_issue_source_id": "SRC-ISSUE-762",
   "obligations": [
@@ -51,7 +51,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 23 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A. A-005: namespaced JUnit error, failure, skipped and wrapper rejected end-to-end by 4 additional negative regression cases."
+      "rationale": "Cinco produtores/coletores sao introduzidos sem workflows privilegiados e cobertos por 52 testes de pacote/proveniencia. Workflows permanecem fora do delta Stage A. A-005: namespaced JUnit error, failure, skipped and wrapper rejected end-to-end by 4 additional negative regression cases. A-007: 14 testes adversariais discriminantes de atributos JUnit, 4 positivos, comprovados no parser/produtor/ZIP; 14 falhas no codigo anterior."
     },
     {
       "id": "OBL-003",
@@ -302,7 +302,8 @@
       "Etapa B",
       "JUnit aggregate counts",
       "A-004 targeted/systemic remediation inventory",
-      "A-006 JUnit hierarchy fail-closed"
+      "A-006 JUnit hierarchy fail-closed",
+      "A-007 JUnit disabled/status fail-closed"
     ],
     "occurrences": [],
     "unresolved_contradictions": [],
@@ -331,12 +332,13 @@
     ],
     "evidence": [
       "Issue #762 extraida como fonte primaria, comparada a PR #770 stage A e a docs/quality/TRUSTED_SESSION_REVIEW_BOOTSTRAP.md",
-      "Testes focados 34 passed com controle adicional JUnit inconsistente no HEAD exato b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+      "Testes focados 52 passed com controle adicional JUnit inconsistente no HEAD exato 98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
       "Original issue #762 permanece aberta e Stage B explicitamente nao concluida",
       "A-002: test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions passed on new material; A-003: current develop merged into PR; exact source bundle restored and compared",
-      "A-004: 27 tests passed on material HEAD b00de9f8c38f145a8bd732c195a7fad32ed77c51; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
-      "A-005: 27 tests passed on exact material b00de9f8c38f145a8bd732c195a7fad32ed77c51; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
-      "A-006: 34 exact material tests passed at b00de9f8c38f145a8bd732c195a7fad32ed77c51; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy."
+      "A-004: 27 tests passed on material HEAD 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; original parser fails the new targeted-remediation regression, corrected parser passes; no workflow or ruleset changes.",
+      "A-005: 27 tests passed on exact material 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; pre-fix parser rejected by four red tests; producer and ZIP consumer validated fail-closed; stage-a-pytest.log sha256=de09f15bea32841db89d3af37fb839dec41f8ac74ee13102e75241184818c7ab",
+      "A-006: 34 exact material tests passed at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1; six pre-fix mutant failures (sha256=656ae374a510c645a8c5184dc68829d448cf0fbba5c5fa9292e6b4f3e3642518); parser, writer and ZIP consumer fail closed on invalid JUnit hierarchy.",
+      "A-007: old parser rejected by 14 distinct status/disabled mutation tests; fixed exact-head 52/52 passing, GitHub authenticated bundle run 42553528354."
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

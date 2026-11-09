@@ -1,69 +1,80 @@
 {
-  "audit_report_sha256": "c495d287dfd815bac9bff27ad35cb4b084b4cce8001bbc6b9737be7f3c1d96fd",
-  "audit_report_source": "Independent PR #770 audit on prior exact material; report available as immutable local file and sha256; not a GitHub approval.",
+  "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "findings": [
-    {
-      "id": "A-005",
-      "disposition": "blocking",
-      "status": "open",
-      "remediation_mode": "targeted-remediation",
-      "requirement_id": "REQ-762-002",
-      "surface_id": "junit-evidence-parser",
-      "root_cause": "Namespace-qualified JUnit failure/error/skipped elements evade unqualified child.tag comparisons, allowing failed XML evidence to be approved.",
-      "evidence_sha256": "a5d8fdd880ee325e6496caad800ef2e466cf5ee9852c5a20eb7a54d334548a51"
-    }
-  ],
-  "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-  "historical_prior_findings": [
-    {
-      "id": "A-001",
-      "status": "resolved",
-      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
-    },
-    {
-      "id": "R-001",
-      "status": "resolved",
-      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
-    },
-    {
-      "id": "A-002",
-      "status": "resolved",
-      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
-    },
-    {
-      "id": "A-003",
-      "status": "resolved",
-      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
-    },
-    {
-      "id": "A-004",
-      "status": "resolved",
-      "evidence": "Previous Stage A corrected; exact-SHA test suite retained."
-    }
-  ],
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
+  "audit_report_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32",
+  "audit_report_source": "Independent read-only audit published in previous ChatGPT session as parecer-pr-770.md; original sha256 preserved. No GitHub approval or separately authenticated signature is claimed.",
+  "head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+  "trusted_anchor_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 762,
     "pull_request_number": 770,
     "base_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
-    "head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-    "material_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-    "published_head_sha": "3c378d42eb7a76b538eb8da2dd3ec1ca50f28533"
-  },
-  "recommendations": [],
-  "rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336",
-  "schema_version": 1,
-  "source_evidence": {
-    "prior_audit_markdown_sha256": "c495d287dfd815bac9bff27ad35cb4b084b4cce8001bbc6b9737be7f3c1d96fd",
-    "prior_material_head_sha": "937137fb911f537c14f9181cc862688d74ecb136",
-    "prior_published_head_sha": "3c378d42eb7a76b538eb8da2dd3ec1ca50f28533",
-    "prior_rejection_id": "audit-rejection:add00aa6-d88b-48d1-93ac-f440c46d4336"
-  },
-  "trusted_anchor_sha": "1b30adacc864341f9aea5113cbdb9be233fbb8a1",
-  "verdict": "REPROVADA",
-  "handoff_revalidation": {
+    "head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
     "material_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
-    "note": "Historical source audit identity is immutable; this field only records the current remediation material."
+    "published_head_sha": "d82479a683bce3897f13df4f6a2aaf21781b3424"
+  },
+  "findings": [
+    {
+      "id": "A-007",
+      "disposition": "blocking",
+      "status": "open",
+      "remediation_mode": "targeted-remediation",
+      "requirement_id": "REQ-762-002",
+      "surface_id": "junit-evidence-parser",
+      "root_cause": "JUnit disabled suite counts and unsuccessful testcase status attributes were not validated, leading to false positives in direct parsing, writer and ZIP consumer.",
+      "evidence_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32"
+    }
+  ],
+  "recommendations": [],
+  "historical_prior_findings": [
+    {
+      "id": "A-001",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "A-002",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "A-003",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "A-004",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "A-005",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "A-006",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    },
+    {
+      "id": "R-001",
+      "status": "resolved",
+      "evidence": "Previously addressed on prior exact material, validated by 52/52 full directed Stage A suite at 98c39e91f2dfa8f4bd10f670bc2059909033a0f1"
+    }
+  ],
+  "source_evidence": {
+    "prior_audit_markdown_sha256": "ce069a6ed9c3b6df548598a0ab514efbbdf37082352c235edcb7eb031034ab32",
+    "prior_material_head_sha": "b00de9f8c38f145a8bd732c195a7fad32ed77c51",
+    "prior_published_head_sha": "d82479a683bce3897f13df4f6a2aaf21781b3424",
+    "prior_rejection_id": "audit-rejection:ec66b9c2-b397-4f21-a5bb-f7e016bb8257",
+    "audit_probe": "source/adversarial-results.log in prior independent audit package"
+  },
+  "handoff_revalidation": {
+    "material_head_sha": "98c39e91f2dfa8f4bd10f670bc2059909033a0f1",
+    "note": "Historical rejected audit identity immutable; current material SHA is authenticated GitHub CI bundle."
   }
 }
