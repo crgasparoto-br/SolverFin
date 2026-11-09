@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -6,7 +7,7 @@ import {
   buildCategoryEvolutionReportForContext,
   parseCategoryEvolutionFilters,
 } from "./category-evolution-report.js";
-import { closePool } from "./db.js";
+import { closePool, withSharedTransaction } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { archiveCategoryForContext, createCategoryForContext } from "./repositories/categories.js";
 import { createTransactionForContext } from "./repositories/transactions.js";
@@ -33,33 +34,53 @@ async function main(): Promise<void> {
     "DATABASE_URL is required. Run the integration database before this test.",
   );
 
+  await withIsolatedProfile(runReportFixture);
+}
+
+async function runReportFixture(context: TenantContext): Promise<void> {
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
-  const brlAccount = await createAccountForContext(PERSONAL_CONTEXT, {
+  // A same-period movement from another profile must not affect report totals.
+  const foreignAccount = await createAccountForContext(PERSONAL_CONTEXT, {
+    name: `Conta de outro perfil issue 542 ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 0,
+  });
+  await createTransactionForContext(PERSONAL_CONTEXT, {
+    accountId: foreignAccount.id,
+    kind: "expense",
+    status: "posted",
+    amountMinor: 550,
+    occurredOn: "2031-02-14",
+    plannedOn: "2031-02-14",
+    description: `Despesa fora do perfil issue 542 ${suffix}`,
+  });
+
+  const brlAccount = await createAccountForContext(context, {
     name: `Conta relatório BRL issue 542 ${suffix}`,
     kind: "checking",
     openingBalanceMinor: 0,
   });
-  const usdAccount = await createAccountForContext(PERSONAL_CONTEXT, {
+  const usdAccount = await createAccountForContext(context, {
     name: `Conta relatório USD issue 542 ${suffix}`,
     kind: "checking",
     currency: "USD",
     openingBalanceMinor: 0,
   });
-  const incomeRoot = await createCategoryForContext(PERSONAL_CONTEXT, {
+  const incomeRoot = await createCategoryForContext(context, {
     name: `Receitas issue 542 ${suffix}`,
     kind: "income",
   });
-  const incomeChild = await createCategoryForContext(PERSONAL_CONTEXT, {
+  const incomeChild = await createCategoryForContext(context, {
     name: `Projetos issue 542 ${suffix}`,
     kind: "income",
     parentCategoryId: incomeRoot.id,
   });
-  const expenseCategory = await createCategoryForContext(PERSONAL_CONTEXT, {
+  const expenseCategory = await createCategoryForContext(context, {
     name: `Moradia issue 542 ${suffix}`,
     kind: "expense",
   });
 
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await createTransactionForContext(context, {
     accountId: brlAccount.id,
     categoryId: incomeChild.id,
     kind: "income",
@@ -69,7 +90,7 @@ async function main(): Promise<void> {
     plannedOn: "2031-01-15",
     description: `Receita realizada issue 542 ${suffix}`,
   });
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await createTransactionForContext(context, {
     accountId: brlAccount.id,
     kind: "income",
     status: "posted",
@@ -78,7 +99,7 @@ async function main(): Promise<void> {
     plannedOn: "2031-02-10",
     description: `Receita sem categoria issue 542 ${suffix}`,
   });
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await createTransactionForContext(context, {
     accountId: brlAccount.id,
     categoryId: expenseCategory.id,
     kind: "expense",
@@ -88,7 +109,7 @@ async function main(): Promise<void> {
     plannedOn: "2031-01-20",
     description: `Despesa conciliada issue 542 ${suffix}`,
   });
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await createTransactionForContext(context, {
     accountId: brlAccount.id,
     categoryId: incomeChild.id,
     kind: "income",
@@ -98,7 +119,7 @@ async function main(): Promise<void> {
     plannedOn: "2031-01-25",
     description: `Receita planejada ignorada issue 542 ${suffix}`,
   });
-  await createTransactionForContext(PERSONAL_CONTEXT, {
+  await createTransactionForContext(context, {
     accountId: usdAccount.id,
     categoryId: incomeChild.id,
     kind: "income",
@@ -109,12 +130,12 @@ async function main(): Promise<void> {
     plannedOn: "2031-02-05",
     description: `Receita USD issue 542 ${suffix}`,
   });
-  await archiveCategoryForContext(PERSONAL_CONTEXT, expenseCategory.id);
+  await archiveCategoryForContext(context, expenseCategory.id);
 
   const filters = parseCategoryEvolutionFilters(
     new URLSearchParams({ interval: "monthly", start: "2031-01", periods: "2" }),
   );
-  const report = await buildCategoryEvolutionReportForContext(PERSONAL_CONTEXT, filters);
+  const report = await buildCategoryEvolutionReportForContext(context, filters);
 
   assert.deepEqual(
     report.currencyBlocks.map((block) => block.currency),
@@ -150,4 +171,32 @@ async function main(): Promise<void> {
   assert.equal(usd.income.totalMinor, 2_000);
   assert.equal(usd.expense.totalMinor, 0);
   assert.equal(usd.result.totalMinor, 2_000);
+}
+
+class FixtureRollback extends Error {}
+
+async function withIsolatedProfile(run: (context: TenantContext) => Promise<void>): Promise<void> {
+  try {
+    await withSharedTransaction(async (executeQuery) => {
+      const context: TenantContext = {
+        ...PERSONAL_CONTEXT,
+        financialProfileId: randomUUID(),
+      };
+      await executeQuery(
+        `insert into "FinancialProfile"
+          ("id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt")
+         values ($1, $2, $3, $4, 'PERSONAL', 'ACTIVE', now(), now())`,
+        [
+          context.financialProfileId,
+          context.organizationId,
+          context.userId,
+          "Fixture relatório de categorias",
+        ],
+      );
+      await run(context);
+      throw new FixtureRollback();
+    });
+  } catch (error) {
+    if (!(error instanceof FixtureRollback)) throw error;
+  }
 }

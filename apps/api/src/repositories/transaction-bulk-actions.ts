@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { TransactionGroupError, type TenantContext } from "@solverfin/domain";
 
 import { withTransaction, type QueryExecutor } from "../db.js";
+import { voidSimpleCardPurchaseInTransaction } from "./card-invoice-purchase-delete.js";
 
 export type TransactionBulkAction = "reconcile" | "unreconcile" | "void";
 
@@ -21,6 +22,10 @@ interface LockedTransactionRow {
   status: string;
   effectiveOn: Date | null;
   transactionGroupId: string | null;
+  cardId: string | null;
+  invoiceId: string | null;
+  accountId: string | null;
+  isAccountRemuneration: boolean;
 }
 
 interface SelectedTransaction extends LockedTransactionRow {
@@ -78,7 +83,7 @@ export async function executeTransactionBulkActionForContext(
     }
 
     const targetIds = selected.map((transaction) => transaction.id);
-    const changedIds = await applyAction(executeQuery, context, input.action, targetIds);
+    const changedIds = await applyAction(executeQuery, context, input.action, selected);
 
     if (input.action === "void") {
       await deleteSelectedGroups(executeQuery, context, groupIds);
@@ -86,7 +91,19 @@ export async function executeTransactionBulkActionForContext(
       await restoreSelectedGroups(executeQuery, context, groupMembers);
     }
 
-    await insertAudits(executeQuery, context, input.action, selected, groupIds, transactionIds);
+    // The canonical card mutation already writes one SOFT_DELETE audit per purchase.
+    const cardIds =
+      input.action === "void"
+        ? new Set(selected.filter(isInvoiceLinkedCardPurchase).map((row) => row.id))
+        : new Set<string>();
+    await insertAudits(
+      executeQuery,
+      context,
+      input.action,
+      selected.filter((row) => !cardIds.has(row.id)),
+      groupIds,
+      transactionIds.filter((id) => !cardIds.has(id)),
+    );
 
     const changed = new Set(changedIds);
     return {
@@ -127,11 +144,14 @@ async function loadGroupMembers(
 ): Promise<SelectedTransaction[]> {
   if (groupIds.length === 0) return [];
   const rows = await executeQuery<LockedTransactionRow>(
-    `select "id", "status", "effectiveOn", "transactionGroupId"
-       from "Transaction"
-      where "organizationId"=$1 and "financialProfileId"=$2
-        and "transactionGroupId"=any($3::uuid[])
-      order by "transactionGroupId", "id" for update`,
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
+            exists(select 1 from "AccountRemuneration" ar
+                   where ar."transactionId"=t."id" and ar."organizationId"=$1
+                     and ar."financialProfileId"=$2) as "isAccountRemuneration"
+       from "Transaction" t
+      where t."organizationId"=$1 and t."financialProfileId"=$2
+        and t."transactionGroupId"=any($3::uuid[])
+      order by t."transactionGroupId", t."id" for update of t`,
     [context.organizationId, context.financialProfileId, groupIds],
   );
   return rows.map((row) => ({ ...row, selectedGroupId: row.transactionGroupId ?? undefined }));
@@ -144,10 +164,13 @@ async function loadTransactions(
 ): Promise<LockedTransactionRow[]> {
   if (transactionIds.length === 0) return [];
   return executeQuery<LockedTransactionRow>(
-    `select "id", "status", "effectiveOn", "transactionGroupId"
-       from "Transaction"
-      where "organizationId"=$1 and "financialProfileId"=$2 and "id"=any($3::uuid[])
-      order by "id" for update`,
+    `select t."id", t."status", t."effectiveOn", t."transactionGroupId", t."cardId", t."invoiceId", t."accountId",
+            exists(select 1 from "AccountRemuneration" ar
+                   where ar."transactionId"=t."id" and ar."organizationId"=$1
+                     and ar."financialProfileId"=$2) as "isAccountRemuneration"
+       from "Transaction" t
+      where t."organizationId"=$1 and t."financialProfileId"=$2 and t."id"=any($3::uuid[])
+      order by t."id" for update of t`,
     [context.organizationId, context.financialProfileId, transactionIds],
   );
 }
@@ -182,23 +205,28 @@ function validateAction(action: TransactionBulkAction, selected: SelectedTransac
   if (action === "void") return;
 
   const invalid = selected.find(
-    (transaction) => transaction.status !== "POSTED" && transaction.status !== "RECONCILED",
+    (transaction) =>
+      transaction.status !== "PLANNED" &&
+      transaction.status !== "POSTED" &&
+      transaction.status !== "RECONCILED",
   );
   if (invalid) {
     throw bulkError(
       "TRANSACTION_BULK_STATUS_INVALID",
-      "Efetive os lançamentos previstos antes de alterar a conciliação.",
+      "Sugestões não confirmadas e lançamentos excluídos não podem ter a conciliação alterada.",
       409,
     );
   }
 
   if (
-    action === "reconcile" &&
-    selected.some((transaction) => transaction.status === "POSTED" && !transaction.effectiveOn)
+    selected.some(
+      (transaction) =>
+        transaction.cardId || transaction.invoiceId || transaction.isAccountRemuneration,
+    )
   ) {
     throw bulkError(
-      "TRANSACTION_BULK_RECONCILE_REQUIRES_EFFECTIVE",
-      "Efetive os lançamentos previstos antes de conciliá-los.",
+      "TRANSACTION_BULK_PROTECTED",
+      "Este lançamento exige seu fluxo próprio de conciliação.",
       409,
     );
   }
@@ -222,15 +250,19 @@ async function applyAction(
   executeQuery: QueryExecutor,
   context: TenantContext,
   action: TransactionBulkAction,
-  transactionIds: string[],
+  selected: SelectedTransaction[],
 ): Promise<string[]> {
+  const transactionIds = selected.map((row) => row.id);
   if (action === "reconcile") {
     const rows = await executeQuery<{ id: string }>(
       `update "Transaction"
-          set "status"='RECONCILED', "reconciledAt"=coalesce("reconciledAt",now()),
+          set "status"='RECONCILED',
+              "effectiveOn"=coalesce("effectiveOn", case when "status"='PLANNED'
+                then (now() at time zone 'UTC')::date else "occurredOn" end),
+              "reconciledAt"=coalesce("reconciledAt",now()),
               "updatedByUserId"=$1, "updatedAt"=now()
         where "organizationId"=$2 and "financialProfileId"=$3
-          and "id"=any($4::uuid[]) and "status"='POSTED'
+          and "id"=any($4::uuid[]) and "status" in ('PLANNED','POSTED')
         returning "id"`,
       [context.userId, context.organizationId, context.financialProfileId, transactionIds],
     );
@@ -250,16 +282,41 @@ async function applyAction(
     return rows.map((row) => row.id);
   }
 
+  const changedCardIds: string[] = [];
+  const regularIds: string[] = [];
+  for (const transaction of selected) {
+    if (!isInvoiceLinkedCardPurchase(transaction)) {
+      regularIds.push(transaction.id);
+      continue;
+    }
+    if (transaction.invoiceId === null) {
+      throw bulkError(
+        "CARD_PURCHASE_DELETE_RESTRICTED",
+        "Compra de cartão sem fatura válida não pode ser anulada em lote.",
+        409,
+      );
+    }
+    if (transaction.status === "VOIDED") continue;
+    await voidSimpleCardPurchaseInTransaction(
+      executeQuery,
+      context,
+      transaction.cardId,
+      transaction.id,
+    );
+    changedCardIds.push(transaction.id);
+  }
+
   const rows = await executeQuery<{ id: string }>(
     `update "Transaction"
         set "status"='VOIDED', "voidedAt"=coalesce("voidedAt",now()), "reconciledAt"=null,
             "updatedByUserId"=$1, "updatedAt"=now()
       where "organizationId"=$2 and "financialProfileId"=$3
         and "id"=any($4::uuid[]) and "status"<>'VOIDED'
+        and ("cardId" is null or "accountId" is not null)
       returning "id"`,
-    [context.userId, context.organizationId, context.financialProfileId, transactionIds],
+    [context.userId, context.organizationId, context.financialProfileId, regularIds],
   );
-  return rows.map((row) => row.id);
+  return [...changedCardIds, ...rows.map((row) => row.id)];
 }
 
 async function restoreSelectedGroups(
@@ -344,6 +401,12 @@ async function insertAudits(
       ],
     );
   }
+}
+
+function isInvoiceLinkedCardPurchase(
+  transaction: LockedTransactionRow,
+): transaction is LockedTransactionRow & { cardId: string; accountId: null } {
+  return transaction.cardId !== null && transaction.accountId === null;
 }
 
 function normalizeIds(values: string[]): string[] {

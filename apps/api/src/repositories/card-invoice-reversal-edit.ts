@@ -49,7 +49,7 @@ export async function updateCardReversalForContext(
           and inv."financialProfileId" = t."financialProfileId"
         where t."id" = $1 and t."cardId" = $2 and t."organizationId" = $3
           and t."financialProfileId" = $4 and t."kind" = 'INCOME'
-          and t."description" like '%[estorno:%'
+          and t."status" <> 'VOIDED' and t."description" like '%[estorno:%'
         for update of t, inv`,
       [reversalId, cardId, context.organizationId, context.financialProfileId],
     );

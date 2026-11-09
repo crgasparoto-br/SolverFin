@@ -308,6 +308,58 @@ describe("report exports - canonical snapshot", () => {
     assert.ok((pdf.toString("latin1").match(/\) Tj T\*/gu) ?? []).length >= 6);
   });
 
+  it("preserves Unicode descriptions and separates literal escape sequences in PDF", () => {
+    const unicodeText = "Receita \u{1F4B0} pagar \u20AC 10,00 \u6F22\u5B57";
+    const literalText = "Receita \\u{1F4B0} pagar \u20AC 10,00 \\u{6F22}\\u{5B57}";
+    const makeReport = (value: string) => ({
+      view: "cash-flow" as const,
+      period: "2026-11-01 a 2026-11-30",
+      filters: { currency: "BRL" },
+      tables: [
+        {
+          name: "evidencias",
+          currency: "BRL",
+          columns: ["descricao", "valor_centavos"],
+          rows: [[value, 12345]],
+        },
+      ],
+    });
+    const unicode = makeReport(unicodeText);
+    const literal = makeReport(literalText);
+    const first = serializeReportPdf(unicode);
+    const second = serializeReportPdf(literal);
+    assert.notDeepEqual(
+      first,
+      second,
+      "distinct financial descriptions must not create identical PDFs",
+    );
+    assert.match(first.toString("latin1"), /\/ActualText <FEFF[0-9A-F]+>/u);
+    assertPdfParity(unicode, first);
+    assertPdfParity(literal, second);
+    assertCsvParity(unicode, serializeReportCsv(unicode));
+    assertXlsxParity(unicode, serializeReportXlsx(unicode));
+    assertCsvParity(literal, serializeReportCsv(literal));
+    assertXlsxParity(literal, serializeReportXlsx(literal));
+  });
+
+  it("keeps multilingual, escaped and wrapped PDF text semantically distinct", () => {
+    const values = [
+      "\u6F22\u5B57\u{1F4B0} cafe \u00E7\u00E3o \u041F\u0440\u0438\u0432\u0435\u0442 \uD83D\uDCB0",
+      "\\u{6F22}\\u{5B57}\\u{1F4B0} cafe \u00E7\u00E3o",
+      "\u6F22\u5B57 ".repeat(40) + " [fim]",
+      "taxa: (\\) <inicio> + @ valor\nsegunda linha",
+    ];
+    for (const value of values) {
+      const report = {
+        view: "installments" as const,
+        period: "2026-11",
+        filters: { currency: "USD" },
+        tables: [{ name: "parcelas", currency: "USD", columns: ["descricao"], rows: [[value]] }],
+      };
+      assertPdfParity(report, serializeReportPdf(report));
+    }
+  });
+
   it("preserves monetary evidence identities in the projected cash-flow export", async () => {
     fakeReportApi();
     const report = await loadCanonicalReportExport("session", exportUrl("cash-flow"));

@@ -297,11 +297,13 @@ em unidades menores e identidade das evidências.
   planilhas são geradas sem macros. Células nulas são gravadas como células
   vazias; texto vazio permanece uma string vazia tipada.
 - **PDF:** relatório A4 paginado, legível, com período, filtros e linhas de
-  detalhes por moeda; conteúdo Unicode não representável na fonte WinAnsi padrão
-  usa notação escapada. O PDF identifica cada registro e sua seção/moeda;
-  as linhas quebram por largura real de fonte e margens A4, inclusive em
-  descrições longas. Células nulas são identificadas como `<nulo>`.
-  Não é relatório contábil/fiscal oficial.
+  detalhes por moeda. Para caracteres sem glifo na fonte WinAnsi padrão, exibe
+  uma referência visível `[U+XXXX]` e incorpora o texto Unicode original em
+  `/ActualText` (UTF-16BE), preservando cópia, extração e distinção semântica
+  entre um caractere e uma sequência textual literal semelhante. O PDF identifica
+  cada registro e sua seção/moeda; as linhas quebram por largura de fonte e
+  margens A4, inclusive em descrições longas. Células nulas são identificadas
+  como `<nulo>`. Não é relatório contábil/fiscal oficial.
 
 Texto controlado pelo usuário (nomes, descrições e rótulos) é neutralizado contra
 **formula injection** no CSV e XLSX, inclusive após quebras de linha. Recortes

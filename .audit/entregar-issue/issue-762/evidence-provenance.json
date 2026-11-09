@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+  "evidence": [
+    {
+      "evidence_id": "EVID-777-EXACT-PYTEST",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/issue-762/evidence/pr777-exact-pytest.log",
+      "sha256": "f40a4806607a1ac96d9a770a167af1cd7b1daba22df7d8918ee4ae609c748915",
+      "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+      "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+      "freshness_policy": "exact-material-head",
+      "producer": "Python pytest 175 + unittest 23, restored authenticated GitHub Actions bundle run 42670067008 at exact HEAD; GitHub contract run 42670067822 passed.",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-777-MUTANT-REJECTION",
+      "kind": "behavioral",
+      "path": ".audit/entregar-issue/issue-762/evidence/pr777-negative-mutant.log",
+      "sha256": "9b6554baeda5c5dc09801c88250dfa72cb6750c37a0fd887f1c5c72bf7ba04db",
+      "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+      "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+      "freshness_policy": "exact-material-head",
+      "producer": "Isolated temporary worktree derived from exact HEAD (not candidate): restores raw unencoded CHECK_NAME, targeted test fails (exit=1) as expected. Does not claim mutant code is certified material.",
+      "status": "passed"
+    }
+  ]
+}

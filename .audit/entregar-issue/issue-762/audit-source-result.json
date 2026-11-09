@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:9c9cb253-dd67-4444-a2ac-621a024df03e",
+  "audit_report_sha256": "2269c4f6eb2784bfa18a20f2f4c11d55292f6e25360dfd27ede66942d0d7acae",
+  "audit_report_source": "Prior separate ChatGPT auditor report, 09/11/2026; markdown SHA-256 independently stored with user, no GitHub approval or external human identity claimed.",
+  "head_sha": "2857b6a050e502ab896119142aa97ba532c9ecf8",
+  "trusted_anchor_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 762,
+    "pull_request_number": 763,
+    "base_sha": "96eca4f0046d07a29dba459a4a048e4bd47df2f4",
+    "head_sha": "2857b6a050e502ab896119142aa97ba532c9ecf8",
+    "material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+    "published_head_sha": "2857b6a050e502ab896119142aa97ba532c9ecf8"
+  },
+  "findings": [
+    {
+      "id": "A-76312",
+      "disposition": "blocking",
+      "status": "open",
+      "remediation_mode": "targeted-remediation",
+      "requirement_id": "REQ-762-005",
+      "surface_id": "review-session-provenance-routing",
+      "root_cause": "prepare() eagerly validates optional GitHub linear commit chain before the selected review session type is known, rejecting two real V1 session references on a merged PR.",
+      "evidence_sha256": "6ad98c866e5787414ca5cf54530f79bd4b4fba3a2dae4cd28c9706f5cfb41a51"
+    }
+  ],
+  "recommendations": [],
+  "historical_prior_findings": [
+    {
+      "id": "A-763-01",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-02",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-03",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-04",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-05",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-06",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-07",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-08",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-09",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-10",
+      "status": "resolved"
+    },
+    {
+      "id": "A-763-11",
+      "status": "resolved"
+    }
+  ],
+  "source_evidence": {
+    "prior_audit_markdown_sha256": "2269c4f6eb2784bfa18a20f2f4c11d55292f6e25360dfd27ede66942d0d7acae",
+    "prior_published_head_sha": "2857b6a050e502ab896119142aa97ba532c9ecf8",
+    "prior_material_head_sha": "fc93807c92bf5bc4bbfaa0e83161c597245280d4",
+    "rejection_id": "audit-rejection:9c9cb253-dd67-4444-a2ac-621a024df03e",
+    "reproduction_log_sha256": "6ad98c866e5787414ca5cf54530f79bd4b4fba3a2dae4cd28c9706f5cfb41a51"
+  },
+  "handoff_revalidation": {
+    "material_head_sha": "d6b74862c721cccc3977e3cb5723ec2bc4560acd",
+    "note": "This file transcribes the prior separate rejection and is NOT itself a new independent approval."
+  }
+}

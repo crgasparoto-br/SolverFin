@@ -77,7 +77,9 @@ export function transactionGroupingScript(): string {
         if (!groupOpen) return;
 
         groupOpen.disabled = true;
-        groupOpen.title = "Desmarque as parcelas canônicas para unificar somente lançamentos elegíveis.";
+        const tooltip = "Unificar lançamentos: Desmarque as parcelas canônicas para unificar somente lançamentos elegíveis.";
+        groupOpen.title = tooltip;
+        groupOpen.setAttribute("data-tooltip", tooltip);
         const helpNode = document.querySelector("[data-bulk-selection-help]");
         if (helpNode && !helpNode.textContent.includes(canonicalGroupingHelp)) {
           helpNode.textContent = [canonicalGroupingHelp, helpNode.textContent]

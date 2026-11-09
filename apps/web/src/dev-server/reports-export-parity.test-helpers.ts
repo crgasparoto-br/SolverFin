@@ -160,12 +160,32 @@ export function assertXlsxParity(report: CanonicalReportExport, file: Buffer): v
   }
 }
 
+function pdfActualText(hex: string): string {
+  assert.ok(hex.startsWith("FEFF") && hex.length % 4 === 0, "PDF uses valid UTF-16BE text");
+  const bytes = Buffer.from(hex, "hex");
+  const swapped = Buffer.alloc(bytes.length - 2);
+  for (let i = 2; i < bytes.length; i += 2) {
+    swapped[i - 2] = bytes[i + 1] ?? 0;
+    swapped[i - 1] = bytes[i] ?? 0;
+  }
+  return swapped.toString("utf16le");
+}
+
 function readPdfLines(pdf: Buffer): string[] {
   const text = pdf.toString("latin1");
   assert.match(text, /^%PDF-1\.4/u);
   const lines: string[] = [];
-  for (const match of text.matchAll(/\(((?:\\.|[^\\)])*)\) Tj T\*/gu)) {
-    lines.push((match[1] ?? "").replace(/\\([\\()])/gu, "$1"));
+  const operations =
+    /(?:\/Span << \/ActualText <([0-9A-F]+)> >> BDC )?\(((?:\\.|[^\\)])*)\) Tj( EMC)? T\*/gu;
+  for (const match of text.matchAll(operations)) {
+    const originalHex = match[1];
+    const marked = match[3] !== undefined;
+    assert.equal(marked, originalHex !== undefined, "marked PDF text requires /ActualText");
+    lines.push(
+      originalHex
+        ? pdfActualText(originalHex)
+        : (match[2] ?? "").replace(/\\([\\()])/gu, "$1"),
+    );
   }
   return lines;
 }
