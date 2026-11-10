@@ -482,10 +482,11 @@ async function verifyTransferBulkReconciliation(sourceAccountId: string): Promis
   const ids = [planned.id, posted.id];
   const before = await Promise.all(ids.map((id) => getTransactionForContext(context, id)));
   await assert.rejects(
-    () => executeTransactionBulkActionForContext(context, {
-      action: "reconcile",
-      transactionIds: [planned.id, randomUUID()],
-    }),
+    () =>
+      executeTransactionBulkActionForContext(context, {
+        action: "reconcile",
+        transactionIds: [planned.id, randomUUID()],
+      }),
     hasCode("TENANT_RESOURCE_NOT_FOUND"),
   );
   assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");

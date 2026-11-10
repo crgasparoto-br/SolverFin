@@ -741,7 +741,12 @@ function jsonResponse(body: unknown): Response {
 test("A2 transfer selection is available in each account but not in All accounts", async () => {
   const movements: Record<string, unknown>[] = [
     ...(["posted", "planned", "reconciled", "suggested"] as const).map((status, index) => ({
-      ...transaction("transfer-" + status, "Transferência " + status, 10000, "2026-08-0" + (index + 1)),
+      ...transaction(
+        "transfer-" + status,
+        "Transferência " + status,
+        10000,
+        "2026-08-0" + (index + 1),
+      ),
       kind: "transfer",
       status,
       ...(status === "planned" || status === "suggested" ? { effectiveOn: undefined } : {}),
