@@ -21,7 +21,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material historico 07fb199 e filho 16fca4 registrados na Issue 714; PR 713 foi integrada em develop como b50ee442. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Material historico 07fb199 e filho 16fca4 registrados na Issue 714; PR 713 foi integrada em develop como b50ee442. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-002",
@@ -38,7 +38,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Repository CI 38768319333 e Chrome 38768319363 green no SHA historico 16fca4, sem transportar resultado para o HEAD atual. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Repository CI 38768319333 e Chrome 38768319363 green no SHA historico 16fca4, sem transportar resultado para o HEAD atual. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-003",
@@ -68,7 +68,7 @@
           "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
         }
       },
-      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA."
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
     },
     {
       "id": "OBL-004",
@@ -87,7 +87,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Aceite visual 14/10 preservado; docs/GOLDEN_STATEMENT.md separa baseline de execucao e propagacao #715 a #719. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Aceite visual 14/10 preservado; docs/GOLDEN_STATEMENT.md separa baseline de execucao e propagacao #715 a #719. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-005",
@@ -107,7 +107,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Issue 702 #issuecomment-6181511794 preserva aceite visual sem reabrir homologacao na entrega de documentacao. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Issue 702 #issuecomment-6181511794 preserva aceite visual sem reabrir homologacao na entrega de documentacao. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-006",
@@ -124,7 +124,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Issue 702 e docs/GOLDEN_STATEMENT.md registram SHA 366e020, evidencias Chrome e modais centralizados. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Issue 702 e docs/GOLDEN_STATEMENT.md registram SHA 366e020, evidencias Chrome e modais centralizados. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-007",
@@ -144,7 +144,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md secao Composicao e ADR 0018 explicitam conta individual, Todas e cambio; teste de mutacoes 714 passou 25/25. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "docs/GOLDEN_STATEMENT.md secao Composicao e ADR 0018 explicitam conta individual, Todas e cambio; teste de mutacoes 714 passou 25/25. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-008",
@@ -171,7 +171,7 @@
           "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
         }
       },
-      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA."
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
     },
     {
       "id": "OBL-009",
@@ -192,7 +192,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Pacote da #714/PR 760 deve substituir herdado #728/PR 759; checagem negativa confirma foreign target; novo handoff sujeito a builder oficial. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Pacote da #714/PR 760 deve substituir herdado #728/PR 759; checagem negativa confirma foreign target; novo handoff sujeito a builder oficial. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-010",
@@ -214,7 +214,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Issues 714/702 publicam marcos de merges PR 713 b50ee442 e PR 721 8a56d2f na develop. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Issues 714/702 publicam marcos de merges PR 713 b50ee442 e PR 721 8a56d2f na develop. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-011",
@@ -235,7 +235,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md separa aceite de produto, CI Chrome, certificacao exact-SHA e parecer independente; regra nao confunde marcos. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "docs/GOLDEN_STATEMENT.md separa aceite de produto, CI Chrome, certificacao exact-SHA e parecer independente; regra nao confunde marcos. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-012",
@@ -257,7 +257,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "CI do material anterior 41893142725 e Chrome anterior 41893142688 terminal success no SHA historico 7e40a600; esses runs nao certificam o novo merge SHA 5612b772. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "CI do material anterior 41893142725 e Chrome anterior 41893142688 terminal success no SHA historico 7e40a600; esses runs nao certificam o novo merge SHA 5612b772. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-013",
@@ -278,7 +278,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Secao Composicao documenta entradas com transferencias recebidas e saidas com enviadas, Todas sem inflar internas, cambio por perna selecionada; teste negativo novo detecta contradicoes. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Secao Composicao documenta entradas com transferencias recebidas e saidas com enviadas, Todas sem inflar internas, cambio por perna selecionada; teste negativo novo detecta contradicoes. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-014",
@@ -297,7 +297,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md declara estado parcial, distingue CI, aceite visual e auditoria; sem equivalencia de green com approval. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md declara estado parcial, distingue CI, aceite visual e auditoria; sem equivalencia de green com approval. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-015",
@@ -317,7 +317,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md inicia como Golden Screen aprovada, cita PR 703 apenas como marco historico e nao como candidato vigente. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "docs/GOLDEN_STATEMENT.md inicia como Golden Screen aprovada, cita PR 703 apenas como marco historico e nao como candidato vigente. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-016",
@@ -337,7 +337,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "docs/GOLDEN_STATEMENT.md e epica 702 distinguem propagacao #715 a #719 como escopo separado desta entrega. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "docs/GOLDEN_STATEMENT.md e epica 702 distinguem propagacao #715 a #719 como escopo separado desta entrega. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-017",
@@ -356,7 +356,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Aceite de produto 14/10 e link de comentario na 702 registrados; auditoria de codigo/documentacao separada. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Aceite de produto 14/10 e link de comentario na 702 registrados; auditoria de codigo/documentacao separada. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-018",
@@ -376,7 +376,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "ADR 0018 e GOLDEN_STATEMENT.md secao Composicao reconciliam moeda individual, Todas e cambio; 4 mutacoes negativas sao detectadas no teste 714. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "ADR 0018 e GOLDEN_STATEMENT.md secao Composicao reconciliam moeda individual, Todas e cambio; 4 mutacoes negativas sao detectadas no teste 714. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-019",
@@ -393,7 +393,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "AGENTS.md exige dialog central e GOLDEN_STATEMENT.md fixa novo/editar/clonar; Chrome 41893142688 validou rota /lancamentos e responsividade. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "AGENTS.md exige dialog central e GOLDEN_STATEMENT.md fixa novo/editar/clonar; Chrome 41893142688 validou rota /lancamentos e responsividade. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-020",
@@ -414,7 +414,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Golden, ADR 0018 e ENTRY_FILL_RULES reconciliados para #747 Salvar e continuar, mantendo transferencia; 25 testes documentais passaram. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Golden, ADR 0018 e ENTRY_FILL_RULES reconciliados para #747 Salvar e continuar, mantendo transferencia; 25 testes documentais passaram. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     },
     {
       "id": "OBL-021",
@@ -443,7 +443,7 @@
           "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
         }
       },
-      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA."
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
     },
     {
       "id": "OBL-022",
@@ -460,7 +460,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Epic 702 registra 14/10, SHA e PRs integradas; separa Fase 0 e propagacao por superficie. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "Epic 702 registra 14/10, SHA e PRs integradas; separa Fase 0 e propagacao por superficie. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
     }
   ],
   "source_coverage": [

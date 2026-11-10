@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
-  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
   "creations": [
     {
       "path": ".audit/entregar-issue/issue-714/evidence/verify_714_material.py",
@@ -48,7 +48,7 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The existing generic visual harness did not assert the issue 714 approved baseline or detect contradictory individual/all/FX wording; 25 discriminant Node tests added.",
+      "justification": "The existing generic visual harness did not assert the issue 714 approved baseline or detect contradictory individual/all/FX wording; 26 discriminant Node tests added.",
       "disposition": "keep",
       "coverage_before": [
         "Existing general statement visual coverage contracts"
@@ -56,18 +56,20 @@
       "coverage_after": [
         "22 positive contract assertions with negative omission/restoration",
         "Four transfer document semantic mutation variants",
-        "Cross-document footer supersession #747/PR #749"
+        "Cross-document footer supersession #747/PR #749",
+        "Prospective assurance statement verified with historical no-retroactive-approval mutation"
       ],
       "verification": {
         "status": "passed",
         "command": "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs",
         "exit_code": 0,
-        "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
         "reached_tests": [
-          "scripts/statement-visual/issue-714-documentation-contract.test.mjs"
+          "scripts/statement-visual/issue-714-documentation-contract.test.mjs",
+          "scripts/statement-visual/*.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log",
-        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe"
+        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e"
       }
     }
   ]

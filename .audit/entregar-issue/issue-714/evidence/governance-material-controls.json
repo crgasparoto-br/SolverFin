@@ -1,108 +1,175 @@
 {
-  "material_head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
-  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "schema_version": 1,
+  "material_head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
   "subject_issue": 714,
   "subject_pr": 760,
-  "control_count": 12,
+  "control_count": 18,
   "controls": [
     {
-      "id": "approved-title",
+      "id": "approved-golden-title",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "713-integrated-sha",
+      "id": "integrated-pr713",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "721-integrated-sha",
+      "id": "integrated-pr721",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "propagation-boundary",
+      "id": "no-inherited-propagation",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "individual-transfer",
+      "id": "individual-incoming-transfer",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "all-transfers",
+      "id": "all-accounts-no-inflation",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "fx-leg",
+      "id": "fx-currency-leg",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
       "id": "centered-dialogs",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "footer-three-actions",
+      "id": "footer-supersession",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "independence-distinct",
+      "id": "independent-audit-separation",
       "status": "passed",
-      "positive": "exact material source accepted",
-      "negative": "plausible bad source rejected",
-      "restoration": "original source accepted",
-      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "prior-material-handoff",
+      "id": "adr-0018-footer-supersession",
       "status": "passed",
-      "positive": "noncurrent certificate rejected",
-      "negative": "forged material identity would have incorrectly bypassed mismatch",
-      "restoration": "original noncurrent certificate not reused",
-      "source_sha256": "00df9f2ab9c677ba7fd90ac20f98d7bbed47e36a07b81d582aab852b9094f59c"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "9877540291509d01a321d7344c3375f7b7dbdd5ce924107b91e4f52a84564a2c",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     },
     {
-      "id": "base-foreign-handoff",
+      "id": "prospective-review-policy",
       "status": "passed",
-      "positive": "noncurrent certificate rejected",
-      "negative": "forged material identity would have incorrectly bypassed mismatch",
-      "restoration": "original noncurrent certificate not reused",
-      "source_sha256": "c8df10ab6497c65b9973a3d60bd6b9d2c8ef22c7df7c0d9f900742f0cdc69805"
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "no-retroactive-approval",
+      "status": "passed",
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "deferred-obligations",
+      "status": "passed",
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "no-third-party-claim",
+      "status": "passed",
+      "positive": "present in actual source",
+      "negative": "removed or contradicted in memory and rejected",
+      "restoration": "actual material source unchanged",
+      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "trusted-policy-enabled",
+      "status": "passed",
+      "positive": "enabled, non-third-party assurance confirmed on merged material",
+      "negative": "disabled or higher assurance would violate expected exact policy",
+      "restoration": "policy file unmodified",
+      "source_sha256": "0cb91d889b63b7164f60b3e1dfdfb6116f27a3ff26d6b274a59e9dddeb6e73db",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "base-certificate-foreign-target",
+      "status": "passed",
+      "positive": "foreign subject rejected",
+      "negative": "must not rebind base certificate to #714/#760",
+      "restoration": "base certificate kept immutable",
+      "source_sha256": "fdd840a3c6037dda332c69e49605f9335bb6121064a69054ebc2768065c3a8c2",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+    },
+    {
+      "id": "old-current-certificate-stale",
+      "status": "passed",
+      "positive": "same-target certificate belongs to older material",
+      "negative": "must reject its old READY for new material",
+      "restoration": "original historical certificate kept without reapproval",
+      "source_sha256": "ded807757b0ebf6c01d18603b3f2a754f11dc337fefe374b693e5d3c04fce113",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
     }
   ],
   "independent_approval_observed": false,
   "certification_observed": false,
-  "message": "Tests executed on exact material SHA. Historical and current stale certificates must be reconstructed; no independent review claimed."
+  "message": "Read-only material tests on exact SHA; no independent review or historical certification claimed."
 }

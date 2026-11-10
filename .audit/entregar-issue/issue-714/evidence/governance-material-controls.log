@@ -1,3 +1,4 @@
-PASS 12 material/document negative controls on SHA 5612b7721cc90436e32775e2779fe1fb64dc728f
-GIT_TREE fcd5c088d70d11fefd67f7894701238f7ed02de9
-OLD_HANDOFF_STATUS=stale-current-target; BASE_HANDOFF_STATUS=foreign-692-761
+PASS 18 actual material semantic controls with negative/restoration on SHA c4979487f60fea7419c2936972e03aa1d1df5552
+GIT_TREE 3ba8d563fce28839749f8b9d3d752e22df99fd30
+BASE ab3083b3f268292c654e653b811a54612e123cc6
+CURRENT_HANDOFF=stale (regenerate after material CI)

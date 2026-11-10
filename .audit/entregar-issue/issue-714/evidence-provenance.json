@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
-  "material_head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
-  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "material_head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
   "evidence": [
     {
       "evidence_id": "EV-714-DOC-LOG",
       "kind": "documentation",
       "path": "evidence/issue-714-test-reach.log",
-      "sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
-      "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
-      "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+      "sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+      "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / read-only Python material oracle on authenticated Git bundle",
+      "producer": "Node.js 22 node:test / read-only Python semantic oracle on authenticated exact Git merge checkout",
       "status": "passed"
     },
     {
       "evidence_id": "EV-714-MATERIAL-LOG",
       "kind": "structural",
       "path": "evidence/governance-material-controls.log",
-      "sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
-      "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
-      "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+      "sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+      "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / read-only Python material oracle on authenticated Git bundle",
+      "producer": "Node.js 22 node:test / read-only Python semantic oracle on authenticated exact Git merge checkout",
       "status": "passed"
     }
   ]

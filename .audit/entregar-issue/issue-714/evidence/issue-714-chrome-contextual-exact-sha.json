@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "subjectSha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+  "subjectSha": "c4979487f60fea7419c2936972e03aa1d1df5552",
   "status": "passed",
-  "runId": 42742241429,
-  "artifactId": 13730675494,
-  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42742241429/artifacts/13730675494",
+  "runId": 42873437157,
+  "artifactId": 13792260054,
+  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42873437157/artifacts/13792260054",
   "rawEvidenceFile": "statement-contextual-surfaces.json",
-  "rawEvidenceSha256": "da75d470410433611c7bc70fdf966eff3c261ea86614d5dff2f5d1062dcb41ef",
+  "rawEvidenceSha256": "f194e65d903c892a538cd2677b4ba7caffd7b889e41abad29ff1e42fb4909a1c",
   "rawObservedCount": 20,
   "rawNegativeControlCount": 72,
   "observations": [
