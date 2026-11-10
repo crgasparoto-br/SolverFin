@@ -185,7 +185,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
         }
 
         function compatibleForGrouping(items) {
-          return items.length >= 2 && items.every(function (item) {
+          return items.length >= 2 &&
+            (items[0].dataset.kind === "income" || items[0].dataset.kind === "expense") &&
+            items.every(function (item) {
             return item.dataset.kind === items[0].dataset.kind &&
               item.dataset.status === items[0].dataset.status &&
               item.dataset.currency === items[0].dataset.currency;
@@ -223,9 +225,11 @@ export function enhanceTransactionBulkSelection(html: string): string {
             groupOpen.disabled = !canGroup;
             updateTooltip(groupOpen, "Unificar lançamentos", groups.length > 0
               ? "Desmarque os agrupamentos para unificar somente lançamentos simples."
-              : simple.length > 1 && !canGroup
-                ? "Selecione lançamentos do mesmo tipo, moeda e situação."
-                : !canGroup ? "Selecione pelo menos dois lançamentos do mesmo tipo, moeda e situação." : "");
+              : simple.some(function (item) { return item.dataset.kind === "transfer"; })
+                ? "Transferências não podem ser unificadas."
+                : simple.length > 1 && !canGroup
+                  ? "Selecione lançamentos do mesmo tipo, moeda e situação."
+                  : !canGroup ? "Selecione pelo menos dois lançamentos do mesmo tipo, moeda e situação." : "");
             groupOpen.setAttribute("aria-describedby", helpNode.id);
           }
 
@@ -265,6 +269,8 @@ export function enhanceTransactionBulkSelection(html: string): string {
           const explanations = [];
           if (groups.length > 0) {
             explanations.push("Unificar lançamentos indisponível: desmarque os agrupamentos para unificar somente lançamentos simples.");
+          } else if (simple.some(function (item) { return item.dataset.kind === "transfer"; })) {
+            explanations.push("Unificar lançamentos indisponível: transferências não podem ser agrupadas.");
           } else if (simple.length > 1 && !compatibleForGrouping(simple)) {
             explanations.push("Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação.");
           }

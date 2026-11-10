@@ -262,3 +262,141 @@ export async function verifyDeletionAndMixedStatuses({
     afterMixedReconcile,
   };
 }
+
+/** Chrome regression #778: transfers can reconcile from either account but cannot be grouped. */
+export async function verifyTransferSelection({
+  browser,
+  fixtureIds,
+  baseUrl,
+  route,
+  outputDir,
+  onCreatedIds,
+}) {
+  const setup = [
+    "(async () => {",
+    "const source = " + JSON.stringify(fixtureIds.longAccountId) + ";",
+    "const destination = " + JSON.stringify(fixtureIds.singleAccountId) + ";",
+    "async function create(status, day) {",
+    "  const date = '2026-07-' + day;",
+    "  const response = await fetch('/api/transactions', {",
+    "    method: 'POST', headers: { 'content-type': 'application/json' },",
+    "    body: JSON.stringify({ accountId: source, destinationAccountId: destination,",
+    "      kind: 'transfer', currency: 'BRL', amountMinor: 6000, occurredOn: date,",
+    "      plannedOn: date, effectiveOn: status === 'planned' ? null : date,",
+    "      status, description: 'QA transferência 778 ' + status })",
+    "  });",
+    "  const payload = await response.json();",
+    "  if (!response.ok) throw new Error(JSON.stringify(payload));",
+    "  return payload.transaction.id;",
+    "}",
+    "return [await create('posted', '29'), await create('posted', '30')];",
+    "})()",
+  ].join("\n");
+  const ids = await evaluate(browser.cdp, setup);
+  onCreatedIds(ids);
+  await setViewport(browser.cdp, 1366, 768);
+  await navigate(browser.cdp, baseUrl + route);
+  await sleep(150);
+
+  const selection = await evaluate(
+    browser.cdp,
+    [
+      "(() => {",
+      "const ids = " + JSON.stringify(ids) + ";",
+      "ids.forEach((id) => {",
+      "  const input = document.querySelector('[data-select-transaction][value=\"' + id + '\"]');",
+      "  if (!input || input.disabled) throw new Error('Transfer not selectable: ' + id);",
+      "  input.checked = true;",
+      "  input.dispatchEvent(new Event('change', { bubbles: true }));",
+      "});",
+      "const bar = document.querySelector('[data-selection-bar]');",
+      "const group = document.querySelector('[data-group-open]');",
+      "return {",
+      "  visible: !bar.hidden,",
+      "  count: bar.querySelector('[data-selection-count]').textContent.trim(),",
+      "  reconcileDisabled: bar.querySelector('[data-bulk-selection-action=\"reconcile\"]').disabled,",
+      "  unreconcileDisabled: bar.querySelector('[data-bulk-selection-action=\"unreconcile\"]').disabled,",
+      "  groupDisabled: group.disabled,",
+      "  groupTooltip: group.getAttribute('data-tooltip') || '',",
+      "  help: bar.querySelector('[data-bulk-selection-help]').textContent.trim()",
+      "};",
+      "})()",
+    ].join("\n"),
+  );
+  assert.equal(selection.visible, true);
+  assert.equal(selection.count, "2");
+  assert.equal(selection.reconcileDisabled, false);
+  assert.equal(selection.unreconcileDisabled, true);
+  assert.equal(selection.groupDisabled, true);
+  assert.match(selection.groupTooltip, /Transferências não podem ser unificadas/);
+  assert.match(selection.help, /transferências não podem ser agrupadas/i);
+  await screenshot(browser.cdp, join(outputDir, "issue-778-transfer-selection-1366x768.png"));
+
+  await setViewport(browser.cdp, 390, 844);
+  await sleep(150);
+  const mobile = await readBarMetrics(browser.cdp);
+  assert.equal(mobile.bodyOverflow, false);
+  assert.equal(mobile.visibleInViewport, true);
+  await screenshot(browser.cdp, join(outputDir, "issue-778-transfer-selection-390x844.png"));
+
+  const loaded = browser.cdp.once("Page.loadEventFired", 20_000);
+  await evaluate(
+    browser.cdp,
+    "(() => { window.confirm = () => true; document.querySelector('[data-bulk-selection-action=\"reconcile\"]').click(); })()",
+  );
+  await loaded;
+  await sleep(120);
+
+  const readStatuses = async (accountId) =>
+    evaluate(
+      browser.cdp,
+      [
+        "(async () => {",
+        "const response = await fetch('/api/transactions?accountId=' + " +
+          JSON.stringify(accountId) +
+          " + '&status=all');",
+        "const payload = await response.json();",
+        "if (!response.ok) throw new Error(JSON.stringify(payload));",
+        "return " +
+          JSON.stringify(ids) +
+          ".map((id) => payload.transactions.find((item) => item.id === id)?.status);",
+        "})()",
+      ].join("\n"),
+    );
+  const afterReconcile = await readStatuses(fixtureIds.longAccountId);
+  assert.deepEqual(afterReconcile, ["reconciled", "reconciled"]);
+
+  const destinationRoute =
+    "/lancamentos?accountId=" + encodeURIComponent(fixtureIds.singleAccountId) + "&month=2026-07";
+  await setViewport(browser.cdp, 1366, 768);
+  await navigate(browser.cdp, baseUrl + destinationRoute);
+  await sleep(120);
+  const destinationSelection = await evaluate(
+    browser.cdp,
+    [
+      "(() => {",
+      "const ids = " + JSON.stringify(ids) + ";",
+      "ids.forEach((id) => {",
+      "  const input = document.querySelector('[data-select-transaction][value=\"' + id + '\"]');",
+      "  if (!input || input.disabled) throw new Error('Destination transfer not selectable: ' + id);",
+      "  input.checked = true;",
+      "  input.dispatchEvent(new Event('change', { bubbles: true }));",
+      "});",
+      "const bar = document.querySelector('[data-selection-bar]');",
+      "return { count: bar.querySelector('[data-selection-count]').textContent.trim(),",
+      "  unreconcileDisabled: bar.querySelector('[data-bulk-selection-action=\"unreconcile\"]').disabled };",
+      "})()",
+    ].join("\n"),
+  );
+  assert.equal(destinationSelection.count, "2");
+  assert.equal(destinationSelection.unreconcileDisabled, false);
+  const destinationLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
+  await evaluate(
+    browser.cdp,
+    "(() => { window.confirm = () => true; document.querySelector('[data-bulk-selection-action=\"unreconcile\"]').click(); })()",
+  );
+  await destinationLoaded;
+  const afterUnreconcile = await readStatuses(fixtureIds.singleAccountId);
+  assert.deepEqual(afterUnreconcile, ["posted", "posted"]);
+  return { selection, mobile, afterReconcile, destinationSelection, afterUnreconcile };
+}

@@ -124,3 +124,23 @@ test("issue 714: current card contract rejects contradictory individual/all/FX m
   }
   assertCurrentTransferContract(document);
 });
+
+// The decision supersedes historical certification, never historical Git facts.
+// This contract is documentary only; the external review must still be real.
+test("issue 714: prospective assurance is documented without retroactive approval", () => {
+  const historical =
+    /historical review obligation as `superseded-by-prospective-review` only[\s\S]*?never as `passed`/;
+  const mode = /`operator-attested-session-review`, with `third_party_identity_proven=false`/;
+  const pending = /OBL-003, OBL-008 and OBL-021 remain deferred/;
+  const protectedGate = /`Delivery V2 gate`/;
+  const closeout = readFileSync(
+    new URL("../../docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md", import.meta.url),
+    "utf8",
+  );
+  for (const pattern of [historical, mode, pending, protectedGate]) {
+    assert.match(closeout, pattern);
+  }
+  assert.doesNotMatch(closeout.replace(historical, ""), historical);
+  assert.doesNotMatch(closeout.replace(mode, ""), mode);
+  assert.doesNotMatch(closeout.replace(pending, ""), pending);
+});

@@ -13,7 +13,10 @@ import {
   assertSelectionActionIcons,
   verifyFailureFeedback,
 } from "./transaction-bulk-selection-helpers.mjs";
-import { verifyDeletionAndMixedStatuses } from "./transaction-bulk-selection-scenarios.mjs";
+import {
+  verifyDeletionAndMixedStatuses,
+  verifyTransferSelection,
+} from "./transaction-bulk-selection-scenarios.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -404,6 +407,17 @@ try {
     },
   });
 
+  const transfers = await verifyTransferSelection({
+    browser,
+    fixtureIds,
+    baseUrl,
+    route,
+    outputDir,
+    onCreatedIds(ids) {
+      additionalIds.push(...ids);
+    },
+  });
+
   await writeFile(
     join(outputDir, "issue-530-bulk-selection.json"),
     `${JSON.stringify(
@@ -432,6 +446,7 @@ try {
         mixedMobile,
         afterMixedUnreconcile,
         afterMixedReconcile,
+        transfers,
       },
       null,
       2,
