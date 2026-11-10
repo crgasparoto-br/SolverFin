@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "material_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "runs": [
+    {
+      "id": 42825336185,
+      "name": "Repository CI",
+      "conclusion": "success",
+      "executed_jobs": [
+        "CI risk",
+        "Merge preview compatibility",
+        "CRITICAL validation",
+        "Delivery V2 gate",
+        "Repository CI gate"
+      ],
+      "actual_observation": "CRITICAL log reports 127 compiled API integration test files passed, including transaction-bulk-actions.integration.test.js; npm test/format/lint/typecheck/build run to completion."
+    },
+    {
+      "id": 42825336285,
+      "name": "Statement visual validation",
+      "conclusion": "success",
+      "executed_jobs": [
+        "Chrome visual validation"
+      ],
+      "actual_observation": "Chrome scenario transaction-bulk-selection passed, with stored source file issue-530-bulk-selection.json demonstrating transfer origin and destination."
+    },
+    {
+      "id": 42825336305,
+      "name": "Delivery audit workspace",
+      "conclusion": "success",
+      "actual_observation": "Produced trusted Git bundles containing exact base, head and Skill sources."
+    },
+    {
+      "id": 42825336162,
+      "name": "Verify certified handoff provenance",
+      "conclusion": "failure",
+      "actual_observation": "Before remediation: handoff subject mismatch for inherited issue #692, PR #761."
+    },
+    {
+      "id": 42825336264,
+      "name": "Session review evidence (exact SHA)",
+      "conclusion": "failure",
+      "actual_observation": "Before remediation: exact SHA certificate is not bound to this PR."
+    }
+  ],
+  "observed_at": "2026-11-10T14:10:00Z",
+  "source": "GitHub Actions authenticated metadata and job log excerpts, not an independent approval"
+}

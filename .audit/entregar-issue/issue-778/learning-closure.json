@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:ec10b8af-0106-4806-9202-c8e3a7efb7fc",
+    "finding_ids": [
+      "A-779-001"
+    ],
+    "audit_report_sha256": "8ccceb3c466bfa1ac0857f25fc464d68625877b47c3fea37882573666fb1ef02",
+    "audited_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+    "revalidated_material_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Target-specific missing handoff inherited from develop. The trusted subject and parent validators already reject foreign certificates correctly; the fix is publication of this issue's result-only handoff, not weakening global policy."
+  },
+  "skill_changes": []
+}

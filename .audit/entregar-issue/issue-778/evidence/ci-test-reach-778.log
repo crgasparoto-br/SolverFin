@@ -1,0 +1,21 @@
+HEAD: ae090fe832a738bc4f4f46f30a100ec4edc40d82
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/transaction-bulk-actions.integration.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42825336185
+SCOPE: Authenticated job CRITICAL success. Actual reached suite from run output; this derivative index is not a raw GitHub Actions log.
+
+HEAD: ae090fe832a738bc4f4f46f30a100ec4edc40d82
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42825336185
+SCOPE: Authenticated job CRITICAL success. Actual reached suite from run output; this derivative index is not a raw GitHub Actions log.
+
+HEAD: ae090fe832a738bc4f4f46f30a100ec4edc40d82
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/transactions-page-v2.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42825336185
+SCOPE: Authenticated job CRITICAL success. Actual reached suite from run output; this derivative index is not a raw GitHub Actions log.
+

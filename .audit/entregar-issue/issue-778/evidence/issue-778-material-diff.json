@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "material_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+  "changed_files": [
+    "apps/api/src/transaction-bulk-actions.integration.test.ts",
+    "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
+    "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts",
+    "apps/web/src/dev-server/transactions-page-v2.test.ts",
+    "apps/web/src/dev-server/transactions-page-v2.ts",
+    "docs/API_TRANSACTION_BULK_ACTIONS.md",
+    "docs/TRANSACTIONS.md",
+    "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
+    "scripts/statement-visual/transaction-bulk-selection.mjs"
+  ],
+  "source": "git diff --name-only base..material from authenticated immutable CI bundle"
+}

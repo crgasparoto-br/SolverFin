@@ -1,0 +1,25 @@
+## Problema
+Na rota `/lancamentos?accountId=...`, os checkboxes de transferências são emitidos com `disabled` pelo renderer A2 (`transactions-page-v2.ts`), impedindo **Marcar como conciliado** e **Desmarcar conciliado** em lote. As ações de lote e a API já suportam os estados elegíveis; a origem do bloqueio é a regra de seleção que contempla apenas receitas/despesas.
+
+## Objetivo e escopo
+- Permitir seleção de transferências simples nos estados `planned`, `posted` e `reconciled` em extrato de conta individual, inclusive transferências recebidas e cambiais, sem alterar a regra `accountId=all`.
+- Habilitar conciliar e desconciliar no mesmo conjunto com receitas/despesas elegíveis; manter atualização atômica, isolamento de perfil, datas canônicas e trilha de auditoria.
+- Manter `Unificar lançamentos` restrito a `income/expense` no controlador aprimorado e no handler base; explicar o bloqueio com tooltip acessível.
+- Preservar os bloqueios para sugestões não confirmadas, cancelados, cartão/fatura, remuneração automática e membro de grupo (seus fluxos próprios).
+- Preservar o vínculo origem/destino e as quantias/moedas de transferências; conciliar o objeto canônico uma única vez, sem duplicar efeitos financeiros.
+- Não redesenhar a Golden Screen. Reutilizar tokens, ícones, feedback e controles existentes.
+
+## Critérios de aceite
+- [ ] Transferências elegíveis podem ser marcadas individualmente e selecionadas em massa tanto na conta de origem como na conta destino.
+- [ ] Mistura com receitas/despesas elegíveis habilita as ações de status somente quando há alvos; resultados idempotentes e persistidos.
+- [ ] Selecionar duas transferências não habilita unificação e informa o motivo; outras regras de agrupamento continuam intactas.
+- [ ] Casos negativos (status inválido/protegidos, tenant/perfil e agrupados) não permitem alteração parcial.
+- [ ] Nenhum valor, moeda, data histórica, identificação de transferência ou conta é alterado ao conciliar/desconciliar.
+- [ ] Testes de render SSR, regressão UI e integração API/SQL; format, lint, typecheck, test, build e CI exact-SHA, com evidência visual quando disponível.
+
+## Referências
+- Golden Screen: #702, `docs/GOLDEN_STATEMENT.md` e `docs/DESIGN_SYSTEM.md`.
+- Regra de conciliação mista `planned/posted/reconciled`: #768 (já atendida no backend).
+- `docs/TRANSACTIONS.md` e `docs/API_TRANSACTION_BULK_ACTIONS.md`.
+
+**Base:** `develop`. **Fonte oficial:** `crgasparoto-br/skill@develop`. Auditoria independente em contexto separado; não realizar merge sem autorização específica.
