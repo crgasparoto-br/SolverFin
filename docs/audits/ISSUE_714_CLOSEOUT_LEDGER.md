@@ -1,4 +1,4 @@
-# Issue #714 — Technical closeout ledger (4 November 2026)
+# Issue #714 — Technical closeout ledger (updated 10 November 2026)
 
 Repository: crgasparoto-br/SolverFin. Issue: #714. Epic: #702. Delivery PR: #760, base develop.
 
@@ -12,17 +12,30 @@ The approved assurance is `operator-attested-session-review`, with `third_party_
 
 The M2 bootstrap has installed matching trusted session-review policies in `develop` and `main` with `mode=enabled`. This is an opt-in to evaluation, **not** an approval or an exemption from positive/negative/regression controls, exact-SHA CI/Chrome, a current `critical` handoff, or an authenticated separate-session review. The required `Delivery V2 gate`, protected branches and prohibition of fake/retroactive approval stay unchanged.
 
-For the current PR #760, **OBL-003, OBL-008 and OBL-021 remain deferred** until the prospective baseline-and-delta review, neutral authenticated packet, real-session reference, JUnit positive/negative/regression coverage and trusted exact-SHA receipt all pass. The issue remains **partial (19/22)** and #714/#702 stay open. This is a dependency of the external reviewer, not a reason to regenerate the historic #713 certificate.
+For the current PR #760, **OBL-003, OBL-008 and OBL-021 remain deferred**, alongside the four new governance obligations OBL-023 through OBL-026. The issue remains **partial (19/26)**: 19 covered and 7 deferred, never 26 passed. The prospective baseline-and-delta review still requires an authenticated neutral packet, a real separate-session reference, JUnit positive/negative/regression controls and a trusted exact-SHA receipt. Keep #714/#702 open; do not regenerate or retroactively approve the historic #713 certificate.
 
 A subsequent merge of `develop` into this PR is a material change. Previous CI, Chrome and handoff evidence applies only to its own frozen SHAs: regenerate the current-target handoff and read back the new material/HEAD before inviting a separate-context audit. A successful merge probe does not satisfy any review requirement.
+
+## Current canonical inventory (10 November 2026)
+
+The issue #714 canonical body (source SHA-256 `43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07`) now contains **26 obligations**. Its current closure inventory is **19 covered / 7 deferred**; the four added prospective-governance candidates are not retroactive approvals.
+
+| Current classification | Obligation IDs | Resolution boundary |
+| --- | --- | --- |
+| Covered (19) | OBL-001, OBL-002, OBL-004–007, OBL-009–020, OBL-022 | Historical/reference and documented material with existing supporting evidence; independent acceptance is not inferred |
+| Deferred (7) | OBL-003, OBL-008, OBL-021, OBL-023, OBL-024, OBL-025, OBL-026 | Prospective audit of integrated baseline and exact PR delta, session provenance, protected checks, negative and revocation trials, trusted receipt |
+
+The previous `critical` certificate (`c4979487f60fea7419c2936972e03aa1d1df5552` on `develop@ab3083b3f268292c654e653b811a54612e123cc6`) **does not certify the later material**, irrespective of green CI. The material must have a **new direct result-only child**, authenticated exact-SHA CI/Chrome and canonical Skill preflight before separate-context review. Do not mark the 7 deferred obligations as passed merely because the handoff is READY.
+
+The session-review policies are installed in `develop` and `main`, but their effective rulesets #25007371 and #18882937 still require only `Delivery V2 gate`. Operational positive/negative/revocation validation and explicit read-back of `Verify session review (exact SHA)` as an additional required check remain prerequisites under issue #762. `mode=enabled` alone does not implement the branch protection.
 
 ## Historical 4 November implementation ledger (retained for evidence)
 
 The product's Golden Screen was visually accepted on 14 October 2026. PR #713 was merged as b50ee44238dd9e63129ebc87a3ee31c0965b19f8 and PR #721 as 8a56d2f3bdb59d5b0d7abeceee63601c1dfbffe5. Those integrations do not prove independent technical approval. The current PR changes only documentation plus a documentary regression test; it does not modify financial behavior.
 
-## Inventory extracted by the official skill
+## Historical 4 November inventory extracted by the official skill (superseded)
 
-The official build_specification_snapshot.py and init_requirement_closure.py extract 22 obligations from the full current #714 issue description. A local validation trial with 19 covered and 3 deferred obligations passed validate_specification_coverage.py, but this was **not** a terminal or published certificate. The standard evidence validator refused the lower profile because it detected critical requirements (OBL-007, OBL-009, OBL-012, OBL-013, OBL-020). **Do not downgrade these risks or claim READY.**
+On 4 November, the official build_specification_snapshot.py and init_requirement_closure.py extracted 22 obligations from the then-current #714 issue description. A local validation trial with 19 covered and 3 deferred obligations passed validate_specification_coverage.py, but this was **not** a terminal or published certificate. The standard evidence validator refused the lower profile because it detected critical requirements (OBL-007, OBL-009, OBL-012, OBL-013, OBL-020). **Do not downgrade these risks or claim READY.**
 
 | ID      | Scope and available proof                                                    | Final state                                     |
 | ------- | ---------------------------------------------------------------------------- | ----------------------------------------------- |

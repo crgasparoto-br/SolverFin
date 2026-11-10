@@ -144,3 +144,34 @@ test("issue 714: prospective assurance is documented without retroactive approva
   assert.doesNotMatch(closeout.replace(mode, ""), mode);
   assert.doesNotMatch(closeout.replace(pending, ""), pending);
 });
+
+test("issue 714: current inventory rejects stale 22-obligation closure", () => {
+  const closeout = readFileSync(
+    new URL("../../docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md", import.meta.url),
+    "utf8",
+  );
+  function assertCurrentInventory(source) {
+    const section = source.split("## Current canonical inventory (10 November 2026)\n")[1]
+      ?.split("## Historical 4 November implementation ledger")[0];
+    assert.ok(section, "Current inventory must be an explicit section");
+    assert.match(section, /\*\*26 obligations\*\*/);
+    assert.match(section, /\*\*19 covered \/ 7 deferred\*\*/);
+    assert.match(section, /OBL-023, OBL-024, OBL-025, OBL-026/);
+    assert.match(section, /rulesets #25007371 and #18882937 still require only `Delivery V2 gate`/);
+    assert.match(section, /new direct result-only child/);
+    assert.doesNotMatch(section, /19\/22|22 obligations from the full current/);
+  }
+  assertCurrentInventory(closeout);
+  const mutations = [
+    closeout.replace("**26 obligations**", "**22 obligations**"),
+    closeout.replace("**19 covered / 7 deferred**", "**19 covered / 3 deferred**"),
+    closeout.replace("OBL-023, OBL-024, OBL-025, OBL-026", "OBL-023, OBL-024, OBL-025"),
+    closeout.replace("new direct result-only child", "inherited prior certificate"),
+    closeout.replace("still require only `Delivery V2 gate`", "already require session review"),
+  ];
+  for (const mutated of mutations) {
+    assert.notEqual(mutated, closeout, "Mutation must change the document");
+    assert.throws(() => assertCurrentInventory(mutated), assert.AssertionError);
+  }
+  assertCurrentInventory(closeout);
+});
