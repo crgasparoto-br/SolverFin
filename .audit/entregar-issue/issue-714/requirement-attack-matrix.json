@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+  "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
   "requirements": [
     {
       "requirement_id": "REQ-714-001",
@@ -13,13 +13,13 @@
       "source_texts": [
         "SHA material funcional: `07fb199284a7f0bab38148f33d85331aa18403d0`; filho de handoff: `16fca4cb1048ef62c004d0fbf12702cc8a768560` (ambos na ancestralidade da `develop`)."
       ],
-      "plausible_wrong_implementation": "For OBL-001: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-001: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-001",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -28,9 +28,9 @@
         {
           "id": "NEG-OBL-001-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -41,7 +41,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-001-1-A",
@@ -62,9 +62,9 @@
         {
           "id": "REG-OBL-001",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -96,13 +96,13 @@
       "source_texts": [
         "Repository CI [#38768319333](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319333) e Chrome visual [#38768319363](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319363): `completed/success` no SHA do handoff. Nao afirmar que essas execucoes validaram um novo build pos-merge."
       ],
-      "plausible_wrong_implementation": "For OBL-002: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-002: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-002",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -111,9 +111,9 @@
         {
           "id": "NEG-OBL-002-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -124,7 +124,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-002-1-A",
@@ -145,9 +145,9 @@
         {
           "id": "REG-OBL-002",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -179,13 +179,13 @@
       "source_texts": [
         "Aprovacao visual do produto em 14/10 permanece valida. As subissues #715–#719 podem referenciar o SHA integrado como baseline de codigo, mas isso **nao** representa liberacao tecnica independente nem implementacao delas."
       ],
-      "plausible_wrong_implementation": "For OBL-004: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-004: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-004",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -194,9 +194,9 @@
         {
           "id": "NEG-OBL-004-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -207,7 +207,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-004-1-A",
@@ -228,9 +228,9 @@
         {
           "id": "REG-OBL-004",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -262,13 +262,13 @@
       "source_texts": [
         "O usuário aprovou a Golden Screen do Extrato em 14/10/2026; o aceite **visual/de produto não deve ser reaberto automaticamente** por critérios da propagação. Restam verificações técnicas/documentais específicas do Extrato, que não incluem redesenhar outras telas. Manter rastreabilidade do material exato aprovado na #702."
       ],
-      "plausible_wrong_implementation": "For OBL-005: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-005: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-005",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+        "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -277,9 +277,9 @@
         {
           "id": "NEG-OBL-005-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -290,7 +290,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-005-1-A",
@@ -311,9 +311,9 @@
         {
           "id": "REG-OBL-005",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -345,13 +345,13 @@
       "source_texts": [
         "Consolidar na #702 o registro do aceite visual, SHA de referência, evidências Chrome e decisão de modais de novo/editar/clonar **centralizados**."
       ],
-      "plausible_wrong_implementation": "For OBL-006: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-006: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-006",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -360,9 +360,9 @@
         {
           "id": "NEG-OBL-006-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -373,7 +373,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-006-1-A",
@@ -394,9 +394,9 @@
         {
           "id": "REG-OBL-006",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -429,13 +429,13 @@
       "source_texts": [
         "Conferir documentação canônica do Extrato e reconciliar descrições antigas dos cards com a regra vigente de transferências."
       ],
-      "plausible_wrong_implementation": "For OBL-007: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-007: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-007",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -444,9 +444,9 @@
         {
           "id": "NEG-OBL-007-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -457,7 +457,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-007-1-A",
@@ -476,9 +476,9 @@
         {
           "id": "NEG-OBL-007-2",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -489,7 +489,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-007-2-A",
@@ -510,9 +510,9 @@
         {
           "id": "REG-OBL-007",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -550,13 +550,13 @@
       "source_texts": [
         "Produzir/validar o handoff certificado correto para #702/#713 se exigido pelo fluxo `crgasparoto-br/skill`; não reutilizar certificado herdado de #706/#707."
       ],
-      "plausible_wrong_implementation": "For OBL-009: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-009: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-009",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+        "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -565,9 +565,9 @@
         {
           "id": "NEG-OBL-009-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "structural-contract",
@@ -578,7 +578,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-009-1-A",
@@ -597,9 +597,9 @@
         {
           "id": "NEG-OBL-009-2",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "tenant-isolation",
@@ -610,7 +610,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-009-2-A",
@@ -631,9 +631,9 @@
         {
           "id": "REG-OBL-009",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -671,13 +671,13 @@
       "source_texts": [
         "Após integração regular na `develop`, registrar o commit exato e a versão da referência para as demais subissues."
       ],
-      "plausible_wrong_implementation": "For OBL-010: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-010: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-010",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+        "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -686,9 +686,9 @@
         {
           "id": "NEG-OBL-010-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -699,7 +699,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-010-1-A",
@@ -718,9 +718,9 @@
         {
           "id": "NEG-OBL-010-2",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "temporal-consistency",
@@ -731,7 +731,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-010-2-A",
@@ -752,9 +752,9 @@
         {
           "id": "REG-OBL-010",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -791,13 +791,13 @@
       "source_texts": [
         "**Duas aprovações distintas:** aceite visual do produto já registrado na #702; validação técnica/handoff independente ainda deve ser comprovada. Não reabrir o aceite visual por tarefas de propagação, mas verificar regressões no SHA final."
       ],
-      "plausible_wrong_implementation": "For OBL-011: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-011: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-011",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -806,9 +806,9 @@
         {
           "id": "NEG-OBL-011-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -819,7 +819,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-011-1-A",
@@ -840,9 +840,9 @@
         {
           "id": "REG-OBL-011",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -875,13 +875,13 @@
       "source_texts": [
         "**Validação exact-SHA:** o material atual tem dois workflows verdes, mas `.audit/entregar-issue/handoff-ready.json` segue idêntico à base e pertence a #706/#707; gerar certificado próprio segundo `crgasparoto-br/skill` e revalidar a identidade atual depois. Se o material SHA mudar, repetir os gates aplicáveis."
       ],
-      "plausible_wrong_implementation": "For OBL-012: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-012: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-012",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+        "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -890,9 +890,9 @@
         {
           "id": "NEG-OBL-012-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -903,7 +903,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-012-1-A",
@@ -922,9 +922,9 @@
         {
           "id": "NEG-OBL-012-2",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "temporal-consistency",
@@ -935,7 +935,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-012-2-A",
@@ -956,9 +956,9 @@
         {
           "id": "REG-OBL-012",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -995,13 +995,13 @@
       "source_texts": [
         "[ ] O documento canônico não afirma que transferências são excluídas dos cards individuais; um leitor consegue distinguir individual, `Todas` e câmbio apenas com a documentação versionada."
       ],
-      "plausible_wrong_implementation": "For OBL-013: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-013: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-013",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1010,9 +1010,9 @@
         {
           "id": "NEG-OBL-013-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -1023,7 +1023,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-013-1-A",
@@ -1044,9 +1044,9 @@
         {
           "id": "REG-OBL-013",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1078,13 +1078,13 @@
       "source_texts": [
         "[ ] O relatório de fechamento distingue aprovação visual do produto, CI automático, auditoria independente e certificado de entrega sem equivalências indevidas."
       ],
-      "plausible_wrong_implementation": "For OBL-014: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-014: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-014",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1093,9 +1093,9 @@
         {
           "id": "NEG-OBL-014-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1106,7 +1106,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-014-1-A",
@@ -1127,9 +1127,9 @@
         {
           "id": "REG-OBL-014",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1161,13 +1161,13 @@
       "source_texts": [
         "[ ] O documento de referência mostra a Golden Screen aprovada, não um candidato antigo como estado vigente."
       ],
-      "plausible_wrong_implementation": "For OBL-015: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-015: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-015",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+        "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1176,9 +1176,9 @@
         {
           "id": "NEG-OBL-015-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
+          "evidence_sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -1189,7 +1189,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-015-1-A",
@@ -1210,9 +1210,9 @@
         {
           "id": "REG-OBL-015",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1244,13 +1244,13 @@
       "source_texts": [
         "[ ] Nenhum documento ou PR declara que a propagação foi implementada por concluir a #714."
       ],
-      "plausible_wrong_implementation": "For OBL-016: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-016: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-016",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1259,9 +1259,9 @@
         {
           "id": "NEG-OBL-016-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1272,7 +1272,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-016-1-A",
@@ -1293,9 +1293,9 @@
         {
           "id": "REG-OBL-016",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1327,13 +1327,13 @@
       "source_texts": [
         "[ ] Aceite visual do usuário e sua evidência estão registrados, sem confundi-los com auditoria técnica."
       ],
-      "plausible_wrong_implementation": "For OBL-017: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-017: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-017",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1342,9 +1342,9 @@
         {
           "id": "NEG-OBL-017-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1355,7 +1355,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-017-1-A",
@@ -1376,9 +1376,9 @@
         {
           "id": "REG-OBL-017",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1410,13 +1410,13 @@
       "source_texts": [
         "[ ] Regra documentada: nas contas individuais, transferências entram nos cards de entradas/saídas; na visão `Todas`, transferências internas na mesma moeda não inflam totais, mas transferências cambiais permanecem conforme moeda selecionada."
       ],
-      "plausible_wrong_implementation": "For OBL-018: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-018: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-018",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1425,9 +1425,9 @@
         {
           "id": "NEG-OBL-018-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1438,7 +1438,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-018-1-A",
@@ -1459,9 +1459,9 @@
         {
           "id": "REG-OBL-018",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1493,13 +1493,13 @@
       "source_texts": [
         "[ ] Formulários do Extrato (novo, editar e clonar) seguem centralizados conforme decisão posterior ao mockup."
       ],
-      "plausible_wrong_implementation": "For OBL-019: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-019: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-019",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1508,9 +1508,9 @@
         {
           "id": "NEG-OBL-019-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1521,7 +1521,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-019-1-A",
@@ -1542,9 +1542,9 @@
         {
           "id": "REG-OBL-019",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1576,13 +1576,13 @@
       "source_texts": [
         "[ ] Documentação canônica consistente com comportamento testado, sem descrições contraditórias."
       ],
-      "plausible_wrong_implementation": "For OBL-020: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-020: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-020",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1591,9 +1591,9 @@
         {
           "id": "NEG-OBL-020-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -1604,7 +1604,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-020-1-A",
@@ -1625,9 +1625,9 @@
         {
           "id": "REG-OBL-020",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."
@@ -1659,13 +1659,13 @@
       "source_texts": [
         "[ ] Marco de referência para propagação publicado na épica."
       ],
-      "plausible_wrong_implementation": "For OBL-022: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the foreign Issue 728 handoff in PR 760.",
+      "plausible_wrong_implementation": "For OBL-022: omitting or reversing the canonical claim in Golden/ADR while still printing a green CI summary, or reusing the stale issue-714 material handoff or foreign issue-692 base handoff in PR 760.",
       "positive_control": {
         "id": "POS-OBL-022",
         "status": "passed",
-        "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-        "evidence_path": "evidence/issue-714-documentation-contract.log",
-        "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+        "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+        "evidence_path": "evidence/issue-714-test-reach.log",
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
         "observed": "25 document tests passed and 12 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
@@ -1674,9 +1674,9 @@
         {
           "id": "NEG-OBL-022-1",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1687,7 +1687,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including #728/#759 foreign-subject mismatch.",
+          "observed": "Source rejection and restoration recorded in 25 document regressions (22 removals, 4 transfer variants) and 12 material checks, including base #692/#761 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-022-1-A",
@@ -1708,9 +1708,9 @@
         {
           "id": "REG-OBL-022",
           "status": "passed",
-          "head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-          "evidence_path": "evidence/issue-714-documentation-contract.log",
-          "evidence_sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
+          "head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+          "evidence_path": "evidence/issue-714-test-reach.log",
+          "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
           "evidence_kind": "documentation",
           "procedure": "Execute all 25 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
           "observed": "25/25 PASS in local test, Repository CI run 41893142725 and Chrome run 41893142688 both completed/success on same material head."

@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/issue714-work/inputs/specification-snapshot.json",
-    "sha256": "bbb2bf2ce197932010e4c11478891104f398c3144d17e63813378f898c5a827e"
+    "path": ".audit/entregar-issue/issue-714/specification-snapshot.json",
+    "sha256": "0f144e0bc4b5b0d6d14b00da92e1038b841250d6b493fcd96609d676badff427"
   },
   "primary_issue_source_id": "SRC-ISSUE-714",
   "obligations": [
@@ -257,7 +257,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "CI 41893142725 e Chrome 41893142688 terminal success no HEAD material 7e40a600; handoff herdado rejeitado, nao reutilizado. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
+      "rationale": "CI do material anterior 41893142725 e Chrome anterior 41893142688 terminal success no SHA historico 7e40a600; esses runs nao certificam o novo merge SHA 5612b772. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (25 passed)."
     },
     {
       "id": "OBL-013",
@@ -619,7 +619,7 @@
       "OBL-022"
     ],
     "evidence": [
-      "git diff develop..7e40a600: 4 paths documentation/test only; no mutation of finance/API/CSS",
+      "git diff current-develop..material-head: 20 paths (4 documentation/test + 16 historical audit artifacts), no finance/API/CSS changes",
       "https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 CRITICAL green exact-SHA",
       "https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688 Chrome pass exact-SHA",
       "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs: 25 passed; removal and 4 transfer adversarial mutations fail",

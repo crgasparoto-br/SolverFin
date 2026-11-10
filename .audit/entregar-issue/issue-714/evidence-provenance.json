@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
-  "material_head_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+  "material_head_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
   "evidence": [
     {
       "evidence_id": "EV-714-DOC-LOG",
       "kind": "documentation",
-      "path": "evidence/issue-714-documentation-contract.log",
-      "sha256": "2d57f9b09491195d09c05622fc6ae4975c7790c39d13fefd736a7b13918c395e",
-      "subject_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-      "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+      "path": "evidence/issue-714-test-reach.log",
+      "sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe",
+      "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+      "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / independent read-only Python material oracle on authenticated Git bundle",
+      "producer": "Node.js 22 node:test / read-only Python material oracle on authenticated Git bundle",
       "status": "passed"
     },
     {
       "evidence_id": "EV-714-MATERIAL-LOG",
       "kind": "structural",
       "path": "evidence/governance-material-controls.log",
-      "sha256": "98594911a4e626f820a62690ba89ae4070d0793f9bd8805224b43a68d9218b9f",
-      "subject_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-      "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+      "sha256": "e1e37ed2223e38cce5963455978aecc7af2ed6c6a7afb5bba3aa8db9c90063d0",
+      "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+      "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / independent read-only Python material oracle on authenticated Git bundle",
+      "producer": "Node.js 22 node:test / read-only Python material oracle on authenticated Git bundle",
       "status": "passed"
     }
   ]

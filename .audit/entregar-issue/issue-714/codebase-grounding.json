@@ -1,8 +1,28 @@
 {
   "schema_version": 2,
-  "subject_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
-  "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
-  "creations": [],
+  "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
+  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "creations": [
+    {
+      "path": ".audit/entregar-issue/issue-714/evidence/verify_714_material.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git ls-tree -r --name-only ba6af8e1a1231788740a512c24623fed25062829 -- .audit/entregar-issue/issue-714/evidence",
+          "git grep -n \"source mutation\" ba6af8e1a1231788740a512c24623fed25062829 -- scripts/statement-visual"
+        ],
+        "scope": "Read-only historical issue-714 evidence helper, retained to preserve provenance; current negative regression is executed by the Node documentation contract and remote Chrome.",
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-714-documentation-contract.test.mjs",
+            "reason_not_reused": "The script is the current Node regression for documentation; the historical Python helper was a separate Git-handoff/foreign-target analysis not duplicated by Node."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Legacy read-only evidence from the prior material SHA is retained as historical only and is not executed or presented as fresh verification in this refreeze."
+    }
+  ],
   "references": [],
   "replacements": [],
   "test_decisions": [
@@ -42,12 +62,12 @@
         "status": "passed",
         "command": "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs",
         "exit_code": 0,
-        "subject_sha": "7e40a6009b8e6019e99439f3e7593e35b62622c1",
+        "subject_sha": "5612b7721cc90436e32775e2779fe1fb64dc728f",
         "reached_tests": [
           "scripts/statement-visual/issue-714-documentation-contract.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log",
-        "evidence_sha256": "7812e07443d9be41e52150a6f11eb10700b055241a37755c892091ca1d922295"
+        "evidence_sha256": "24560fce714b6f91b298a5dfb2e40db5866e0ae6ea267cb947fba0f5c4c4c2fe"
       }
     }
   ]

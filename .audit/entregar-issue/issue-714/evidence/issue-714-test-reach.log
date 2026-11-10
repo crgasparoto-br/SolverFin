@@ -1,4 +1,4 @@
-HEAD: 7e40a6009b8e6019e99439f3e7593e35b62622c1
+HEAD: 5612b7721cc90436e32775e2779fe1fb64dc728f
 COMMAND: node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs
 EXIT_CODE: 0
 REACHED: scripts/statement-visual/issue-714-documentation-contract.test.mjs
@@ -6,151 +6,151 @@ TAP version 13
 # Subtest: issue 714 documentary contract contains 22 distinct checks
 ok 1 - issue 714 documentary contract contains 22 distinct checks
   ---
-  duration_ms: 0.833556
+  duration_ms: 0.832615
   type: 'test'
   ...
 # Subtest: issue 714 documentation: approved-heading rejects omission and restores
 ok 2 - issue 714 documentation: approved-heading rejects omission and restores
   ---
-  duration_ms: 0.375967
+  duration_ms: 0.464991
   type: 'test'
   ...
 # Subtest: issue 714 documentation: product-acceptance-date rejects omission and restores
 ok 3 - issue 714 documentation: product-acceptance-date rejects omission and restores
   ---
-  duration_ms: 0.119921
+  duration_ms: 0.124918
   type: 'test'
   ...
 # Subtest: issue 714 documentation: approved-product-material rejects omission and restores
 ok 4 - issue 714 documentation: approved-product-material rejects omission and restores
   ---
-  duration_ms: 0.141403
+  duration_ms: 0.090176
   type: 'test'
   ...
 # Subtest: issue 714 documentation: integrated-pr-713 rejects omission and restores
 ok 5 - issue 714 documentation: integrated-pr-713 rejects omission and restores
   ---
-  duration_ms: 0.762179
+  duration_ms: 0.163667
   type: 'test'
   ...
 # Subtest: issue 714 documentation: integrated-pr-721 rejects omission and restores
 ok 6 - issue 714 documentation: integrated-pr-721 rejects omission and restores
   ---
-  duration_ms: 0.08633
+  duration_ms: 0.074192
   type: 'test'
   ...
 # Subtest: issue 714 documentation: functional-material-713 rejects omission and restores
 ok 7 - issue 714 documentation: functional-material-713 rejects omission and restores
   ---
-  duration_ms: 0.169466
+  duration_ms: 0.118518
   type: 'test'
   ...
 # Subtest: issue 714 documentation: responsive-material-721 rejects omission and restores
 ok 8 - issue 714 documentation: responsive-material-721 rejects omission and restores
   ---
-  duration_ms: 0.076947
+  duration_ms: 0.071187
   type: 'test'
   ...
 # Subtest: issue 714 documentation: centered-dialogs rejects omission and restores
 ok 9 - issue 714 documentation: centered-dialogs rejects omission and restores
   ---
-  duration_ms: 0.347984
+  duration_ms: 0.361034
   type: 'test'
   ...
 # Subtest: issue 714 documentation: new-entry-dialog rejects omission and restores
 ok 10 - issue 714 documentation: new-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.367684
+  duration_ms: 0.518411
   type: 'test'
   ...
 # Subtest: issue 714 documentation: edit-entry-dialog rejects omission and restores
 ok 11 - issue 714 documentation: edit-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.190337
+  duration_ms: 0.213151
   type: 'test'
   ...
 # Subtest: issue 714 documentation: clone-entry-dialog rejects omission and restores
 ok 12 - issue 714 documentation: clone-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.151879
+  duration_ms: 0.202235
   type: 'test'
   ...
 # Subtest: issue 714 documentation: individual-account-transfers rejects omission and restores
 ok 13 - issue 714 documentation: individual-account-transfers rejects omission and restores
   ---
-  duration_ms: 0.156797
+  duration_ms: 0.169776
   type: 'test'
   ...
 # Subtest: issue 714 documentation: all-accounts-currency-filter rejects omission and restores
 ok 14 - issue 714 documentation: all-accounts-currency-filter rejects omission and restores
   ---
-  duration_ms: 0.13272
+  duration_ms: 0.133271
   type: 'test'
   ...
 # Subtest: issue 714 documentation: internal-transfers rejects omission and restores
 ok 15 - issue 714 documentation: internal-transfers rejects omission and restores
   ---
-  duration_ms: 0.496879
+  duration_ms: 0.627917
   type: 'test'
   ...
 # Subtest: issue 714 documentation: exchange-transfers rejects omission and restores
 ok 16 - issue 714 documentation: exchange-transfers rejects omission and restores
   ---
-  duration_ms: 0.153812
+  duration_ms: 0.260472
   type: 'test'
   ...
 # Subtest: issue 714 documentation: independent-review-remains-distinct rejects omission and restores
 ok 17 - issue 714 documentation: independent-review-remains-distinct rejects omission and restores
   ---
-  duration_ms: 0.140813
+  duration_ms: 0.153241
   type: 'test'
   ...
 # Subtest: issue 714 documentation: exact-sha-certification rejects omission and restores
 ok 18 - issue 714 documentation: exact-sha-certification rejects omission and restores
   ---
-  duration_ms: 0.120171
+  duration_ms: 0.11923
   type: 'test'
   ...
 # Subtest: issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
 ok 19 - issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
   ---
-  duration_ms: 0.11288
+  duration_ms: 0.117437
   type: 'test'
   ...
 # Subtest: issue 714 documentation: propagation-not-automatic rejects omission and restores
 ok 20 - issue 714 documentation: propagation-not-automatic rejects omission and restores
   ---
-  duration_ms: 0.15926
+  duration_ms: 0.131438
   type: 'test'
   ...
 # Subtest: issue 714 documentation: epic-traceability rejects omission and restores
 ok 21 - issue 714 documentation: epic-traceability rejects omission and restores
   ---
-  duration_ms: 0.181123
+  duration_ms: 0.266852
   type: 'test'
   ...
 # Subtest: issue 714 documentation: touch-target-44px rejects omission and restores
 ok 22 - issue 714 documentation: touch-target-44px rejects omission and restores
   ---
-  duration_ms: 0.107031
+  duration_ms: 0.117497
   type: 'test'
   ...
 # Subtest: issue 714 documentation: design-system-reference rejects omission and restores
 ok 23 - issue 714 documentation: design-system-reference rejects omission and restores
   ---
-  duration_ms: 0.049395
+  duration_ms: 0.051017
   type: 'test'
   ...
 # Subtest: issue 714: the \#747 footer supersession stays explicit and testable
 ok 24 - issue 714: the \#747 footer supersession stays explicit and testable
   ---
-  duration_ms: 0.186331
+  duration_ms: 0.184569
   type: 'test'
   ...
 # Subtest: issue 714: current card contract rejects contradictory individual/all/FX mutations
 ok 25 - issue 714: current card contract rejects contradictory individual/all/FX mutations
   ---
-  duration_ms: 1.252468
+  duration_ms: 1.454112
   type: 'test'
   ...
 1..25
@@ -161,4 +161,4 @@ ok 25 - issue 714: current card contract rejects contradictory individual/all/FX
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 71.275411
+# duration_ms 70.189165
