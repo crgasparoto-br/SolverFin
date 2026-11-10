@@ -32,6 +32,7 @@ async function main(): Promise<void> {
     kind: "checking",
     openingBalanceMinor: 0,
   });
+  await verifyTransferBulkReconciliation(account.id);
   const directPosted = await createTransactionForContext(context, {
     accountId: account.id,
     kind: "expense",
@@ -445,6 +446,222 @@ async function main(): Promise<void> {
       JSON.stringify(audit.changes),
       /Direto|Membro|Grupo da seleção|BRL|amount|description|currency/i,
     );
+  }
+}
+
+async function verifyTransferBulkReconciliation(sourceAccountId: string): Promise<void> {
+  const destination = await createAccountForContext(context, {
+    name: "Destino cambial em lote " + Date.now(),
+    kind: "checking",
+    currency: "USD",
+    openingBalanceMinor: 0,
+  });
+  const base = {
+    accountId: sourceAccountId,
+    destinationAccountId: destination.id,
+    kind: "transfer" as const,
+    occurredOn: "2028-10-01",
+  };
+  const planned = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 10000,
+    destinationAmountMinor: 1750,
+    plannedOn: "2028-10-01",
+    effectiveOn: null,
+    description: "Transferência prevista em lote",
+  });
+  const posted = await createTransactionForContext(context, {
+    ...base,
+    status: "posted",
+    amountMinor: 20000,
+    destinationAmountMinor: 3450,
+    effectiveOn: "2028-10-01",
+    description: "Transferência efetivada em lote",
+  });
+  const ids = [planned.id, posted.id];
+  const before = await Promise.all(ids.map((id) => getTransactionForContext(context, id)));
+  await assert.rejects(
+    () =>
+      executeTransactionBulkActionForContext(context, {
+        action: "reconcile",
+        transactionIds: [planned.id, randomUUID()],
+      }),
+    hasCode("TENANT_RESOURCE_NOT_FOUND"),
+  );
+  assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");
+
+  const beforeDay = new Date().toISOString().slice(0, 10);
+  const changed = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: ids,
+  });
+  const afterDay = new Date().toISOString().slice(0, 10);
+  assert.deepEqual(new Set(changed.affectedTransactionIds), new Set(ids));
+  assert.deepEqual(changed.unchangedTransactionIds, []);
+  for (const [index, id] of ids.entries()) {
+    const previous = before[index]!;
+    const current = await getTransactionForContext(context, id);
+    assert.equal(current.status, "reconciled");
+    assert.equal(current.accountId, previous.accountId);
+    assert.equal(current.destinationAccountId, previous.destinationAccountId);
+    assert.equal(current.transferGroupId, previous.transferGroupId);
+    assert.equal(current.amountMinor, previous.amountMinor);
+    assert.equal(current.currency, previous.currency);
+    assert.equal(current.destinationAmountMinor, previous.destinationAmountMinor);
+    assert.equal(current.destinationCurrency, previous.destinationCurrency);
+    assert.equal(current.plannedOn, previous.plannedOn);
+    assert.equal(current.occurredOn, previous.occurredOn);
+    if (index === 0) {
+      assert.ok([beforeDay, afterDay].includes(current.effectiveOn ?? ""));
+    } else {
+      assert.equal(current.effectiveOn, previous.effectiveOn);
+    }
+  }
+  const repeat = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: ids,
+  });
+  assert.deepEqual(repeat.affectedTransactionIds, []);
+  assert.deepEqual(new Set(repeat.unchangedTransactionIds), new Set(ids));
+
+  const untouched = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 30000,
+    destinationAmountMinor: 5200,
+    plannedOn: "2028-10-01",
+    effectiveOn: null,
+    description: "Transferência prevista preservada em lote",
+  });
+  const undone = await executeTransactionBulkActionForContext(context, {
+    action: "unreconcile",
+    transactionIds: [...ids, untouched.id],
+  });
+  assert.deepEqual(new Set(undone.affectedTransactionIds), new Set(ids));
+  assert.deepEqual(undone.unchangedTransactionIds, [untouched.id]);
+  assert.equal((await getTransactionForContext(context, untouched.id)).status, "planned");
+  assert.equal((await getTransactionForContext(context, untouched.id)).effectiveOn, undefined);
+  for (const id of ids) {
+    assert.equal((await getTransactionForContext(context, id)).status, "posted");
+  }
+
+  // Mixed batch: a BRL->USD transfer, a USD income and a BRL expense must
+  // reconcile atomically, without duplicating the canonical transfer.
+  const mixedTransfer = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 14567,
+    destinationAmountMinor: 2589,
+    occurredOn: "2028-10-09",
+    plannedOn: "2028-10-09",
+    effectiveOn: null,
+    description: "Transferência cambial em seleção mista",
+  });
+  const mixedIncome = await createTransactionForContext(context, {
+    accountId: destination.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 7333,
+    occurredOn: "2028-10-10",
+    effectiveOn: "2028-10-10",
+    description: "Receita USD em seleção mista",
+  });
+  const mixedExpense = await createTransactionForContext(context, {
+    accountId: sourceAccountId,
+    kind: "expense",
+    status: "posted",
+    amountMinor: 5666,
+    occurredOn: "2028-10-11",
+    effectiveOn: "2028-10-11",
+    description: "Despesa BRL em seleção mista",
+  });
+  const mixedIds = [mixedTransfer.id, mixedIncome.id, mixedExpense.id];
+  const mixedBefore = await Promise.all(
+    mixedIds.map((id) => getTransactionForContext(context, id)),
+  );
+  assert.equal(mixedBefore[0]!.currency, "BRL");
+  assert.equal(mixedBefore[0]!.destinationCurrency, "USD");
+  assert.equal(mixedBefore[1]!.currency, "USD");
+  assert.equal(mixedBefore[2]!.currency, "BRL");
+
+  const invalidMixed = await createTransactionForContext(context, {
+    accountId: destination.id,
+    kind: "income",
+    status: "suggested",
+    amountMinor: 999,
+    occurredOn: "2028-10-12",
+    plannedOn: "2028-10-12",
+    effectiveOn: null,
+    description: "Sugestão protegida em seleção mista",
+  });
+  const mixedAuditBefore = await countAudits(mixedTransfer.id);
+  await assert.rejects(
+    () =>
+      executeTransactionBulkActionForContext(context, {
+        action: "reconcile",
+        transactionIds: [mixedTransfer.id, mixedIncome.id, invalidMixed.id],
+      }),
+    hasCode("TRANSACTION_BULK_STATUS_INVALID"),
+  );
+  assert.equal(await countAudits(mixedTransfer.id), mixedAuditBefore);
+  for (const [index, id] of mixedIds.entries()) {
+    assert.deepEqual(await getTransactionForContext(context, id), mixedBefore[index]);
+  }
+
+  const mixedStartDay = new Date().toISOString().slice(0, 10);
+  const mixedResult = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: [mixedTransfer.id, mixedIncome.id, mixedExpense.id, mixedTransfer.id],
+  });
+  const mixedEndDay = new Date().toISOString().slice(0, 10);
+  assert.deepEqual(new Set(mixedResult.affectedTransactionIds), new Set(mixedIds));
+  assert.equal(mixedResult.affectedTransactionIds.length, mixedIds.length);
+  assert.deepEqual(mixedResult.unchangedTransactionIds, []);
+  assert.equal(await countAudits(mixedTransfer.id), mixedAuditBefore + 1);
+  for (const [index, id] of mixedIds.entries()) {
+    const beforeMixed = mixedBefore[index]!;
+    const afterMixed = await getTransactionForContext(context, id);
+    assert.equal(afterMixed.status, "reconciled");
+    assert.equal(afterMixed.accountId, beforeMixed.accountId);
+    assert.equal(afterMixed.destinationAccountId, beforeMixed.destinationAccountId);
+    assert.equal(afterMixed.transferGroupId, beforeMixed.transferGroupId);
+    assert.equal(afterMixed.amountMinor, beforeMixed.amountMinor);
+    assert.equal(afterMixed.currency, beforeMixed.currency);
+    assert.equal(afterMixed.destinationAmountMinor, beforeMixed.destinationAmountMinor);
+    assert.equal(afterMixed.destinationCurrency, beforeMixed.destinationCurrency);
+    assert.equal(afterMixed.occurredOn, beforeMixed.occurredOn);
+    assert.equal(afterMixed.plannedOn, beforeMixed.plannedOn);
+    if (id === mixedTransfer.id) {
+      assert.ok([mixedStartDay, mixedEndDay].includes(afterMixed.effectiveOn ?? ""));
+    } else {
+      assert.equal(afterMixed.effectiveOn, beforeMixed.effectiveOn);
+    }
+  }
+  const mixedRepeat = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: mixedIds,
+  });
+  assert.deepEqual(mixedRepeat.affectedTransactionIds, []);
+  assert.deepEqual(new Set(mixedRepeat.unchangedTransactionIds), new Set(mixedIds));
+  const mixedUndone = await executeTransactionBulkActionForContext(context, {
+    action: "unreconcile",
+    transactionIds: mixedIds,
+  });
+  assert.deepEqual(new Set(mixedUndone.affectedTransactionIds), new Set(mixedIds));
+  for (const [index, id] of mixedIds.entries()) {
+    const beforeMixed = mixedBefore[index]!;
+    const afterMixed = await getTransactionForContext(context, id);
+    assert.equal(afterMixed.status, "posted");
+    assert.equal(afterMixed.amountMinor, beforeMixed.amountMinor);
+    assert.equal(afterMixed.currency, beforeMixed.currency);
+    assert.equal(afterMixed.destinationAmountMinor, beforeMixed.destinationAmountMinor);
+    assert.equal(afterMixed.destinationCurrency, beforeMixed.destinationCurrency);
+    assert.equal(afterMixed.accountId, beforeMixed.accountId);
+    assert.equal(afterMixed.destinationAccountId, beforeMixed.destinationAccountId);
+    assert.equal(afterMixed.transferGroupId, beforeMixed.transferGroupId);
+    assert.equal(afterMixed.occurredOn, beforeMixed.occurredOn);
+    assert.equal(afterMixed.plannedOn, beforeMixed.plannedOn);
   }
 }
 

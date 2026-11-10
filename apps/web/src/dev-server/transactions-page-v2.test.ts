@@ -738,6 +738,58 @@ function jsonResponse(body: unknown): Response {
   });
 }
 
+test("A2 transfer selection is available in each account but not in All accounts", async () => {
+  const movements: Record<string, unknown>[] = [
+    ...(["posted", "planned", "reconciled", "suggested"] as const).map((status, index) => ({
+      ...transaction(
+        "transfer-" + status,
+        "Transferência " + status,
+        10000,
+        "2026-08-0" + (index + 1),
+      ),
+      kind: "transfer",
+      status,
+      ...(status === "planned" || status === "suggested" ? { effectiveOn: undefined } : {}),
+      destinationAccountId: "account-brl",
+      destinationAmountMinor: 48000,
+      destinationCurrency: "BRL",
+    })),
+    { ...transaction("card-protected", "Compra cartão", 4000, "2026-08-07"), cardId: "card-1" },
+  ];
+  const inputFor = (html: string, id: string): string => {
+    const input = html.match(
+      new RegExp('<input type="checkbox" data-select-transaction value="' + id + '"[^>]*>'),
+    );
+    assert.ok(input, "Missing selection for " + id);
+    return input[0];
+  };
+  globalThis.fetch = mockFetch(movements);
+  try {
+    for (const accountId of ["account-usd", "account-brl"]) {
+      const html = await renderTransactionsPageV2(
+        "session-token",
+        new URL("http://solverfin.test/lancamentos?accountId=" + accountId + "&month=2026-08"),
+      );
+      for (const status of ["posted", "planned", "reconciled"]) {
+        const input = inputFor(html, "transfer-" + status);
+        assert.match(input, /data-kind="transfer"/);
+        assert.match(input, /data-reconcile-protected="false"/);
+        assert.doesNotMatch(input, / disabled>/);
+      }
+      assert.match(inputFor(html, "transfer-suggested"), / disabled>/);
+      assert.match(inputFor(html, "card-protected"), / disabled>/);
+      assert.match(html, /data-selection-bar/);
+    }
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-08"),
+    );
+    assert.match(inputFor(consolidated, "transfer-posted"), / disabled>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
 test("A2 consolidated BRL mode identifies each account and excludes USD without changing financial actions", async () => {
   globalThis.fetch = mockFetch([
     {

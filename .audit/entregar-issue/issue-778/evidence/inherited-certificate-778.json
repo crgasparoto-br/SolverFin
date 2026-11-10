@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "material_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+  "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
+  "inherited_root_certificate_blob_sha": "ccf07dcd023dce059f0205087d3670039b40a18e",
+  "inherited_root_subject": {
+    "issue_number": 692,
+    "pull_request_number": 761
+  },
+  "missing_current_issue_778_ledger_in_material": true,
+  "verification": "git rev-parse B:.audit/entregar-issue/handoff-ready.json; git rev-parse M:.audit/entregar-issue/handoff-ready.json; git cat-file -e M:.audit/entregar-issue/issue-778/audit-escape-closure.json -> missing",
+  "outcome": "Existing foreign certificate is rejected by exact subject binding; replacement must be a new result-only direct child of the material SHA."
+}

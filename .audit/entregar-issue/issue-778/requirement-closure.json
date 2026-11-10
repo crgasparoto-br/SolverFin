@@ -1,0 +1,477 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "7a8708985f7cdc785eb4013a2d53bd04d3ab95ffb8ebb35f173e4cdf109d3e5f"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-778",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "65dc8e36776a15189574a76f39c260154847fa56102a0c46f9bf3b9c14b957c6",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 2,
+      "source_text": "Na rota `/lancamentos?accountId=...`, os checkboxes de transferências são emitidos com `disabled` pelo renderer A2 (`transactions-page-v2.ts`), impedindo **Marcar como conciliado** e **Desmarcar conciliado** em lote. As ações de lote e a API já suportam os estados elegíveis; a origem do bloqueio é a regra de seleção que contempla apenas receitas/despesas.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "CheckBox now enabled for transferable planned, posted, reconciled; renderer test and Chrome scenario pass."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "7d9f9c419136305aed8feb8175d5f2e9e69631d2b6e3572ef814e63b0401cd78",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 5,
+      "source_text": "Permitir seleção de transferências simples nos estados `planned`, `posted` e `reconciled` em extrato de conta individual, inclusive transferências recebidas e cambiais, sem alterar a regra `accountId=all`.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Account source and destination use same canonical transfer; disabled consolidated and suggested; SSR test passed."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "1badb4891bbca20ce99c34597f04921e8a7f1649a31c58c88982bc6ae517d5d0",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 6,
+      "source_text": "Habilitar conciliar e desconciliar no mesmo conjunto com receitas/despesas elegíveis; manter atualização atômica, isolamento de perfil, datas canônicas e trilha de auditoria.",
+      "flags": [
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Transactional bulk API validated in integration and Chrome; rollback, tenant isolation and date semantics remain guarded."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "3bed3cd7cff47871f932c7e4ce6d43c8468c14d148130d38d91811c08ca7eae5",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 7,
+      "source_text": "Manter `Unificar lançamentos` restrito a `income/expense` no controlador aprimorado e no handler base; explicar o bloqueio com tooltip acessível.",
+      "flags": [
+        "observable"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Grouping blocked for transfers in both controllers, reason provided via tooltip and aria-describedby; Chrome scenario passed."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "ddbe61e07b5ccf8b7031d2dce4863f3e86ea07e0bbbda2ef6d83c11bc756de00",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 8,
+      "source_text": "Preservar os bloqueios para sugestões não confirmadas, cancelados, cartão/fatura, remuneração automática e membro de grupo (seus fluxos próprios).",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Protected statuses, grouped members and card/remuneration flow stay blocked; web SSR and existing API tests passed."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "858fd5724c27c6e69101e2aea3415b15029cbb0eacb022e1d036791cc753cd36",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 9,
+      "source_text": "Preservar o vínculo origem/destino e as quantias/moedas de transferências; conciliar o objeto canônico uma única vez, sem duplicar efeitos financeiros.",
+      "flags": [
+        "negative",
+        "atomicity",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "No monetary/account or transferGroupId writes in bulk repository; integration compares before/after and Chrome both accounts."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "cda67bcc46470bff520333dd7b2e835fdc3db6ea6c6432422ca6d37c377983c2",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 10,
+      "source_text": "Não redesenhar a Golden Screen. Reutilizar tokens, ícones, feedback e controles existentes.",
+      "flags": [
+        "negative",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Golden Screen styles and icons reused without visual redesign; Chrome mobile responsive evidence captured."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "d2e92ad10ef7db1ee162baf8d7137aadbe5816307726ed6cae3a861a6cbf3593",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 13,
+      "source_text": "[ ] Transferências elegíveis podem ser marcadas individualmente e selecionadas em massa tanto na conta de origem como na conta destino.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Chrome selected two transfer checkboxes on source and then destination and updated statuses; both scenarios passed."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "b96ee0a25dd8d64f988e25ed326030202ba333220a33364179fa83353ed22572",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 14,
+      "source_text": "[ ] Mistura com receitas/despesas elegíveis habilita as ações de status somente quando há alvos; resultados idempotentes e persistidos.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Bulk repository kind-agnostic selection; prior mixed receipts/expenses regression and transfer integration pass, no single mixed-type transfer+income experiment yet."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "8cab7c15c6f93995fb00dc40970ca606e1a372475b89e28e1303715fba4167c4",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 15,
+      "source_text": "[ ] Selecionar duas transferências não habilita unificação e informa o motivo; outras regras de agrupamento continuam intactas.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Chrome selected two transfers and verified disabled grouping button plus explanation."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "e45ab72d040473469ca3bd6221bc0c404af3fb9e778ba6afa43527ec61fac999",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 16,
+      "source_text": "[ ] Casos negativos (status inválido/protegidos, tenant/perfil e agrupados) não permitem alteração parcial.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Existing API rejected invalid tenant, grouping and protected status; transaction rollback tests passed, positive and negative flows."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "706cb66e4fd17e6720071cd9324bb6365bfd37a3fbb6d4e8dc36a76264d04861",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 17,
+      "source_text": "[ ] Nenhum valor, moeda, data histórica, identificação de transferência ou conta é alterado ao conciliar/desconciliar.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Integration preserves amountMinor, currency, destination amount/currency, dates, accounts and transferGroupId; Chrome transfers share canonical id."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "c8353a099d0022a6c11aa3c8e220366d1bf258060b43cf8c4c554e39b3e8177c",
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "source_line": 18,
+      "source_text": "[ ] Testes de render SSR, regressão UI e integração API/SQL; format, lint, typecheck, test, build e CI exact-SHA, com evidência visual quando disponível.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-778-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "CI run 42825336185 passed SSR, TypeScript, lint, format, build and PostgreSQL; Chrome visual run 42825336285 passed selection desktop and mobile."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-778",
+      "source_sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "candidate_count": 13,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Golden Screen structural reuse required; original renderer plus existing enhancement reused.",
+    "entries": [
+      {
+        "id": "SIC-001",
+        "kind": "canonical-path-parity",
+        "requirement_ids": [
+          "REQ-778-007"
+        ],
+        "obligation_ids": [
+          "OBL-007"
+        ],
+        "plausible_wrong_implementation": "Redesigning the extrato rather than enabling existing checkbox would change established Golden Screen behavior.",
+        "canonical_path": "apps/web/src/dev-server/transactions-page-v2.ts",
+        "competing_paths": [
+          "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts"
+        ],
+        "evidence_ids": [
+          "CI-42825336185",
+          "CHROME-42825336285"
+        ],
+        "scenario_ids": [
+          "transaction-bulk-selection",
+          "transfer-selection"
+        ],
+        "negative_control_evidence": [
+          "evidence/chrome-transfer-778.json",
+          "evidence/static-discriminant-controls.log"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "Transfer origin/destination visibility and status fields are consumed in both account projections.",
+    "entries": [
+      {
+        "id": "RMC-001",
+        "contract_kind": "read-model",
+        "requirement_ids": [
+          "REQ-778-002",
+          "REQ-778-008"
+        ],
+        "required_fields": [
+          "id",
+          "accountId",
+          "destinationAccountId",
+          "status",
+          "currency",
+          "destinationCurrency"
+        ],
+        "producer_evidence": [
+          "apps/api/src/repositories/transactions.ts",
+          "apps/api/src/repositories/transaction-bulk-actions.ts"
+        ],
+        "public_projection_evidence": [
+          "apps/api/src/repositories/transactions.ts",
+          "docs/API_TRANSACTION_BULK_ACTIONS.md"
+        ],
+        "consumer_evidence": [
+          "apps/web/src/dev-server/transactions-page-v2.ts",
+          "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts"
+        ],
+        "visible_surface_evidence": [
+          "evidence/chrome-transfer-778.json",
+          "apps/web/src/dev-server/transactions-page-v2.test.ts"
+        ],
+        "scenario_ids": [
+          "issue-778-source",
+          "issue-778-destination"
+        ],
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/transactions-page-v2.test.ts: accountId=all and suggested disabled"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "One Transaction.id represents a transfer in both account projections; status mutation is performed once by bulk repository.",
+    "entries": [
+      {
+        "id": "CSC-001",
+        "semantic_field": "Transaction.id/status on origin and destination",
+        "canonical_source": "apps/api/src/repositories/transaction-bulk-actions.ts",
+        "alternative_sources": [
+          "source account display",
+          "destination account display"
+        ],
+        "surfaces": [
+          "apps/web/src/dev-server/transactions-page-v2.ts",
+          "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts"
+        ],
+        "evidence_ids": [
+          "CHROME-42825336285",
+          "CI-42825336185"
+        ],
+        "scenario_ids": [
+          "transfer-origin",
+          "transfer-destination"
+        ],
+        "negative_control_evidence": [
+          "evidence/chrome-transfer-778.json",
+          "apps/api/src/transaction-bulk-actions.integration.test.ts"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "single canonical transfer ID and reconciled status",
+          "alternative_values": [
+            "origin display row",
+            "destination display row"
+          ]
+        }
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Checked external and source docs for transfer selection eligibility; no contradictory active contract discovered.",
+    "old_contract_terms": [
+      "transfer excluded from bulk reconciliation selection"
+    ],
+    "new_contract_terms": [
+      "transfer included in account-specific bulk reconciliation",
+      "transfer excluded from grouping"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "docs/TRANSACTIONS.md",
+      "docs/API_TRANSACTION_BULK_ACTIONS.md",
+      "docs/GOLDEN_STATEMENT.md",
+      "apps/web/src/dev-server/transactions-page-v2.ts",
+      "evidence/static-discriminant-controls.log"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-778-001",
+      "REQ-778-002",
+      "REQ-778-003",
+      "REQ-778-004",
+      "REQ-778-005",
+      "REQ-778-006",
+      "REQ-778-007",
+      "REQ-778-008",
+      "REQ-778-009",
+      "REQ-778-010",
+      "REQ-778-011",
+      "REQ-778-012",
+      "REQ-778-013"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013"
+    ],
+    "evidence": [
+      "GitHub CI run 42825336185 completed/success on ae090fe...",
+      "GitHub Chrome run 42825336285 completed/success on ae090fe...",
+      "apps/api/src/transaction-bulk-actions.integration.test.ts",
+      "apps/web/src/dev-server/transactions-page-v2.test.ts",
+      "evidence/chrome-transfer-778.json",
+      "evidence/ci-gate-observations-778.json"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

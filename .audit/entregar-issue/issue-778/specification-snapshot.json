@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 778,
+  "created_at": "2026-11-10T14:12:13.072443+00:00",
+  "primary_source_id": "SRC-ISSUE-778",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-778",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-778.txt",
+      "locator": "https://github.com/crgasparoto-br/SolverFin/issues/778",
+      "sha256": "507199195bbe3581521b779ceb9dc0fcde58e259f8017ac3d854d6333b088795",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 25
+    }
+  ]
+}
