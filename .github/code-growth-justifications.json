@@ -1,0 +1,4 @@
+{
+  "scripts/prepare_session_review_packet.py": "Consolidacao de fontes de auditoria autenticadas ja implementadas e testadas em develop; portabilidade byte-a-byte para a branch default. Dividir o coletor quebraria a revisao dos invariantes de identidade, hashes e sessao.",
+  "scripts/session_review.py": "Contrato canonico de validacao de revisao por sessao ja integrado e testado em develop; portabilidade sem mutacao para main. O incremento de uma linha sobre o limite soft nao justifica duplicacao ou quebra da verificacao."
+}
