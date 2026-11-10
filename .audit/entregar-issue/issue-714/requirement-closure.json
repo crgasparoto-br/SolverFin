@@ -1,17 +1,90 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": ".audit/entregar-issue/issue-714/specification-snapshot.json",
-    "sha256": "0f144e0bc4b5b0d6d14b00da92e1038b841250d6b493fcd96609d676badff427"
+    "path": "/mnt/data/pr760-recert/candidate/.audit/entregar-issue/issue-714/specification-snapshot.json",
+    "sha256": "0060a253169f3cc35c00f9cd2953355540fb21e4afc25af6a8ef4d6e2e80dfd0"
   },
   "primary_issue_source_id": "SRC-ISSUE-714",
   "obligations": [
     {
-      "id": "OBL-001",
-      "candidate_key": "7ec61188727ef2ad701b0881858a05cf80a8c8773611347e5b253a2a8d74c4c8",
+      "candidate_key": "08ed6eff203edafad506660e64c3997746c46cc35a0d7abe844057533689c102",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 4,
+      "source_text": "**APROVADA a alternativa prospectiva** para a pendencia F-714-06/A-760002: dispensar a exigencia de **certificacao retroativa** da PR historica #713, substituindo-a por auditoria tecnica abrangente e rastreavel do **baseline integrado** e da PR #760 no seu SHA exato, conduzida em conversa revisora **realmente separada** daquela usada para implementar/corrigir.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "freshness"
+      ],
+      "id": "OBL-023",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "90f20c5150bff9822f50cb8dc2c600b5fd0379ab84391e3c00506b1f41b4e483",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
       "source_line": 6,
+      "source_text": "**Garantia adotada para operador unico:** `operator-attested-session-review`, `third_party_identity_proven=false`, `separate-context-declared-not-cryptographically-proven`. O proprietario aceitou expressamente esta equivalencia *prospectiva* como caminho de fechamento de F-714-06, mas nao declarou que existiram dois auditores humanos nem que a PR #713 teve revisao historica; nenhuma certificacao/review retroativa sera fabricada.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "atomicity",
+        "review-surface"
+      ],
+      "id": "OBL-024",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "b17323ad6b0313f6d9e98db6b8ac5a2daa4499c4f7923ae7f64a03768423fbe6",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 8,
+      "source_text": "**Condicoes inalteradas:** manter provas positivas/negativas/regressao, identidade exact-SHA, checks e validacao independente na conversa revisora, recibo confiavel e testes operacionais, integracao segura dos workflows em `develop` e na branch default `main`, sem remover `Delivery V2 gate` nem protecoes. `mode=disabled` ate bootstrap seguro. Autorizados os merges *que passarem nos gates*, com read-back; nao autoriza bypass nem merge da #760 com parecer reprovado.",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-025",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "bfb31bc25ff2bd4c73a3a2252aad675afe7ba9a6d35629602482e94507ebfa37",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 10,
+      "source_text": "**Fonte do estado atual:** [forensica da #714](https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6768198568) e [dependencias M2 da #762](https://github.com/crgasparoto-br/SolverFin/issues/762#issuecomment-6768228225). Os itens historicos devem ser explicitamente `superseded-by-prospective-review`, nao `passed`.",
+      "flags": [
+        "freshness"
+      ],
+      "id": "OBL-026",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "id": "OBL-001",
+      "candidate_key": "82f5decd1514e036c656443bb4c1ac68bfddf1b7e0cec01c55bc83afbeb5a11a",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 18,
       "source_text": "SHA material funcional: `07fb199284a7f0bab38148f33d85331aa18403d0`; filho de handoff: `16fca4cb1048ef62c004d0fbf12702cc8a768560` (ambos na ancestralidade da `develop`).",
       "flags": [],
       "disposition": "covered",
@@ -25,10 +98,10 @@
     },
     {
       "id": "OBL-002",
-      "candidate_key": "ce8937ae82351f0a88326d161a6312fca51367edf61fb2dec87cf3ae48e192e5",
+      "candidate_key": "24a9b74854f06f18c630314b4b939e91bf5a1eeb8a953e2efd05da45ee895b60",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 7,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 19,
       "source_text": "Repository CI [#38768319333](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319333) e Chrome visual [#38768319363](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319363): `completed/success` no SHA do handoff. Nao afirmar que essas execucoes validaram um novo build pos-merge.",
       "flags": [],
       "disposition": "covered",
@@ -42,10 +115,10 @@
     },
     {
       "id": "OBL-003",
-      "candidate_key": "40701ecc014778be6ca53b27dc4776da85b10b0c9e400ffb34231acf89ff32e3",
+      "candidate_key": "a6df3d0428d0340ac436336907b2521ad679a0c64667caa40a950bd03529d4d1",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 8,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 20,
       "source_text": "**Auditoria independente final: ainda nao comprovada nesta rodada.** O parecer tecnico anterior foi inconclusivo quanto a reproducao integral do preflight oficial; o historico de reviews da PR nao registrava revisao formal. Merge nao equivale a aprovacao tecnica.",
       "flags": [
         "exhaustive",
@@ -72,10 +145,10 @@
     },
     {
       "id": "OBL-004",
-      "candidate_key": "e601c2e78e9f8444ea8a180a6a5b93d0b8d7b6b3b3289448a3e4689e7b86410f",
+      "candidate_key": "f2166587c3f212495bc84f007bd3b38633c3ef36ed01b5b308e1702ed86182e9",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 9,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 21,
       "source_text": "Aprovacao visual do produto em 14/10 permanece valida. As subissues #715–#719 podem referenciar o SHA integrado como baseline de codigo, mas isso **nao** representa liberacao tecnica independente nem implementacao delas.",
       "flags": [
         "semantic-effect"
@@ -91,10 +164,10 @@
     },
     {
       "id": "OBL-005",
-      "candidate_key": "cdfd26c2f50e929337e5f659512eba26302d4b13caa7cda97b3da3a9fb50e3ce",
+      "candidate_key": "d38d3cff288f5538d0fd4f528f3812b3dfaa9de6fbd603f36d989213da940d7a",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 21,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 33,
       "source_text": "O usuário aprovou a Golden Screen do Extrato em 14/10/2026; o aceite **visual/de produto não deve ser reaberto automaticamente** por critérios da propagação. Restam verificações técnicas/documentais específicas do Extrato, que não incluem redesenhar outras telas. Manter rastreabilidade do material exato aprovado na #702.",
       "flags": [
         "negative",
@@ -111,10 +184,10 @@
     },
     {
       "id": "OBL-006",
-      "candidate_key": "a039ddcb812b1be817f7caad045b8e5d446b17fa3f2bb0dc75a9f6974b3c7fad",
+      "candidate_key": "b520d0d6eda5c430e2338e5bd8a2cb50801232f5de70ce63fd79add5f79f621c",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 24,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 36,
       "source_text": "Consolidar na #702 o registro do aceite visual, SHA de referência, evidências Chrome e decisão de modais de novo/editar/clonar **centralizados**.",
       "flags": [],
       "disposition": "covered",
@@ -128,10 +201,10 @@
     },
     {
       "id": "OBL-007",
-      "candidate_key": "495a21398f4da6bbc58a00e85d81e4ff4f732b22483745a0641118eab1cd9488",
+      "candidate_key": "6ac01d8efba8bebd262c6f57a188798010cb5c95ced0bb79c23dce1c4f163893",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 25,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 37,
       "source_text": "Conferir documentação canônica do Extrato e reconciliar descrições antigas dos cards com a regra vigente de transferências.",
       "flags": [
         "freshness",
@@ -148,10 +221,10 @@
     },
     {
       "id": "OBL-008",
-      "candidate_key": "618e63a069c4e5ff7679e7aba58073794a76a0596eda8b601653fe46ef939de5",
+      "candidate_key": "b225fa0b7669ff1cb6eebe77d676d63e2023c77b9be185c570eb212190ced877",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 26,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 38,
       "source_text": "Concluir auditoria técnica independente da PR #713 no HEAD real, com CI e validação visual terminal.",
       "flags": [],
       "disposition": "deferred",
@@ -175,10 +248,10 @@
     },
     {
       "id": "OBL-009",
-      "candidate_key": "4760ce4811bde08f312c45e7941b2b993066fa59dd5acbc06fc237290b2eb8ae",
+      "candidate_key": "911948516b192260d68ef818737b948ab55739236e7bb7e90bf4f3864913d38f",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 27,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 39,
       "source_text": "Produzir/validar o handoff certificado correto para #702/#713 se exigido pelo fluxo `crgasparoto-br/skill`; não reutilizar certificado herdado de #706/#707.",
       "flags": [
         "negative",
@@ -196,10 +269,10 @@
     },
     {
       "id": "OBL-010",
-      "candidate_key": "ad14bc5b43855a8b8ff6fa2d9aa58126658ff90f87b711a443752e670d988917",
+      "candidate_key": "cffc4dacaa50e49f09cafa7c10c86efd1c487fd9727813a06247497778d3a436",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 28,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 40,
       "source_text": "Após integração regular na `develop`, registrar o commit exato e a versão da referência para as demais subissues.",
       "flags": [
         "exhaustive",
@@ -218,10 +291,10 @@
     },
     {
       "id": "OBL-011",
-      "candidate_key": "712ca5ce2e85e24b076da4547a695789739badb36a14445e4b4b0ce3a0fcd70a",
+      "candidate_key": "95bedb7842f241a0a2ffd0e8f8ea33dccda2e3ae872b4a4d546d4c9602e2ee72",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 34,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 46,
       "source_text": "**Duas aprovações distintas:** aceite visual do produto já registrado na #702; validação técnica/handoff independente ainda deve ser comprovada. Não reabrir o aceite visual por tarefas de propagação, mas verificar regressões no SHA final.",
       "flags": [
         "exhaustive",
@@ -239,10 +312,10 @@
     },
     {
       "id": "OBL-012",
-      "candidate_key": "491c2f1b396d39056bb8c771e628dd2185d29162d5688a6474a9757dac6b75c7",
+      "candidate_key": "db3a1a4727d2fd46d441a7f77493c7dd3e0074532d7648927e13f43d25bfbb35",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 36,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 48,
       "source_text": "**Validação exact-SHA:** o material atual tem dois workflows verdes, mas `.audit/entregar-issue/handoff-ready.json` segue idêntico à base e pertence a #706/#707; gerar certificado próprio segundo `crgasparoto-br/skill` e revalidar a identidade atual depois. Se o material SHA mudar, repetir os gates aplicáveis.",
       "flags": [
         "temporal",
@@ -261,10 +334,10 @@
     },
     {
       "id": "OBL-013",
-      "candidate_key": "2fc515f0ff9b0198ad10ad12d1ce09279396367909aa1df37ae3d18284f26298",
+      "candidate_key": "8d98121b0ff98da38fcdc54dccdc218f98e31c96df0c17305ad61b66b9a6cad3",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 41,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 53,
       "source_text": "[ ] O documento canônico não afirma que transferências são excluídas dos cards individuais; um leitor consegue distinguir individual, `Todas` e câmbio apenas com a documentação versionada.",
       "flags": [
         "exhaustive",
@@ -282,10 +355,10 @@
     },
     {
       "id": "OBL-014",
-      "candidate_key": "b5ac627909369c90c19fb023f12b40f73b501c717e0f9018ea76d9b2616dbe7c",
+      "candidate_key": "c03f9824d5f80620812b36386532d2a639052db659262dbae250a73d7ec6f826",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 42,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 54,
       "source_text": "[ ] O relatório de fechamento distingue aprovação visual do produto, CI automático, auditoria independente e certificado de entrega sem equivalências indevidas.",
       "flags": [
         "negative"
@@ -301,10 +374,10 @@
     },
     {
       "id": "OBL-015",
-      "candidate_key": "45548f4f4ec2464151957c160040686630db2340b455d7d4b602320945a5db98",
+      "candidate_key": "22087b9f217ff6d8534ecd3b643a5b217894b0eafb7d471208af6ee871eb06a4",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 43,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 55,
       "source_text": "[ ] O documento de referência mostra a Golden Screen aprovada, não um candidato antigo como estado vigente.",
       "flags": [
         "negative",
@@ -321,10 +394,10 @@
     },
     {
       "id": "OBL-016",
-      "candidate_key": "bccd1143df96c1f905ccfdfe8c76e912b041fd078bb8f04cb43294c6dae5cf26",
+      "candidate_key": "429e8a1572585d66fd8c4b50ba7f365834fb032497d99f59fd21590c8e81d73a",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 44,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 56,
       "source_text": "[ ] Nenhum documento ou PR declara que a propagação foi implementada por concluir a #714.",
       "flags": [
         "exhaustive",
@@ -341,10 +414,10 @@
     },
     {
       "id": "OBL-017",
-      "candidate_key": "1ec8aaa59a8b19afb858a54522e4ade26961272e4c07d33cfecbcf4d8e61219e",
+      "candidate_key": "f44dcfe59179b64d319543eb00c52763bbbd6b450bda95c0757955186a39fe61",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 47,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 59,
       "source_text": "[ ] Aceite visual do usuário e sua evidência estão registrados, sem confundi-los com auditoria técnica.",
       "flags": [
         "negative"
@@ -360,10 +433,10 @@
     },
     {
       "id": "OBL-018",
-      "candidate_key": "bd80f04834190002feecb5b6192611e3140685f0f9c25eff2307e29379c33a25",
+      "candidate_key": "97092c8d737f18e0c837f55722049efad5123b88c1f2c285fe187fdd855aab1d",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 48,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 60,
       "source_text": "[ ] Regra documentada: nas contas individuais, transferências entram nos cards de entradas/saídas; na visão `Todas`, transferências internas na mesma moeda não inflam totais, mas transferências cambiais permanecem conforme moeda selecionada.",
       "flags": [
         "exhaustive",
@@ -380,10 +453,10 @@
     },
     {
       "id": "OBL-019",
-      "candidate_key": "94e103867bf5db4f9c90c8738722801c2b0ccac399029df73d09b10651c512d7",
+      "candidate_key": "ab557c15368fa837d8f6fe8903919229f1d20a5e4fc0a34bffe964de4f274267",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 49,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 61,
       "source_text": "[ ] Formulários do Extrato (novo, editar e clonar) seguem centralizados conforme decisão posterior ao mockup.",
       "flags": [],
       "disposition": "covered",
@@ -397,10 +470,10 @@
     },
     {
       "id": "OBL-020",
-      "candidate_key": "32b3406274993f947e95f66efb07118cea8154c82b75039980746ba5c9c827c5",
+      "candidate_key": "fc541e0933e28fee89f618ba0681c503582a657a30bdecec8162402bf3c03563",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 50,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 62,
       "source_text": "[ ] Documentação canônica consistente com comportamento testado, sem descrições contraditórias.",
       "flags": [
         "observable",
@@ -418,10 +491,10 @@
     },
     {
       "id": "OBL-021",
-      "candidate_key": "9b13f7821b66df5773d767f162baba9020e22654a06b3b9eb91a5eb0480131a4",
+      "candidate_key": "bfd6d459b019b2015d8758ab3427f90e0aa2a2d6bca2b2332fec2d804fb65de7",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 51,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 63,
       "source_text": "[ ] PR #713 auditada no material atual, CI/evidência no mesmo SHA e handoff correto quando aplicável.",
       "flags": [
         "freshness"
@@ -447,10 +520,10 @@
     },
     {
       "id": "OBL-022",
-      "candidate_key": "0dd9b3162b3cb2f1161525a91a24f76d8af01b8ad44026661098296502f7a336",
+      "candidate_key": "51d05b69ae70e80fa08d2500ae3862122a2912007690c8de3b4b6470949f2c28",
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "source_line": 52,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 64,
       "source_text": "[ ] Marco de referência para propagação publicado na épica.",
       "flags": [],
       "disposition": "covered",
@@ -466,9 +539,13 @@
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE-714",
-      "source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
-      "candidate_count": 22,
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "candidate_count": 26,
       "obligation_ids": [
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
         "OBL-001",
         "OBL-002",
         "OBL-003",

@@ -1,3 +1,15 @@
+<!-- solverfin-governance-prospective-2026-11-10 -->
+## Decisao de governanca — 10/11/2026 (autorizacao explicita do responsavel)
+
+**APROVADA a alternativa prospectiva** para a pendencia F-714-06/A-760002: dispensar a exigencia de **certificacao retroativa** da PR historica #713, substituindo-a por auditoria tecnica abrangente e rastreavel do **baseline integrado** e da PR #760 no seu SHA exato, conduzida em conversa revisora **realmente separada** daquela usada para implementar/corrigir.
+
+**Garantia adotada para operador unico:** `operator-attested-session-review`, `third_party_identity_proven=false`, `separate-context-declared-not-cryptographically-proven`. O proprietario aceitou expressamente esta equivalencia *prospectiva* como caminho de fechamento de F-714-06, mas nao declarou que existiram dois auditores humanos nem que a PR #713 teve revisao historica; nenhuma certificacao/review retroativa sera fabricada.
+
+**Condicoes inalteradas:** manter provas positivas/negativas/regressao, identidade exact-SHA, checks e validacao independente na conversa revisora, recibo confiavel e testes operacionais, integracao segura dos workflows em `develop` e na branch default `main`, sem remover `Delivery V2 gate` nem protecoes. `mode=disabled` ate bootstrap seguro. Autorizados os merges *que passarem nos gates*, com read-back; nao autoriza bypass nem merge da #760 com parecer reprovado.
+
+**Fonte do estado atual:** [forensica da #714](https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6768198568) e [dependencias M2 da #762](https://github.com/crgasparoto-br/SolverFin/issues/762#issuecomment-6768228225). Os itens historicos devem ser explicitamente `superseded-by-prospective-review`, nao `passed`.
+
+---
 <!-- post-merge-713-2026-10-15 -->
 ## Marco de integracao confirmado — 15/10/2026
 
