@@ -188,7 +188,9 @@ def prove_ci(repo: str, head: str, required: tuple[str, ...],
     """Accept only complete, exact-base CI history for this authenticated PR.
 
     A green run from another PR sharing an immutable commit cannot certify this
-    delivery; the run must name the same PR, base SHA and candidate head SHA.
+    delivery. Bind the immutable run HEAD and its source repo/branch to the
+    target PR and base. GitHub may refresh pull_requests[].head.sha when the
+    PR advances, so that mutable association cannot identify a historical run.
     """
     require(type(number) is int and number > 0 and SHA.fullmatch(base),
             "invalid technical CI PR/base identity")
@@ -200,11 +202,27 @@ def prove_ci(repo: str, head: str, required: tuple[str, ...],
             "unbounded or incomplete CI history")
 
     def belongs_to_target(run: dict) -> bool:
+        # The run's head_sha and head_branch describe the *execution*. The
+        # nested PR head.sha describes the PR *now*, and can move after a new
+        # result-only commit. Do not infer historical execution identity from
+        # that field. Keep PR number, protected-base SHA and source binding.
+        source = run.get("head_repository")
+        branch = run.get("head_branch")
+        if (not isinstance(source, dict) or source.get("full_name") != repo
+                or type(source.get("id")) is not int
+                or not isinstance(branch, str) or not branch):
+            return False
         prs = run.get("pull_requests")
         return isinstance(prs, list) and any(
             isinstance(pr, dict) and pr.get("number") == number
-            and (pr.get("base") or {}).get("sha") == base
-            and (pr.get("head") or {}).get("sha") == head
+            and pr.get("url") == f"https://api.github.com/repos/{repo}/pulls/{number}"
+            and isinstance(pr.get("base"), dict)
+            and pr["base"].get("sha") == base
+            and pr["base"].get("ref") in {"develop", "main"}
+            and isinstance(pr.get("head"), dict)
+            and pr["head"].get("ref") == branch
+            and (pr["head"].get("repo") or {}).get("id") == source["id"]
+            and (pr["base"].get("repo") or {}).get("id") == source["id"]
             for pr in prs
         )
 
