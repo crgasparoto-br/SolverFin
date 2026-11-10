@@ -545,7 +545,6 @@ async function verifyTransferBulkReconciliation(sourceAccountId: string): Promis
   for (const id of ids) {
     assert.equal((await getTransactionForContext(context, id)).status, "posted");
   }
-}
 
   // Mixed batch: a BRL->USD transfer, a USD income and a BRL expense must
   // reconcile atomically, without duplicating the canonical transfer.
@@ -664,7 +663,7 @@ async function verifyTransferBulkReconciliation(sourceAccountId: string): Promis
     assert.equal(afterMixed.occurredOn, beforeMixed.occurredOn);
     assert.equal(afterMixed.plannedOn, beforeMixed.plannedOn);
   }
-
+}
 
 async function countAudits(entityId: string): Promise<number> {
   const rows = await query<{ count: number }>(
