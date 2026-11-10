@@ -3,7 +3,6 @@
 **Status:** Garantia prospectiva aprovada em 10/11/2026; verificacao operacional M2 ainda pendente.
 **Issues:** #762, #714; PR #760; epica #702.
 
-
 ## Decisao vigente (10/11/2026)
 
 O responsavel autorizou expressamente a **substituicao prospectiva** da certificacao retroativa da PR #713 por auditoria integral da referencia ja integrada e da PR #760 no SHA material/certificado exatos. Foi aceita a garantia de operador unico `operator-attested-session-review`, com `third_party_identity_proven=false` e `separate-context-declared-not-cryptographically-proven`. Isso **nao** reescreve a historia da #713, nao alega segundo auditor e nao dispensa uma conversa revisora distinta com parecer autenticado. Decisao documentada na issue #762 e #714 em 10/11/2026.
