@@ -79,10 +79,26 @@ def test_sharded_or_malicious_zip_is_never_accepted():
         evidence.consume_zip(archive({"junit.xml": junit()}))
 
 
+def workflow_run(id=10, number=10, *, run_head=HEAD, current_pr_head=HEAD,
+                 base=BASE, branch="feature/762-review", source_repo=REPO,
+                 source_id=123, conclusion="success"):
+    """GitHub run HEAD is immutable; nested PR HEAD can move after the run."""
+    return {
+        "id": id, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
+        "head_sha": run_head, "head_branch": branch,
+        "head_repository": {"id": source_id, "full_name": source_repo},
+        "event": "pull_request", "status": "completed", "conclusion": conclusion,
+        "pull_requests": [{
+            "number": number,
+            "url": f"https://api.github.com/repos/{REPO}/pulls/{number}",
+            "head": {"sha": current_pr_head, "ref": branch, "repo": {"id": source_id}},
+            "base": {"sha": base, "ref": "develop", "repo": {"id": source_id}},
+        }],
+    }
+
+
 def test_successful_ci_must_be_newest_and_use_canonical_workflow_path():
-    ok = {"id": 10, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
-          "head_sha": HEAD, "event": "pull_request", "status": "completed", "conclusion": "success",
-          "pull_requests": [{"number": 10, "head": {"sha": HEAD}, "base": {"sha": BASE}}]}
+    ok = workflow_run()
     with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [ok]}):
         assert evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)["Repository CI"]["id"] == 10
     newer_failure = {**ok, "id": 11, "conclusion": "failure"}
@@ -94,16 +110,41 @@ def test_successful_ci_must_be_newest_and_use_canonical_workflow_path():
             evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
 
 
-@pytest.mark.parametrize("identity_change", [
-    {"number": 99}, {"head": {"sha": MATERIAL}}, {"base": {"sha": MATERIAL}},
-    {"number": 10, "head": {"sha": HEAD}, "base": {"sha": MATERIAL}},
+def test_material_ci_remains_valid_after_result_only_child_updates_pr_head():
+    """A-760003: real PR #760 run may report the newer PR HEAD in its association."""
+    historical_material = "c4979487f60fea7419c2936972e03aa1d1df5552"
+    published_child = "4b40ef67b2bf2dba87d85a7216b5ce695a735c28"
+    base = "ab3083b3f268292c654e653b811a54612e123cc6"
+    run = workflow_run(42873437297, 760, run_head=historical_material,
+                       current_pr_head=published_child, base=base,
+                       branch="docs/714-extrato-technical-closeout-20261104",
+                       source_repo="crgasparoto-br/SolverFin", source_id=1270188301)
+    run["pull_requests"][0]["url"] = "https://api.github.com/repos/crgasparoto-br/SolverFin/pulls/760"
+    with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [run]}):
+        result = evidence.prove_ci("crgasparoto-br/SolverFin", historical_material,
+                                   ("Repository CI",), 760, base)
+        assert result["Repository CI"]["id"] == 42873437297
+
+
+@pytest.mark.parametrize("mutator", [
+    lambda row: row.update({"head_sha": MATERIAL}),
+    lambda row: row.update({"event": "push"}),
+    lambda row: row.update({"head_repository": {"id": 123, "full_name": "attacker/repo"}}),
+    lambda row: row.update({"head_repository": {"id": 999, "full_name": REPO}}),
+    lambda row: row.update({"head_branch": "foreign/branch"}),
+    lambda row: row["pull_requests"][0].update({"number": 99}),
+    lambda row: row["pull_requests"][0].update({"url": "https://api.github.com/repos/owner/repo/pulls/99"}),
+    lambda row: row["pull_requests"][0]["base"].update({"sha": MATERIAL}),
+    lambda row: row["pull_requests"][0]["base"].update({"ref": "unprotected"}),
+    lambda row: row["pull_requests"][0]["head"].update({"ref": "foreign/branch"}),
+    lambda row: row["pull_requests"][0]["head"]["repo"].update({"id": 999}),
+    lambda row: row["pull_requests"][0]["base"]["repo"].update({"id": 999}),
+    lambda row: row.update({"head_repository": None}),
+    lambda row: row.update({"pull_requests": []}),
 ])
-def test_foreign_pr_or_stale_base_cannot_reuse_green_technical_ci(identity_change):
-    old = {"number": 10, "head": {"sha": HEAD}, "base": {"sha": BASE}}
-    old.update(identity_change)
-    run = {"id": 7, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
-           "head_sha": HEAD, "event": "pull_request", "status": "completed",
-           "conclusion": "success", "pull_requests": [old]}
+def test_foreign_ci_identity_cannot_pass_with_mutable_pr_head(mutator):
+    run = workflow_run(current_pr_head=MATERIAL)
+    mutator(run)
     with patch.object(evidence, "api", return_value={"total_count": 1, "workflow_runs": [run]}):
         with pytest.raises(ValueError, match="exact PR/base/HEAD"):
             evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
@@ -122,14 +163,17 @@ def test_partial_or_malformed_technical_ci_inventory_fails_closed(history):
 
 
 def test_ci_from_same_pr_with_foreign_newer_run_does_not_shadow_actual_last_run():
-    def record(id, number, status):
-        return {"id": id, "name": "Repository CI", "path": evidence.CI_WORKFLOWS["Repository CI"],
-                "head_sha": HEAD, "event": "pull_request", "status": "completed",
-                "conclusion": status, "pull_requests": [{"number": number, "head": {"sha": HEAD},
-                                                         "base": {"sha": BASE}}]}
-    runs = [record(10, 10, "success"), record(11, 99, "failure")]
+    runs = [workflow_run(id=10, number=10), workflow_run(id=11, number=99, conclusion="failure")]
     with patch.object(evidence, "api", return_value={"total_count": 2, "workflow_runs": runs}):
         assert evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)["Repository CI"]["id"] == 10
+
+
+def test_newer_failed_run_with_mutated_pr_head_revokes_older_green():
+    runs = [workflow_run(id=10), workflow_run(id=11, current_pr_head=MATERIAL,
+                                              conclusion="failure")]
+    with patch.object(evidence, "api", return_value={"total_count": 2, "workflow_runs": runs}):
+        with pytest.raises(ValueError, match="latest technical workflow"):
+            evidence.prove_ci(REPO, HEAD, ("Repository CI",), 10, BASE)
 
 
 def test_check_mutation_transport_does_not_allow_issue_or_branch_writes():
