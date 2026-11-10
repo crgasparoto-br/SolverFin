@@ -1,4 +1,1 @@
-PASS 18 actual material semantic controls with negative/restoration on SHA c4979487f60fea7419c2936972e03aa1d1df5552
-GIT_TREE 3ba8d563fce28839749f8b9d3d752e22df99fd30
-BASE ab3083b3f268292c654e653b811a54612e123cc6
-CURRENT_HANDOFF=stale (regenerate after material CI)
+PASS 16 exact-material source-mutation/restoration controls at 4118e899c2a37209864d5dcde609a6c57fffa459; no approval

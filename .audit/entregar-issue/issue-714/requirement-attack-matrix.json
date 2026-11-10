@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
   "requirements": [
     {
       "requirement_id": "REQ-714-001",
@@ -17,20 +17,20 @@
       "positive_control": {
         "id": "POS-OBL-001",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-001-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -41,7 +41,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-001-1-A",
@@ -62,12 +62,12 @@
         {
           "id": "REG-OBL-001",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -100,20 +100,20 @@
       "positive_control": {
         "id": "POS-OBL-002",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-002-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -124,7 +124,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-002-1-A",
@@ -145,12 +145,12 @@
         {
           "id": "REG-OBL-002",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -183,20 +183,20 @@
       "positive_control": {
         "id": "POS-OBL-004",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-004-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -207,7 +207,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-004-1-A",
@@ -228,12 +228,12 @@
         {
           "id": "REG-OBL-004",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -266,20 +266,20 @@
       "positive_control": {
         "id": "POS-OBL-005",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+        "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-005-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -290,7 +290,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-005-1-A",
@@ -311,12 +311,12 @@
         {
           "id": "REG-OBL-005",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -349,20 +349,20 @@
       "positive_control": {
         "id": "POS-OBL-006",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-006-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -373,7 +373,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-006-1-A",
@@ -394,12 +394,12 @@
         {
           "id": "REG-OBL-006",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -433,20 +433,20 @@
       "positive_control": {
         "id": "POS-OBL-007",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-007-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -457,7 +457,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-007-1-A",
@@ -476,9 +476,9 @@
         {
           "id": "NEG-OBL-007-2",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -489,7 +489,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-007-2-A",
@@ -510,12 +510,12 @@
         {
           "id": "REG-OBL-007",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -554,20 +554,20 @@
       "positive_control": {
         "id": "POS-OBL-009",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+        "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-009-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "structural-contract",
@@ -578,7 +578,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-009-1-A",
@@ -597,9 +597,9 @@
         {
           "id": "NEG-OBL-009-2",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "tenant-isolation",
@@ -610,7 +610,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-009-2-A",
@@ -631,12 +631,12 @@
         {
           "id": "REG-OBL-009",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -675,20 +675,20 @@
       "positive_control": {
         "id": "POS-OBL-010",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+        "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-010-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -699,7 +699,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-010-1-A",
@@ -718,9 +718,9 @@
         {
           "id": "NEG-OBL-010-2",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "temporal-consistency",
@@ -731,7 +731,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-010-2-A",
@@ -752,12 +752,12 @@
         {
           "id": "REG-OBL-010",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -795,20 +795,20 @@
       "positive_control": {
         "id": "POS-OBL-011",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-011-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -819,7 +819,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-011-1-A",
@@ -840,12 +840,12 @@
         {
           "id": "REG-OBL-011",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -879,20 +879,20 @@
       "positive_control": {
         "id": "POS-OBL-012",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+        "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-012-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -903,7 +903,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-012-1-A",
@@ -922,9 +922,9 @@
         {
           "id": "NEG-OBL-012-2",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "temporal-consistency",
@@ -935,7 +935,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-012-2-A",
@@ -956,12 +956,12 @@
         {
           "id": "REG-OBL-012",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -999,20 +999,20 @@
       "positive_control": {
         "id": "POS-OBL-013",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-013-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -1023,7 +1023,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-013-1-A",
@@ -1044,12 +1044,12 @@
         {
           "id": "REG-OBL-013",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1082,20 +1082,20 @@
       "positive_control": {
         "id": "POS-OBL-014",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-014-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1106,7 +1106,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-014-1-A",
@@ -1127,12 +1127,12 @@
         {
           "id": "REG-OBL-014",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1165,20 +1165,20 @@
       "positive_control": {
         "id": "POS-OBL-015",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/governance-material-controls.log",
-        "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+        "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
         "evidence_kind": "structural",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-015-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/governance-material-controls.log",
-          "evidence_sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
+          "evidence_sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
           "evidence_kind": "structural",
           "evidence_id": "EV-714-MATERIAL-LOG",
           "risk_family": "reference-liveness",
@@ -1189,7 +1189,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-015-1-A",
@@ -1210,12 +1210,12 @@
         {
           "id": "REG-OBL-015",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1248,20 +1248,20 @@
       "positive_control": {
         "id": "POS-OBL-016",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-016-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1272,7 +1272,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-016-1-A",
@@ -1293,12 +1293,12 @@
         {
           "id": "REG-OBL-016",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1331,20 +1331,20 @@
       "positive_control": {
         "id": "POS-OBL-017",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-017-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1355,7 +1355,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-017-1-A",
@@ -1376,12 +1376,12 @@
         {
           "id": "REG-OBL-017",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1414,20 +1414,20 @@
       "positive_control": {
         "id": "POS-OBL-018",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-018-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1438,7 +1438,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-018-1-A",
@@ -1459,12 +1459,12 @@
         {
           "id": "REG-OBL-018",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1497,20 +1497,20 @@
       "positive_control": {
         "id": "POS-OBL-019",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-019-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1521,7 +1521,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-019-1-A",
@@ -1542,12 +1542,12 @@
         {
           "id": "REG-OBL-019",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1580,20 +1580,20 @@
       "positive_control": {
         "id": "POS-OBL-020",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-020-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "documentation",
@@ -1604,7 +1604,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-020-1-A",
@@ -1625,12 +1625,12 @@
         {
           "id": "REG-OBL-020",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [
@@ -1663,20 +1663,20 @@
       "positive_control": {
         "id": "POS-OBL-022",
         "status": "passed",
-        "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+        "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
         "evidence_path": "evidence/issue-714-test-reach.log",
-        "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
         "evidence_kind": "documentation",
         "procedure": "Run node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs and the read-only material verification script against exact checkout.",
-        "observed": "26 document tests passed and 18 material/document negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
+        "observed": "27 document tests passed and 16 exact-material negative controls passed, with the foreign target rejected; CI and Chrome successful on the exact material SHA."
       },
       "negative_controls": [
         {
           "id": "NEG-OBL-022-1",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "evidence_id": "EV-714-DOC-LOG",
           "risk_family": "semantic-effect",
@@ -1687,7 +1687,7 @@
           "control_type": "test",
           "procedure": "Re-read the exact checkout, mutate the contract claim or the historic SHA/subject, run the Node or Python negative control and then verify unmodified source restoration.",
           "expected": "The altered candidate or foreign target must be rejected; the authentic material remains accepted by the same test.",
-          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 18 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
+          "observed": "Source rejection and restoration recorded in 26 document regressions (22 removals, 4 transfer variants) and 16 material checks, including base #778/#779 foreign-subject mismatch and stale #714 material certificate.",
           "sibling_cases": [
             {
               "id": "NEG-OBL-022-1-A",
@@ -1708,12 +1708,12 @@
         {
           "id": "REG-OBL-022",
           "status": "passed",
-          "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+          "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
           "evidence_path": "evidence/issue-714-test-reach.log",
-          "evidence_sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
+          "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
           "evidence_kind": "documentation",
           "procedure": "Execute all 26 Node test cases on exact SHA and compare GitHub Actions CRITICAL/Chrome runs on this head.",
-          "observed": "26/26 PASS in local test, Repository CI run 42873437297 and Chrome run 42873437157 both completed/success on same material head."
+          "observed": "27/27 PASS in local test, Repository CI run 42901674439 and Chrome run 42901674337 both completed/success on same material head."
         }
       ],
       "obligation_control_map": [

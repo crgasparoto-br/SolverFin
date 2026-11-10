@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/pr760-recert/candidate/.audit/entregar-issue/issue-714/specification-snapshot.json",
-    "sha256": "0060a253169f3cc35c00f9cd2953355540fb21e4afc25af6a8ef4d6e2e80dfd0"
+    "path": ".audit/entregar-issue/issue-714/specification-snapshot.json",
+    "sha256": "46dbf4b41b5bb88f584391e126b37c38e8e3ceb714f18d7bc90db3fa4d89b410"
   },
   "primary_issue_source_id": "SRC-ISSUE-714",
   "obligations": [
@@ -22,7 +22,17 @@
       "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": null,
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "auditoria tecnica abrangente e rastreavel do **baseline integrado** e da PR #760 no seu SHA exato, conduzida em conversa revisora **realmente separada** daquela usada para implementar/corrigir.",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*APROVADA a alternativa prospectiva** para a pendencia F-714-06/A-760002: dispensar a exigencia de **certificacao retroativa** da PR historica #713, substituindo-a por",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
       "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
     },
     {
@@ -42,7 +52,17 @@
       "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": null,
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "como caminho de fechamento de F-714-06",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Garantia adotada para operador unico:** `operator-attested-session-review`, `third_party_identity_proven=false`, `separate-context-declared-not-cryptographically-proven`. O proprietario aceitou expressamente esta equivalencia *prospectiva* , mas nao declarou que existiram dois auditores humanos nem que a PR #713 teve revisao historica; nenhuma certificacao/review retroativa sera fabricada",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
       "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
     },
     {
@@ -59,7 +79,17 @@
       "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": null,
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "checks e validacao independente na conversa revisora, recibo confiavel e testes operacionais",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Condicoes inalteradas:** manter provas positivas/negativas/regressao, identidade exact-SHA, , integracao segura dos workflows em `develop` e na branch default `main`, sem remover `Delivery V2 gate` nem protecoes. `mode=disabled` ate bootstrap seguro. Autorizados os merges *que passarem nos gates*, com read-back; nao autoriza bypass nem merge da #760 com parecer reprovado",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
       "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
     },
     {
@@ -76,7 +106,17 @@
       "requirement_ids": [],
       "inventory_ids": [],
       "assertion_ids": [],
-      "scope_decision": null,
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "Os itens historicos devem ser explicitamente `superseded-by-prospective-review`, nao `passed`.",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Fonte do estado atual:** [forensica da #714](https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6768198568) e [dependencias M2 da #762](https://github.com/crgasparoto-br/SolverFin/issues/762#issuecomment-6768228225)",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
       "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
     },
     {
@@ -132,13 +172,13 @@
       "assertion_ids": [],
       "scope_decision": {
         "decision_source_id": "SRC-ISSUE-714",
-        "decision_source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
         "decision_locator": "*Auditoria independente final: ainda nao comprovada nesta rodada.**",
         "target_issue": 714,
         "parent_issue_must_remain_open": true,
         "pre_handoff_coverage": {
           "covered_text": "O parecer tecnico anterior foi inconclusivo quanto a reproducao integral do preflight oficial; o historico de reviews da PR nao registrava revisao formal. Merge nao equivale a aprovacao tecnica",
-          "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
         }
       },
       "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
@@ -235,13 +275,13 @@
       "assertion_ids": [],
       "scope_decision": {
         "decision_source_id": "SRC-ISSUE-714",
-        "decision_source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
         "decision_locator": "Concluir auditoria técnica independente da PR #713 no HEAD real",
         "target_issue": 714,
         "parent_issue_must_remain_open": true,
         "pre_handoff_coverage": {
           "covered_text": "com CI e validação visual terminal",
-          "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
         }
       },
       "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
@@ -507,13 +547,13 @@
       "assertion_ids": [],
       "scope_decision": {
         "decision_source_id": "SRC-ISSUE-714",
-        "decision_source_sha256": "f8489804c2ebf237faa62b3dc59d2ba3aa9db05f0815995829f12aa1d5705a11",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
         "decision_locator": "[ ] PR #713 auditada no material atual",
         "target_issue": 714,
         "parent_issue_must_remain_open": true,
         "pre_handoff_coverage": {
           "covered_text": "CI/evidência no mesmo SHA e handoff correto quando aplicável",
-          "rationale": "Historico e checks materiais confirmados por referencias GitHub atuais; certificado do target corrente deve ser gerado e validado antes do handoff, sem simular revisao independente: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 e https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688"
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
         }
       },
       "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."

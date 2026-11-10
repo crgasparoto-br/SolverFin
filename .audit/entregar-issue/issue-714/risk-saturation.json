@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
   "families": [
     {
       "family": "authorization",
@@ -13,7 +13,7 @@
     {
       "family": "tenant-isolation",
       "applicable": true,
-      "reason": "Risk family derived from 22 exact canonical issue obligations; referenced material contract controls executed on 7e40a600 with source mutation and restoration.",
+      "reason": "Derived from current 26-candidate issue source; 19 covered obligations have fresh exact-material Node (27) and Python (16) negative/restoration evidence at 4118e899c2a37209864d5dcde609a6c57fffa459. Deferred review obligations remain open.",
       "control_ids": [
         "NEG-OBL-009-2"
       ],
@@ -40,7 +40,7 @@
     {
       "family": "reference-liveness",
       "applicable": true,
-      "reason": "Risk family derived from 22 exact canonical issue obligations; referenced material contract controls executed on 7e40a600 with source mutation and restoration.",
+      "reason": "Derived from current 26-candidate issue source; 19 covered obligations have fresh exact-material Node (27) and Python (16) negative/restoration evidence at 4118e899c2a37209864d5dcde609a6c57fffa459. Deferred review obligations remain open.",
       "control_ids": [
         "NEG-OBL-005-1",
         "NEG-OBL-007-2",
@@ -67,7 +67,7 @@
     {
       "family": "temporal-consistency",
       "applicable": true,
-      "reason": "Risk family derived from 22 exact canonical issue obligations; referenced material contract controls executed on 7e40a600 with source mutation and restoration.",
+      "reason": "Derived from current 26-candidate issue source; 19 covered obligations have fresh exact-material Node (27) and Python (16) negative/restoration evidence at 4118e899c2a37209864d5dcde609a6c57fffa459. Deferred review obligations remain open.",
       "control_ids": [
         "NEG-OBL-010-2",
         "NEG-OBL-012-2"
@@ -128,7 +128,7 @@
     {
       "family": "structural-contract",
       "applicable": true,
-      "reason": "Risk family derived from 22 exact canonical issue obligations; referenced material contract controls executed on 7e40a600 with source mutation and restoration.",
+      "reason": "Derived from current 26-candidate issue source; 19 covered obligations have fresh exact-material Node (27) and Python (16) negative/restoration evidence at 4118e899c2a37209864d5dcde609a6c57fffa459. Deferred review obligations remain open.",
       "control_ids": [
         "NEG-OBL-009-1"
       ],
@@ -147,7 +147,7 @@
     {
       "family": "documentation",
       "applicable": true,
-      "reason": "Risk family derived from 22 exact canonical issue obligations; referenced material contract controls executed on 7e40a600 with source mutation and restoration.",
+      "reason": "Derived from current 26-candidate issue source; 19 covered obligations have fresh exact-material Node (27) and Python (16) negative/restoration evidence at 4118e899c2a37209864d5dcde609a6c57fffa459. Deferred review obligations remain open.",
       "control_ids": [
         "NEG-OBL-007-1",
         "NEG-OBL-013-1",

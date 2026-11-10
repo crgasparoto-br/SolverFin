@@ -1,175 +1,157 @@
 {
   "schema_version": 1,
-  "material_head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
-  "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
+  "material_head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+  "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
   "subject_issue": 714,
   "subject_pr": 760,
-  "control_count": 18,
+  "control_count": 16,
   "controls": [
     {
-      "id": "approved-golden-title",
+      "id": "approved-title",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "integrated-pr713",
+      "id": "713-integrated-sha",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "integrated-pr721",
+      "id": "721-integrated-sha",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "no-inherited-propagation",
+      "id": "propagation-boundary",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "individual-incoming-transfer",
+      "id": "individual-transfer-legs",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
       "id": "all-accounts-no-inflation",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "fx-currency-leg",
+      "id": "fx-selected-currency-leg",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
       "id": "centered-dialogs",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "footer-supersession",
+      "id": "footer-precedence",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "independent-audit-separation",
+      "id": "independence-distinct",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     },
     {
-      "id": "adr-0018-footer-supersession",
+      "id": "inventory-26-not-22",
       "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
+      "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+    },
+    {
+      "id": "inventory-7-deferred",
+      "status": "passed",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
+      "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+    },
+    {
+      "id": "prospective-not-retroactive",
+      "status": "passed",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
+      "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+    },
+    {
+      "id": "required-check-pending",
+      "status": "passed",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
+      "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+    },
+    {
+      "id": "review-seven-deferred",
+      "status": "passed",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
+      "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+    },
+    {
+      "id": "center-and-financial-adr",
+      "status": "passed",
+      "positive": "actual source accepted",
+      "negative": "mutated source rejected",
+      "restoration": "source unchanged and accepted",
       "source_sha256": "9877540291509d01a321d7344c3375f7b7dbdd5ce924107b91e4f52a84564a2c",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "prospective-review-policy",
-      "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
-      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "no-retroactive-approval",
-      "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
-      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "deferred-obligations",
-      "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
-      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "no-third-party-claim",
-      "status": "passed",
-      "positive": "present in actual source",
-      "negative": "removed or contradicted in memory and rejected",
-      "restoration": "actual material source unchanged",
-      "source_sha256": "25b0e65ae8949a39944c8e5453120de35633e45cf0c9182ffee6aaa05ee84905",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "trusted-policy-enabled",
-      "status": "passed",
-      "positive": "enabled, non-third-party assurance confirmed on merged material",
-      "negative": "disabled or higher assurance would violate expected exact policy",
-      "restoration": "policy file unmodified",
-      "source_sha256": "0cb91d889b63b7164f60b3e1dfdfb6116f27a3ff26d6b274a59e9dddeb6e73db",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "base-certificate-foreign-target",
-      "status": "passed",
-      "positive": "foreign subject rejected",
-      "negative": "must not rebind base certificate to #714/#760",
-      "restoration": "base certificate kept immutable",
-      "source_sha256": "fdd840a3c6037dda332c69e49605f9335bb6121064a69054ebc2768065c3a8c2",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
-    },
-    {
-      "id": "old-current-certificate-stale",
-      "status": "passed",
-      "positive": "same-target certificate belongs to older material",
-      "negative": "must reject its old READY for new material",
-      "restoration": "original historical certificate kept without reapproval",
-      "source_sha256": "ded807757b0ebf6c01d18603b3f2a754f11dc337fefe374b693e5d3c04fce113",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552"
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
     }
   ],
   "independent_approval_observed": false,
   "certification_observed": false,
-  "message": "Read-only material tests on exact SHA; no independent review or historical certification claimed."
+  "message": "Source controls executed at exact material; review and required checks remain pending."
 }

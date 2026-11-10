@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "subjectSha": "c4979487f60fea7419c2936972e03aa1d1df5552",
+  "subjectSha": "4118e899c2a37209864d5dcde609a6c57fffa459",
   "status": "passed",
-  "runId": 42873437157,
-  "artifactId": 13792260054,
-  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42873437157/artifacts/13792260054",
+  "runId": 42901674337,
+  "artifactId": 13804545554,
+  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42901674337/artifacts/13804545554",
   "rawEvidenceFile": "statement-contextual-surfaces.json",
-  "rawEvidenceSha256": "f194e65d903c892a538cd2677b4ba7caffd7b889e41abad29ff1e42fb4909a1c",
+  "rawEvidenceSha256": "b6cbca179e051f298a1e8336fa58127fe95b1bbe64dab2bce3a68388be21a679",
   "rawObservedCount": 20,
   "rawNegativeControlCount": 72,
   "observations": [
@@ -112,6 +112,40 @@
       "accessibilityFile": "statement-contextual-edit-1366x768-ax.json"
     },
     {
+      "state": "consolidated-edit",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "route": "/lancamentos?accountId=all&currency=BRL&month=2026-07",
+      "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+      "sourceCurrency": "BRL",
+      "modalState": {
+        "open": true,
+        "method": "PATCH",
+        "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+        "accountDisplay": "QA Visual - Valores Extensos · BRL",
+        "sourceCurrency": "BRL",
+        "saveDisabled": false
+      }
+    },
+    {
+      "state": "consolidated-clone",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "route": "/lancamentos?accountId=all&currency=BRL&month=2026-07",
+      "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+      "cloneState": {
+        "open": true,
+        "title": "Clonar lançamento",
+        "method": "POST",
+        "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+        "saveDisabled": false
+      }
+    },
+    {
       "state": "clone",
       "viewport": {
         "width": 1366,
@@ -161,6 +195,149 @@
       },
       "screenshot": "statement-contextual-clone-1366x768.png",
       "accessibilityFile": "statement-contextual-clone-1366x768-ax.json"
+    },
+    {
+      "state": "details",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "selector": "dialog[data-group-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 15,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-details-1366x768.png",
+      "accessibilityFile": "statement-contextual-details-1366x768-ax.json",
+      "canonicalScope": "Group details; the product has no separate single-transaction details drawer."
+    },
+    {
+      "state": "more-actions",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "selector": ".actions-menu[data-statement-action-menu-fixed]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 1169.5625,
+        "verticalCenterDelta": 167,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-more-actions-1366x768.png",
+      "accessibilityFile": "statement-contextual-more-actions-1366x768-ax.json"
+    },
+    {
+      "state": "reconciliation",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "selector": "[data-contextual-reconciliation] .statement-status-menu",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": false,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 1182,
+        "verticalCenterDelta": 117.375,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-reconciliation-1366x768.png",
+      "accessibilityFile": "statement-contextual-reconciliation-1366x768-ax.json",
+      "canonicalScope": "Single-transaction status-only PATCH from icon menu"
     },
     {
       "state": "new",
@@ -315,6 +492,149 @@
       "accessibilityFile": "statement-contextual-clone-390x844-ax.json"
     },
     {
+      "state": "details",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": "dialog[data-group-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 15,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-details-390x844.png",
+      "accessibilityFile": "statement-contextual-details-390x844-ax.json",
+      "canonicalScope": "Group details; the product has no separate single-transaction details drawer."
+    },
+    {
+      "state": "more-actions",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": ".actions-menu[data-statement-action-menu-fixed]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 209.5625,
+        "verticalCenterDelta": 175,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-more-actions-390x844.png",
+      "accessibilityFile": "statement-contextual-more-actions-390x844-ax.json"
+    },
+    {
+      "state": "reconciliation",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "selector": "[data-contextual-reconciliation] .statement-status-menu",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": false,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 164,
+        "verticalCenterDelta": 117.875,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-reconciliation-390x844.png",
+      "accessibilityFile": "statement-contextual-reconciliation-390x844-ax.json",
+      "canonicalScope": "Single-transaction status-only PATCH from icon menu"
+    },
+    {
       "state": "new",
       "viewport": {
         "width": 320,
@@ -465,10 +785,173 @@
       },
       "screenshot": "statement-contextual-clone-320x740.png",
       "accessibilityFile": "statement-contextual-clone-320x740-ax.json"
+    },
+    {
+      "state": "details",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "selector": "dialog[data-group-modal][open]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 15,
+        "verticalCenterDelta": 0,
+        "unnamedButtons": 0,
+        "closeButtons": 1,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-details-320x740.png",
+      "accessibilityFile": "statement-contextual-details-320x740-ax.json",
+      "canonicalScope": "Group details; the product has no separate single-transaction details drawer."
+    },
+    {
+      "state": "more-actions",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "selector": ".actions-menu[data-statement-action-menu-fixed]",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": true,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 139.5625,
+        "verticalCenterDelta": 175,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-more-actions-320x740.png",
+      "accessibilityFile": "statement-contextual-more-actions-320x740-ax.json"
+    },
+    {
+      "state": "reconciliation",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "selector": "[data-contextual-reconciliation] .statement-status-menu",
+      "measured": {
+        "visible": true,
+        "inside": true,
+        "horizontalOverflow": false,
+        "documentOverflow": false,
+        "focusInside": false,
+        "visibleAccountFields": 0,
+        "selectedAccountName": null,
+        "fullAccountName": null,
+        "readOnlyOriginalName": null,
+        "readOnlyVisibleName": null,
+        "readOnlyInputHidden": false,
+        "documentScrollLocked": false,
+        "dialogOverflowHidden": false,
+        "panelScrollControlled": false,
+        "footerActionColumns": null,
+        "footerActionLabels": [],
+        "footerActionRowDelta": null,
+        "footerContinueRowDelta": null,
+        "footerContinueHidden": true,
+        "footerContinueAfterCancel": false,
+        "footerSaveAfterCancel": false,
+        "footerPrimaryBelowContinue": false,
+        "footerActionsContained": false,
+        "footerActionHeights": {
+          "cancel": null,
+          "save": null,
+          "continue": null
+        },
+        "tooltipStatusCount": 0,
+        "statusLabelVisuallyHidden": false,
+        "horizontalCenterDelta": 94,
+        "verticalCenterDelta": 117.84375,
+        "unnamedButtons": 0,
+        "closeButtons": 0,
+        "closeGlyphDuplications": 0
+      },
+      "screenshot": "statement-contextual-reconciliation-320x740.png",
+      "accessibilityFile": "statement-contextual-reconciliation-320x740-ax.json",
+      "canonicalScope": "Single-transaction status-only PATCH from icon menu"
     }
   ],
   "negativeControls": [
     {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (894px)",
+      "restored": "passed"
+    },
+    {
       "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new",
       "viewport": {
         "width": 1366,
@@ -486,6 +969,46 @@
       },
       "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
       "rejectedBecause": "new: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-new",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "new: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "edit: dialog is off horizontal center (894px)",
       "restored": "passed"
     },
     {
@@ -509,6 +1032,36 @@
       "restored": "passed"
     },
     {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-edit",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "edit: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-edit",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "edit: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "clone: dialog is off horizontal center (894px)",
+      "restored": "passed"
+    },
+    {
       "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-clone",
       "viewport": {
         "width": 1366,
@@ -526,6 +1079,142 @@
       },
       "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
       "rejectedBecause": "clone: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-clone",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-clone",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-clone",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "clone: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-details",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "details: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-more-actions",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "more-actions: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "nextStatus": "reconciled",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Efetivado não conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Marcar como conciliado",
+        "actionTitle": "Marcar como conciliado",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-reconciliation",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "reconciliation: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "nextStatus": "posted",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Desconciliar",
+        "actionTitle": "Desconciliar",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-STATUS-ROUNDTRIP",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "observed": "posted -> reconciled -> posted through canonical UI actions"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (104.5px)",
       "restored": "passed"
     },
     {
@@ -549,6 +1238,46 @@
       "restored": "passed"
     },
     {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-new",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "new: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "edit: dialog is off horizontal center (104.5px)",
+      "restored": "passed"
+    },
+    {
       "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-edit",
       "viewport": {
         "width": 390,
@@ -569,6 +1298,36 @@
       "restored": "passed"
     },
     {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "edit: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-edit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "edit: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "clone: dialog is off horizontal center (104.5px)",
+      "restored": "passed"
+    },
+    {
       "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-clone",
       "viewport": {
         "width": 390,
@@ -586,6 +1345,142 @@
       },
       "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
       "rejectedBecause": "clone: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-clone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-clone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-clone",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "clone: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-details",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "details: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-more-actions",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "more-actions: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "nextStatus": "reconciled",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Efetivado não conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Marcar como conciliado",
+        "actionTitle": "Marcar como conciliado",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-reconciliation",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "reconciliation: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "nextStatus": "posted",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Desconciliar",
+        "actionTitle": "Desconciliar",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-STATUS-ROUNDTRIP",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observed": "posted -> reconciled -> posted through canonical UI actions"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-CONTINUE-DUPLICATE-LABEL",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Save and continue mislabeled as the primary Save action",
+      "rejectedBecause": "new: footer action labels must remain distinct and accessible\n+ actual - expected\n\n  [\n    'Cancelar',\n-   'Salvar e continuar',\n    'Salvar lançamento',\n+   'Salvar lançamento'\n  ]\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "new: dialog is off horizontal center (80px)",
       "restored": "passed"
     },
     {
@@ -609,6 +1504,46 @@
       "restored": "passed"
     },
     {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "new: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-new",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "new: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-edit",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "edit: dialog is off horizontal center (80px)",
+      "restored": "passed"
+    },
+    {
       "id": "GS-CONTEXTUAL-NC-FOOTER-CLIPPED-edit",
       "viewport": {
         "width": 320,
@@ -626,6 +1561,36 @@
       },
       "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
       "rejectedBecause": "edit: cancel footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-edit",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "edit: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-edit",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "edit: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-RIGHT-ALIGNED-clone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Dialog right-aligned but entirely inside the viewport",
+      "rejectedBecause": "clone: dialog is off horizontal center (80px)",
       "restored": "passed"
     },
     {
@@ -647,6 +1612,122 @@
       "mutation": "Footer cancel touch target reduced to 32px without clipping or changing the action row",
       "rejectedBecause": "clone: cancel footer touch target must be at least 44px high (got 32px)",
       "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-CONTINUE-clone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer continue touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: Continue touch target must be at least 44px",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-NC-FOOTER-TOUCH-SAVE-clone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Footer save touch target reduced to 32px without clipping or changing the action row",
+      "rejectedBecause": "clone: save footer touch target must be at least 44px high (got 32px)",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-clone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "clone: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-details",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "details: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-more-actions",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "more-actions: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "nextStatus": "reconciled",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Efetivado não conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Marcar como conciliado",
+        "actionTitle": "Marcar como conciliado",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-ANCHOR-reconciliation",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "mutation": "Overlay anchored at viewport right instead of within viewport",
+      "rejectedBecause": "reconciliation: surface escapes viewport\n\nfalse !== true\n",
+      "restored": "passed"
+    },
+    {
+      "id": "GS-STATUS-ICON-ONLY",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "nextStatus": "posted",
+      "state": {
+        "open": true,
+        "currentLabel": "Situação atual: Conciliado",
+        "currentIconOnly": true,
+        "actionLabel": "Desconciliar",
+        "actionTitle": "Desconciliar",
+        "actionIconOnly": true,
+        "menuTextless": true,
+        "width": 112,
+        "actionTarget": 44,
+        "currentCircle": 26,
+        "actionCircle": 26,
+        "currentGlyph": 15,
+        "actionGlyph": 15,
+        "inside": true
+      }
+    },
+    {
+      "id": "GS-CONTEXTUAL-STATUS-ROUNDTRIP",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "observed": "posted -> reconciled -> posted through canonical UI actions"
     }
   ]
 }

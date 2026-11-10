@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
-  "material_head_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
-  "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
+  "material_head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+  "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
   "evidence": [
     {
       "evidence_id": "EV-714-DOC-LOG",
       "kind": "documentation",
       "path": "evidence/issue-714-test-reach.log",
-      "sha256": "112ed1433095169c1451711c8d6a75bfd21c534ac079396d7193df61f6b1977e",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
-      "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
+      "sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+      "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / read-only Python semantic oracle on authenticated exact Git merge checkout",
+      "producer": "Node.js 22 node:test 27 PASS and Python 16 exact-material source mutation/restore controls on verified CI Git bundle",
       "status": "passed"
     },
     {
       "evidence_id": "EV-714-MATERIAL-LOG",
       "kind": "structural",
       "path": "evidence/governance-material-controls.log",
-      "sha256": "4e83f9512197bff4b587149fb08b8469c90f24284ddd4005b984ca0e38fae2be",
-      "subject_sha": "c4979487f60fea7419c2936972e03aa1d1df5552",
-      "base_sha": "ab3083b3f268292c654e653b811a54612e123cc6",
+      "sha256": "4444dc5707e644c79f53b40567b880ca765a9b96be828e1f2055e050d2b45448",
+      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+      "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
       "freshness_policy": "exact-material-head",
-      "producer": "Node.js 22 node:test / read-only Python semantic oracle on authenticated exact Git merge checkout",
+      "producer": "Node.js 22 node:test 27 PASS and Python 16 exact-material source mutation/restore controls on verified CI Git bundle",
       "status": "passed"
     }
   ]
