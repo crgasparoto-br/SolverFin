@@ -1,7 +1,17 @@
 # ADR 0019 - Revisao por sessao atestada em projeto de operador unico
 
-**Status:** Proposto (bootstrap desativado; nao homologado).
+**Status:** Garantia prospectiva aprovada em 10/11/2026; verificacao operacional M2 ainda pendente.
 **Issues:** #762, #714; PR #760; epica #702.
+
+## Decisao vigente (10/11/2026)
+
+O responsavel autorizou expressamente a **substituicao prospectiva** da certificacao retroativa da PR #713 por auditoria integral da referencia ja integrada e da PR #760 no SHA material/certificado exatos. Foi aceita a garantia de operador unico `operator-attested-session-review`, com `third_party_identity_proven=false` e `separate-context-declared-not-cryptographically-proven`. Isso **nao** reescreve a historia da #713, nao alega segundo auditor e nao dispensa uma conversa revisora distinta com parecer autenticado. Decisao documentada na issue #762 e #714 em 10/11/2026.
+
+Bootstrap administrativo de fontes confiaveis na `main` foi separado em [PR #781](https://github.com/crgasparoto-br/SolverFin/pull/781) e [PR #780](https://github.com/crgasparoto-br/SolverFin/pull/780), ambas integradas. Os 22 blobs normativos/codigo/workflows/testes de revisao foram relidos via GitHub e correspondem byte a byte entre `main` e `develop`. Nenhuma alteracao financeira nem enfraquecimento do `Delivery V2 gate`.
+
+A mudanca da politica para `mode=enabled` representa somente **opt-in de avaliacao**, nao aprovacao. O verificador continua fail-closed quando faltam certificado `critical`, testes JUnit reais, evidencia, comentario de uma conversa revisora distinta, politica igual em ambas as bases ou fonte trusted. O check de revisao so pode virar obrigatorio com ensaios autenticados de sucesso, rejeicao e revogacao, validacao exact-SHA e read-back da protecao de `develop` e `main`. Enquanto faltarem, #762, #714 e #760 permanecem abertas, sem merge automatico.
+
+O restante deste ADR preserva as restricoes e o planejamento historico de bootstrap. O registro datado acima e a fonte vigente para decisoes que ja ocorreram; afirmacoes abaixo sobre codigo ainda nao instalado referem-se ao estado anterior a 10/11/2026.
 
 ## Contexto
 
