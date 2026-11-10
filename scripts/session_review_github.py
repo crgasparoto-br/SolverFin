@@ -109,27 +109,65 @@ def uses_github_implementation_session(comment: dict, prefix: str) -> bool:
 
 
 def authenticated_implementation_provenance(identity: dict, metadata: dict, pages, api) -> dict:
-    """Rebuild the linear material commit chain using only authenticated GitHub API."""
-    repo, number = identity["repository"], identity["pull_request"]
+    """Authenticate the PR's first-parent chain and protected-base merge edges.
+
+    A branch may have incorporated develop by an ordinary merge. Each listed
+    PR commit must remain on an unbroken first-parent chain; other parents
+    are accepted only when GitHub proves they are ancestors of the certified
+    protected-base SHA (or already in that PR chain). Arbitrary merged history
+    never becomes trusted merely because the final HEAD exists.
+    """
+    repo, number, base = identity["repository"], identity["pull_request"], identity["base_sha"]
     commits = pages(repo, f"pulls/{number}/commits")
     require(bool(commits) and len(commits) <= 2500, "material GitHub PR commits missing or truncated")
-    seen, previous, shas = set(), identity["base_sha"], []
+    known_base_ancestors = {base}
+
+    def protected_base_ancestor(sha: str) -> bool:
+        if sha in known_base_ancestors:
+            return True
+        comparison = api(f"/repos/{repo}/compare/{sha}...{base}")
+        require(isinstance(comparison, dict)
+                and comparison.get("status") == "ahead"
+                and (comparison.get("base_commit") or {}).get("sha") == sha
+                and type(comparison.get("behind_by")) is int
+                and comparison["behind_by"] == 0
+                and type(comparison.get("ahead_by")) is int
+                and comparison["ahead_by"] > 0
+                and (comparison.get("merge_base_commit") or {}).get("sha") == sha,
+                "GitHub merge parent is not an authenticated protected-base ancestor")
+        known_base_ancestors.add(sha)
+        return True
+
+    seen, previous, shas = set(), None, []
     for row in commits:
-        sha = row.get("sha")
+        sha = row.get("sha") if isinstance(row, dict) else None
         require(isinstance(sha, str) and SHA.fullmatch(sha) and sha not in seen,
                 "invalid or duplicate GitHub PR material commit")
         obj = api(f"/repos/{repo}/git/commits/{sha}")
         parents = obj.get("parents") if isinstance(obj, dict) else None
         require(isinstance(obj, dict) and obj.get("sha") == sha
-                and isinstance(parents, list) and len(parents) == 1
-                and isinstance(parents[0], dict) and parents[0].get("sha") == previous,
-                "GitHub PR commits are not an authenticated linear material chain from base")
+                and isinstance(parents, list) and 1 <= len(parents) <= 2
+                and all(isinstance(p, dict) and isinstance(p.get("sha"), str)
+                        and SHA.fullmatch(p["sha"]) for p in parents)
+                and len({p["sha"] for p in parents}) == len(parents),
+                "invalid GitHub PR commit parents")
+        first = parents[0]["sha"]
+        if previous is None:
+            # The PR may have forked from an older develop, before later merges.
+            protected_base_ancestor(first)
+        else:
+            require(first == previous,
+                    "GitHub PR commits are not an authenticated first-parent material chain")
+        for other in parents[1:]:
+            parent_sha = other["sha"]
+            if parent_sha not in seen:
+                protected_base_ancestor(parent_sha)
         seen.add(sha)
         shas.append(sha)
         previous = sha
     require(previous == identity["head_sha"], "GitHub PR commits do not terminate at material HEAD")
     return {"type": PROVENANCE_TYPE, "repository": repo, "pull_request": number,
-            "issue": identity["issue"], "base_sha": identity["base_sha"],
+            "issue": identity["issue"], "base_sha": base,
             "head_sha": identity["head_sha"], "commits": shas,
             "handoff": {"artifact_id": metadata["artifact_id"], "digest": metadata["artifact_digest"]}}
 
