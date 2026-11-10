@@ -353,7 +353,8 @@ export async function verifyTransferSelection({
       [
         "(async () => {",
         "const response = await fetch('/api/transactions?accountId=' + " +
-          JSON.stringify(accountId) + " + '&status=all');",
+          JSON.stringify(accountId) +
+          " + '&status=all');",
         "const payload = await response.json();",
         "if (!response.ok) throw new Error(JSON.stringify(payload));",
         "return " +
@@ -366,9 +367,7 @@ export async function verifyTransferSelection({
   assert.deepEqual(afterReconcile, ["reconciled", "reconciled"]);
 
   const destinationRoute =
-    "/lancamentos?accountId=" +
-    encodeURIComponent(fixtureIds.singleAccountId) +
-    "&month=2026-07";
+    "/lancamentos?accountId=" + encodeURIComponent(fixtureIds.singleAccountId) + "&month=2026-07";
   await setViewport(browser.cdp, 1366, 768);
   await navigate(browser.cdp, baseUrl + destinationRoute);
   await sleep(120);
