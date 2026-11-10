@@ -547,6 +547,125 @@ async function verifyTransferBulkReconciliation(sourceAccountId: string): Promis
   }
 }
 
+  // Mixed batch: a BRL->USD transfer, a USD income and a BRL expense must
+  // reconcile atomically, without duplicating the canonical transfer.
+  const mixedTransfer = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 14567,
+    destinationAmountMinor: 2589,
+    occurredOn: "2028-10-09",
+    plannedOn: "2028-10-09",
+    effectiveOn: null,
+    description: "Transferência cambial em seleção mista",
+  });
+  const mixedIncome = await createTransactionForContext(context, {
+    accountId: destination.id,
+    kind: "income",
+    status: "posted",
+    amountMinor: 7333,
+    occurredOn: "2028-10-10",
+    effectiveOn: "2028-10-10",
+    description: "Receita USD em seleção mista",
+  });
+  const mixedExpense = await createTransactionForContext(context, {
+    accountId: sourceAccountId,
+    kind: "expense",
+    status: "posted",
+    amountMinor: 5666,
+    occurredOn: "2028-10-11",
+    effectiveOn: "2028-10-11",
+    description: "Despesa BRL em seleção mista",
+  });
+  const mixedIds = [mixedTransfer.id, mixedIncome.id, mixedExpense.id];
+  const mixedBefore = await Promise.all(
+    mixedIds.map((id) => getTransactionForContext(context, id)),
+  );
+  assert.equal(mixedBefore[0]!.currency, "BRL");
+  assert.equal(mixedBefore[0]!.destinationCurrency, "USD");
+  assert.equal(mixedBefore[1]!.currency, "USD");
+  assert.equal(mixedBefore[2]!.currency, "BRL");
+
+  const invalidMixed = await createTransactionForContext(context, {
+    accountId: destination.id,
+    kind: "income",
+    status: "suggested",
+    amountMinor: 999,
+    occurredOn: "2028-10-12",
+    plannedOn: "2028-10-12",
+    effectiveOn: null,
+    description: "Sugestão protegida em seleção mista",
+  });
+  const mixedAuditBefore = await countAudits(mixedTransfer.id);
+  await assert.rejects(
+    () =>
+      executeTransactionBulkActionForContext(context, {
+        action: "reconcile",
+        transactionIds: [mixedTransfer.id, mixedIncome.id, invalidMixed.id],
+      }),
+    hasCode("TRANSACTION_BULK_STATUS_INVALID"),
+  );
+  assert.equal(await countAudits(mixedTransfer.id), mixedAuditBefore);
+  for (const [index, id] of mixedIds.entries()) {
+    assert.deepEqual(await getTransactionForContext(context, id), mixedBefore[index]);
+  }
+
+  const mixedStartDay = new Date().toISOString().slice(0, 10);
+  const mixedResult = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: [mixedTransfer.id, mixedIncome.id, mixedExpense.id, mixedTransfer.id],
+  });
+  const mixedEndDay = new Date().toISOString().slice(0, 10);
+  assert.deepEqual(new Set(mixedResult.affectedTransactionIds), new Set(mixedIds));
+  assert.equal(mixedResult.affectedTransactionIds.length, mixedIds.length);
+  assert.deepEqual(mixedResult.unchangedTransactionIds, []);
+  assert.equal(await countAudits(mixedTransfer.id), mixedAuditBefore + 1);
+  for (const [index, id] of mixedIds.entries()) {
+    const beforeMixed = mixedBefore[index]!;
+    const afterMixed = await getTransactionForContext(context, id);
+    assert.equal(afterMixed.status, "reconciled");
+    assert.equal(afterMixed.accountId, beforeMixed.accountId);
+    assert.equal(afterMixed.destinationAccountId, beforeMixed.destinationAccountId);
+    assert.equal(afterMixed.transferGroupId, beforeMixed.transferGroupId);
+    assert.equal(afterMixed.amountMinor, beforeMixed.amountMinor);
+    assert.equal(afterMixed.currency, beforeMixed.currency);
+    assert.equal(afterMixed.destinationAmountMinor, beforeMixed.destinationAmountMinor);
+    assert.equal(afterMixed.destinationCurrency, beforeMixed.destinationCurrency);
+    assert.equal(afterMixed.occurredOn, beforeMixed.occurredOn);
+    assert.equal(afterMixed.plannedOn, beforeMixed.plannedOn);
+    if (id === mixedTransfer.id) {
+      assert.ok([mixedStartDay, mixedEndDay].includes(afterMixed.effectiveOn ?? ""));
+    } else {
+      assert.equal(afterMixed.effectiveOn, beforeMixed.effectiveOn);
+    }
+  }
+  const mixedRepeat = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: mixedIds,
+  });
+  assert.deepEqual(mixedRepeat.affectedTransactionIds, []);
+  assert.deepEqual(new Set(mixedRepeat.unchangedTransactionIds), new Set(mixedIds));
+  const mixedUndone = await executeTransactionBulkActionForContext(context, {
+    action: "unreconcile",
+    transactionIds: mixedIds,
+  });
+  assert.deepEqual(new Set(mixedUndone.affectedTransactionIds), new Set(mixedIds));
+  for (const [index, id] of mixedIds.entries()) {
+    const beforeMixed = mixedBefore[index]!;
+    const afterMixed = await getTransactionForContext(context, id);
+    assert.equal(afterMixed.status, "posted");
+    assert.equal(afterMixed.amountMinor, beforeMixed.amountMinor);
+    assert.equal(afterMixed.currency, beforeMixed.currency);
+    assert.equal(afterMixed.destinationAmountMinor, beforeMixed.destinationAmountMinor);
+    assert.equal(afterMixed.destinationCurrency, beforeMixed.destinationCurrency);
+    assert.equal(afterMixed.accountId, beforeMixed.accountId);
+    assert.equal(afterMixed.destinationAccountId, beforeMixed.destinationAccountId);
+    assert.equal(afterMixed.transferGroupId, beforeMixed.transferGroupId);
+    assert.equal(afterMixed.occurredOn, beforeMixed.occurredOn);
+    assert.equal(afterMixed.plannedOn, beforeMixed.plannedOn);
+  }
+
+
 async function countAudits(entityId: string): Promise<number> {
   const rows = await query<{ count: number }>(
     `select count(*)::int as "count" from "AuditLogEntry" where "entityId"=$1`,
