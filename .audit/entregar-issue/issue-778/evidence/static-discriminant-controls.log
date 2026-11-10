@@ -5,3 +5,4 @@ PASS api-tenant-rollback-guard apps/api/src/repositories/transaction-bulk-action
 PASS new-execution-fixture apps/api/src/transaction-bulk-actions.integration.test.ts :: verifyTransferBulkReconciliation, destinationCurrency, destinationAmountMinor, TENANT_RESOURCE_NOT_FOUND
 PASS web-render-fixture apps/web/src/dev-server/transactions-page-v2.test.ts :: test("A2 transfer selection is available, for (const accountId of ["account-usd", "account-brl"]), transfer-suggested
 PASS chrome-fixture scripts/statement-visual/transaction-bulk-selection-scenarios.mjs :: verifyTransferSelection, afterReconcile, afterUnreconcile, groupTooltip
+PASS api-mixed-fx-income-expense regression apps/api/src/transaction-bulk-actions.integration.test.ts :: BRL->USD + income USD + expense BRL, invalid status atomic rollback, repeated selection canonical ID deduplication, saved currency/amount/date, un/reconciliation; reached in exact-SHA CI 42851756087

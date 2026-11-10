@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+  "subject_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
   "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
   "creations": [],
   "references": [
@@ -13,7 +13,7 @@
         "line": 267
       },
       "verified_by": {
-        "command": "node scripts/statement-visual/transaction-bulk-selection.mjs (GitHub Chrome run 42825336285)",
+        "command": "node scripts/statement-visual/transaction-bulk-selection.mjs (GitHub Chrome run 42851755919)",
         "exit_code": 0
       }
     }
@@ -23,12 +23,12 @@
     {
       "path": "apps/api/src/transaction-bulk-actions.integration.test.ts",
       "operation": "modified",
-      "scenario": "Api Postgres integration of cross-currency transfers, idempotence, rollback and dates",
+      "scenario": "Api Postgres integration of cross-currency transfers, idempotence, rollback and dates; combined BRL->USD FX transfer plus USD income and BRL expense regression, invalid-selection rollback and duplicate canonical id",
       "requirement": "Issue #778 multiple transfer reconciliation with preserved grouping protections",
       "search": {
         "queries": [
           "git ls-tree ba6af8e1a1231788740a512c24623fed25062829 apps/api/src/transaction-bulk-actions.integration.test.ts",
-          "git diff ba6af8e1a1231788740a512c24623fed25062829..ae090fe832a738bc4f4f46f30a100ec4edc40d82 -- apps/api/src/transaction-bulk-actions.integration.test.ts"
+          "git diff ba6af8e1a1231788740a512c24623fed25062829..533349c368ab9eacc39f53b8fbbebf0fb5c1596f -- apps/api/src/transaction-bulk-actions.integration.test.ts"
         ],
         "scope": "Exact existing test module extended; preserve baseline assertions while adding transfer cases.",
         "runner": "npm run test:integration --workspace @solverfin/api",
@@ -55,12 +55,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "subject_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "reached_tests": [
           "apps/api/src/transaction-bulk-actions.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-778/evidence/ci-test-reach-778.log",
-        "evidence_sha256": "51abea6a1b25b7a87775319c2f165f0cbd99f215d9506686f98867ba116489aa"
+        "evidence_sha256": "94e4d96c9b565d46cb5af930cc2aa7b5e68096ba3fd2c4a2c9fb5b04751db2ac"
       }
     },
     {
@@ -71,7 +71,7 @@
       "search": {
         "queries": [
           "git ls-tree ba6af8e1a1231788740a512c24623fed25062829 apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
-          "git diff ba6af8e1a1231788740a512c24623fed25062829..ae090fe832a738bc4f4f46f30a100ec4edc40d82 -- apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
+          "git diff ba6af8e1a1231788740a512c24623fed25062829..533349c368ab9eacc39f53b8fbbebf0fb5c1596f -- apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
         ],
         "scope": "Exact existing test module extended; preserve baseline assertions while adding transfer cases.",
         "runner": "npm run test",
@@ -98,12 +98,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "subject_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "reached_tests": [
           "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-778/evidence/ci-test-reach-778.log",
-        "evidence_sha256": "51abea6a1b25b7a87775319c2f165f0cbd99f215d9506686f98867ba116489aa"
+        "evidence_sha256": "94e4d96c9b565d46cb5af930cc2aa7b5e68096ba3fd2c4a2c9fb5b04751db2ac"
       }
     },
     {
@@ -114,7 +114,7 @@
       "search": {
         "queries": [
           "git ls-tree ba6af8e1a1231788740a512c24623fed25062829 apps/web/src/dev-server/transactions-page-v2.test.ts",
-          "git diff ba6af8e1a1231788740a512c24623fed25062829..ae090fe832a738bc4f4f46f30a100ec4edc40d82 -- apps/web/src/dev-server/transactions-page-v2.test.ts"
+          "git diff ba6af8e1a1231788740a512c24623fed25062829..533349c368ab9eacc39f53b8fbbebf0fb5c1596f -- apps/web/src/dev-server/transactions-page-v2.test.ts"
         ],
         "scope": "Exact existing test module extended; preserve baseline assertions while adding transfer cases.",
         "runner": "npm run test",
@@ -141,12 +141,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "subject_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "reached_tests": [
           "apps/web/src/dev-server/transactions-page-v2.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-778/evidence/ci-test-reach-778.log",
-        "evidence_sha256": "51abea6a1b25b7a87775319c2f165f0cbd99f215d9506686f98867ba116489aa"
+        "evidence_sha256": "94e4d96c9b565d46cb5af930cc2aa7b5e68096ba3fd2c4a2c9fb5b04751db2ac"
       }
     }
   ]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+  "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
   "requirements": [
     {
       "requirement_id": "REQ-778-001",
@@ -16,12 +16,12 @@
       "plausible_wrong_implementation": "SSR renderer displays enabled checkbox for eligible transfer instead of income/expense-only filter.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Render account-specific transfer rows and assert eligible checkboxes are enabled; compare consolidated and suggested rows.",
-        "observed": "SSR test transactions-page-v2.test.ts passed during repository CI run 42825336185."
+        "observed": "SSR test transactions-page-v2.test.ts passed during repository CI run 42851756087."
       },
       "negative_controls": [
         {
@@ -30,15 +30,15 @@
           "surface": "ui-selection",
           "dimension": "transfer-checkbox-disabled",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Disabled transfer checkbox despite allowed state.",
           "plausible_wrong_implementation": "SSR renderer displays enabled checkbox for eligible transfer instead of income/expense-only filter.",
           "procedure": "Execute the #778 semantic-effect control at ui-selection; vary source and destination account/tenant, keep the canonical transaction unchanged when denied. Review exact CRITICAL API and Chrome evidence for both positive and negative paths.",
           "expected": "Eligible posted/planned/reconciled transfers select; suggested and all-accounts disabled.",
-          "observed": "SSR test transactions-page-v2.test.ts passed during repository CI run 42825336185. Additional semantic-effect scope was confirmed by the CI validations for ui-selection.",
+          "observed": "SSR test transactions-page-v2.test.ts passed during repository CI run 42851756087. Additional semantic-effect scope was confirmed by the CI validations for ui-selection.",
           "sibling_cases": [
             {
               "id": "NC-778-001-01-SRC",
@@ -58,12 +58,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -95,9 +95,9 @@
       "plausible_wrong_implementation": "Render both source and destination account projections for a transfer and compare selection eligibility.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-        "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+        "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
         "control_type": "scenario",
         "procedure": "Render the same transfer on source and destination accounts; compare accountId=all and suggested.",
         "observed": "Chrome source and destination both selected transfer IDs, SSR regression guard covers consolidated."
@@ -109,9 +109,9 @@
           "surface": "source-destination-display",
           "dimension": "selected-account-direction",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-          "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+          "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
           "control_type": "scenario",
           "failure_mode": "A destination account cannot select an otherwise eligible transfer.",
           "plausible_wrong_implementation": "Render both source and destination account projections for a transfer and compare selection eligibility.",
@@ -137,12 +137,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -177,9 +177,9 @@
       "plausible_wrong_implementation": "Do not reconcile a mixed transfer+income selection if any target belongs to another profile.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Pass valid and foreign profile IDs to API bulk action and inspect all rows after expected rejection.",
         "observed": "Existing integration rejects TENANT_RESOURCE_NOT_FOUND for invalid ID and foreign context; CI CRITICAL passed."
@@ -191,9 +191,9 @@
           "surface": "profile-context",
           "dimension": "cross-profile-transaction-identifier",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "A foreign profile Transaction.id enters the same bulk transaction.",
           "plausible_wrong_implementation": "Do not reconcile a mixed transfer+income selection if any target belongs to another profile.",
@@ -221,9 +221,9 @@
           "surface": "transactional-bulk-update",
           "dimension": "transactional-bulk-update-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe concurrency-atomicity acceptance allows scope leak or inconsistent statement processing on transactional-bulk-update.",
           "plausible_wrong_implementation": "Do not reconcile a mixed transfer+income selection if any target belongs to another profile.",
@@ -251,9 +251,9 @@
           "surface": "invalid-id-rollback",
           "dimension": "invalid-id-rollback-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe rollback acceptance allows scope leak or inconsistent statement processing on invalid-id-rollback.",
           "plausible_wrong_implementation": "Do not reconcile a mixed transfer+income selection if any target belongs to another profile.",
@@ -281,9 +281,9 @@
           "surface": "tenant-scope-isolation",
           "dimension": "tenant-scope-isolation-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe tenant-isolation acceptance allows scope leak or inconsistent statement processing on tenant-scope-isolation.",
           "plausible_wrong_implementation": "Do not reconcile a mixed transfer+income selection if any target belongs to another profile.",
@@ -309,12 +309,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -361,9 +361,9 @@
       "plausible_wrong_implementation": "Keep grouping disabled for two eligible transfers and expose reason in tooltip and help node.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-        "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+        "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
         "control_type": "scenario",
         "procedure": "Select exactly two transfers and attempt group action while checking accessible text and tooltip.",
         "observed": "Chrome selected two transfers, groupDisabled true and tooltip/help explain prohibition."
@@ -375,9 +375,9 @@
           "surface": "group-command",
           "dimension": "transfer-unification-guard",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-          "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+          "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
           "control_type": "scenario",
           "failure_mode": "A transfer is erroneously treated as an income or expense for grouping.",
           "plausible_wrong_implementation": "Keep grouping disabled for two eligible transfers and expose reason in tooltip and help node.",
@@ -403,12 +403,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -440,9 +440,9 @@
       "plausible_wrong_implementation": "Forbidden suggestions, voided, card/invoice, remuneration and group member rows must not be reconciled in batch.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Render disabled suggested/card/voided rows and call API against protected statuses/relationships.",
         "observed": "SSR assertions and existing API protection tests reached and passed in CRITICAL run."
@@ -454,9 +454,9 @@
           "surface": "protected-records",
           "dimension": "suggested-card-group-protection",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Protected row is made selectable merely because it is a transfer.",
           "plausible_wrong_implementation": "Forbidden suggestions, voided, card/invoice, remuneration and group member rows must not be reconciled in batch.",
@@ -482,12 +482,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -520,9 +520,9 @@
       "plausible_wrong_implementation": "Reconciliation of one cross-currency transfer affects exactly one canonical Transaction ID.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Reconcile transfer once, repeat reconcile, read status/amounts from both accounts.",
         "observed": "API integration checks changed IDs, amount/currency unchanged and repeat idempotent; Chrome both views agree."
@@ -534,9 +534,9 @@
           "surface": "duplicate-processing",
           "dimension": "single-transfer-id-both-legs",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Source and destination display legs each create a second financial update.",
           "plausible_wrong_implementation": "Reconciliation of one cross-currency transfer affects exactly one canonical Transaction ID.",
@@ -564,9 +564,9 @@
           "surface": "financial-field-preservation",
           "dimension": "financial-field-preservation-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe semantic-effect acceptance allows scope leak or inconsistent statement processing on financial-field-preservation.",
           "plausible_wrong_implementation": "Reconciliation of one cross-currency transfer affects exactly one canonical Transaction ID.",
@@ -592,12 +592,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -634,9 +634,9 @@
       "plausible_wrong_implementation": "Preserve renderer and enhancement as Golden Screen canonical UI while enabling eligible transfer selection.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-        "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+        "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
         "control_type": "scenario",
         "procedure": "Compare Git changed paths and execute Chrome bulk-selection responsive scenario after renderer change.",
         "observed": "Diff has no stylesheet edits; Chrome mobile bodyOverflow false and visible selection bar."
@@ -648,9 +648,9 @@
           "surface": "golden-screen-reuse",
           "dimension": "no-stylesheet-redesign",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-          "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+          "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
           "control_type": "scenario",
           "failure_mode": "A new parallel transfer UI breaks status icons, tooltips and responsive bar.",
           "plausible_wrong_implementation": "Preserve renderer and enhancement as Golden Screen canonical UI while enabling eligible transfer selection.",
@@ -676,12 +676,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -713,9 +713,9 @@
       "plausible_wrong_implementation": "Individual account projection must present the exact same canonical transfer ID and eligible selection.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-        "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+        "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
         "control_type": "scenario",
         "procedure": "Select two source transfers, reconcile, navigate to destination, select same IDs and unreconcile.",
         "observed": "Chrome scenario executed 2 source reconcile and 2 destination unreconcile to posted."
@@ -727,9 +727,9 @@
           "surface": "origin-and-destination",
           "dimension": "same-transaction-selection",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-          "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+          "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
           "control_type": "scenario",
           "failure_mode": "Destination presents duplicated or disabled transfer checkbox while origin works.",
           "plausible_wrong_implementation": "Individual account projection must present the exact same canonical transfer ID and eligible selection.",
@@ -755,12 +755,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -793,9 +793,9 @@
       "plausible_wrong_implementation": "Batch reconciliation updates only planned/posted targets and leaves already reconciled; preserves income/expense controls.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Run existing mixed planned/posted/reconciled integration then run transfer idempotent scenario; compare affected/unchanged sets.",
         "observed": "API mixed regression and transfer idempotence tests completed successfully in CRITICAL CI."
@@ -807,9 +807,9 @@
           "surface": "duplicate-processing",
           "dimension": "mixed-status-target-only",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Mixed state selection re-reconciles all items or fails after one changed item.",
           "plausible_wrong_implementation": "Batch reconciliation updates only planned/posted targets and leaves already reconciled; preserves income/expense controls.",
@@ -837,9 +837,9 @@
           "surface": "mixed-kind-status",
           "dimension": "mixed-kind-status-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe semantic-effect acceptance allows scope leak or inconsistent statement processing on mixed-kind-status.",
           "plausible_wrong_implementation": "Batch reconciliation updates only planned/posted targets and leaves already reconciled; preserves income/expense controls.",
@@ -865,12 +865,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -907,9 +907,9 @@
       "plausible_wrong_implementation": "Two transfers cannot be unified even though their checkboxes are enabled.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-        "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+        "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
         "control_type": "scenario",
         "procedure": "Select two same-currency posted transfers in Chrome and inspect groupOpen disabled and tooltip.",
         "observed": "Chrome groupDisabled true, tooltip and aria live help include transfer-specific reason."
@@ -921,9 +921,9 @@
           "surface": "group-command",
           "dimension": "two-transfer-guard",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-          "evidence_sha256": "c7eabd39aad95514f57b5f5d5157d31be179365c302f33e71e8ce120677f73c8",
+          "evidence_sha256": "3def5fe9db5563735b7b5ab4c36872df3b2bd97aa4f336b5c503ce57e0c49a49",
           "control_type": "scenario",
           "failure_mode": "Grouping of two transfers is enabled because kind/status/currency match.",
           "plausible_wrong_implementation": "Two transfers cannot be unified even though their checkboxes are enabled.",
@@ -949,12 +949,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -988,9 +988,9 @@
       "plausible_wrong_implementation": "Mixed invalid tenant and protected group selections must not partially reconcile any valid record.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Pass valid+missing transaction UUID and cross-profile group; assert rejected and preserved initial status.",
         "observed": "Existing integration asserts status unchanged after TENANT_RESOURCE_NOT_FOUND and protected group rollback."
@@ -1002,9 +1002,9 @@
           "surface": "invalid-target-denial",
           "dimension": "foreign-and-protected-rollback",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Transaction status changes commit before validating whole selection or permission.",
           "plausible_wrong_implementation": "Mixed invalid tenant and protected group selections must not partially reconcile any valid record.",
@@ -1032,9 +1032,9 @@
           "surface": "invalid-id-rollback",
           "dimension": "invalid-id-rollback-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe rollback acceptance allows scope leak or inconsistent statement processing on invalid-id-rollback.",
           "plausible_wrong_implementation": "Mixed invalid tenant and protected group selections must not partially reconcile any valid record.",
@@ -1062,9 +1062,9 @@
           "surface": "tenant-scope-isolation",
           "dimension": "tenant-scope-isolation-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe tenant-isolation acceptance allows scope leak or inconsistent statement processing on tenant-scope-isolation.",
           "plausible_wrong_implementation": "Mixed invalid tenant and protected group selections must not partially reconcile any valid record.",
@@ -1090,12 +1090,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -1138,9 +1138,9 @@
       "plausible_wrong_implementation": "Cross-currency reconciliation only changes status and reconciliation fields, never monetary or account identity.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Read transfer before/after reconcile and compare accountId, destinationAccountId, amountMinor, currency, destination values and dates.",
         "observed": "API integration assert.equal for every monetary, currency, date and account field; CRITICAL pass."
@@ -1152,9 +1152,9 @@
           "surface": "transactional-bulk-update",
           "dimension": "transactional-bulk-update-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Unsafe concurrency-atomicity acceptance allows scope leak or inconsistent statement processing on transactional-bulk-update.",
           "plausible_wrong_implementation": "Cross-currency reconciliation only changes status and reconciliation fields, never monetary or account identity.",
@@ -1182,9 +1182,9 @@
           "surface": "financial-field-preservation",
           "dimension": "currency-account-and-date-invariance",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "Status update overwrites amount, currency, planned date or destination account.",
           "plausible_wrong_implementation": "Cross-currency reconciliation only changes status and reconciliation fields, never monetary or account identity.",
@@ -1210,12 +1210,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [
@@ -1254,12 +1254,12 @@
       "plausible_wrong_implementation": "Functional UI and transactional integration evidence must belong to exact material SHA and preserve historical dates.",
       "positive_control": {
         "status": "passed",
-        "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+        "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
         "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-        "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+        "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
         "control_type": "scenario",
         "procedure": "Confirm five Actions workflows exact head; require both CRITICAL Postgres and Chrome transfer scenario success.",
-        "observed": "Run 42825336185 + visual 42825336285 completed success; DB integration and visual scopes separate."
+        "observed": "Run 42851756087 + visual 42851755919 completed success; DB integration and visual scopes separate."
       },
       "negative_controls": [
         {
@@ -1268,9 +1268,9 @@
           "surface": "canonical-claims",
           "dimension": "canonical-claims-adversarial",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/static-discriminant-controls.log",
-          "evidence_sha256": "f58a715eaad73b06529f0bd023932aac14d3d07416466d9fbe688bf68fdb5e05",
+          "evidence_sha256": "89951a5ebe86594b275deb9d48165edae801d367fb35622548028b736e617baf",
           "control_type": "scenario",
           "failure_mode": "Unsafe documentation acceptance allows scope leak or inconsistent statement processing on canonical-claims.",
           "plausible_wrong_implementation": "Functional UI and transactional integration evidence must belong to exact material SHA and preserve historical dates.",
@@ -1298,15 +1298,15 @@
           "surface": "exact-sha-ci",
           "dimension": "ci-visual-scope-reach",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "test",
           "failure_mode": "CI run for older HEAD or only visual evidence is reported as proof of current API.",
           "plausible_wrong_implementation": "Functional UI and transactional integration evidence must belong to exact material SHA and preserve historical dates.",
           "procedure": "Execute the #778 temporal-consistency control at exact-sha-ci; vary source and destination account/tenant, keep the canonical transaction unchanged when denied. Review exact CRITICAL API and Chrome evidence for both positive and negative paths.",
           "expected": "CI and Chrome completed successfully for identical material SHA; future historical dates preserved.",
-          "observed": "Run 42825336185 + visual 42825336285 completed success; DB integration and visual scopes separate. Additional temporal-consistency scope was confirmed by the CI validations for exact-sha-ci.",
+          "observed": "Run 42851756087 + visual 42851755919 completed success; DB integration and visual scopes separate. Additional temporal-consistency scope was confirmed by the CI validations for exact-sha-ci.",
           "sibling_cases": [
             {
               "id": "NC-778-013-02-SRC",
@@ -1329,7 +1329,7 @@
           "dimension": "wrong-issue",
           "control_type": "procedure",
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/inherited-certificate-778.json",
           "evidence_sha256": "be06550aca1752c8f267d28f965b075782f48c5b100e83aaf6afb7214086a096",
           "failure_mode": "A previous issue/PR certificate is silently accepted for current delivery despite different immutable target identity.",
@@ -1356,12 +1356,12 @@
       "regression_controls": [
         {
           "status": "passed",
-          "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+          "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
           "evidence": ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-          "evidence_sha256": "62d6a2aab3ab0ea30787784b429c488c7a470933e7f9e2481a0631672e2ab3d2",
+          "evidence_sha256": "f11b99e5b81faba803aa57a3607fbb295c3a126ec0534a51eda570b2eb6dd74c",
           "control_type": "gate",
           "procedure": "Review repository CI CRITICAL validation and tests for exact material SHA.",
-          "observed": "GitHub run 42825336185 success including test, lint, format and PostgreSQL integration."
+          "observed": "GitHub run 42851756087 success including test, lint, format and PostgreSQL integration."
         }
       ],
       "obligation_control_map": [

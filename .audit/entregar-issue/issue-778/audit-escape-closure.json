@@ -4,7 +4,7 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 778,
     "pull_request_number": 779,
-    "material_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82"
+    "material_head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f"
   },
   "escapes": [
     {
@@ -17,7 +17,7 @@
         "head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
         "audit_report_sha256": "8ccceb3c466bfa1ac0857f25fc464d68625877b47c3fea37882573666fb1ef02"
       },
-      "revalidated_head_sha": "ae090fe832a738bc4f4f46f30a100ec4edc40d82",
+      "revalidated_head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
       "plausible_wrong_implementation": "Using the valid-looking inherited .audit/entregar-issue/handoff-ready.json from a previous issue with matching hashes even though subject identifies a different PR.",
       "literal_case": {
         "procedure": "Read immutable base and HEAD Git blob IDs and compare subject to current issue/PR, then inspect the exact-head provenance workflow logs.",
