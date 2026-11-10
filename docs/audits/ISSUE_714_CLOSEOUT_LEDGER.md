@@ -20,10 +20,10 @@ A subsequent merge of `develop` into this PR is a material change. Previous CI, 
 
 The issue #714 canonical body (source SHA-256 `43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07`) now contains **26 obligations**. Its current closure inventory is **19 covered / 7 deferred**; the four added prospective-governance candidates are not retroactive approvals.
 
-| Current classification | Obligation IDs | Resolution boundary |
-| --- | --- | --- |
-| Covered (19) | OBL-001, OBL-002, OBL-004–007, OBL-009–020, OBL-022 | Historical/reference and documented material with existing supporting evidence; independent acceptance is not inferred |
-| Deferred (7) | OBL-003, OBL-008, OBL-021, OBL-023, OBL-024, OBL-025, OBL-026 | Prospective audit of integrated baseline and exact PR delta, session provenance, protected checks, negative and revocation trials, trusted receipt |
+| Current classification | Obligation IDs                                                | Resolution boundary                                                                                                                                |
+| ---------------------- | ------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Covered (19)           | OBL-001, OBL-002, OBL-004–007, OBL-009–020, OBL-022           | Historical/reference and documented material with existing supporting evidence; independent acceptance is not inferred                             |
+| Deferred (7)           | OBL-003, OBL-008, OBL-021, OBL-023, OBL-024, OBL-025, OBL-026 | Prospective audit of integrated baseline and exact PR delta, session provenance, protected checks, negative and revocation trials, trusted receipt |
 
 The previous `critical` certificate (`c4979487f60fea7419c2936972e03aa1d1df5552` on `develop@ab3083b3f268292c654e653b811a54612e123cc6`) **does not certify the later material**, irrespective of green CI. The material must have a **new direct result-only child**, authenticated exact-SHA CI/Chrome and canonical Skill preflight before separate-context review. Do not mark the 7 deferred obligations as passed merely because the handoff is READY.
 

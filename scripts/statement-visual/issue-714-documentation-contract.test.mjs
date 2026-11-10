@@ -151,7 +151,8 @@ test("issue 714: current inventory rejects stale 22-obligation closure", () => {
     "utf8",
   );
   function assertCurrentInventory(source) {
-    const section = source.split("## Current canonical inventory (10 November 2026)\n")[1]
+    const section = source
+      .split("## Current canonical inventory (10 November 2026)\n")[1]
       ?.split("## Historical 4 November implementation ledger")[0];
     assert.ok(section, "Current inventory must be an explicit section");
     assert.match(section, /\*\*26 obligations\*\*/);
