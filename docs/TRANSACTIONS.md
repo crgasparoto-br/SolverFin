@@ -151,7 +151,14 @@ circular das linhas simples. Selecionar um grupo representa todos os seus membro
 apenas o `groupId`, e o servidor resolve novamente a composição persistida dentro da transação da
 ação.
 
-A seleção pode combinar lançamentos simples e agrupados. A barra informa quantidade de itens,
+A seleção pode combinar lançamentos simples e agrupados. Transferências simples também são
+selecionáveis na conta de origem ou destino, inclusive previstas e cambiais, para conciliar ou
+desconciliar em lote no registro canônico compartilhado entre ambas as contas. Isso não altera
+valores, moedas, contas nem o vínculo da transferência. Transferências permanecem inelegíveis para
+**Unificar lançamentos**; a ação é desabilitada com uma explicação acessível. Em **Todas as contas**,
+a seleção em massa permanece indisponível para evitar operações ambíguas entre contextos.
+
+A barra informa quantidade de itens,
 quantidade real de lançamentos representados quando forem diferentes e total financeiro sem dupla
 contagem. Um agrupamento selecionado impede nova unificação, pois grupos não podem ser aninhados. Uma
 parcela canônica selecionada também impede somente a unificação, sem bloquear conciliação,

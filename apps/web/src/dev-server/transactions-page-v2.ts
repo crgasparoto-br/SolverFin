@@ -737,7 +737,9 @@ function renderRow(
   const eligible =
     !consolidated &&
     Boolean(currency) &&
-    (transaction.kind === "income" || transaction.kind === "expense") &&
+    (transaction.kind === "income" ||
+      transaction.kind === "expense" ||
+      transaction.kind === "transfer") &&
     transaction.status !== "suggested" &&
     transaction.status !== "voided" &&
     !transaction.cardId &&
@@ -1539,7 +1541,7 @@ ${statementContinueSaveScript}
 
     const groupModal = document.querySelector("[data-group-modal]"); const groupForm = document.querySelector("[data-group-form]"); const selectionBar = document.querySelector("[data-selection-bar]"); const selectable = Array.from(document.querySelectorAll("[data-select-transaction]")); const groupOpen = document.querySelector("[data-group-open]");
     const selected = () => selectable.filter((input) => input.checked);
-    const compatible = (items) => items.length >= 2 && /^[A-Z]{3}$/.test(items[0]?.dataset.currency || "") && items.every((item) => item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency);
+    const compatible = (items) => items.length >= 2 && (items[0]?.dataset.kind === "income" || items[0]?.dataset.kind === "expense") && /^[A-Z]{3}$/.test(items[0]?.dataset.currency || "") && items.every((item) => item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency);
     const syncSelection = () => { const items = selected(); selectionBar.hidden = items.length === 0; selectionBar.querySelector("[data-selection-count]").textContent = String(items.length); selectionBar.querySelector("[data-selection-total]").textContent = money(items.reduce((sum, item) => sum + Number(item.dataset.amount), 0), items[0]?.dataset.currency || statementCurrency); groupOpen.disabled = !compatible(items); };
     selectable.forEach((input) => input.addEventListener("change", syncSelection)); document.querySelector("[data-selection-clear]")?.addEventListener("click", () => { selectable.forEach((input) => input.checked = false); syncSelection(); }); document.querySelectorAll("[data-group-close]").forEach((button) => button.addEventListener("click", () => groupModal.close()));
     const safeText = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);

@@ -28,6 +28,10 @@ O servidor expande os grupos para seus membros dentro da mesma transação de ba
 
 ## Regras de consistência
 
+- transferências simples em extrato de conta individual podem ser selecionadas para conciliar ou
+  desconciliar, inclusive quando há câmbio: o registro canônico é atualizado uma única vez para
+  origem e destino, sem modificar os valores ou as moedas das duas pernas;
+- unificação de transferências continua proibida mesmo com a seleção habilitada;
 - conciliação aceita lançamentos previstos, efetivados ou conciliados; desconciliação altera somente os conciliados e preserva os demais elegíveis;
 - conciliar um previsto define `effectiveOn` como a data civil UTC da transição, como no domínio individual; um efetivado legado sem data efetiva usa `occurredOn`; `occurredOn` e `plannedOn` nunca são sobrescritos;
 - sugestões pendentes e lançamentos excluídos bloqueiam a alteração de conciliação; compras de cartão/fatura e remuneração automática exigem seus fluxos próprios;

@@ -32,6 +32,7 @@ async function main(): Promise<void> {
     kind: "checking",
     openingBalanceMinor: 0,
   });
+  await verifyTransferBulkReconciliation(account.id);
   const directPosted = await createTransactionForContext(context, {
     accountId: account.id,
     kind: "expense",
@@ -445,6 +446,103 @@ async function main(): Promise<void> {
       JSON.stringify(audit.changes),
       /Direto|Membro|Grupo da seleção|BRL|amount|description|currency/i,
     );
+  }
+}
+
+async function verifyTransferBulkReconciliation(sourceAccountId: string): Promise<void> {
+  const destination = await createAccountForContext(context, {
+    name: "Destino cambial em lote " + Date.now(),
+    kind: "checking",
+    currency: "USD",
+    openingBalanceMinor: 0,
+  });
+  const base = {
+    accountId: sourceAccountId,
+    destinationAccountId: destination.id,
+    kind: "transfer" as const,
+    occurredOn: "2028-10-01",
+  };
+  const planned = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 10000,
+    destinationAmountMinor: 1750,
+    plannedOn: "2028-10-01",
+    effectiveOn: null,
+    description: "Transferência prevista em lote",
+  });
+  const posted = await createTransactionForContext(context, {
+    ...base,
+    status: "posted",
+    amountMinor: 20000,
+    destinationAmountMinor: 3450,
+    effectiveOn: "2028-10-01",
+    description: "Transferência efetivada em lote",
+  });
+  const ids = [planned.id, posted.id];
+  const before = await Promise.all(ids.map((id) => getTransactionForContext(context, id)));
+  await assert.rejects(
+    () => executeTransactionBulkActionForContext(context, {
+      action: "reconcile",
+      transactionIds: [planned.id, randomUUID()],
+    }),
+    hasCode("TENANT_RESOURCE_NOT_FOUND"),
+  );
+  assert.equal((await getTransactionForContext(context, planned.id)).status, "planned");
+
+  const beforeDay = new Date().toISOString().slice(0, 10);
+  const changed = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: ids,
+  });
+  const afterDay = new Date().toISOString().slice(0, 10);
+  assert.deepEqual(new Set(changed.affectedTransactionIds), new Set(ids));
+  assert.deepEqual(changed.unchangedTransactionIds, []);
+  for (const [index, id] of ids.entries()) {
+    const previous = before[index]!;
+    const current = await getTransactionForContext(context, id);
+    assert.equal(current.status, "reconciled");
+    assert.equal(current.accountId, previous.accountId);
+    assert.equal(current.destinationAccountId, previous.destinationAccountId);
+    assert.equal(current.transferGroupId, previous.transferGroupId);
+    assert.equal(current.amountMinor, previous.amountMinor);
+    assert.equal(current.currency, previous.currency);
+    assert.equal(current.destinationAmountMinor, previous.destinationAmountMinor);
+    assert.equal(current.destinationCurrency, previous.destinationCurrency);
+    assert.equal(current.plannedOn, previous.plannedOn);
+    assert.equal(current.occurredOn, previous.occurredOn);
+    if (index === 0) {
+      assert.ok([beforeDay, afterDay].includes(current.effectiveOn ?? ""));
+    } else {
+      assert.equal(current.effectiveOn, previous.effectiveOn);
+    }
+  }
+  const repeat = await executeTransactionBulkActionForContext(context, {
+    action: "reconcile",
+    transactionIds: ids,
+  });
+  assert.deepEqual(repeat.affectedTransactionIds, []);
+  assert.deepEqual(new Set(repeat.unchangedTransactionIds), new Set(ids));
+
+  const untouched = await createTransactionForContext(context, {
+    ...base,
+    status: "planned",
+    amountMinor: 30000,
+    destinationAmountMinor: 5200,
+    plannedOn: "2028-10-01",
+    effectiveOn: null,
+    description: "Transferência prevista preservada em lote",
+  });
+  const undone = await executeTransactionBulkActionForContext(context, {
+    action: "unreconcile",
+    transactionIds: [...ids, untouched.id],
+  });
+  assert.deepEqual(new Set(undone.affectedTransactionIds), new Set(ids));
+  assert.deepEqual(undone.unchangedTransactionIds, [untouched.id]);
+  assert.equal((await getTransactionForContext(context, untouched.id)).status, "planned");
+  assert.equal((await getTransactionForContext(context, untouched.id)).effectiveOn, undefined);
+  for (const id of ids) {
+    assert.equal((await getTransactionForContext(context, id)).status, "posted");
   }
 }
 
