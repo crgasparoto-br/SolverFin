@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "head_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-010"
+      ],
+      "dimensions": [
+        {
+          "surface": "bootstrap-policy-safety",
+          "reason": "Contrato deterministico da issue #762 e controle adversarial exercitado na suite 174/174.",
+          "control_ids": [
+            "NEG-010"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "A-76312 requires mode-sensitive provenance and fail-closed Git history. Adversarial regression da query check_name percent-encoded em PR #777.",
+      "control_ids": [
+        "NEG-A76312-LEGACY",
+        "NEG-A76312-MERGE",
+        "NEG-HIST-002-1",
+        "NEG-HIST-003-3",
+        "NEG-HIST-005-4",
+        "NEG-HIST-005-5",
+        "NEG-HIST-005-6",
+        "NEG-HIST-007-7",
+        "NEG-HIST-007-8",
+        "NEG-HIST-007-9",
+        "NEG-HIST-008-10",
+        "NEG-HIST-008-11",
+        "NEG-HIST-008-12",
+        "NEG-777-CHECK-ENCODING"
+      ],
+      "dimensions": [
+        {
+          "surface": "review-provenance-routing",
+          "reason": "Four actual integration cases cover V1/opt-in and linear/merge combinations.",
+          "control_ids": [
+            "NEG-A76312-LEGACY",
+            "NEG-A76312-MERGE"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "critical-certificate-inventory",
+          "reason": "Inherited audit escape A-002, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-002-1"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "trusted-candidate-separation",
+          "reason": "Inherited audit escape A-003, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-003-3"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-parser",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-4",
+            "NEG-HIST-007-7",
+            "NEG-HIST-008-10"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-evidence-writer",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-5",
+            "NEG-HIST-007-8",
+            "NEG-HIST-008-11"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "junit-zip-consumer",
+          "reason": "Inherited audit escape A-005, replayed with 174 pytest cases",
+          "control_ids": [
+            "NEG-HIST-005-6",
+            "NEG-HIST-007-9",
+            "NEG-HIST-008-12"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "check-runs-query-encoding",
+          "reason": "A PR #777 corrige codificacao de CHECK_NAME para check runs; mutante sem quote falha no teste focado de URL e SHA/JSON rejeitados.",
+          "control_ids": [
+            "NEG-777-CHECK-ENCODING"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-762-DOCS",
+        "NEG-HIST-002-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "ADR 0019 e manual declaram mode=disabled e nao afirmam M2 como executado.",
+          "control_ids": [
+            "NEG-762-DOCS",
+            "NEG-HIST-002-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

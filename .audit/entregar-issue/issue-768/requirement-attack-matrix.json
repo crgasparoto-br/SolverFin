@@ -1,0 +1,1569 @@
+{
+  "schema_version": 1,
+  "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+  "requirements": [
+    {
+      "requirement_id": "REQ-768-01",
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-003",
+        "OBL-011",
+        "OBL-016"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Corrigir a elegibilidade de **Marcar como conciliado** quando houver itens `planned` ou `posted` selecionados, inclusive combinados com `reconciled`.",
+        "Na tela de Extrato `/lancamentos?accountId=...`, a barra de ações em massa desabilita conciliar e desconciliar quando a seleção inclui movimentos `planned`, embora a conciliação individual Golden Screen aceite `planned` → `reconciled`. O endpoint em lote também bloqueia essas transições. Relato de usuário de 05/11/2026. Referências: #702, docs/GOLDEN_STATEMENT.md, docs/TRANSACTIONS.md, docs/API_TRANSACTION_BULK_ACTIONS.md e docs/TRANSACTION_DATES.md.",
+        "Seleções válidas mistas acionam a operação solicitada apenas sobre os itens cuja situação deve mudar.",
+        "[ ] Seleção `planned + posted` habilita conciliar; resultado persiste situação e datas corretas."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-01."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-01-001",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-action-eligibility",
+          "dimension": "planned and reconciled mixed selection",
+          "failure_mode": "Omissão da validação de planned and reconciled mixed selection faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar planned and reconciled mixed selection no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs:110-176 shows selection with planned+posted+reconciled and enabled reconcile; Chrome plannedAndPosted.reconcileDisabled=false",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para planned and reconciled mixed selection.",
+          "observed": "Chrome plannedAndPosted enabled reconciliation for planned+posted, and allStatuses also enabled.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-01-001-S1",
+              "surface": "bulk-action-eligibility",
+              "dimension": "planned-posted",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-01-003",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-action-eligibility",
+          "dimension": "posted and planned selection",
+          "failure_mode": "Omissão da validação de posted and planned selection faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar posted and planned selection no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome plannedAndPosted has reconcileDisabled=false; see scripts/statement-visual/transaction-bulk-selection-scenarios.mjs:110-140",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para posted and planned selection.",
+          "observed": "The button is enabled in real Chrome for planned + posted.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-01-003-S1",
+              "surface": "bulk-action-eligibility",
+              "dimension": "planned-posted",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-01-011",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-action-eligibility",
+          "dimension": "mixed already-reconciled inclusion",
+          "failure_mode": "Omissão da validação de mixed already-reconciled inclusion faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar mixed already-reconciled inclusion no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome allStatuses count=3, reconcileDisabled=false, unreconcileDisabled=false; API unchangedTransactionIds checks integration:77-93",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para mixed already-reconciled inclusion.",
+          "observed": "Both actions enabled on allStatuses, and API leaves already reconciled members unchanged.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-01-011-S1",
+              "surface": "bulk-action-eligibility",
+              "dimension": "planned-posted",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-01-016",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-action-eligibility",
+          "dimension": "persisted positive reconciliation",
+          "failure_mode": "Omissão da validação de persisted positive reconciliation faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar persisted positive reconciliation no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome afterMixedReconcile contains three reconciled records with preserved occurredOn/plannedOn, effectiveOn for planned = 2026-11-06",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para persisted positive reconciliation.",
+          "observed": "Chrome persisted planned+posted as reconciled with correct expected effectiveOn, dates and states.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-01-016-S1",
+              "surface": "bulk-action-eligibility",
+              "dimension": "planned-posted",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-01."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "NEG-01-001"
+        },
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "NEG-01-003"
+        },
+        {
+          "obligation_id": "OBL-011",
+          "primary_negative_control_id": "NEG-01-011"
+        },
+        {
+          "obligation_id": "OBL-016",
+          "primary_negative_control_id": "NEG-01-016"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "bulk-action-eligibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-02",
+      "obligation_ids": [
+        "OBL-004",
+        "OBL-010",
+        "OBL-012",
+        "OBL-017"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Habilitar **Desmarcar conciliado** quando houver ao menos um `reconciled`, preservando `planned` e `posted` da seleção.",
+        "Seleção somente `reconciled` não oferece nova conciliação, e seleção sem conciliados não oferece desconciliação.",
+        "[ ] Seleção `planned + reconciled` habilita as duas ações de acordo com o alvo; desconciliar não efetiva o previsto.",
+        "`unreconcile` altera somente `reconciled` → `posted`; `planned` e `posted` permanecem inalterados."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-02."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-02-004",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-unreconcile-targets",
+          "dimension": "nonreconciled planned omission",
+          "failure_mode": "Omissão da validação de nonreconciled planned omission faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar nonreconciled planned omission no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome afterMixedUnreconcile planned.status=planned; API integration:144-165 checks unchangedTransactionIds",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para nonreconciled planned omission.",
+          "observed": "Both Chrome and integration keep planned unchanged when selected alongside reconciled.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-02-004-S1",
+              "surface": "bulk-unreconcile-targets",
+              "dimension": "only-planned-no-target",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-02-010",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-unreconcile-targets",
+          "dimension": "posted must stay posted",
+          "failure_mode": "Omissão da validação de posted must stay posted faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar posted must stay posted no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome afterMixedUnreconcile posted.status=posted and reconciled.status=posted; API status guard only RECONCILED",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para posted must stay posted.",
+          "observed": "Only reconciled transitions to posted; posted remains posted in Chrome post-action readback.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-02-010-S1",
+              "surface": "bulk-unreconcile-targets",
+              "dimension": "only-planned-no-target",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-02-012",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-unreconcile-targets",
+          "dimension": "no applicable target tooltip",
+          "failure_mode": "Omissão da validação de no applicable target tooltip faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar no applicable target tooltip no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome plannedAndPosted unreconcileDisabled=true and help contains nenhum lançamento selecionado está conciliado; apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts:227-255",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para no applicable target tooltip.",
+          "observed": "Disabled unreconcile with accessible explanatory help, without no-op request.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-02-012-S1",
+              "surface": "bulk-unreconcile-targets",
+              "dimension": "only-planned-no-target",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-02-017",
+          "risk_family": "semantic-effect",
+          "surface": "bulk-unreconcile-targets",
+          "dimension": "planned and reconciled mixed selection",
+          "failure_mode": "Omissão da validação de planned and reconciled mixed selection faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar planned and reconciled mixed selection no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome plannedAndReconciled count=2 and both reconcileDisabled=false, unreconcileDisabled=false",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para planned and reconciled mixed selection.",
+          "observed": "Both controls enabled in mixed planned+reconciled, planned remains planned after unreconcile.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-02-017-S1",
+              "surface": "bulk-unreconcile-targets",
+              "dimension": "only-planned-no-target",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-02."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-004",
+          "primary_negative_control_id": "NEG-02-004"
+        },
+        {
+          "obligation_id": "OBL-010",
+          "primary_negative_control_id": "NEG-02-010"
+        },
+        {
+          "obligation_id": "OBL-012",
+          "primary_negative_control_id": "NEG-02-012"
+        },
+        {
+          "obligation_id": "OBL-017",
+          "primary_negative_control_id": "NEG-02-017"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "bulk-unreconcile-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-03",
+      "obligation_ids": [
+        "OBL-005",
+        "OBL-009"
+      ],
+      "risk_families": [
+        "rollback",
+        "temporal-destination"
+      ],
+      "source_texts": [
+        "Atualizar a transação atômica do endpoint em lote para conciliar `planned` e `posted` sem data efetiva, seguindo as mesmas regras de data que a transição individual do domínio.",
+        "`planned` → `reconciled` recebe data efetiva UTC da transição; `posted` sem data efetiva recebe o fallback canônico, sem alterar `occurredOn` nem `plannedOn`."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-03."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-03-005",
+          "risk_family": "rollback",
+          "surface": "transaction-rollback",
+          "dimension": "audit insertion failure rollback",
+          "failure_mode": "Omissão da validação de audit insertion failure rollback faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar audit insertion failure rollback no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:224-267 injects AuditLogEntry trigger exception during group reconcile, then verifies unchanged member statuses/membership and audit count",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para audit insertion failure rollback.",
+          "observed": "PostgreSQL integration passed and verifies every group member remains posted, attached, with unchanged audit count.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-03-005-S1",
+              "surface": "transaction-rollback",
+              "dimension": "audit-log-trigger-failure",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-03-005-S2",
+              "surface": "transaction-rollback",
+              "dimension": "group-member-restoration",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-03-009",
+          "risk_family": "temporal-destination",
+          "surface": "effective-date-fallback",
+          "dimension": "legacy posted null effectiveOn",
+          "failure_mode": "Omissão da validação de legacy posted null effectiveOn faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar legacy posted null effectiveOn no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:178-201 nulls effectiveOn then checks UTC vs occurredOn 2028-08-11 and plannedOn 2028-08-09",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para legacy posted null effectiveOn.",
+          "observed": "The legacy POSTED fixture receives occurredOn=2028-08-11, not current UTC, and both origin/planning dates persist.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-03-009-S1",
+              "surface": "effective-date-fallback",
+              "dimension": "planned-utc-clock",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-03-009-S2",
+              "surface": "effective-date-fallback",
+              "dimension": "posted-legacy-occurred-on",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-03-X01",
+          "risk_family": "temporal-destination",
+          "surface": "effective-date-fallback",
+          "dimension": "planned utc timestamp",
+          "failure_mode": "Omissão da validação de planned utc timestamp faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar planned utc timestamp no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:116-142 brackets date UTC now before/after reconcile and verifies planned effectiveOn matching UTC, not plannedOn future",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para planned utc timestamp.",
+          "observed": "PLANNED receives UTC today, preserves occurredOn and plannedOn.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-03-X01-S1",
+              "surface": "effective-date-fallback",
+              "dimension": "planned-utc-clock",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-03-X01-S2",
+              "surface": "effective-date-fallback",
+              "dimension": "posted-legacy-occurred-on",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-03-X02",
+          "risk_family": "rollback",
+          "surface": "transaction-rollback",
+          "dimension": "group membership restoration",
+          "failure_mode": "Omissão da validação de group membership restoration faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar group membership restoration no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:224-267 creates real AuditLogEntry failing trigger, verifies member groupId and countAudits unchanged",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para group membership restoration.",
+          "observed": "Injected database exception rolls back status and related membership.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-03-X02-S1",
+              "surface": "transaction-rollback",
+              "dimension": "audit-log-trigger-failure",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-03-X02-S2",
+              "surface": "transaction-rollback",
+              "dimension": "group-member-restoration",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-03."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-005",
+          "primary_negative_control_id": "NEG-03-005"
+        },
+        {
+          "obligation_id": "OBL-009",
+          "primary_negative_control_id": "NEG-03-009"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "rollback",
+          "surface": "transaction-rollback",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "temporal-destination",
+          "surface": "effective-date-fallback",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-04",
+      "obligation_ids": [
+        "OBL-006",
+        "OBL-014",
+        "OBL-018"
+      ],
+      "risk_families": [
+        "authorization",
+        "idempotency",
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "O servidor faz validação transacional; o frontend nunca é a única barreira.",
+        "Preservar membros de agrupamentos, isolamento de tenant/perfil, auditoria minimizada, reversão transacional e operações idempotentes.",
+        "[ ] Seleção `posted + reconciled` habilita as duas ações; agrupamentos continuam íntegros."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-04."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-04-006",
+          "risk_family": "idempotency",
+          "surface": "duplicate-processing",
+          "dimension": "duplicate reconciliation target",
+          "failure_mode": "Omissão da validação de duplicate reconciliation target faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar duplicate reconciliation target no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:166-175 idempotentMixed checks unchangedTransactionIds for already reconciled and affects only planned/posted; same file:77-104 group membership",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para duplicate reconciliation target.",
+          "observed": "Repeated already-reconciled item appears in unchangedTransactionIds and has no duplicate financial transition.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-04-006-S1",
+              "surface": "duplicate-processing",
+              "dimension": "reconciled-noop",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-04-006-S2",
+              "surface": "duplicate-processing",
+              "dimension": "group-still-associated",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-04-014",
+          "risk_family": "authorization",
+          "surface": "server-side-rejection",
+          "dimension": "browser-only bypass blocked",
+          "failure_mode": "Omissão da validação de browser-only bypass blocked faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar browser-only bypass blocked no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:203-222 submits suggested item directly to repository alongside valid target, asserts TRANSACTION_BULK_STATUS_INVALID and no partial modification",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para browser-only bypass blocked.",
+          "observed": "Direct repository API rejects invalid suggested state and leaves the other eligible target unchanged.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-04-014-S1",
+              "surface": "server-side-rejection",
+              "dimension": "suggested-state-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-04-014-S2",
+              "surface": "server-side-rejection",
+              "dimension": "group-member-requires-group",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-04-018",
+          "risk_family": "semantic-effect",
+          "surface": "group-member-integrity",
+          "dimension": "group members posted+reconciled",
+          "failure_mode": "Omissão da validação de group members posted+reconciled faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar group members posted+reconciled no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:77-104 verifies group members remain linked, reconciled then posted, no removedGroupIds",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para group members posted+reconciled.",
+          "observed": "Group remains linked after status transitions; removedGroupIds length zero under reconciliation.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-04-018-S1",
+              "surface": "group-member-integrity",
+              "dimension": "group-reconcile",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-04-018-S2",
+              "surface": "group-member-integrity",
+              "dimension": "group-unreconcile",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-04-X01",
+          "risk_family": "authorization",
+          "surface": "server-side-rejection",
+          "dimension": "direct grouped member rejected",
+          "failure_mode": "Omissão da validação de direct grouped member rejected faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar direct grouped member rejected no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:101-111 submits member without group id; TRANSACTION_BULK_GROUP_REQUIRED returned",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para direct grouped member rejected.",
+          "observed": "Direct member mutation rejected by server outside grouped transaction.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-04-X01-S1",
+              "surface": "server-side-rejection",
+              "dimension": "suggested-state-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-04-X01-S2",
+              "surface": "server-side-rejection",
+              "dimension": "group-member-requires-group",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-04-X02",
+          "risk_family": "idempotency",
+          "surface": "duplicate-processing",
+          "dimension": "already reconciled unchanged",
+          "failure_mode": "Omissão da validação de already reconciled unchanged faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar already reconciled unchanged no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:77-100 includes directReconciled among reconcile targets and asserts unchangedTransactionIds contains it",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para already reconciled unchanged.",
+          "observed": "Already reconciled target remains unchanged rather than generating second effect.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-04-X02-S1",
+              "surface": "duplicate-processing",
+              "dimension": "reconciled-noop",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-04-X02-S2",
+              "surface": "duplicate-processing",
+              "dimension": "group-still-associated",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-04."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-006",
+          "primary_negative_control_id": "NEG-04-006"
+        },
+        {
+          "obligation_id": "OBL-014",
+          "primary_negative_control_id": "NEG-04-014"
+        },
+        {
+          "obligation_id": "OBL-018",
+          "primary_negative_control_id": "NEG-04-018"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "authorization",
+          "surface": "server-side-rejection",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "idempotency",
+          "surface": "duplicate-processing",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "group-member-integrity",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-05",
+      "obligation_ids": [
+        "OBL-013",
+        "OBL-020",
+        "OBL-024"
+      ],
+      "risk_families": [
+        "authorization",
+        "semantic-effect",
+        "structural-contract",
+        "tenant-isolation"
+      ],
+      "source_texts": [
+        "Itens excluídos/sugestões pendentes e demais movimentos não elegíveis continuam protegidos.",
+        "Não misturar moedas, não expor dados financeiros, não enfraquecer controles de autorização.",
+        "[ ] Itens proibidos e seleção entre tenants são rejeitados sem alteração parcial."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-05."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-05-013",
+          "risk_family": "semantic-effect",
+          "surface": "protected-financial-targets",
+          "dimension": "suggested and grouped member rejected",
+          "failure_mode": "Omissão da validação de suggested and grouped member rejected faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar suggested and grouped member rejected no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:203-222 rejects suggested item with valid one; apps/api/src/transaction-bulk-actions.integration.test.ts:101-111 rejects a grouped member without groupIds",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para suggested and grouped member rejected.",
+          "observed": "Direct API rejects protected suggested and partial group selections with no partial mutation.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-013-S1",
+              "surface": "protected-financial-targets",
+              "dimension": "suggested-direct-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-013-S2",
+              "surface": "protected-financial-targets",
+              "dimension": "remuneration-linked-group-rejected",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-020",
+          "risk_family": "semantic-effect",
+          "surface": "protected-financial-targets",
+          "dimension": "foreign tenant and prohibited target",
+          "failure_mode": "Omissão da validação de foreign tenant and prohibited target faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar foreign tenant and prohibited target no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:269-281 uses a foreign TenantContext with distinct random organizationId and financialProfileId and expects TENANT_RESOURCE_NOT_FOUND",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para foreign tenant and prohibited target.",
+          "observed": "Cross-tenant and cross-profile mutation denied, original records stay in their original tenant.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-020-S1",
+              "surface": "protected-financial-targets",
+              "dimension": "suggested-direct-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-020-S2",
+              "surface": "protected-financial-targets",
+              "dimension": "remuneration-linked-group-rejected",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-024",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "linked AccountRemuneration vs editable transaction source",
+          "failure_mode": "Omissão da validação de linked AccountRemuneration vs editable transaction source faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar linked AccountRemuneration vs editable transaction source no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:313-425 creates AccountRemuneration linked to a group member with incompatible legacy transaction.source, asserts group read projection protected and both operations rejected",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para linked AccountRemuneration vs editable transaction source.",
+          "observed": "Canonical repository producer reads linked AccountRemuneration, emits protected group projection and API rejects reconcile/unreconcile without mutation.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-024-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "linked-member-guard",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-024-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "group-read-model-projection",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-X01",
+          "risk_family": "authorization",
+          "surface": "server-side-rejection",
+          "dimension": "protected remuneration direct API",
+          "failure_mode": "Omissão da validação de protected remuneration direct API faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar protected remuneration direct API no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:313-423 exercises both reconcile and unreconcile on AccountRemuneration linked group via API, expects TRANSACTION_BULK_PROTECTED",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para protected remuneration direct API.",
+          "observed": "Both actions rejected server-side for linked remuneration member.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-X01-S1",
+              "surface": "server-side-rejection",
+              "dimension": "suggested-state-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-X01-S2",
+              "surface": "server-side-rejection",
+              "dimension": "group-member-requires-group",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-X02",
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "dimension": "distinct organization and financial profile",
+          "failure_mode": "Omissão da validação de distinct organization and financial profile faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar distinct organization and financial profile no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:269-281 builds another distinct random organizationId and financialProfileId for same group ID and calls void, expects TENANT_RESOURCE_NOT_FOUND",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para distinct organization and financial profile.",
+          "observed": "Another tenant and another financial profile are excluded; server rejects cross-tenant request with TENANT_RESOURCE_NOT_FOUND, no leak.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-X02-S1",
+              "surface": "tenant-scope-isolation",
+              "dimension": "distinct-organization-id",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-X02-S2",
+              "surface": "tenant-scope-isolation",
+              "dimension": "distinct-financial-profile-id",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-X03",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "linked records mismatch vs projection",
+          "failure_mode": "Omissão da validação de linked records mismatch vs projection faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar linked records mismatch vs projection no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:313-423 inserts AccountRemuneration linked to a group member while the transaction has incompatible legacy/manual source; repository read-model projection shows reconcileProtected true and rejects both actions",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para linked records mismatch vs projection.",
+          "observed": "Canonical repository producer detects linked relationship and server rejects both mutations; projected group becomes protected.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-X03-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "linked-member-guard",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-X03-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "group-read-model-projection",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-05-X04",
+          "risk_family": "semantic-effect",
+          "surface": "protected-financial-targets",
+          "dimension": "unprotected group control",
+          "failure_mode": "Omissão da validação de unprotected group control faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar unprotected group control no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "API integration:325-341 asserts remunerationGroup.reconcileProtected=false before adding linked AccountRemuneration, then true after; protected mutation rejected",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para unprotected group control.",
+          "observed": "Unprotected group initially false; linked record changes projection to protected and blocks actions.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-05-X04-S1",
+              "surface": "protected-financial-targets",
+              "dimension": "suggested-direct-rejected",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-05-X04-S2",
+              "surface": "protected-financial-targets",
+              "dimension": "remuneration-linked-group-rejected",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-05."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-013",
+          "primary_negative_control_id": "NEG-05-013"
+        },
+        {
+          "obligation_id": "OBL-020",
+          "primary_negative_control_id": "NEG-05-020"
+        },
+        {
+          "obligation_id": "OBL-024",
+          "primary_negative_control_id": "NEG-05-024"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "authorization",
+          "surface": "server-side-rejection",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "protected-financial-targets",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "tenant-isolation",
+          "surface": "tenant-scope-isolation",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-06",
+      "obligation_ids": [
+        "OBL-015",
+        "OBL-023"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Não alterar regras genéricas de agrupamento, movimentação de caixa ou operação de exclusão.",
+        "Sem alteração de valor, moeda, conta, categoria, parcelas irmãs nem regras de recorrência."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-06."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-06-015",
+          "risk_family": "semantic-effect",
+          "surface": "unrelated-fields-immutability",
+          "dimension": "dates and financial fields preserved",
+          "failure_mode": "Omissão da validação de dates and financial fields preserved faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar dates and financial fields preserved no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "apps/api/src/transaction-bulk-actions.integration.test.ts:178-201 ensures occurredOn and plannedOn are preserved across the update, and row update SQL changes only status/effectiveOn",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para dates and financial fields preserved.",
+          "observed": "The regression asserts origin and planning dates unchanged, while SQL touches only lifecycle columns.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-06-015-S1",
+              "surface": "unrelated-fields-immutability",
+              "dimension": "origin-date-preservation",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-06-023",
+          "risk_family": "semantic-effect",
+          "surface": "unrelated-fields-immutability",
+          "dimension": "cancelled deletion does not mutate",
+          "failure_mode": "Omissão da validação de cancelled deletion does not mutate faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar cancelled deletion does not mutate no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome negativeCancelDeletion.bulkCalls=0 and groupPresent=true and directPresent=true; no payment/amount recalculation paths in material diff",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para cancelled deletion does not mutate.",
+          "observed": "Cancelled delete performed zero bulk API calls and retained group and direct rows.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-06-023-S1",
+              "surface": "unrelated-fields-immutability",
+              "dimension": "origin-date-preservation",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-06."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-015",
+          "primary_negative_control_id": "NEG-06-015"
+        },
+        {
+          "obligation_id": "OBL-023",
+          "primary_negative_control_id": "NEG-06-023"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "unrelated-fields-immutability",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-07",
+      "obligation_ids": [
+        "OBL-002",
+        "OBL-007",
+        "OBL-019"
+      ],
+      "risk_families": [
+        "semantic-effect"
+      ],
+      "source_texts": [
+        "Garantir opções, estados neutros, títulos acessíveis, feedback e responsividade no padrão Golden Screen.",
+        "Restabelecer ações de conciliação em massa para seleções elegíveis, com estados, feedback, acesso por teclado e semântica financeira equivalentes à Golden Screen, em uma PR contra `develop`.",
+        "[ ] Ausência de alvos habilitados não permite operação vazia via UI e informa motivo acessível."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-07."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-07-002",
+          "risk_family": "semantic-effect",
+          "surface": "golden-screen-accessibility",
+          "dimension": "keyboard Enter activation",
+          "failure_mode": "Omissão da validação de keyboard Enter activation faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar keyboard Enter activation no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome nativeKeyboard.activation.clickObserved=true, processingAriaBusy=true, currentStatus updated, in exact artifact; scripts/statement-visual/transaction-bulk-selection-keyboard.mjs",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para keyboard Enter activation.",
+          "observed": "Native keyboard Enter triggers reconcile; button is icon-only with accessible title and busy state.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-07-002-S1",
+              "surface": "golden-screen-accessibility",
+              "dimension": "keyboard-enter",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-07-007",
+          "risk_family": "semantic-effect",
+          "surface": "golden-screen-accessibility",
+          "dimension": "mobile viewport and tooltips",
+          "failure_mode": "Omissão da validação de mobile viewport and tooltips faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar mobile viewport and tooltips no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome toolbar measures each action 44x44, circle 26x26, svg 15x15, title=data-tooltip; mobile.bodyOverflow=false",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para mobile viewport and tooltips.",
+          "observed": "Real Chrome confirms 5 icon-only buttons, accessible tooltips, keyboard feedback and no mobile horizontal overflow.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-07-007-S1",
+              "surface": "golden-screen-accessibility",
+              "dimension": "keyboard-enter",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-07-019",
+          "risk_family": "semantic-effect",
+          "surface": "golden-screen-accessibility",
+          "dimension": "disabled no-target help",
+          "failure_mode": "Omissão da validação de disabled no-target help faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar disabled no-target help no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome plannedAndPosted.unreconcileDisabled=true and help includes no conciliados; server failure preserves selection and displays error",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para disabled no-target help.",
+          "observed": "Disabled state explains absent targets, and HTTP failure keeps selection and accessible error message.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-07-019-S1",
+              "surface": "golden-screen-accessibility",
+              "dimension": "keyboard-enter",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-07."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "NEG-07-002"
+        },
+        {
+          "obligation_id": "OBL-007",
+          "primary_negative_control_id": "NEG-07-007"
+        },
+        {
+          "obligation_id": "OBL-019",
+          "primary_negative_control_id": "NEG-07-019"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "golden-screen-accessibility",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-08",
+      "obligation_ids": [
+        "OBL-008",
+        "OBL-021"
+      ],
+      "risk_families": [
+        "documentation",
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "Cobrir os fluxos positivos, negativos e regressões no teste e documentação já existentes.",
+        "[ ] Testes de regressão (frontend e backend), typecheck, lint, build e CI no SHA exato; evidência Chrome desktop/mobile quando disponível."
+      ],
+      "plausible_wrong_implementation": "Um implementador poderia simplificar as transições de estado usando apenas a apresentação na interface e ignorando validação servidor, sem observar os estados mistas e os invariantes financeiros vinculados.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-08."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-08-008",
+          "risk_family": "documentation",
+          "surface": "documented-api-contract",
+          "dimension": "API docs vs new statuses",
+          "failure_mode": "Omissão da validação de API docs vs new statuses faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar API docs vs new statuses no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "docs/API_TRANSACTION_BULK_ACTIONS.md and docs/GOLDEN_STATEMENT.md changed in 1bf1..5d Git diff, describing planned reconciliation and protected groups",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para API docs vs new statuses.",
+          "observed": "Changed API/Golden Screen docs describe the real UI statuses and group guards, corroborated by Chrome and API tests.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-08-008-S1",
+              "surface": "documented-api-contract",
+              "dimension": "api-documentation",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-08-021",
+          "risk_family": "temporal-consistency",
+          "surface": "exact-sha-evidence",
+          "dimension": "stale CI from predecessor",
+          "failure_mode": "Omissão da validação de stale CI from predecessor faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar stale CI from predecessor no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "GitHub Repository CI run 42280792881 and Chrome run 42280792812 both completed success on exact material SHA 5d567e49, not previous fb41260",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para stale CI from predecessor.",
+          "observed": "CI and Chrome complete success on exactly 056d8ae2124538b78fb70289189985647a5e731a.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-08-021-S1",
+              "surface": "exact-sha-evidence",
+              "dimension": "api-ci-sha",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-08-X01",
+          "risk_family": "documentation",
+          "surface": "documented-api-contract",
+          "dimension": "documented golden screen statuses",
+          "failure_mode": "Omissão da validação de documented golden screen statuses faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar documented golden screen statuses no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "docs/GOLDEN_STATEMENT.md and docs/TRANSACTIONS.md changed to match protected group behavior, tested by exact Chrome visual gate",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para documented golden screen statuses.",
+          "observed": "New Golden Screen documentation reflects status and tooltip behavior observed in real Chrome.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-08-X01-S1",
+              "surface": "documented-api-contract",
+              "dimension": "api-documentation",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-08-X02",
+          "risk_family": "temporal-consistency",
+          "surface": "exact-sha-evidence",
+          "dimension": "chrome artifact exact sha",
+          "failure_mode": "Omissão da validação de chrome artifact exact sha faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar chrome artifact exact sha no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Chrome visual-gate-index.json commit_sha=5d567e49, failure array empty, workflow run 42280792812 completed success",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para chrome artifact exact sha.",
+          "observed": "Chrome recorded 5d567e49, matching Repository CI material SHA 5d567e49.",
+          "control_type": "test",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json",
+          "evidence_sha256": "48ae4a47c2e449eb7e51b6dab76f044ce605f3d2d870bc138de917d737ba8155",
+          "sibling_cases": [
+            {
+              "id": "NEG-08-X02-S1",
+              "surface": "exact-sha-evidence",
+              "dimension": "api-ci-sha",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-08."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-008",
+          "primary_negative_control_id": "NEG-08-008"
+        },
+        {
+          "obligation_id": "OBL-021",
+          "primary_negative_control_id": "NEG-08-021"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "documentation",
+          "surface": "documented-api-contract",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "exact-sha-evidence",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-768-09",
+      "obligation_ids": [
+        "OBL-022",
+        "OBL-025"
+      ],
+      "risk_families": [
+        "reference-liveness",
+        "semantic-effect",
+        "structural-contract"
+      ],
+      "source_texts": [
+        "Auditoria independente em contexto separado; CI verde isoladamente não significa aprovação; sem merge automático.",
+        "Usar `develop` como base, fonte canônica `crgasparoto-br/skill` em `develop` e Golden Screen aprovada."
+      ],
+      "plausible_wrong_implementation": "Um produtor poderia reutilizar certificado histórico da issue #728/PR #759, misturar identidades vinculadas divergentes e anunciar auditoria aprovada para a issue #768 antes de revisão independente.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; real source assertions and exact-head workflow result for REQ-768-09."
+      },
+      "negative_controls": [
+        {
+          "id": "NEG-09-022",
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "wrong skill or branch link",
+          "failure_mode": "Omissão da validação de wrong skill or branch link faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar wrong skill or branch link no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Canonical skill Git bundle commit a28be10 and SolverFin material bundle 5d567e49 verified against immutable develop base 1bf1f84, no foreign certificate selected",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para wrong skill or branch link.",
+          "observed": "Current issue #768 and PR #769 are target, skill develop@a28be10, product base develop@1bf1f84; inherited #728 certificate is excluded.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-09-022-S1",
+              "surface": "canonical-source-consistency",
+              "dimension": "skill-develop-sha",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-09-022-S2",
+              "surface": "canonical-source-consistency",
+              "dimension": "product-base-develop",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-09-025",
+          "risk_family": "semantic-effect",
+          "surface": "independent-review-separation",
+          "dimension": "premature approval declaration",
+          "failure_mode": "Omissão da validação de premature approval declaration faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar premature approval declaration no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "GitHub PR #769 remains open, no merge; Repository CI #42280792881 is evidence only and independent auditor approval remains explicitly unclaimed",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para premature approval declaration.",
+          "observed": "Implementation has not issued independent approval or merged PR; audit is intentionally a separate required gate.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-09-025-S1",
+              "surface": "independent-review-separation",
+              "dimension": "ci-only-not-approval",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-09-025-S2",
+              "surface": "independent-review-separation",
+              "dimension": "no-merge-state",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-09-X01",
+          "risk_family": "reference-liveness",
+          "surface": "commit-target-binding",
+          "dimension": "material head verified",
+          "failure_mode": "Omissão da validação de material head verified faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar material head verified no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "GitHub PR metadata shows base develop, material head 5d567e49, immutable initial base 1bf1f84; Git bundles verify exact SHA",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para material head verified.",
+          "observed": "Reference liveness verified for issue #768, PR #769 and develop base at production material SHA.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-09-X01-S1",
+              "surface": "commit-target-binding",
+              "dimension": "issue-id-768",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-09-X01-S2",
+              "surface": "commit-target-binding",
+              "dimension": "pr-id-769",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-09-X02",
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "foreign issue certificate must not propagate",
+          "failure_mode": "Omissão da validação de foreign issue certificate must not propagate faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar foreign issue certificate must not propagate no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Handoff candidate for issue #768 constructed from current issue source; prior .audit/entregar-issue/handoff-ready.json is inherited and relates to different issue #728 / PR #759. Official delivery-target-binding classified inherited-base-artifact",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para foreign issue certificate must not propagate.",
+          "observed": "Related record mismatch: inherited issue #728 + PR #759 vs canonical new producer issue #768 + PR #769. Reject foreign identity in current certificate projection, without publishing as current.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-09-X02-S1",
+              "surface": "relational-semantic-integrity",
+              "dimension": "linked-member-guard",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-09-X02-S2",
+              "surface": "relational-semantic-integrity",
+              "dimension": "group-read-model-projection",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NEG-09-X03",
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "canonical source checked",
+          "failure_mode": "Omissão da validação de canonical source checked faria o comportamento parecer correto e produziria efeito financeiro ou certificação errados.",
+          "plausible_wrong_implementation": "Ignorar canonical source checked no caminho de produção e permitir operação ou registro de saída divergente sem garantir as condições requeridas.",
+          "procedure": "Skill bundle official develop@a28be10 vs GitHub branch SHA and product material Git bundle SHA 5d567e49 checked",
+          "expected": "Operação fora da elegibilidade deve ser rejeitada ou isolada sem efeito financeiro incorreto para canonical source checked.",
+          "observed": "Correct canonical source repo skill and develop branch; current work item binding is issue #768.",
+          "control_type": "procedure",
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "Git SHA 056d8ae2124538b78fb70289189985647a5e731a vs immutable base 5ad67cab183cc26672d837c7f3ded55ba27e9189; git diff --name-only; canonical skill develop@a28be10db466631cd5e5e4dbe0429da250cd8b42",
+          "evidence_sha256": "1ea7ff812dabe275bf69e8a4ec8ebc567aa0d9f3761db9499fab5e21e555a303",
+          "sibling_cases": [
+            {
+              "id": "NEG-09-X03-S1",
+              "surface": "canonical-source-consistency",
+              "dimension": "skill-develop-sha",
+              "status": "passed"
+            },
+            {
+              "id": "NEG-09-X03-S2",
+              "surface": "canonical-source-consistency",
+              "dimension": "product-base-develop",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+          "evidence": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792881; .audit/entregar-issue/issue-768/evidence/issue-768-ci-test-reach.log; https://github.com/crgasparoto-br/SolverFin/actions/runs/42280792812/artifacts/13535328777; .audit/entregar-issue/issue-768/evidence/issue-768-exact-head-observations.json; exact-head regression for REQ-768-09."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-022",
+          "primary_negative_control_id": "NEG-09-022"
+        },
+        {
+          "obligation_id": "OBL-025",
+          "primary_negative_control_id": "NEG-09-025"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "commit-target-binding",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "independent-review-separation",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "reason": "Controle discriminante verificável em fixture PostgreSQL, artefato Chrome ou contrato de Git exact-SHA vinculado ao material."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}

@@ -1,0 +1,29 @@
+FFFF                                                                     [100%]
+=================================== FAILURES ===================================
+_ test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure] __
+tests/test_session_review_trusted_producers.py:192: in test_namespaced_junit_fails_closed_in_parser_producer_and_consumer
+    with pytest.raises(ValueError, match="JUnit"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'ValueError'>
+__ test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error] ___
+tests/test_session_review_trusted_producers.py:192: in test_namespaced_junit_fails_closed_in_parser_producer_and_consumer
+    with pytest.raises(ValueError, match="JUnit"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_ test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped] __
+tests/test_session_review_trusted_producers.py:192: in test_namespaced_junit_fails_closed_in_parser_producer_and_consumer
+    with pytest.raises(ValueError, match="JUnit"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'ValueError'>
+_ test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper] __
+tests/test_session_review_trusted_producers.py:192: in test_namespaced_junit_fails_closed_in_parser_producer_and_consumer
+    with pytest.raises(ValueError, match="JUnit"):
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E   Failed: DID NOT RAISE <class 'ValueError'>
+=========================== short test summary info ============================
+FAILED tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper] - Failed: DID NOT RAISE <class 'ValueError'>
+4 failed, 9 deselected in 0.09s
+PRE_FIX_REPRO_EXIT_CODE=1

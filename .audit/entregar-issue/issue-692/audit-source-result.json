@@ -1,0 +1,564 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "534c492fc2d852ea1b3153eac346c8c0d4a8f29b",
+    "head_sha": "d7b9136da328dae6bc3c12b5a05e32c31f7ec0ee"
+  },
+  "verdict": "REPROVADA",
+  "coverage": "limited",
+  "discovery_closed": true,
+  "changed_path_reviews": [
+    {
+      "id": ".audit/entregar-issue/handoff-ready.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/b9b46f00a9a2.txt",
+      "evidence_sha256": "58e3a5645b4d50c05c1a0564725ac6328289a70be425acb3182b0a141e5c555d"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/audit-escape-closure.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/0015e1296795.txt",
+      "evidence_sha256": "eeefd784a443bec727fea9b9f85982ef40b020d1ade1e21bb494c4799d9d0c27"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/audit-remediation.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/a9e7bddc06a5.txt",
+      "evidence_sha256": "f41ad329879ab87f071ebf5883575b8ffb3cf790a14e1465c2b84d9ea668e8d7"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/audit-source-result.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/108628558c5f.txt",
+      "evidence_sha256": "ca37ab1067ce0a324afc59e51167d725edb1bd46baad22f08f1f3bc18689f683"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/code-growth.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/71d574061dc4.txt",
+      "evidence_sha256": "7caf65d3e8005ab2dae993df33606753683b509df94f68568eee6098077cff4c"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/codebase-grounding.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/12a1a4a1898f.txt",
+      "evidence_sha256": "a94611c9ee36f30e0d4efa9951402b8e39ba16f4cd9846f35b25ead0befc2eb6"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/evidence-provenance.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/fa2faa14b88d.txt",
+      "evidence_sha256": "20d68ddb2f87d1c6f0fefac0058b3a17d0b8eef31189562f2b0bdd1a6f9ec310"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/evidence/cdp-exact-head-reach.log",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/0f6e7d677229.txt",
+      "evidence_sha256": "1aac127272cd269b324287046dc68aa5406ef14d90f2f9990acd033bc6b57338"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/62ef4f12dc04.txt",
+      "evidence_sha256": "4a1bd4bff3884b4305e5d60b1fa1efd20b0fa5ca1a904cb97b8e418559e1983a"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/inherited-controls.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/574c1cfc2eed.txt",
+      "evidence_sha256": "7c79745b426c90f4d5d8b6e86899a1b92021dea2e7857870aa37ba327f33f9e7"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/learning-closure.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/d4dfa6508756.txt",
+      "evidence_sha256": "04045f69636b7e6f9a4359e0907d20beb524dbdcec1133bface76ceb932a7a94"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/previous-audit-escape-closure.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/e0a4f9ccbd86.txt",
+      "evidence_sha256": "14d624d0fae7687da7dc92092cd76a81a6f1ada7cf6b6515c5e066479766ec82"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/previous-inherited-controls.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/f9e482eb6299.txt",
+      "evidence_sha256": "654ccced14d2fbabd570f101d7cef37146c072591d9275bda4454a9f1e62b40f"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/requirement-attack-matrix.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/8a25ba354e3f.txt",
+      "evidence_sha256": "cce1589ddd5b17cc42c9890f8063a11e58fe11768608bbe9b16f4b30d317f174"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/requirement-attack-matrix.parts/part-000.b64",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/69fcca90a25c.txt",
+      "evidence_sha256": "8e109cd7109d78102a62465448e9e918806fb588b2840054e60bc00ff77f6688"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/requirement-attack-matrix.parts/part-001.b64",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/6048064b7112.txt",
+      "evidence_sha256": "d2f89e0ed0491f7b81c45cb55debd43f888d5d65e0524c75fe2898c0fd62944c"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/requirement-closure.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/cc812a4f9bde.txt",
+      "evidence_sha256": "12ac7e59f56669886799f340a1fae7372cfa825d4c55dbc9586af23d77952183"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/requirement-closure.parts/part-000.b64",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/daf384889741.txt",
+      "evidence_sha256": "6411de6db1de75d723a3c722e14b48b6c32dae104c0d2da3beb69d8c3f32c7fb"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/risk-saturation.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/bb21bdaebb95.txt",
+      "evidence_sha256": "df0c85728088f55eff2bd0e4a5f0ea6a2ae6f79f4cdcbb531a447062ec2af302"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/specification-snapshot.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/6e69ffa5d929.txt",
+      "evidence_sha256": "41fc920a5fc9690f6166cb97d71bac1161c754542e72e15a414d219035833277"
+    },
+    {
+      "id": ".audit/entregar-issue/issue-692/specification-sources/SRC-ISSUE-692.txt",
+      "status": "covered",
+      "surface_ids": [
+        "S-DELIVERY"
+      ],
+      "evidence_path": "evidence/changed-paths/456922c522ad.txt",
+      "evidence_sha256": "30188900a2228abb8a708cf171ff9badada9185e649c020d89748624321196af"
+    },
+    {
+      "id": "apps/web/src/dev-server.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-AUTH"
+      ],
+      "evidence_path": "evidence/changed-paths/7dba8d650498.txt",
+      "evidence_sha256": "c972eb2ef395e26737dc522e2992b69360e83847e24558564c0a3719bf0217a4"
+    },
+    {
+      "id": "apps/web/src/dev-server/cash-flow-projection-view.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/changed-paths/b143900b5020.txt",
+      "evidence_sha256": "073c0beced154a4b7833176976b30ea4d593c46a751554ac401ceb063f8d4d78"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-common.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-EMPTY",
+        "S-PARITY"
+      ],
+      "evidence_path": "evidence/changed-paths/798f351a55d0.txt",
+      "evidence_sha256": "7ca782b57bc0ebf3e7dd243ae6b2231a82234b6050f6c5afae2e415155dd647e"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-evolution.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-API",
+        "S-FILTER",
+        "S-MULTICUR"
+      ],
+      "evidence_path": "evidence/changed-paths/3a228dda5aa6.txt",
+      "evidence_sha256": "882c8ad968367f3728070d0fb35b299ff67b0f51d64aa8006c4f2bb27a4f04e2"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-installments.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-API",
+        "S-FILTER",
+        "S-MULTICUR"
+      ],
+      "evidence_path": "evidence/changed-paths/babf9dcb065a.txt",
+      "evidence_sha256": "d1000c2fbdd1f2b9491885b636dcae2d24b9d2919ef32e65867c791efc9b30a4"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-parity.test-helpers.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TEST",
+        "S-PARITY"
+      ],
+      "evidence_path": "evidence/changed-paths/d3fa356e073d.txt",
+      "evidence_sha256": "a5a48e25c3773e14aad619d0918acd303fc06c2aa5e44712dc8a4673c2a3cf56",
+      "reason": "Inspecionados casos novos e correspondência com npm run test ou Chrome visual run no SHA material; CI autenticado reached/passed."
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-pdf.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-PDF",
+        "S-PARITY"
+      ],
+      "evidence_path": "evidence/changed-paths/322af20ba121.txt",
+      "evidence_sha256": "31efa1995b8573481e60abcc2d3fc31711338a653c898f8edb5e115fdfeb557c"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export-serializers.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-INJECTION",
+        "S-PARITY",
+        "S-MULTICUR"
+      ],
+      "evidence_path": "evidence/changed-paths/77d7948e6ebf.txt",
+      "evidence_sha256": "6f495d48041b03d548d970b22c813644368f1d0c10202058ddddbe7ef4a4eade"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-TEST",
+        "S-PARITY"
+      ],
+      "evidence_path": "evidence/changed-paths/7c6778eb27fb.txt",
+      "evidence_sha256": "32f3ea66861f06e92c042e715855604fcb392074f625de08be93deb4689fde29",
+      "reason": "Inspecionados casos novos e correspondência com npm run test ou Chrome visual run no SHA material; CI autenticado reached/passed."
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-export.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-AUTH",
+        "S-FILTER",
+        "S-MULTICUR"
+      ],
+      "evidence_path": "evidence/changed-paths/3f018732349e.txt",
+      "evidence_sha256": "c8394ff6c5af6fde3d071d390082513a270d7876262c42d2d1a90bc677120fe8"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-installments-view.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-API",
+        "S-FILTER",
+        "S-MULTICUR"
+      ],
+      "evidence_path": "evidence/changed-paths/58b732d0cf70.txt",
+      "evidence_sha256": "1dcdd0e8ae28a4396034ff8a1b643dd51a01248098e70db2ab95cf42c686ffab"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page-shared.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/changed-paths/7ca8153e685b.txt",
+      "evidence_sha256": "ee632fd2b6a6d2f45b8768415ee526fe363d8930df4ab1af4fb03d956c3846bb"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page-styles.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/changed-paths/122e6015cd60.txt",
+      "evidence_sha256": "e29fdc5aa0ac5e29e67342dd8419ec7d7887e49c8c01394ac39dd58b9b230cfb"
+    },
+    {
+      "id": "apps/web/src/dev-server/reports-route-page.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-ROUTE",
+        "S-FILTER"
+      ],
+      "evidence_path": "evidence/changed-paths/182ee39929eb.txt",
+      "evidence_sha256": "528a171ffe29b46c4027cb93386901fe54f97125763d0effd43cffe289b116e4"
+    },
+    {
+      "id": "docs/API_REPORTS.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC"
+      ],
+      "evidence_path": "evidence/changed-paths/08e13a880640.txt",
+      "evidence_sha256": "92fac2ef7c5b7cb7528beefe867debfbf6be9260ac96b430cbaea7fb3f3d80de"
+    },
+    {
+      "id": "docs/REPORTS.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC"
+      ],
+      "evidence_path": "evidence/changed-paths/1f08e7ed1a01.txt",
+      "evidence_sha256": "3fdcc7491158cf52f4fed78e44c26ff564eec0bc579d57cb986c23a75e91bb49"
+    },
+    {
+      "id": "scripts/statement-visual/cdp.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-TEST"
+      ],
+      "evidence_path": "evidence/changed-paths/11ef10696d66.txt",
+      "evidence_sha256": "735f98f446f06fdd3e669a67750cf483942da41c189b2dc59dbb6678e4c90dbc",
+      "reason": "Inspecionados casos novos e correspondência com npm run test ou Chrome visual run no SHA material; CI autenticado reached/passed."
+    },
+    {
+      "id": "scripts/statement-visual/cdp.test.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-TEST",
+        "S-PARITY"
+      ],
+      "evidence_path": "evidence/changed-paths/c66c402fcaa0.txt",
+      "evidence_sha256": "a0d26876d76e58b647626e2b7eb88e26c4ae4c2a3cd0cf126e06638b25808fd6",
+      "reason": "Inspecionados casos novos e correspondência com npm run test ou Chrome visual run no SHA material; CI autenticado reached/passed."
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-EXPORT",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-CANONICAL",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-FILTER",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-AUTH",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-CURRENCY",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-EMPTY",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-INJECTION",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "R-PARITY",
+      "status": "covered",
+      "evidence_path": "evidence/pdf-unicode-collision.txt",
+      "evidence_sha256": "efcdbb7b4737c6f9654ce6552acb8de8e24aa2ec2587ccff7bb9eb6ba71ada73"
+    },
+    {
+      "id": "R-DOCS",
+      "status": "covered",
+      "evidence_path": "evidence/issue-692-specification.txt",
+      "evidence_sha256": "21f774bbc8d48227a15442fdb360df1b86cefdba75f30ba3d27fcc3f95a63b32"
+    },
+    {
+      "id": "R-DELIVERY",
+      "status": "covered",
+      "evidence_path": "evidence/offical-certified-handoff-preflight.txt",
+      "evidence_sha256": "24b1d219a6b520fc2cead7ac854652ff458e3a671a3b72cb8bfe0807162ffeeb"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-ROUTE",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-API",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-FILTER",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-AUTH",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-MULTICUR",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-EMPTY",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-INJECTION",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-PDF",
+      "status": "covered",
+      "evidence_path": "evidence/pdf-unicode-collision.txt",
+      "evidence_sha256": "efcdbb7b4737c6f9654ce6552acb8de8e24aa2ec2587ccff7bb9eb6ba71ada73"
+    },
+    {
+      "id": "S-PARITY",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-TEST",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-DOC",
+      "status": "covered",
+      "evidence_path": "evidence/issue-692-specification.txt",
+      "evidence_sha256": "21f774bbc8d48227a15442fdb360df1b86cefdba75f30ba3d27fcc3f95a63b32"
+    },
+    {
+      "id": "S-DELIVERY",
+      "status": "covered",
+      "evidence_path": "evidence/offical-certified-handoff-preflight.txt",
+      "evidence_sha256": "24b1d219a6b520fc2cead7ac854652ff458e3a671a3b72cb8bfe0807162ffeeb"
+    },
+    {
+      "id": "S-DEVELOP",
+      "status": "covered",
+      "evidence_path": "evidence/remote-ci-checks.txt",
+      "evidence_sha256": "aab27e6bc73688add6463920a601c82108d467de8d0465f7c9a369489647e8c6"
+    },
+    {
+      "id": "S-REALDATA",
+      "status": "not-executed",
+      "reason": "Pós-bloqueador funcional comprovado, nenhuma execução adicional de alto custo é necessária para rejeição; CI exact-SHA preservada."
+    },
+    {
+      "id": "S-ABUSE",
+      "status": "not-executed",
+      "reason": "Pós-bloqueador funcional comprovado, nenhuma execução adicional de alto custo é necessária para rejeição; CI exact-SHA preservada."
+    }
+  ],
+  "previous_findings": [
+    {
+      "id": "A-001",
+      "disposition": "resolved",
+      "reason": "Handoff que antes pertencia à issue 728 foi substituído por certificado de issue 692, SHA exact-head; preflight oficial retornou READY.",
+      "evidence_path": "evidence/offical-certified-handoff-preflight.txt",
+      "evidence_sha256": "24b1d219a6b520fc2cead7ac854652ff458e3a671a3b72cb8bfe0807162ffeeb"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A-002",
+      "requirement_id": "R-PARITY",
+      "surface_id": "S-PDF",
+      "disposition": "blocking",
+      "root_cause": "PDF converter substitui Unicode fora de WinAnsi por sequência literal ambígua, causando colisão byte-a-byte.",
+      "evidence_path": "evidence/pdf-unicode-collision.txt",
+      "evidence_sha256": "efcdbb7b4737c6f9654ce6552acb8de8e24aa2ec2587ccff7bb9eb6ba71ada73"
+    }
+  ],
+  "blocking_ids": [
+    "A-002"
+  ]
+}

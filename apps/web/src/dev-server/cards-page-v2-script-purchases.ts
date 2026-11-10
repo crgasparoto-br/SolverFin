@@ -43,7 +43,7 @@ export function cardsPagePurchaseActionsScript(): string {
         const deleteButton = document.querySelector('[data-delete-purchase="' + purchase.id + '"]');
         deleteButton?.addEventListener("click", async () => {
           if (deleteButton.disabled) return;
-          if (!window.confirm("Excluir permanentemente o lançamento " + purchase.description + "? O total da fatura será recalculado. Esta ação não pode ser desfeita.")) return;
+          if (!window.confirm("Excluir o lançamento " + purchase.description + "? A compra será anulada e retirada da fatura, mas preservada no histórico.")) return;
           deleteButton.disabled = true;
           try {
             const response = await fetch("/api/credit-card-accounts/" + encodeURIComponent(purchase.cardId) + "/purchases/" + encodeURIComponent(purchase.id), { method: "DELETE" });

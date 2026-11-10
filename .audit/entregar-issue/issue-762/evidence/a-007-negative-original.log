@@ -1,0 +1,620 @@
+FFFFFFFFFFFFFF                                                           [100%]
+=================================== FAILURES ===================================
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled="1"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_0')
+level = 'testsuites', attribute = 'disabled="1"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_0')
+raw = b'<testsuites  disabled="1"><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="1"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_1')
+level = 'testsuite', attribute = 'disabled="1"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_1')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0" disabled="1"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="2"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_2')
+level = 'testsuite', attribute = 'disabled="2"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_2')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0" disabled="2"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled="1"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_3')
+level = 'testcase', attribute = 'disabled="1"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_3')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" disabled="1"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status="failed"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_4')
+level = 'testsuites', attribute = 'status="failed"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_4')
+raw = b'<testsuites  status="failed"><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status="skipped"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_5')
+level = 'testsuite', attribute = 'status="skipped"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_5')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0" status="skipped"><testcase classname="suite" name="case"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="failed"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_6')
+level = 'testcase', attribute = 'status="failed"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_6')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="failed"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="skipped"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_7')
+level = 'testcase', attribute = 'status="skipped"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_7')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="skipped"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="error"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_8')
+level = 'testcase', attribute = 'status="error"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_8')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="error"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="notrun"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_9')
+level = 'testcase', attribute = 'status="notrun"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_9')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="notrun"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="ignored"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_10')
+level = 'testcase', attribute = 'status="ignored"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_10')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="ignored"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="unknown"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_11')
+level = 'testcase', attribute = 'status="unknown"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_11')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="unknown"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=""] __
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_12')
+level = 'testcase', attribute = 'status=""'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_12')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status=""/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+_ test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="PASSED"] _
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_13')
+level = 'testcase', attribute = 'status="PASSED"'
+
+    @pytest.mark.parametrize("level, attribute", [
+        ("testsuites", 'disabled="1"'),
+        ("testsuite", 'disabled="1"'),
+        ("testsuite", 'disabled="2"'),
+        ("testcase", 'disabled="1"'),
+        ("testsuites", 'status="failed"'),
+        ("testsuite", 'status="skipped"'),
+        ("testcase", 'status="failed"'),
+        ("testcase", 'status="skipped"'),
+        ("testcase", 'status="error"'),
+        ("testcase", 'status="notrun"'),
+        ("testcase", 'status="ignored"'),
+        ("testcase", 'status="unknown"'),
+        ("testcase", 'status=""'),
+        ("testcase", 'status="PASSED"'),
+    ])
+    def test_junit_disabled_or_status_fails_closed_in_all_paths(tmp_path, level, attribute):
+        """A-007: producer and archive verifier cannot upgrade failed tests."""
+        attrs = {"testsuites": "", "testsuite": 'tests="1" failures="0" errors="0" skipped="0"',
+                 "testcase": 'classname="suite" name="case"'}
+        attrs[level] += " " + attribute
+        raw = (f'<testsuites {attrs["testsuites"]}><testsuite {attrs["testsuite"]}>'
+               f'<testcase {attrs["testcase"]}/></testsuite></testsuites>').encode()
+>       assert_junit_rejected_across_boundaries(tmp_path, raw)
+
+tests/test_session_review_trusted_producers.py:276: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-2/test_junit_disabled_or_status_13')
+raw = b'<testsuites ><testsuite tests="1" failures="0" errors="0" skipped="0"><testcase classname="suite" name="case" status="PASSED"/></testsuite></testsuites>'
+
+    def assert_junit_rejected_across_boundaries(tmp_path, raw):
+        """Parser, producer and ZIP consumer must all reject the same bad XML."""
+>       with pytest.raises(ValueError, match="JUnit"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE <class 'ValueError'>
+
+tests/test_session_review_trusted_producers.py:225: Failed
+=========================== short test summary info ============================
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled="1"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="1"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="2"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled="1"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status="failed"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status="skipped"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="failed"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="skipped"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="error"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="notrun"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="ignored"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="unknown"] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=""] - Failed: DID NOT RAISE <class 'ValueError'>
+FAILED tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="PASSED"] - Failed: DID NOT RAISE <class 'ValueError'>
+14 failed, 24 deselected in 0.14s

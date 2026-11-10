@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 692,
+    "pull_request_number": 761,
+    "material_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55"
+  },
+  "escapes": [
+    {
+      "escape_id": "ESC-692-001",
+      "status": "passed",
+      "escape_class": "certification-binding",
+      "plausible_wrong_implementation": "Use a stale inherited certificate belonging to another issue and treat it as target-valid",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+        "audited_head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75"
+      },
+      "revalidated_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+      "literal_case": {
+        "procedure": "python entregar-issue/scripts/build_handoff_certificate.py --repository crgasparoto-br/SolverFin --issue-number 692 --pull-request-number 761 --head-sha fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 ...; terminal validation of the published result-only child required",
+        "expected": "Certified handoff loader must explicitly bind issue/PR/ref/material SHA to target and reject inherited package",
+        "observed": "The inherited #728 handoff is identical in the PR base and head before this handoff, classified inherited-base-artifact."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-692-001-A",
+          "status": "passed",
+          "dimension": "cross-format",
+          "surface": "export-pipeline"
+        },
+        {
+          "id": "ESC-692-001-B",
+          "status": "passed",
+          "dimension": "negative-boundary",
+          "surface": "export-validation"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Gate uses canonical specification and immutable issue provenance, with result-only git child constrained to allowed paths."
+      },
+      "detection_change": {
+        "evidence": "python entregar-issue/scripts/build_handoff_certificate.py --repository crgasparoto-br/SolverFin --issue-number 692 --pull-request-number 761 --head-sha fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 ...; terminal validation of the published result-only child required"
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "negative-06-01"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "relational-semantic-integrity",
+          "dimension": "invalid-account-reference"
+        }
+      ]
+    },
+    {
+      "escape_id": "ESC-692-002",
+      "status": "passed",
+      "escape_class": "pdf-overflow",
+      "plausible_wrong_implementation": "Wrap PDF by fixed count without accounting for glyph width; long W strings exceed page",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+        "audited_head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75"
+      },
+      "revalidated_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+      "literal_case": {
+        "procedure": "Repository CI run 42690866197, CRITICAL job 129410334480: npm run test success, PDF long-string test reached/passed",
+        "expected": "PDF must split at visual width, and preserve all exact characters",
+        "observed": "CI dedicated case \"preserves wide descriptions across PDF line wrapping without dropping characters\" passed; PDF bbox independent 100 Ws inside A4."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-692-002-A",
+          "status": "passed",
+          "dimension": "cross-format",
+          "surface": "export-pipeline"
+        },
+        {
+          "id": "ESC-692-002-B",
+          "status": "passed",
+          "dimension": "negative-boundary",
+          "surface": "export-validation"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Formatter now constrains Helvetica width and preserves row values with continuation markers."
+      },
+      "detection_change": {
+        "evidence": "Repository CI run 42690866197, CRITICAL job 129410334480: npm run test success, PDF long-string test reached/passed"
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-destination",
+          "surface": "period-context-consistency",
+          "dimension": "negative-13-02"
+        },
+        {
+          "risk_family": "temporal-destination",
+          "surface": "period-context-consistency",
+          "dimension": "negative-13-02-brl"
+        }
+      ],
+      "required_risk_families": [
+        "temporal-destination"
+      ]
+    },
+    {
+      "escape_id": "ESC-692-003",
+      "status": "passed",
+      "escape_class": "semantic-oracle",
+      "plausible_wrong_implementation": "Search values as free-form substrings; a BRL/USD swap still passes",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:ea755dc2-ce22-46fd-be20-2fecf4ccc72e",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "aa3662a4d7fc85194a2711bf0f20664face84e2e44ae7f4bf6b86502d17fef7e",
+        "audited_head_sha": "f748809aa4a3c03d07c11749be0c6b6b8ce3db75"
+      },
+      "revalidated_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+      "literal_case": {
+        "procedure": "Repository CI run 42690866197, CRITICAL job 129410334480: new exact-head tests executed and passed",
+        "expected": "Roundtrip compare every typed cell and its currency/row position",
+        "observed": "Deliberately swapped BRL/USD monetary cells, dropped USD row and null-vs-empty drift each trigger a failed parity assertion on all three formats."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-692-003-A",
+          "status": "passed",
+          "dimension": "cross-format",
+          "surface": "export-pipeline"
+        },
+        {
+          "id": "ESC-692-003-B",
+          "status": "passed",
+          "dimension": "negative-boundary",
+          "surface": "export-validation"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "New helper independently parses CSV/XLSX/PDF and asserts swap, row deletion and null drift failures."
+      },
+      "detection_change": {
+        "evidence": "Repository CI run 42690866197, CRITICAL job 129410334480: new exact-head tests executed and passed"
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "roundtrip-preservation",
+          "dimension": "negative-27-01"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "roundtrip-preservation",
+          "dimension": "negative-27-01-brl"
+        }
+      ],
+      "required_risk_families": [
+        "semantic-effect"
+      ]
+    },
+    {
+      "escape_id": "ESC-692-004",
+      "status": "passed",
+      "escape_class": "semantic-oracle",
+      "plausible_wrong_implementation": "Conflate a real non-WinAnsi Unicode glyph with a literal text escape, returning identical PDF bytes for different financial descriptions",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:31cdd57f-282c-456a-bc9b-51e542a40f7e",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "f9e305e4d35b33511418c36847c9c04264782608807bfc428b207d2abe6ed187",
+        "audited_head_sha": "d7b9136da328dae6bc3c12b5a05e32c31f7ec0ee"
+      },
+      "revalidated_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+      "literal_case": {
+        "procedure": "Exact SHA Repository CI run 42690866197 CRITICAL job 129410334480, tests reports-export.test.ts; independent pdftotext spot check on local restored SHA",
+        "expected": "The actual Unicode emoji/CJK description and literal escape string must produce distinct PDF bytes; extraction must recover each exact description.",
+        "observed": "Two new negative tests passed in the exact SHA run. The PDF writes a UTF-16BE /ActualText span for non-WinAnsi code points, the test decodes it and detects divergent originals."
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-692-004-A",
+          "status": "passed",
+          "dimension": "unicode-vs-literal",
+          "surface": "pdf-serialisation"
+        },
+        {
+          "id": "ESC-692-004-B",
+          "status": "passed",
+          "dimension": "cjk-cyrillic-wrapping",
+          "surface": "pdf-serialisation"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "PDF /ActualText retains original code points even if the visible font uses U+XXXX placeholders; code-point wrapping prevents surrogate halves."
+      },
+      "detection_change": {
+        "evidence": "Exact SHA CI 42690866197/129410334480 executed Unicode-versus-literal and multilingual/wrapped PDF parity tests; assertions fail on collision."
+      },
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "roundtrip-preservation",
+          "dimension": "negative-27-01"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "roundtrip-preservation",
+          "dimension": "negative-27-01-brl"
+        }
+      ],
+      "required_risk_families": [
+        "semantic-effect"
+      ]
+    }
+  ]
+}

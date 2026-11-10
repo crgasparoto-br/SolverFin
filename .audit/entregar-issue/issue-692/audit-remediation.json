@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:31cdd57f-282c-456a-bc9b-51e542a40f7e",
+    "audit_report_sha256": "f9e305e4d35b33511418c36847c9c04264782608807bfc428b207d2abe6ed187",
+    "audited_head_sha": "d7b9136da328dae6bc3c12b5a05e32c31f7ec0ee"
+  },
+  "candidate_head_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/reports-export-pdf.ts",
+        "apps/web/src/dev-server/reports-export-parity.test-helpers.ts",
+        "apps/web/src/dev-server/reports-export.test.ts",
+        "docs/REPORTS.md"
+      ],
+      "evidence": [
+        "Replaced lossy Unicode text escape mapping with explicit /ActualText UTF-16BE preservation and visible U+XXXX fallback for WinAnsi-unsupported glyphs.",
+        "New regression compares a real emoji and a literal escape sequence: they must produce distinct PDF files; the parity reader reconstructs and checks original Unicode.",
+        "Integrated current develop in merge commit 48e7dcaa with both expected parents, no current merge conflict."
+      ],
+      "validations": [
+        "GitHub Actions Repository CI run 42690866197, CRITICAL validation job 129410334480, completed/success on material fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55; npm run lint/typecheck/test/integration/build.",
+        "Actual local PDF extraction and content roundtrip on restored exact material SHA; no source data conversion."
+      ]
+    }
+  ],
+  "status": "closed"
+}

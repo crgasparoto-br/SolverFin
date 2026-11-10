@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "rejection_id": "audit-rejection:9c85151f-c568-4f21-b39b-9098899e9f2f",
+  "head_sha": "1e5133a073a95092cb5eea94a298ebde6d3ae15c",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "5ad67cab183cc26672d837c7f3ded55ba27e9189",
+    "head_sha": "1e5133a073a95092cb5eea94a298ebde6d3ae15c"
+  },
+  "original_report_sha256": "b0f7a93da7d43eb28f556e01021107074c594c5833fb7597693cb66f3aa57919",
+  "original_report_filename": "PR_769_AUDITORIA_INDEPENDENTE.md",
+  "original_report_json_sha256": "240c413230078f16b52c38a0b49378e842bf5d0508922775dbf0d257878c98b7",
+  "provenance_limit": "Auditor report provided in distinct review session and reproduced against the immutable old Git head; no cryptographic external signature or imported approval asserted.",
+  "findings": [
+    {
+      "id": "A-004",
+      "disposition": "blocking",
+      "status": "open",
+      "remediation_mode": "targeted-remediation",
+      "actionable": true,
+      "summary": "Missing semantic-effect family in critical risk saturation despite seven material attack surfaces and active inherited control IC-768-GROUP-TOOLTIP.",
+      "failed_gate": {
+        "name": "check_delivery_saturation",
+        "command": "python /mnt/data/pr769_audit_input/skill_repo/auditar-issue/scripts/check_delivery_saturation.py --attack-matrix .audit/entregar-issue/issue-768/requirement-attack-matrix.json --risk-saturation .audit/entregar-issue/issue-768/risk-saturation.json --inherited-controls .audit/entregar-issue/issue-768/inherited-controls.json --head-sha 056d8ae2124538b78fb70289189985647a5e731a --evidence-provenance .audit/entregar-issue/issue-768/evidence-provenance.json",
+        "subject_sha": "056d8ae2124538b78fb70289189985647a5e731a",
+        "observed_exit_code": 2,
+        "evidence_sha256": "62f9bcd48b40fd4653ecead0a90efb8f6a5cc9e6214a1c81beaae34e1262d1cc",
+        "deterministic": true
+      },
+      "evidence": {
+        "audit_report": "PR_769_AUDITORIA_INDEPENDENTE.md",
+        "original_report_sha256": "b0f7a93da7d43eb28f556e01021107074c594c5833fb7597693cb66f3aa57919",
+        "independent_checks_sha256": "1c9966ed167a62b9ee7d51e6fceb78bf5555b6f69c4d9987aa53115536f5a75f"
+      }
+    }
+  ],
+  "recommendations": []
+}

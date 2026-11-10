@@ -3,7 +3,7 @@
 name: Delivery audit workspace
 on:
   pull_request:
-    branches: [develop]
+    branches: [develop, main]
     types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
     inputs:
@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       base_sha:
-        description: "Immutable 40-character develop base SHA from the same PR snapshot"
+        description: "Immutable 40-character protected base SHA from the same PR snapshot"
         required: true
         type: string
 permissions:
@@ -89,7 +89,10 @@ jobs:
           set -euo pipefail
           [[ "$AUDIT_BASE_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid trusted base SHA"; exit 1; }
           [[ "$AUDIT_HEAD_SHA" =~ ^[0-9a-f]{40}$ ]] || { echo "Invalid trusted head SHA"; exit 1; }
-          test "$AUDIT_BASE_REF" = "develop"
+          case "$AUDIT_BASE_REF" in
+            develop|main) ;;
+            *) echo "Invalid protected base branch"; exit 1 ;;
+          esac
           test "$(git -C solverfin rev-parse HEAD)" = "$AUDIT_HEAD_SHA"
           git -C solverfin cat-file -e "$AUDIT_BASE_SHA^{commit}"
           git -C solverfin merge-base "$AUDIT_BASE_SHA" "$AUDIT_HEAD_SHA" >/dev/null
