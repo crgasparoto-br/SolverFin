@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { join } from "node:path";
 import { navigate, screenshot, setViewport } from "./cdp.mjs";
 
 /** Runs the complete A3 viewport scenario using the existing verified probes. */
