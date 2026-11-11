@@ -29,8 +29,11 @@ if (!chromePath) {
 }
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
-const { validateGoldenActionToolbar, validateCdiSwitch } =
-  createAccountsCardsAdvancedProbes({ baseUrl, waitFor, waitForDetail });
+const { validateGoldenActionToolbar, validateCdiSwitch } = createAccountsCardsAdvancedProbes({
+  baseUrl,
+  waitFor,
+  waitForDetail,
+});
 const validateViewport = createAccountsCardsViewportRunner({
   baseUrl,
   outputDir,
