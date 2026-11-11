@@ -280,6 +280,23 @@ describe("shared shell styles", () => {
         assert.match(extractedStyles, /sharedShellStyles\(\)/);
         return;
       }
+      if (moduleFileName === "settings-page.js") {
+        assert.match(source, /import \\{ baseCss \\} from "\\.\\/settings-page-css\\.js"/);
+        assert.match(source, /styles: baseCss\\(\\)/);
+        const extractedStyles = readFileSync(join(currentDir, "settings-page-css.js"), "utf8");
+        assert.match(extractedStyles, /sharedShellStyles\\(\\)/);
+        return;
+      }
+      if (moduleFileName === "transactions-page-v2.js") {
+        assert.match(source, /import \\{ css \\} from "\\.\\/transactions-page-styles\\.js"/);
+        assert.match(source, /styles: css\\(\\)/);
+        const extractedStyles = readFileSync(
+          join(currentDir, "transactions-page-styles.js"),
+          "utf8",
+        );
+        assert.match(extractedStyles, /sharedShellStyles\\(\\)/);
+        return;
+      }
       assert.match(source, /sharedShellStyles\(\)/);
     });
   }
