@@ -166,7 +166,6 @@ interface LimitUsedRow {
   limitUsedMinor: number | string | null;
 }
 
-
 function assertPurchaseInstallmentsEditable(rows: readonly PurchaseInstallmentEditState[]): void {
   const violation = purchaseInstallmentEditViolation(rows);
   if (violation) throw new InvoiceContractError(violation.code, violation.message, 409);
