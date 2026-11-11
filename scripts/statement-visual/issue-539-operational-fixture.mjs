@@ -1,3 +1,5 @@
+import { manualFinitePlanSetupScript } from "./issue-539-account-regression-helpers.mjs";
+
 export function fixtureExpression() {
   return `(async () => {
     async function request(path, method = "GET", body) {
