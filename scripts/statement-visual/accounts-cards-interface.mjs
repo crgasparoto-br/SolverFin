@@ -1,5 +1,6 @@
 import { createAccountsCardsAdvancedProbes } from "./accounts-cards-advanced-probes.mjs";
 import { createAccountsCardsViewportRunner } from "./accounts-cards-viewport-runner.mjs";
+import { pressEnter, pressEscape } from "./accounts-cards-keyboard-controls.mjs";
 import { accountVisualState } from "./accounts-visual-state.mjs";
 import { validateCdiSettings, validateCdiRealPersistence } from "./accounts-visual-cdi.mjs";
 import assert from "node:assert/strict";
@@ -662,48 +663,6 @@ async function waitFor(cdp, expression, message) {
     await sleep(100);
   }
   throw new Error(message);
-}
-
-async function pressEscape(cdp) {
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Escape",
-    code: "Escape",
-    windowsVirtualKeyCode: 27,
-    nativeVirtualKeyCode: 27,
-  });
-}
-
-async function pressEnter(cdp) {
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
-    key: "Enter",
-    code: "Enter",
-    windowsVirtualKeyCode: 13,
-    nativeVirtualKeyCode: 13,
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "char",
-    key: "Enter",
-    code: "Enter",
-    windowsVirtualKeyCode: 13,
-    nativeVirtualKeyCode: 13,
-    text: "\r",
-  });
-  await cdp.send("Input.dispatchKeyEvent", {
-    type: "keyUp",
-    key: "Enter",
-    code: "Enter",
-    windowsVirtualKeyCode: 13,
-    nativeVirtualKeyCode: 13,
-  });
 }
 
 function serializeError(error) {

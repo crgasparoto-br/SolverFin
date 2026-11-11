@@ -461,7 +461,6 @@ async function applyTextScale(cdp, requested) {
   };
 }
 
-
 async function compareZoomEvidence(normalScenario, zoomScenario) {
   const normalFile = normalScenario?.screenshot;
   const zoomFile = zoomScenario?.screenshot;
@@ -621,7 +620,6 @@ async function waitForDialog(cdp) {
   }
   throw new Error("Settings dialog did not open.");
 }
-
 
 function check(condition, message, details) {
   if (!condition) failures.push({ message, details });
