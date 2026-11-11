@@ -1,5 +1,8 @@
 /** Preserves the ordered raw client-side installment controller fragment. */
-export function operationalControllerScriptPart1(BLOCK_REASON_LABELS: unknown, OPERATIONAL_INSTALLMENTS_CSS: string): string {
+export function operationalControllerScriptPart1(
+  BLOCK_REASON_LABELS: unknown,
+  OPERATIONAL_INSTALLMENTS_CSS: string,
+): string {
   return `
     (function () {
       const pathname = window.location.pathname;
