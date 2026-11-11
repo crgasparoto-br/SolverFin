@@ -1,7 +1,11 @@
 import { TenantAuthorizationError } from "@solverfin/domain";
 import { InvoiceContractError } from "./card-invoice-contract-error.js";
 import { toDateOnly } from "./repository-date-utils.js";
-import type { CardPurchaseContract, CardPurchaseRow, InvoiceContractRow } from "./card-invoice-contracts-core.js";
+import type {
+  CardPurchaseContract,
+  CardPurchaseRow,
+  InvoiceContractRow,
+} from "./card-invoice-contracts-core.js";
 
 export function addOptionalFilter(
   where: string[],
@@ -118,7 +122,11 @@ export function normalizePurchaseStatus(status: string): string {
   );
 }
 
-export function resolveReconciledAt(status: string, current: Date | null, now: string): string | null {
+export function resolveReconciledAt(
+  status: string,
+  current: Date | null,
+  now: string,
+): string | null {
   if (status === "RECONCILED") {
     return current?.toISOString() ?? now;
   }
