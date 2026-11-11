@@ -14,7 +14,6 @@ import {
 import { statementClientScriptPart1 } from "./transactions-script-part-1.js";
 import { statementClientScriptPart2 } from "./transactions-script-part-2.js";
 
-
 import { apiGet } from "./api.js";
 import { attachmentWorkspaceScript, renderAttachmentWorkspace } from "./attachment-workspace.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
@@ -27,13 +26,8 @@ import {
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 
-import {
-  entryFillRuleScript,
-  renderEntryFillRuleControl,
-} from "./entry-fill-rules.js";
-import {
-  renderStatementListArchetype,
-} from "./statement-list-archetype.js";
+import { entryFillRuleScript, renderEntryFillRuleControl } from "./entry-fill-rules.js";
+import { renderStatementListArchetype } from "./statement-list-archetype.js";
 import { renderStatementStatus, renderStatementStatusControl } from "./statement-status.js";
 import { buildConsolidatedStatement } from "./transactions-consolidated.js";
 import {
@@ -371,7 +365,6 @@ export function statementTodayInSaoPaulo(now: Date = new Date()): string {
   const value = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
   return `${value("year")}-${value("month")}-${value("day")}`;
 }
-
 
 function renderSortOptions(selected: StatementSort): string {
   const options: Array<[StatementSort, string]> = [
@@ -1003,7 +996,6 @@ function normalizeCurrency(value: string | undefined): string | undefined {
   const normalized = value?.trim().toUpperCase();
   return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
 }
-
 
 export function resolveCategoryDirection(kind: string): CategoryDirection {
   const normalized = (kind ?? "").toLowerCase();
