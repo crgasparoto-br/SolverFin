@@ -1,4 +1,5 @@
 import { evaluate, screenshot } from "./cdp.mjs";
+import { join } from "node:path";
 
 /** Chrome-only visual assertions with explicit evidence output ownership. */
 export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
