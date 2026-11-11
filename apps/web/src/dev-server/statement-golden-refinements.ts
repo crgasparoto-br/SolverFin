@@ -2,9 +2,7 @@ import { statementGoldenRefinementStylesPart1 } from "./statement-golden-refinem
 import { statementGoldenRefinementStylesPart2 } from "./statement-golden-refinement-style-part-2.js";
 import { statementGoldenRefinementStylesPart3 } from "./statement-golden-refinement-style-part-3.js";
 
-import {
-  statementMockupControlsRuntime,
-} from "./statement-mockup-controls.js";
+import { statementMockupControlsRuntime } from "./statement-mockup-controls.js";
 
 /** Progressive DOM grouping preserves the original nodes, handlers and no-JS markup. */
 export function statementGoldenRefinementRuntime(): string {
@@ -219,7 +217,9 @@ export function statementGoldenRefinementRuntime(): string {
 export function statementGoldenRefinementStyles(): string {
   const root = '[data-statement-archetype="A2"][data-golden-screen="statement"]';
   const dialog = 'body:has([data-golden-screen="statement"]) dialog[data-modal]';
-  return statementGoldenRefinementStylesPart1(root, dialog) +
+  return (
+    statementGoldenRefinementStylesPart1(root, dialog) +
     statementGoldenRefinementStylesPart2(root, dialog) +
-    statementGoldenRefinementStylesPart3(root, dialog);
+    statementGoldenRefinementStylesPart3(root, dialog)
+  );
 }
