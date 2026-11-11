@@ -67,7 +67,7 @@ export function createManualInstallmentReaders(browser) {
       })()`,
     );
   }
-  
+
   async function readModalFocusContract() {
     return evaluate(
       browser.cdp,
@@ -82,7 +82,7 @@ export function createManualInstallmentReaders(browser) {
       })()`,
     );
   }
-  
+
   async function readModalEscapeContract() {
     return evaluate(
       browser.cdp,
@@ -96,7 +96,7 @@ export function createManualInstallmentReaders(browser) {
       })()`,
     );
   }
-  
+
   async function readInstallments(accountId, from, to) {
     return evaluate(
       browser.cdp,
@@ -113,7 +113,7 @@ export function createManualInstallmentReaders(browser) {
       })()`,
     );
   }
-  
+
   async function pressEnter() {
     await browser.cdp.send("Input.dispatchKeyEvent", {
       type: "keyDown",
@@ -133,7 +133,7 @@ export function createManualInstallmentReaders(browser) {
     });
     await sleep(100);
   }
-  
+
   async function pressEscape() {
     await browser.cdp.send("Input.dispatchKeyEvent", {
       type: "keyDown",
@@ -151,7 +151,7 @@ export function createManualInstallmentReaders(browser) {
     });
     await sleep(100);
   }
-  
+
   function createAccountExpression() {
     return `(async () => {
       const suffix = Date.now().toString(36);

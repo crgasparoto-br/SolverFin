@@ -26,7 +26,7 @@ export function createAccountsCardsViewportRunner({
     await setViewport(cdp, viewport.width, viewport.height);
     await navigate(cdp, `${baseUrl}/contas-cartoes`);
     await waitForA3(cdp);
-  
+
     const baseline = await inspectPage(cdp);
     assert.equal(baseline.archetype, "A3");
     assert.equal(baseline.detailLayoutVisible, true, "A3 DetailLayout is not visible.");
@@ -103,12 +103,12 @@ export function createAccountsCardsViewportRunner({
       true,
       "List institution logos must match the 44px and 11px Golden Statement frame.",
     );
-  
+
     const account = await selectResource(cdp, "account");
     const card = await selectResource(cdp, "card");
     assert.ok(account, "Demo data has no account master resource.");
     assert.ok(card, "Demo data has no card master resource.");
-  
+
     if (account) {
       await navigate(cdp, `${baseUrl}${account.href}`);
       await waitForDetail(cdp, "account");
@@ -149,7 +149,7 @@ export function createAccountsCardsViewportRunner({
         measurements,
       });
     }
-  
+
     if (card) {
       await navigate(cdp, `${baseUrl}${card.href}`);
       await waitForDetail(cdp, "card");
@@ -178,7 +178,11 @@ export function createAccountsCardsViewportRunner({
         "Card detail logo must match Golden Statement image geometry.",
       );
       assert.equal(measurements.selectedMasterCount, 1);
-      assert.equal(measurements.currencyContextVisible, true, "Card currency context is ambiguous.");
+      assert.equal(
+        measurements.currencyContextVisible,
+        true,
+        "Card currency context is ambiguous.",
+      );
       assert.equal(
         measurements.instrumentSectionVisible,
         true,
@@ -191,27 +195,27 @@ export function createAccountsCardsViewportRunner({
         measurements,
       });
     }
-  
+
     const filter = await validateFilter(cdp);
     scenarios.push({
       kind: "filter",
       viewport: `${viewport.width}x${viewport.height}`,
       measurements: filter,
     });
-  
+
     const explicitSelection = account ?? card;
     if (explicitSelection) {
       await navigate(cdp, `${baseUrl}${explicitSelection.href}`);
       await waitForDetail(cdp, account ? "account" : "card");
     }
-  
+
     const dialog = await validateKeyboardDialog(cdp);
     scenarios.push({
       kind: "resource-dialog",
       viewport: `${viewport.width}x${viewport.height}`,
       measurements: dialog,
     });
-  
+
     if (viewport.width === 1366) {
       const failureState = await validateSaveFailureStates(cdp);
       scenarios.push({
@@ -219,14 +223,14 @@ export function createAccountsCardsViewportRunner({
         viewport: "1366x768",
         measurements: failureState,
       });
-  
+
       const destructive = await validateConfirmationCancellation(cdp);
       scenarios.push({
         kind: "confirmation-cancel",
         viewport: "1366x768",
         measurements: destructive,
       });
-  
+
       const longContent = await validateLongContent(cdp);
       scenarios.push({
         kind: "long-content",
@@ -234,7 +238,7 @@ export function createAccountsCardsViewportRunner({
         measurements: longContent,
       });
     }
-  
+
     await screenshot(cdp, join(outputDir, `issue-612-accounts-cards-${viewport.suffix}.png`));
     if (viewport.width === 1366) {
       const cdiSettings = await validateCdiSettings(cdp);

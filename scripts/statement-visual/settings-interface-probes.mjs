@@ -81,7 +81,7 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
       })()`,
     );
   }
-  
+
   async function validateLongProfileName(cdp, scenario) {
     const original = await evaluate(
       cdp,
@@ -100,11 +100,11 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
         truncationRejected: false,
         restored: false,
       };
-  
+
     const filename = `issue-727-${scenario}-long-profile.png`;
     await screenshot(cdp, join(outputDir, filename));
     screenshots.push(filename);
-  
+
     const measurements = await evaluate(
       cdp,
       `(() => {
@@ -129,7 +129,7 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
     );
     return measurements;
   }
-  
+
   async function validateActionHierarchy(cdp, section) {
     return evaluate(
       cdp,
@@ -153,7 +153,7 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
     })()`,
     );
   }
-  
+
   function measurementExpression(section) {
     return `(() => {
       const bodyText = document.body.innerText;
@@ -192,5 +192,10 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
       };
     })()`;
   }
-  return { validateDecimalFormBehavior, validateLongProfileName, validateActionHierarchy, measurementExpression };
+  return {
+    validateDecimalFormBehavior,
+    validateLongProfileName,
+    validateActionHierarchy,
+    measurementExpression,
+  };
 }

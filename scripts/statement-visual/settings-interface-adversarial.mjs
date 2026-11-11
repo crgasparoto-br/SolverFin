@@ -13,7 +13,12 @@ const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-vi
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const screenshots = [];
-const { validateDecimalFormBehavior, validateLongProfileName, validateActionHierarchy, measurementExpression } = createSettingsInterfaceProbes({ outputDir, screenshots });
+const {
+  validateDecimalFormBehavior,
+  validateLongProfileName,
+  validateActionHierarchy,
+  measurementExpression,
+} = createSettingsInterfaceProbes({ outputDir, screenshots });
 let browserVersion = "unknown";
 
 if (!chromePath) throw new Error("CHROME_BIN is required for settings visual validation.");

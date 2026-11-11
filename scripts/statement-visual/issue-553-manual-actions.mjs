@@ -19,7 +19,7 @@ export function createManualInstallmentActions(browser) {
       })()`,
     );
   }
-  
+
   async function interceptFormPost({ action, fulfill, observeAfterFirst = 0 }) {
     const requests = [];
     const operations = [];
@@ -51,7 +51,7 @@ export function createManualInstallmentActions(browser) {
       })().catch(rejectFirst);
       operations.push(operation);
     });
-  
+
     await browser.cdp.send("Fetch.enable", {
       patterns: [{ urlPattern: "*api/*", requestStage: "Request" }],
     });
@@ -71,7 +71,7 @@ export function createManualInstallmentActions(browser) {
       await browser.cdp.send("Fetch.disable");
     }
   }
-  
+
   function readPausedRequest(paused) {
     const url = new URL(paused.request.url);
     const payload = paused.request.postData ? JSON.parse(paused.request.postData) : {};
@@ -85,13 +85,13 @@ export function createManualInstallmentActions(browser) {
       payload,
     };
   }
-  
+
   function assertCanonicalPost(transport) {
     assert.equal(transport.requests.length >= 1, true, JSON.stringify(transport));
     assert.equal(transport.first.method, "POST", JSON.stringify(transport));
     assert.equal(transport.first.pathname, "/api/installments", JSON.stringify(transport));
   }
-  
+
   async function openExpenseModalByKeyboard() {
     const focused = await evaluate(
       browser.cdp,
@@ -105,7 +105,7 @@ export function createManualInstallmentActions(browser) {
     await pressEnter();
     await waitForModal();
   }
-  
+
   async function openExpenseModal() {
     await evaluate(
       browser.cdp,
@@ -113,7 +113,7 @@ export function createManualInstallmentActions(browser) {
     );
     await waitForModal();
   }
-  
+
   async function waitForModal() {
     await evaluate(
       browser.cdp,
@@ -126,7 +126,7 @@ export function createManualInstallmentActions(browser) {
       })()`,
     );
   }
-  
+
   async function fillInstallmentForm({
     amount,
     plannedOn,
@@ -162,7 +162,7 @@ export function createManualInstallmentActions(browser) {
       })()`,
     );
   }
-  
+
   async function submitControlIsKeyboardReady() {
     return evaluate(
       browser.cdp,
@@ -181,18 +181,18 @@ export function createManualInstallmentActions(browser) {
       })()`,
     );
   }
-  
+
   async function submitForm() {
     await evaluate(browser.cdp, `document.querySelector("[data-form]").requestSubmit()`);
   }
-  
+
   async function setMoney(amount) {
     await evaluate(
       browser.cdp,
       `document.querySelector('[data-form] [name="amountMinor"]').value = ${JSON.stringify(amount)}`,
     );
   }
-  
+
   async function waitForFormStatus(expectedText) {
     return evaluate(
       browser.cdp,
