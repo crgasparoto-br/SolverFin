@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "material_head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+  "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
+  "checks": [
+    {
+      "run_id": 42909142491,
+      "workflow": "Repository CI",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42909142491"
+    },
+    {
+      "run_id": 42909142626,
+      "workflow": "Statement visual validation",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42909142626"
+    }
+  ],
+  "authenticated_read": "MCP GitHub fetch on 2026-11-11; neither check is a replacement for an independent human approval"
+}
