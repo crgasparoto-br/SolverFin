@@ -94,7 +94,7 @@ export function createAccountsCardsAdvancedProbes({ baseUrl, waitFor, waitForDet
     }
     return snapshot;
   }
-  
+
   async function validateCdiSwitch(cdp) {
     const eligibleHref = await evaluate(
       cdp,
@@ -162,7 +162,7 @@ export function createAccountsCardsAdvancedProbes({ baseUrl, waitFor, waitForDet
     assert.equal(cancelled.requests, 0, "Cancelling CDI must not write.");
     const before = await evaluate(cdp, "String(window.__issue716CdiProof.initiallyActive)");
     assert.equal(cancelled.checked, before, "Cancel must preserve state.");
-  
+
     await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
     await waitFor(
       cdp,
@@ -190,7 +190,7 @@ export function createAccountsCardsAdvancedProbes({ baseUrl, waitFor, waitForDet
       `!document.querySelector('#accounts-cards-confirm-dialog[open]') && !document.querySelector('[data-cdi-toggle]')?.disabled`,
       "CDI retry must wait for prior dialog close and toggle unlock.",
     );
-  
+
     await evaluate(cdp, "document.querySelector('[data-cdi-toggle]')?.click()");
     await waitFor(
       cdp,
