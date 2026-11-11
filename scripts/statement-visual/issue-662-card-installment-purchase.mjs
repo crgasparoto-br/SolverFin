@@ -339,12 +339,18 @@ async function openInvoice(fixture) {
 
 async function validateAssistivePositionGuard(fixture) {
   await openInvoice(fixture);
+  // The SSR purchase row can appear before the asynchronous installment decoration.
+  // Wait for the assistive text on this purchase, not a reason on another row.
+  await waitFor(
+    `[data-purchase-item]:has([data-edit-purchase="${fixture.transactionId}"]) .installment-assistive-text`,
+  );
   await evaluate(browser.cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
   await waitFor('dialog[data-modal="purchase"][open]');
   const state = await evaluate(
     browser.cdp,
     `(() => {
-      const reason = document.querySelector('.installment-assistive-text');
+      const purchaseRow = document.querySelector('[data-edit-purchase="${fixture.transactionId}"]')?.closest('[data-purchase-item]');
+      const reason = purchaseRow?.querySelector('.installment-assistive-text');
       if (!reason) throw new Error('Installment accessible reason did not render');
       const originalStyle = reason.getAttribute('style');
       const originalReasonText = reason.textContent;

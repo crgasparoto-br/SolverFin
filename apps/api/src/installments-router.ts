@@ -14,6 +14,8 @@ import {
 } from "./repositories/manual-installments.js";
 
 import type { ApiRequest, ApiResponse } from "./router.js";
+import { isValidDateOnly, json } from "./installments-route-helpers.js";
+export { isValidDateOnly } from "./installments-route-helpers.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 interface InstallmentsRoute {
@@ -439,20 +441,6 @@ function readOptionalDateFilter(
   return value;
 }
 
-export function isValidDateOnly(value: string): boolean {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
-  if (!match) return false;
-
-  const year = Number(match[1]);
-  const month = Number(match[2]);
-  const day = Number(match[3]);
-  const date = new Date(Date.UTC(year, month - 1, day));
-
-  return (
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
-  );
-}
-
 function requireObjectBody(body: unknown): Record<string, unknown> {
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     throwInstallmentPayloadInvalid("Payload de parcela invalido.");
@@ -490,14 +478,6 @@ function throwInstallmentsFilterInvalid(message: string): never {
 
 function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
   return authorization === undefined ? {} : { authorization };
-}
-
-function json(statusCode: number, body: unknown): ApiResponse {
-  return {
-    statusCode,
-    headers: { "content-type": "application/json; charset=utf-8" },
-    body,
-  };
 }
 
 function mapDomainError(error: unknown): unknown {

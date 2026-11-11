@@ -1,36 +1,33 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
+import { createStatementFilters } from "./transactions-filters.js";
+import { css } from "./transactions-page-styles.js";
+import {
+  escapeHtml,
+  formatDate,
+  formatMoney,
+  formatMovementDate,
+  formatPercentage,
+  renderRowGlyph,
+  resolveRowGlyph,
+  CATEGORY_DIRECTION_GLYPHS,
+  type CategoryDirection,
+} from "./transactions-render-helpers.js";
+import { statementClientScriptPart1 } from "./transactions-script-part-1.js";
+import { statementClientScriptPart2 } from "./transactions-script-part-2.js";
 
 import { apiGet } from "./api.js";
 import { attachmentWorkspaceScript, renderAttachmentWorkspace } from "./attachment-workspace.js";
 import { findInstitution, renderInstitutionIcon } from "./institutions.js";
 import {
   recurrencesSectionScript,
-  recurrencesSectionStyles,
   renderRecurrenceActionMenuItems,
   renderRecurrenceEditModal,
   renderRecurrenceIndicator,
   type RecurrenceRecord,
 } from "./recurrences-section.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
-import { sharedShellStyles } from "./shared-styles.js";
-import {
-  statementAttemptKeyScript,
-  statementCloseProtectionScript,
-  statementContinueSaveScript,
-  statementContinueVisibilityScript,
-  statementResponseConfirmationScript,
-  statementSubmitPreparationScript,
-  statementTransactionPostScript,
-} from "./statement-save-flow-scripts.js";
-import {
-  entryFillRuleScript,
-  entryFillRuleStyles,
-  renderEntryFillRuleControl,
-} from "./entry-fill-rules.js";
-import {
-  renderStatementListArchetype,
-  statementListArchetypeStyles,
-} from "./statement-list-archetype.js";
+
+import { entryFillRuleScript, renderEntryFillRuleControl } from "./entry-fill-rules.js";
+import { renderStatementListArchetype } from "./statement-list-archetype.js";
 import { renderStatementStatus, renderStatementStatusControl } from "./statement-status.js";
 import { buildConsolidatedStatement } from "./transactions-consolidated.js";
 import {
@@ -39,7 +36,6 @@ import {
   calculateOpeningBalance,
   filterStatementPeriodTransactions,
   isAccountStatementTransaction,
-  monthToPeriod,
   projectTransactionGroups,
   resolveFilters,
   statementDate,
@@ -51,7 +47,7 @@ import {
   type TransactionRecord,
 } from "./transactions-statement.js";
 
-interface CategoryRecord {
+export interface CategoryRecord {
   id: string;
   name: string;
   kind: string;
@@ -67,7 +63,7 @@ type StatementSort =
   | "description_asc"
   | "description_desc";
 
-interface StatementPresentation {
+export interface StatementPresentation {
   search: string;
   sort: StatementSort;
   insightCategoryId?: string;
@@ -76,6 +72,14 @@ interface StatementPresentation {
   filterReconciliation?: "reconciled" | "unreconciled";
   filterStatus?: "effective" | "suggested" | "planned";
 }
+
+const renderFilters = createStatementFilters({
+  renderAccountPicker,
+  renderCategoryOptions,
+  renderSortOptions,
+  filterIcon,
+  statementTodayInSaoPaulo,
+});
 
 export async function renderTransactionsPageV2(token: string, url?: URL): Promise<string> {
   const [accountsResult, categoriesResult] = await Promise.all([
@@ -360,176 +364,6 @@ export function statementTodayInSaoPaulo(now: Date = new Date()): string {
   }).formatToParts(now);
   const value = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
   return `${value("year")}-${value("month")}-${value("day")}`;
-}
-
-function renderFilters(
-  accounts: readonly AccountRecord[],
-  selectedAccount: AccountRecord | undefined,
-  selectedId: string | undefined,
-  month: string,
-  presentation: StatementPresentation,
-  url: URL | undefined,
-  categories: readonly CategoryRecord[],
-  consolidatedCurrency: string | undefined,
-  availableCurrencies: readonly string[],
-  resolvedPeriod: { startsOn: string; endsOn: string; day?: string },
-): string {
-  const preserved = [
-    "profileId",
-    ...(consolidatedCurrency ? [] : ["currency"]),
-    "evidence",
-    "from",
-    "to",
-    "merchantKey",
-  ]
-    .map((name) => {
-      const value = url?.searchParams.get(name);
-      return value ? `<input type="hidden" name="${name}" value="${escapeHtml(value)}">` : "";
-    })
-    .join("");
-
-  const day = resolvedPeriod.day;
-  const dayBounds = monthToPeriod(month);
-  const activePeriod = resolvedPeriod;
-  const rangeSelected = Boolean(
-    !day && url?.searchParams.get("from") && url?.searchParams.get("to"),
-  );
-  // Keep user/profile/currency and search filters; replace only the period.
-  const shortcutBase = new URLSearchParams(url?.searchParams);
-  for (const param of ["day", "from", "to", "startsOn", "endsOn"]) {
-    shortcutBase.delete(param);
-  }
-  if (selectedId) shortcutBase.set("accountId", selectedId);
-  if (consolidatedCurrency) shortcutBase.set("currency", consolidatedCurrency);
-  const shortcut = (
-    key: string,
-    label: string,
-    params: Readonly<Record<string, string>>,
-    active: boolean,
-  ): string => {
-    const query = new URLSearchParams(shortcutBase);
-    query.set("month", params.month ?? month);
-    for (const [key, value] of Object.entries(params)) {
-      if (key !== "month") query.set(key, value);
-    }
-    return `<a class="statement-period-chip" data-period-shortcut="${key}" href="/lancamentos?${query.toString()}"${active ? ' aria-current="true"' : ""}>${label}</a>`;
-  };
-  const todayIso = statementTodayInSaoPaulo();
-  const dayOffset = (count: number): string => {
-    const date = new Date(todayIso + "T12:00:00.000Z");
-    date.setUTCDate(date.getUTCDate() - count);
-    return date.toISOString().slice(0, 10);
-  };
-  const previousMonth = (() => {
-    const date = new Date(todayIso + "T12:00:00.000Z");
-    date.setUTCDate(1);
-    date.setUTCMonth(date.getUTCMonth() - 1);
-    return date.toISOString().slice(0, 7);
-  })();
-  const currentMonth = todayIso.slice(0, 7);
-  const periodShortcuts = [
-    shortcut(
-      "today",
-      "Hoje",
-      { month: currentMonth, day: todayIso },
-      day === todayIso && !rangeSelected,
-    ),
-    shortcut(
-      "last7",
-      "7 dias",
-      { month: currentMonth, from: dayOffset(6), to: todayIso },
-      rangeSelected && activePeriod.startsOn === dayOffset(6) && activePeriod.endsOn === todayIso,
-    ),
-    shortcut(
-      "last30",
-      "30 dias",
-      { month: currentMonth, from: dayOffset(29), to: todayIso },
-      rangeSelected && activePeriod.startsOn === dayOffset(29) && activePeriod.endsOn === todayIso,
-    ),
-    shortcut(
-      "thisMonth",
-      "Este mês",
-      { month: currentMonth },
-      month === currentMonth && !day && !rangeSelected,
-    ),
-    shortcut(
-      "previousMonth",
-      "Mês anterior",
-      { month: previousMonth },
-      month === previousMonth && !day && !rangeSelected,
-    ),
-  ].join("");
-  const activeFilterCount = [
-    presentation.search,
-    presentation.filterKind,
-    presentation.filterStatus,
-    presentation.filterReconciliation,
-    presentation.insightCategoryId,
-    day,
-    rangeSelected ? "range" : undefined,
-    presentation.sort !== "date_asc" ? presentation.sort : undefined,
-  ].filter(Boolean).length;
-
-  return `<form class="filter-form" method="get" action="/lancamentos" data-auto-submit>
-    ${preserved}
-    ${renderAccountPicker(accounts, selectedAccount, selectedId, consolidatedCurrency, availableCurrencies)}
-    <div class="month-field">
-      <label for="filter-month">Mês</label>
-      <div class="month-nav">
-        <button type="button" class="icon-btn" data-month-step="-1" aria-label="Mês anterior">&#8249;</button>
-        <input id="filter-month" name="month" type="month" lang="pt-BR" value="${escapeHtml(month)}" required />
-        <button type="button" class="icon-btn" data-month-step="1" aria-label="Próximo mês">&#8250;</button>
-      </div>
-    </div>
-    <div class="statement-period-shortcuts" role="group" aria-label="Atalhos de período"><span class="statement-period-range" data-period-range>Período ${formatDate(activePeriod.startsOn)} – ${formatDate(activePeriod.endsOn)}</span>${periodShortcuts}<span class="statement-filter-count" data-filter-count>Filtros (${activeFilterCount})</span></div>
-    <div class="statement-day-field" data-statement-day-field>
-      <label for="filter-day">Dia do mês</label>
-      <div class="statement-day-controls">
-        <input id="filter-day" name="day" type="date" lang="pt-BR" aria-label="Filtrar lançamentos por dia do mês" min="${escapeHtml(dayBounds.startsOn)}" max="${escapeHtml(dayBounds.endsOn)}" value="${escapeHtml(day ?? "")}" />
-        <button type="button" class="ghost-btn statement-day-clear" data-clear-statement-day aria-label="Exibir o mês completo"${day ? "" : " hidden"}>Mês completo</button>
-      </div>
-    </div>
-    <label class="statement-search-field" for="statement-search">Buscar
-      <input id="statement-search" name="q" type="search" value="${escapeHtml(presentation.search)}" placeholder="Descrição ou categoria" autocomplete="off" />
-    </label>
-    <label class="statement-kind-field" for="statement-kind"><span class="filter-field-heading">${filterIcon("kind")}Tipo</span>
-      <select id="statement-kind" name="kind">
-        <option value="">Todos os tipos</option>
-        <option value="expense"${presentation.filterKind === "expense" ? " selected" : ""}>Despesa</option>
-        <option value="income"${presentation.filterKind === "income" ? " selected" : ""}>Receita</option>
-        <option value="transfer"${presentation.filterKind === "transfer" ? " selected" : ""}>Transferência</option>
-      </select>
-    </label>
-    <label class="statement-status-field" for="statement-status"><span class="filter-field-heading">${filterIcon("status")}Status</span>
-      <select id="statement-status" name="status">
-        <option value="">Todos os status</option>
-        <option value="effective"${presentation.filterStatus === "effective" ? " selected" : ""}>Efetivado</option>
-        <option value="suggested"${presentation.filterStatus === "suggested" ? " selected" : ""}>Pendente</option>
-        <option value="planned"${presentation.filterStatus === "planned" ? " selected" : ""}>Previsto</option>
-      </select>
-    </label>
-    <label class="statement-reconciliation-field" for="statement-reconciliation"><span class="filter-field-heading">${filterIcon("reconciliation")}Conciliação</span>
-      <select id="statement-reconciliation" name="reconciliation">
-        <option value="">Todas as situações</option>
-        <option value="unreconciled"${presentation.filterReconciliation === "unreconciled" ? " selected" : ""}>Não conciliado</option>
-        <option value="reconciled"${presentation.filterReconciliation === "reconciled" ? " selected" : ""}>Conciliado</option>
-      </select>
-    </label>
-    <label class="statement-category-field" for="statement-category"><span class="filter-field-heading">${filterIcon("category")}Categoria</span>
-      <select id="statement-category" name="categoryId" aria-label="Filtrar por categoria">
-        <option value="">Todas</option>
-        ${renderCategoryOptions(categories, presentation.insightCategoryId)}
-      </select>
-    </label>
-    <label class="statement-sort-field" for="statement-sort"><span class="filter-field-heading">${filterIcon("sort")}Ordenar</span>
-      <select id="statement-sort" name="sort">${renderSortOptions(presentation.sort)}</select>
-    </label>
-    <div class="statement-filter-actions">
-      <button type="submit">Aplicar</button>
-      <button type="button" class="ghost-btn" data-month-current>Mês atual</button>
-      <a class="button-link secondary-button" href="/lancamentos${selectedId ? `?accountId=${encodeURIComponent(selectedId)}&month=${encodeURIComponent(month)}${consolidatedCurrency ? `&currency=${encodeURIComponent(consolidatedCurrency)}` : ""}` : ""}">Limpar filtros</a>
-    </div>
-  </form>`;
 }
 
 function renderSortOptions(selected: StatementSort): string {
@@ -1110,449 +944,13 @@ function renderTrashIcon(): string {
   return `<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M5 7h14M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M7 7l1 13a2 2 0 0 0 2 2h4a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
 function clientScript(currency: string | undefined, accounts: readonly AccountRecord[]): string {
-  return String.raw`<script data-statement-a2-runtime="true">
-  (() => {
-    const statementCurrency = ${JSON.stringify(currency ?? "")};
-    const accountCurrencies = new Map(${serializeScriptJson(
-      accounts.map((account) => [account.id, resolveAccountCurrency(account) ?? ""]),
-    )});
-    const accountLabels = new Map(${serializeScriptJson(
-      accounts.map((account) => [account.id, formatAccountLabel(account)]),
-    )});
-    const modal = document.querySelector("[data-modal]");
-    const form = document.querySelector("[data-form]");
-    if (!form || !modal) return;
-    const statusNode = document.createElement("p");
-    statusNode.className = "form-status muted full";
-    statusNode.setAttribute("aria-live", "polite");
-    form.appendChild(statusNode);
-    const remunerationIds = new Set();
-    const unlockRemunerationFields = () => {
-      form.dataset.remunerationProtected = "false";
-      form.querySelectorAll("[data-remuneration-protected]").forEach((field) => {
-        field.removeAttribute("data-remuneration-protected");
-        field.removeAttribute("aria-disabled");
-        if ("readOnly" in field) field.readOnly = false;
-      });
-      form.querySelector("[data-remuneration-edit-notice]")?.remove();
-    };
-    const protectRemunerationField = (field) => {
-      if (!field) return;
-      field.setAttribute("data-remuneration-protected", "true");
-      field.setAttribute("aria-disabled", "true");
-      field.dataset.remunerationValue = field.value;
-      if ("readOnly" in field) field.readOnly = true;
-    };
-    const lockRemunerationFields = () => {
-      unlockRemunerationFields();
-      form.dataset.remunerationProtected = "true";
-      const repeatMode = form.elements.repeatMode;
-      if (repeatMode) repeatMode.value = "single";
-      [form.elements.kind, form.elements.plannedOn, form.elements.description, repeatMode, form.querySelector("[data-edit-account-select]")].forEach(protectRemunerationField);
-      const saveRow = form.querySelector(".save-row");
-      if (saveRow && !form.querySelector("[data-remuneration-edit-notice]")) {
-        const notice = document.createElement("p");
-        notice.className = "remuneration-edit-notice";
-        notice.setAttribute("data-remuneration-edit-notice", "");
-        notice.textContent = "Neste lançamento, altere somente o valor creditado, a categoria, a situação e a data efetiva. Conta, tipo, competência e memória do cálculo permanecem protegidos.";
-        saveRow.before(notice);
-      }
-    };
-    form.addEventListener("mousedown", (event) => {
-      const target = event.target;
-      if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
-    }, true);
-    form.addEventListener("keydown", (event) => {
-      const target = event.target;
-      if (target?.matches?.('select[data-remuneration-protected="true"]')) event.preventDefault();
-    }, true);
-    form.addEventListener("change", (event) => {
-      const target = event.target;
-      if (target?.matches?.('[data-remuneration-protected="true"]')) target.value = target.dataset.remunerationValue || target.value;
-    }, true);
-
-    const moneyToMinor = (value) => Math.round(parseFloat(String(value).replace(/\./g, "").replace(",", ".") || "0") * 100);
-    const minorToMoneyInput = (amountMinor) => (amountMinor / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    const money = (minor, currencyCode) => /^[A-Z]{3}$/.test(currencyCode || "") ? (Number(minor || 0) / 100).toLocaleString("pt-BR", { style: "currency", currency: currencyCode }) : "Moeda indisponível";
-    const currentLocalDate = () => { const now = new Date(); return String(now.getFullYear()) + "-" + String(now.getMonth() + 1).padStart(2, "0") + "-" + String(now.getDate()).padStart(2, "0"); };
-    const moneyInput = form.querySelector("[data-money]");
-    const destinationMoneyInput = form.querySelector("[data-destination-money]");
-    moneyInput?.addEventListener("input", () => { const digits = moneyInput.value.replace(/\D/g, ""); moneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
-    destinationMoneyInput?.addEventListener("input", () => { const digits = destinationMoneyInput.value.replace(/\D/g, ""); destinationMoneyInput.value = minorToMoneyInput(digits ? parseInt(digits, 10) : 0); syncEffectiveRate(); });
-
-    const setFieldVisible = (name, visible) => { const field = form.querySelector('[data-field="' + name + '"]'); if (field) field.hidden = !visible; };
-    const syncCategoryOptions = () => {
-      const select = form.querySelector("[data-category-select]"); if (!select) return;
-      let selectedHidden = false;
-      Array.from(select.options).forEach((option) => { if (!option.dataset.kind) return; const visible = option.dataset.kind === form.kind.value; option.hidden = !visible; if (!visible && option.selected) selectedHidden = true; });
-      if (selectedHidden) select.value = "";
-    };
-    // Create mode submits the hidden statement account; edit mode (#473) swaps in an enabled select.
-    const sourceAccountId = () => String(Array.from(form.querySelectorAll('[name="accountId"]')).find((field) => !field.disabled)?.value || "");
-    const sourceCurrency = () => accountCurrencies.get(sourceAccountId()) || statementCurrency;
-    const destinationCurrency = () => String(form.destinationAccountId.selectedOptions?.[0]?.dataset.currency || "");
-    const isCrossCurrencyTransfer = () => form.kind.value === "transfer" && Boolean(destinationCurrency()) && destinationCurrency() !== sourceCurrency();
-    const formatEffectiveRate = (sourceMinor, destinationMinor) => {
-      if (!Number.isSafeInteger(sourceMinor) || !Number.isSafeInteger(destinationMinor) || sourceMinor <= 0 || destinationMinor <= 0) return "Informe os dois valores";
-      const scale = 1000000n;
-      const denominator = BigInt(sourceMinor);
-      const rounded = (BigInt(destinationMinor) * scale + denominator / 2n) / denominator;
-      const whole = rounded / scale;
-      const fraction = (rounded % scale).toString().padStart(6, "0").replace(/0+$/, "");
-      return fraction ? whole.toString() + "," + fraction : whole.toString();
-    };
-    const syncEffectiveRate = () => {
-      const output = form.querySelector("[data-effective-rate]");
-      const direction = form.querySelector("[data-effective-rate-direction]");
-      const sourceMinor = moneyToMinor(moneyInput?.value || "0");
-      const destinationMinor = moneyToMinor(destinationMoneyInput?.value || "0");
-      const source = sourceCurrency();
-      const destination = destinationCurrency();
-      if (direction) direction.textContent = source && destination ? destination + " por " + source : "";
-      if (!output) return;
-      output.textContent = formatEffectiveRate(sourceMinor, destinationMinor);
-    };
-    const syncTransferCurrencyState = () => {
-      const source = sourceCurrency();
-      const destination = destinationCurrency();
-      const crossCurrency = isCrossCurrencyTransfer();
-      const sourceNode = form.querySelector("[data-source-currency]");
-      const destinationNode = form.querySelector("[data-destination-currency]");
-      if (sourceNode) sourceNode.textContent = source || "moeda indisponível";
-      if (destinationNode) destinationNode.textContent = destination || "moeda destino";
-      setFieldVisible("destinationAmountMinor", crossCurrency);
-      setFieldVisible("effectiveRate", crossCurrency);
-      if (destinationMoneyInput) destinationMoneyInput.required = crossCurrency;
-      const repeatHint = form.querySelector("[data-cross-currency-repeat-hint]");
-      if (repeatHint) repeatHint.hidden = !crossCurrency;
-      const installmentOption = form.repeatMode.querySelector('option[value="installment"]');
-      if (installmentOption) installmentOption.disabled = crossCurrency;
-      const fixedOption = form.repeatMode.querySelector('[data-repeat-option="fixed"]');
-      if (fixedOption) fixedOption.disabled = crossCurrency;
-      if (crossCurrency && form.repeatMode.value !== "single") form.repeatMode.value = "single";
-      syncEffectiveRate();
-    };
-    const syncTransferAccounts = () => {
-      const transfer = form.kind.value === "transfer";
-      const destinationSelect = form.destinationAccountId;
-      const sourceId = sourceAccountId();
-      const editAccountField = form.querySelector("[data-edit-account-field]");
-      const editingSource = Boolean(editAccountField && !editAccountField.hidden);
-      if (editAccountField?.firstChild?.nodeType === 3) editAccountField.firstChild.nodeValue = transfer ? "Conta origem" : "Conta";
-      const sourceDisplay = form.querySelector("[data-source-account-display]");
-      if (sourceDisplay) sourceDisplay.value = accountLabels.get(sourceId) || "Conta indisponível";
-      setFieldVisible("sourceAccount", transfer && !editingSource);
-      setFieldVisible("destinationAccountId", transfer);
-      destinationSelect.disabled = !transfer;
-      destinationSelect.required = transfer;
-      Array.from(destinationSelect.options).forEach((option) => { if (option.value) option.disabled = option.value === sourceId; });
-      if (!transfer) {
-        destinationSelect.value = "";
-        if (destinationMoneyInput) { destinationMoneyInput.value = ""; destinationMoneyInput.dataset.currency = ""; }
-      }
-      destinationSelect.setCustomValidity(transfer && destinationSelect.value && destinationSelect.value === sourceId ? "Escolha uma conta destino diferente da conta origem." : "");
-    };
-    const syncFieldVisibility = () => {
-      syncTransferAccounts();
-      syncTransferCurrencyState();
-      const repeatMode = form.repeatMode.value;
-      const usesGenericTemporalFields = repeatMode === "single" || form.dataset.method === "PATCH";
-      setFieldVisible("occurredOn", usesGenericTemporalFields); form.occurredOn.required = usesGenericTemporalFields;
-      ["installments", "installmentStart", "installmentValueMode"].forEach((name) => setFieldVisible(name, repeatMode === "installment"));
-      ["interval", "frequency", "endOn"].forEach((name) => setFieldVisible(name, repeatMode === "fixed"));
-      syncCategoryOptions();
-${statementContinueVisibilityScript}
-    };
-    form.addEventListener("change", (event) => {
-      if (event.target.name === "destinationAccountId" && destinationMoneyInput) {
-        const nextCurrency = destinationCurrency();
-        const previousCurrency = destinationMoneyInput.dataset.currency || "";
-        if (previousCurrency && previousCurrency !== nextCurrency) destinationMoneyInput.value = "";
-        destinationMoneyInput.dataset.currency = nextCurrency;
-      }
-      if (event.target.name === "kind" || event.target.name === "repeatMode" || event.target.name === "accountId" || event.target.name === "destinationAccountId") syncFieldVisibility();
-    });
-
-    form.querySelector("[data-transaction-cancel]")?.addEventListener("click", () => {
-      if (form.dataset.submitting === "true") return;
-      if (typeof modal.requestClose === "function") modal.requestClose();
-      else modal.close();
-    });
-${statementCloseProtectionScript}
-    const statusButtons = Array.from(form.querySelectorAll("[data-status-option]"));
-    const statusLabel = form.querySelector("[data-status-label]");
-    const setStatus = (value) => { form.status.value = value; statusButtons.forEach((button) => { const active = button.dataset.statusOption === value; button.classList.toggle("active", active); button.setAttribute("aria-checked", String(active)); if (active && statusLabel) statusLabel.textContent = button.dataset.statusLabelText; }); };
-    statusButtons.forEach((button) => button.addEventListener("click", () => setStatus(button.dataset.statusOption)));
-
-    const addMonths = (dateValue, months) => { const date = new Date(dateValue + "T00:00:00Z"); date.setUTCMonth(date.getUTCMonth() + months); return date.toISOString().slice(0, 10); };
-    const shiftMonth = (monthValue, steps) => { const [year, month] = monthValue.split("-").map(Number); return new Date(Date.UTC(year, month - 1 + steps, 1)).toISOString().slice(0, 7); };
-    const monthInput = document.querySelector("#filter-month");
-    document.querySelectorAll("[data-month-step]").forEach((button) => button.addEventListener("click", () => { monthInput.value = shiftMonth(monthInput.value, Number(button.dataset.monthStep)); monthInput.form?.requestSubmit(); }));
-    document.querySelectorAll("[data-month-current]").forEach((button) => button.addEventListener("click", () => { monthInput.value = new Date().toISOString().slice(0, 7); monthInput.form?.requestSubmit(); }));
-    monthInput.addEventListener("change", () => { monthInput.form?.querySelectorAll('input[name="from"],input[name="to"]').forEach((node) => node.remove()); monthInput.form?.requestSubmit(); });
-    document.querySelectorAll("[data-auto-submit]").forEach((autoForm) => autoForm.addEventListener("change", (event) => { if (event.target.name === "accountId" || event.target.name === "sort") autoForm.requestSubmit(); }));
-
-    const accountPicker = document.querySelector("[data-account-picker]");
-    if (accountPicker) {
-      const trigger = accountPicker.querySelector("[data-account-trigger]"); const menu = accountPicker.querySelector("[data-account-menu]"); const input = accountPicker.querySelector("[data-account-input]");
-      const close = () => { menu.hidden = true; trigger.setAttribute("aria-expanded", "false"); };
-      trigger.addEventListener("click", () => { menu.hidden = !menu.hidden; trigger.setAttribute("aria-expanded", String(!menu.hidden)); });
-      menu.querySelectorAll("[data-account-option]").forEach((option) => option.addEventListener("click", () => { input.value = option.dataset.accountOption; if (input.value !== "all") { const currencyField = accountPicker.querySelector("[data-auto-currency]"); if (currencyField) currencyField.disabled = true; } close(); input.dispatchEvent(new Event("change", { bubbles: true })); }));
-      document.addEventListener("click", (event) => { if (!accountPicker.contains(event.target)) close(); });
-      document.addEventListener("keydown", (event) => { if (event.key === "Escape") close(); });
-    }
-
-    const withActiveProfile = (path) => { const profileId = new URL(location.href).searchParams.get("profileId"); if (!profileId) return path; return path + (path.includes("?") ? "&" : "?") + "profileId=" + encodeURIComponent(profileId); };
-    const send = (path, method, body) => fetch(withActiveProfile(path), { method, headers: { "content-type": "application/json", accept: "application/json" }, body: JSON.stringify(body) });
-    const transactionErrorMessages = {
-      TRANSACTION_KIND_REQUIRED: "Informe o tipo do lançamento.",
-      TRANSACTION_KIND_INVALID: "O tipo de lançamento informado não é suportado.",
-      TRANSACTION_STATUS_INVALID: "A situação do lançamento informada não é suportada.",
-      TRANSACTION_SOURCE_INVALID: "A origem do lançamento informada não é suportada.",
-      TRANSACTION_AMOUNT_INVALID: "Informe um valor válido maior que zero.",
-      TRANSACTION_DATE_REQUIRED: "Informe a data do evento.",
-      TRANSACTION_EFFECTIVE_DATE_REQUIRED: "Lançamentos efetivados ou conciliados exigem data efetiva.",
-      TRANSACTION_ACCOUNT_REQUIRED: "Selecione uma conta para o lançamento.",
-      TRANSACTION_ACCOUNT_INVALID: "A conta selecionada não corresponde ao lançamento.",
-      TRANSACTION_ACCOUNT_ARCHIVED: "A conta selecionada precisa estar ativa.",
-      TRANSACTION_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência.",
-      TRANSACTION_DESTINATION_ACCOUNT_INVALID: "A conta de destino da transferência é inválida.",
-      TRANSACTION_DESTINATION_AMOUNT_REQUIRED: "Informe o valor que será creditado na conta de destino.",
-      TRANSACTION_DESTINATION_AMOUNT_INVALID: "O valor da conta de destino precisa ser maior que zero e compatível com a transferência.",
-      TRANSACTION_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
-      TRANSACTION_CURRENCY_MISMATCH: "A moeda do lançamento deve ser a mesma da conta.",
-      TRANSACTION_CATEGORY_INVALID: "A categoria selecionada é inválida.",
-      TRANSACTION_CATEGORY_ARCHIVED: "A categoria selecionada precisa estar ativa.",
-      RECURRENCE_DESTINATION_ACCOUNT_REQUIRED: "Selecione a conta de destino da transferência recorrente.",
-      RECURRENCE_DESTINATION_ACCOUNT_INVALID: "A conta de destino da recorrência é inválida.",
-      RECURRENCE_TRANSFER_SAME_ACCOUNT: "A conta de origem e a conta de destino devem ser diferentes.",
-      RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED: "Transferências fixas exigem contas de origem e destino na mesma moeda."
-    };
-    const safeMessageCodes = new Set(["INSTALLMENT_PAYLOAD_INVALID"]);
-    const message = async (response) => { const body = await response.json().catch(() => ({})); if (response.ok) return "Ação concluída. Atualizando..."; const code = String((body.error && body.error.code) || ""); const safeDetail = safeMessageCodes.has(code) ? String(body?.error?.message || "") : ""; return transactionErrorMessages[code] || safeDetail || "Não foi possível concluir a ação. Revise os dados e tente novamente."; };
-
-    const basePayload = (plannedOn, effectiveOn, amountMinor, description) => {
-      const data = new FormData(form);
-      const occurredOn = String(data.get("occurredOn") || "").trim();
-      const status = String(data.get("status"));
-      const normalizedPlannedOn = String(plannedOn || "").trim() || occurredOn;
-      const explicitEffectiveOn = String(effectiveOn || "").trim(); const isCreate = (form.dataset.method || "POST") === "POST";
-      const normalizedEffectiveOn = status === "posted" || status === "reconciled" ? (explicitEffectiveOn || (isCreate ? occurredOn : undefined)) : null;
-      const result = { kind: String(data.get("kind")), amountMinor, occurredOn, plannedOn: normalizedPlannedOn, accountId: String(data.get("accountId")), description, status };
-      if (normalizedEffectiveOn !== undefined) result.effectiveOn = normalizedEffectiveOn;
-      const destinationAccountId = String(data.get("destinationAccountId") || ""); const categoryId = String(data.get("categoryId") || ""); const note = String(data.get("note") || "").trim();
-      if (destinationAccountId && result.kind === "transfer") result.destinationAccountId = destinationAccountId;
-      if (isCrossCurrencyTransfer()) result.destinationAmountMinor = moneyToMinor(data.get("destinationAmountMinor"));
-      if (categoryId) result.categoryId = categoryId; if (note) result.note = note; return result;
-    };
-    const payload = () => { const data = new FormData(form); return basePayload(String(data.get("plannedOn") || ""), String(data.get("effectiveOn") || ""), moneyToMinor(data.get("amountMinor")), String(data.get("description") || "")); };
-${statementAttemptKeyScript}
-    document.querySelectorAll("[data-open-modal]").forEach((button) => button.addEventListener("click", () => { if (button.disabled) return; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) window.SolverFinAttachments?.resetPending(attachmentWorkspace); form.reset(); const continueButton = form.querySelector("[data-statement-save-continue]"); if (continueButton) continueButton.hidden = false; document.querySelector("[data-modal-title]").textContent = "Novo lançamento"; const today = currentLocalDate(); form.occurredOn.value = today; form.plannedOn.value = today; form.dataset.path = "/api/transactions"; form.dataset.method = "POST"; if (button.dataset.quickKind) form.kind.value = button.dataset.quickKind; form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = !accountCurrencies.get(sourceAccountId()); }); setStatus("posted"); syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }));
-    document.querySelectorAll("[data-transaction]").forEach((node) => {
-      const transaction = JSON.parse(node.textContent);
-      if (transaction.accountRemuneration) remunerationIds.add(transaction.id);
-      const hydrate = (selector, clone) => { const button = document.querySelector(selector + transaction.id + '"]'); if (!button) return; button.addEventListener("click", () => { form.reset(); form.dataset.path = clone ? "/api/transactions" : "/api/transactions/" + transaction.id; form.dataset.method = clone ? "POST" : "PATCH"; form.kind.value = transaction.kind; const rowSourceId = String(transaction.accountId || "");
-      if (!rowSourceId || !accountCurrencies.get(rowSourceId)) return;
-      form.accountId.value = rowSourceId;
-      const accountDisplay = form.querySelector(".statement-entry-account input");
-      if (accountDisplay) accountDisplay.value = accountLabels.get(rowSourceId) || "Conta indisponível";
-      form.querySelectorAll('.statement-save-actions button[type="submit"]').forEach((submitButton) => { submitButton.disabled = false; });
-      const continueButton = form.querySelector("[data-statement-save-continue]");
-      if (continueButton) continueButton.hidden = !clone; form.amountMinor.value = minorToMoneyInput(transaction.amountMinor); form.occurredOn.value = transaction.occurredOn; form.plannedOn.value = transaction.plannedOn || transaction.occurredOn; form.effectiveOn.value = transaction.effectiveOn || ""; setStatus(transaction.status === "reconciled" ? "reconciled" : transaction.status === "posted" ? "posted" : "planned"); form.destinationAccountId.value = transaction.destinationAccountId || ""; if (destinationMoneyInput) { destinationMoneyInput.value = transaction.destinationAmountMinor ? minorToMoneyInput(transaction.destinationAmountMinor) : ""; destinationMoneyInput.dataset.currency = transaction.destinationCurrency || destinationCurrency(); } form.categoryId.value = transaction.categoryId || ""; form.description.value = clone ? "Cópia de " + transaction.description : transaction.description; const attachmentWorkspace = modal.querySelector("[data-attachment-workspace]"); if (attachmentWorkspace) { if (clone) window.SolverFinAttachments?.resetPending(attachmentWorkspace); else attachmentWorkspace.dataset.entityId = transaction.id; } document.querySelector("[data-modal-title]").textContent = clone ? "Clonar lançamento" : "Editar lançamento"; syncFieldVisibility(); modal.showModal(); window.setTimeout(syncFieldVisibility, 0); }); };
-      hydrate('[data-edit="', false); hydrate('[data-clone="', true);
-    });
-    const positionActions = (details) => {
-      const menu = details.querySelector(":scope > div");
-      const summary = details.querySelector("summary");
-      if (!menu || !summary) return;
-      const rect = summary.getBoundingClientRect();
-      menu.style.position = "fixed";
-      menu.style.top = "0px";
-      menu.style.left = "0px";
-      const menuWidth = menu.offsetWidth;
-      const menuHeight = menu.offsetHeight;
-      const left = Math.min(Math.max(8, rect.right - menuWidth), window.innerWidth - menuWidth - 8);
-      const fitsBelow = rect.bottom + 6 + menuHeight <= window.innerHeight - 8;
-      const top = fitsBelow ? rect.bottom + 6 : Math.max(8, rect.top - menuHeight - 6);
-      menu.style.left = left + "px";
-      menu.style.top = top + "px";
-    };
-    const closeActions = () => document.querySelectorAll(".actions[open]").forEach((details) => details.removeAttribute("open"));
-    document.querySelectorAll(".actions").forEach((details) => {
-      const menu = details.querySelector(":scope > div");
-      if (!menu) return;
-      details.addEventListener("toggle", () => {
-        if (!details.open) return;
-        document.querySelectorAll(".actions[open]").forEach((other) => { if (other !== details) other.removeAttribute("open"); });
-        positionActions(details);
-      });
-    });
-    document.querySelectorAll(".actions-item").forEach((item) => item.addEventListener("click", closeActions));
-    let actionsFrame = 0;
-    const repositionActions = () => {
-      if (actionsFrame) return;
-      actionsFrame = window.requestAnimationFrame(() => { actionsFrame = 0; document.querySelectorAll(".actions[open]").forEach(positionActions); });
-    };
-    window.addEventListener("scroll", repositionActions, true);
-    window.addEventListener("resize", repositionActions);
-    document.addEventListener("click", (event) => {
-      document.querySelectorAll(".actions[open]").forEach((details) => {
-        if (!details.contains(event.target)) details.removeAttribute("open");
-      });
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
-      document.querySelectorAll(".actions[open]").forEach((details) => {
-        const summary = details.querySelector("summary");
-        details.removeAttribute("open");
-        if (summary) summary.focus();
-      });
-    });
-    document.addEventListener("click", (event) => {
-      const target = event.target?.closest?.("[data-edit], [data-clone], [data-open-modal]");
-      if (!target) return;
-      const editId = target.getAttribute("data-edit");
-      window.setTimeout(() => {
-        if (editId && remunerationIds.has(editId)) lockRemunerationFields();
-        else unlockRemunerationFields();
-      }, 0);
-    }, true);
-
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault(); if (form.dataset.submitting === "true") return;
-      if (!form.checkValidity()) { form.reportValidity(); return; }
-${statementSubmitPreparationScript}
-      let shouldReload = false;
-      if (method === "POST" && mode === "single") form.dataset.saveAttempted = "true";
-      try {
-        let response;
-        if (mode === "fixed" && method === "POST") {
-          const item = payload(); response = await send("/api/recurrences", "POST", { frequency: form.frequency.value, interval: Math.max(1, Number(form.interval.value || 1)), startOn: item.plannedOn, endOn: form.endOn.value || undefined, amountMinor: item.amountMinor, description: item.description, kind: item.kind, accountId: item.accountId, destinationAccountId: item.destinationAccountId, categoryId: item.categoryId });
-        } else if (mode === "installment" && method === "POST") {
-          const data = new FormData(form); const item = payload(); const draft = { accountId: String(data.get("accountId")), destinationAccountId: String(data.get("destinationAccountId") || "") || null, categoryId: String(data.get("categoryId") || "") || null, kind: String(data.get("kind")), status: String(data.get("status")), description: String(data.get("description") || "").trim(), note: String(data.get("note") || "").trim() || null, plannedOn: item.plannedOn, effectiveOn: item.effectiveOn, amountMinor: moneyToMinor(data.get("amountMinor")), amountMode: String(data.get("installmentValueMode") || "per_installment"), totalInstallments: Math.max(2, Number(data.get("installments") || 2)), initialSequenceNumber: Math.max(1, Number(data.get("installmentStart") || 1)) }; response = await send("/api/installments", "POST", { ...draft, idempotencyKey: attemptKeyFor("/api/installments", draft) });
-${statementTransactionPostScript}
-        const created = response.ok && queuedFile && method === "POST" ? await response.clone().json().catch(() => ({})) : null;
-${statementResponseConfirmationScript}
-        statusNode.className = response.ok ? "form-status success full" : "form-status error full"; statusNode.textContent = await message(response);
-        if (response.ok && queuedFile) {
-          const linkedId = method === "POST" ? created?.transaction?.id : attachmentWorkspace?.dataset.entityId;
-          if (!linkedId) { statusNode.className = "form-status error full"; statusNode.textContent = "Lançamento salvo, mas o identificador não foi retornado. Abra a edição para anexar o arquivo."; return; }
-          if (method === "POST") {
-            form.dataset.method = "PATCH"; form.dataset.path = "/api/transactions/" + encodeURIComponent(linkedId); document.querySelector("[data-modal-title]").textContent = "Editar lançamento";
-          }
-          try {
-            await window.SolverFinAttachments.uploadPending(attachmentWorkspace, linkedId);
-          } catch {
-            statusNode.className = "form-status error full";
-            statusNode.textContent = "Lançamento salvo, mas o anexo não foi enviado. Use Adicionar anexo para tentar novamente.";
-            return;
-          }
-        }
-${statementContinueSaveScript}
-      } catch { statusNode.className = "form-status error full"; statusNode.textContent = "Não foi possível comunicar com o servidor. Verifique sua conexão e tente novamente."; }
-      finally {
-        delete form.dataset.submitting;
-        form.removeAttribute("aria-busy");
-        if (!shouldReload) submitButtons.forEach((button, index) => { button.disabled = previouslyDisabled[index]; });
-      }
-    });
-
-    document.querySelectorAll("[data-action]").forEach((button) => button.addEventListener("click", async () => { if (button.dataset.confirm && !confirm(button.dataset.confirm)) return; const response = await send(button.dataset.path, button.dataset.method || "POST", button.dataset.payload ? JSON.parse(button.dataset.payload) : {}); if (response.ok) setTimeout(() => location.reload(), 300); }));
-
-
-    // Reconcile from the status icon, with the same accessible neutral menu as Cards.
-    const statementStatusControls = Array.from(document.querySelectorAll("[data-statement-status-control]"));
-    const positionStatementStatus = (control) => {
-      const menu = control.querySelector(".statement-status-menu");
-      const summary = control.querySelector("summary");
-      if (!menu || !summary) return;
-      const rect = summary.getBoundingClientRect();
-      menu.style.position = "fixed"; menu.style.left = "0px"; menu.style.top = "0px";
-      const width = menu.offsetWidth; const height = menu.offsetHeight;
-      menu.style.left = Math.max(8, Math.min(rect.left, window.innerWidth - width - 8)) + "px";
-      menu.style.top = (rect.bottom + height + 6 < window.innerHeight
-        ? rect.bottom + 6 : Math.max(8, rect.top - height - 6)) + "px";
-    };
-    const closeStatementStatuses = (except) => {
-      statementStatusControls.forEach((control) => {
-        if (control !== except && control.open) control.open = false;
-      });
-    };
-    statementStatusControls.forEach((control) => control.addEventListener("toggle", () => {
-      if (!control.open) return;
-      closeStatementStatuses(control);
-      closeActions();
-      positionStatementStatus(control);
-    }));
-    const syncStatementMenus = () => statementStatusControls.forEach((control) => {
-      if (control.open) positionStatementStatus(control);
-    });
-    window.addEventListener("scroll", syncStatementMenus, true);
-    window.addEventListener("resize", syncStatementMenus);
-    document.addEventListener("click", (event) => {
-      statementStatusControls.forEach((control) => {
-        if (control.open && !control.contains(event.target)) control.open = false;
-      });
-    });
-    document.addEventListener("keydown", (event) => {
-      if (event.key !== "Escape") return;
-      statementStatusControls.forEach((control) => {
-        if (!control.open) return;
-        control.open = false;
-        control.querySelector("summary")?.focus();
-      });
-    });
-    document.querySelectorAll("[data-set-statement-status]").forEach((button) => {
-      button.addEventListener("click", async () => {
-        const control = button.closest("[data-statement-status-control]");
-        const feedback = control?.querySelector(".statement-status-feedback");
-        const feedbackMessage = feedback?.querySelector("[data-statement-status-feedback-message]");
-        const transactionId = button.dataset.statusTransactionId;
-        const nextStatus = button.dataset.setStatementStatus;
-        if (!control || !feedback || !feedbackMessage || !transactionId || !["posted", "reconciled"].includes(nextStatus)) return;
-        const showStatusFeedback = (text, tone) => {
-          feedback.hidden = false;
-          feedback.className = "statement-status-feedback" + (tone ? " " + tone : "");
-          feedbackMessage.textContent = text;
-          feedback.title = text;
-          feedback.dataset.tooltip = text;
-          positionStatementStatus(control);
-        };
-        const buttons = Array.from(control.querySelectorAll("[data-set-statement-status]"));
-        buttons.forEach((item) => { item.disabled = true; });
-        showStatusFeedback("Atualizando situação...", "");
-        try {
-          // PATCH is status-only: no amount, currency, account or date fields.
-          const response = await send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus });
-          if (!response.ok) {
-            const body = await response.json().catch(() => ({}));
-            showStatusFeedback(body?.error?.message || "Não foi possível alterar a situação.", "error");
-            buttons.forEach((item) => { item.disabled = false; });
-            return;
-          }
-          showStatusFeedback("Situação atualizada. Atualizando extrato...", "success");
-          window.setTimeout(() => location.reload(), 350);
-        } catch {
-          showStatusFeedback("Falha de conexão. Tente novamente.", "error");
-          buttons.forEach((item) => { item.disabled = false; });
-        }
-      });
-    });
-
-    const groupModal = document.querySelector("[data-group-modal]"); const groupForm = document.querySelector("[data-group-form]"); const selectionBar = document.querySelector("[data-selection-bar]"); const selectable = Array.from(document.querySelectorAll("[data-select-transaction]")); const groupOpen = document.querySelector("[data-group-open]");
-    const selected = () => selectable.filter((input) => input.checked);
-    const compatible = (items) => items.length >= 2 && (items[0]?.dataset.kind === "income" || items[0]?.dataset.kind === "expense") && /^[A-Z]{3}$/.test(items[0]?.dataset.currency || "") && items.every((item) => item.dataset.kind === items[0].dataset.kind && item.dataset.status === items[0].dataset.status && item.dataset.currency === items[0].dataset.currency);
-    const syncSelection = () => { const items = selected(); selectionBar.hidden = items.length === 0; selectionBar.querySelector("[data-selection-count]").textContent = String(items.length); selectionBar.querySelector("[data-selection-total]").textContent = money(items.reduce((sum, item) => sum + Number(item.dataset.amount), 0), items[0]?.dataset.currency || statementCurrency); groupOpen.disabled = !compatible(items); };
-    selectable.forEach((input) => input.addEventListener("change", syncSelection)); document.querySelector("[data-selection-clear]")?.addEventListener("click", () => { selectable.forEach((input) => input.checked = false); syncSelection(); }); document.querySelectorAll("[data-group-close]").forEach((button) => button.addEventListener("click", () => groupModal.close()));
-    const safeText = (value) => String(value ?? "").replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character]);
-    const memberMarkup = (item, currencyCode, original) => { const date = original ? (item.effectiveOn || item.plannedOn || item.occurredOn) : item.dataset.date; const description = original ? item.description : item.dataset.description; const category = original ? (item.categoryName || "Sem categoria") : item.dataset.category; const status = original ? item.status : item.dataset.status; const amount = original ? (item.kind === "expense" ? -1 : 1) * item.amountMinor : Number(item.dataset.amount); return "<div><span>" + [date, description, category, status].map(safeText).join(" · ") + "</span><strong>" + safeText(money(amount, currencyCode)) + "</strong></div>"; };
-    groupOpen?.addEventListener("click", () => { const items = selected(); if (!compatible(items)) return; groupForm.reset(); groupForm.dataset.mode = "create"; groupForm.dataset.groupId = ""; groupForm.description.readOnly = false; groupForm.displayOn.readOnly = false; groupForm.displayOn.value = items.map((item) => item.dataset.date).sort().at(-1); groupForm.querySelector("[data-group-summary]").textContent = items[0].dataset.kind + " · " + items[0].dataset.status + " · " + items[0].dataset.currency + " · " + money(items.reduce((sum, item) => sum + Math.abs(Number(item.dataset.amount)), 0), items[0].dataset.currency); groupForm.querySelector("[data-group-members]").innerHTML = items.map((item) => memberMarkup(item, items[0].dataset.currency, false)).join(""); groupForm.querySelector('[type="submit"]').hidden = false; groupForm.querySelector("[data-group-ungroup]").hidden = true; document.querySelector("[data-group-title]").textContent = "Unificar lançamentos"; groupModal.showModal(); });
-    document.querySelectorAll("[data-group]").forEach((node) => { const group = JSON.parse(node.textContent); document.querySelector('[data-group-details="' + group.id + '"]')?.addEventListener("click", () => { groupForm.reset(); groupForm.dataset.mode = "details"; groupForm.dataset.groupId = group.id; groupForm.description.value = group.description; groupForm.description.readOnly = true; groupForm.displayOn.value = group.displayOn; groupForm.displayOn.readOnly = true; groupForm.querySelector("[data-group-summary]").textContent = group.kind + " · " + group.status + " · " + group.currency + " · " + money(group.totalAmountMinor, group.currency); groupForm.querySelector("[data-group-members]").innerHTML = group.members.map((item) => memberMarkup(item, group.currency, true)).join(""); groupForm.querySelector('[type="submit"]').hidden = true; groupForm.querySelector("[data-group-ungroup]").hidden = false; document.querySelector("[data-group-title]").textContent = "Detalhes do grupo"; groupModal.showModal(); }); });
-    groupForm?.addEventListener("submit", async (event) => { event.preventDefault(); const response = await send("/api/transaction-groups", "POST", { memberIds: selected().map((item) => item.value), description: groupForm.description.value, displayOn: groupForm.displayOn.value }); if (response.ok) location.reload(); else { const error = groupForm.querySelector("[data-group-error]"); error.textContent = await message(response); error.hidden = false; } });
-    groupForm?.querySelector("[data-group-ungroup]")?.addEventListener("click", async () => { if (!confirm("Desagrupar estes lançamentos?")) return; const response = await send("/api/transaction-groups/" + groupForm.dataset.groupId, "DELETE", {}); if (response.ok) location.reload(); });
-    syncFieldVisibility(); setStatus("posted");
-  })();
-  </script>`;
+  return (
+    statementClientScriptPart1(currency, accounts, {
+      resolveAccountCurrency,
+      formatAccountLabel,
+      serializeScriptJson,
+    }) + statementClientScriptPart2()
+  );
 }
 
 function renderShell(content: string): string {
@@ -1598,116 +996,6 @@ function normalizeCurrency(value: string | undefined): string | undefined {
   const normalized = value?.trim().toUpperCase();
   return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
 }
-
-function formatMoney(amountMinor: number, currency: string): string {
-  return formatMinorCurrency(amountMinor, { currency });
-}
-function formatDate(value: string): string {
-  return formatDateOnly(value);
-}
-
-const MONTH_ABBREVIATIONS = [
-  "JAN",
-  "FEV",
-  "MAR",
-  "ABR",
-  "MAI",
-  "JUN",
-  "JUL",
-  "AGO",
-  "SET",
-  "OUT",
-  "NOV",
-  "DEZ",
-];
-
-/**
- * Compact movement date of the reference: day plus month. The machine-readable value stays in
- * the `datetime` attribute and the full date stays in `title`, so nothing is lost.
- */
-function formatMovementDate(value: string): string {
-  const month = Number(value.slice(5, 7));
-  const day = value.slice(8, 10);
-  const abbreviation = MONTH_ABBREVIATIONS[month - 1];
-  return abbreviation ? `${day} ${abbreviation}` : formatDate(value);
-}
-
-function formatPercentage(value: number, maximumFractionDigits: number): string {
-  return `${new Intl.NumberFormat("pt-BR", { maximumFractionDigits }).format(value)}%`;
-}
-const ROW_GLYPHS: Readonly<Record<string, string>> = {
-  expense: '<path d="M6 6l8 8m0 0V7.5M14 14H7.5"/>',
-  income: '<path d="M6 14 14 6m0 0H7.5M14 6v6.5"/>',
-  transfer: '<path d="M4 8h9l-2.5-2.5M16 12H7l2.5 2.5"/>',
-  food: '<path d="M4 6h12l-1 9a1.5 1.5 0 0 1-1.5 1.3H6.5A1.5 1.5 0 0 1 5 15Z"/><path d="M7.5 6V4.5M12.5 6V4.5"/>',
-  health: '<path d="M10 16s-5.5-3.4-5.5-7A3 3 0 0 1 10 7a3 3 0 0 1 5.5 2c0 3.6-5.5 7-5.5 7Z"/>',
-  transport:
-    '<path d="M4.5 13V8l1.6-2.8A1 1 0 0 1 7 4.7h6a1 1 0 0 1 .9.5L15.5 8v5"/><path d="M4.5 13h11M6.5 13v1.4M13.5 13v1.4"/>',
-  home: '<path d="M4 9.5 10 4.5l6 5V16H4Z"/><path d="M8.5 16v-3.5h3V16"/>',
-  utility: '<path d="M11.5 3 5.5 11h3l-1 6 6-8h-3Z"/>',
-  education:
-    '<path d="M3.5 8 10 5l6.5 3-6.5 3Z"/><path d="M6 9.6V13c0 .9 1.8 1.6 4 1.6s4-.7 4-1.6V9.6"/>',
-  leisure: '<path d="M4 7.5h12v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1Z"/><path d="M7.5 7.5v-2h5v2"/>',
-  incomeCategory: '<path d="M4 15V7a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v8Z"/><path d="M8 11h4"/>',
-  investment: '<path d="M4 15 8 10l3 2.5L16 6"/><path d="M16 6h-3.4M16 6v3.4"/>',
-  tax: '<path d="M5 3.5h7L15.5 7v9.5h-11Z"/><path d="M11.8 3.6V7h3.4"/><path d="M7 11h6M7 14h4"/>',
-  receipt:
-    '<path d="M5 3.5h7L15.5 7v9.5h-11Z"/><path d="M11.8 3.6V7h3.4"/><path d="M7 11h6M7 14h4"/>',
-};
-
-const ROW_GLYPH_FALLBACK = '<path d="M6 6l8 8m0 0V7.5M14 14H7.5"/>';
-
-const ROW_GLYPH_KEYWORDS: ReadonlyArray<readonly [RegExp, string]> = [
-  [/aliment|mercado|supermerc|restaurant|comida|padaria|cafe/i, "food"],
-  [/saude|saúde|farmac|medic|médic|academia|esport|esporte|dentist/i, "health"],
-  [/transporte|combust|posto|uber|carro|veic|passagem|pedagio|pedágio/i, "transport"],
-  [/moradia|aluguel|condomin|casa|imovel|imóvel/i, "home"],
-  [/luz|energia|agua|água|internet|telefone|celular|conta|gas|gás|utilidade/i, "utility"],
-  [/educa|curso|escola|faculdade|livro|material/i, "education"],
-  [/lazer|viagem|cinema|streaming|jogo|divers/i, "leisure"],
-  [/salario|salário|renda|provento|pagamento|recebimento|holerite/i, "incomeCategory"],
-  [/invest|poupanc|poupanç|rendimento|aplicac|aplicaç/i, "investment"],
-  [/imposto|taxa|tarifa|tribut/i, "tax"],
-];
-
-/**
- * A decorative glyph for the movement row. It is derived from the category when one is present and
- * falls back to the movement direction, so no financial meaning is invented.
- */
-function resolveRowGlyph(categoryName: string, kind: string): { key: string; html: string } {
-  const match =
-    categoryName && categoryName !== "Sem categoria"
-      ? ROW_GLYPH_KEYWORDS.find(([pattern]) => pattern.test(categoryName))
-      : undefined;
-  const key = match
-    ? match[1]
-    : kind === "income"
-      ? "income"
-      : kind === "transfer"
-        ? "transfer"
-        : "expense";
-  return { key, html: ROW_GLYPHS[key] ?? ROW_GLYPH_FALLBACK };
-}
-
-function renderRowGlyph(categoryName: string, kind: string): string {
-  const glyph = resolveRowGlyph(categoryName, kind);
-  return `<span class="col-row-icon" data-row-glyph="${escapeHtml(glyph.key)}" aria-hidden="true"><svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${glyph.html}</svg></span>`;
-}
-
-/**
- * The category chip leads with the movement direction, so the direction is readable before the word:
- * an up arrow for entries, a down arrow for exits and two stacked horizontal arrows for transfers.
- * The direction is decorative here (`aria-hidden`); the word and the row's own direction column
- * remain the accessible carriers of the information.
- */
-type CategoryDirection = "in" | "out" | "transfer";
-
-const CATEGORY_DIRECTION_GLYPHS: Record<CategoryDirection, string> = {
-  in: '<path d="M10 16.5V4.5"/><path d="m5.5 9 4.5-4.5L14.5 9"/>',
-  out: '<path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/>',
-  transfer:
-    '<path d="M3.5 7h11"/><path d="m11.5 4 3 3-3 3"/><path d="M16.5 13h-11"/><path d="m8.5 10-3 3 3 3"/>',
-};
 
 export function resolveCategoryDirection(kind: string): CategoryDirection {
   const normalized = (kind ?? "").toLowerCase();
@@ -1776,71 +1064,6 @@ function isStatementSort(value: string | null | undefined): value is StatementSo
     value === "description_desc"
   );
 }
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 function serializeScriptJson(value: unknown): string {
   return JSON.stringify(value).replace(/</g, "\\u003c");
-}
-
-function css(): string {
-  return `${sharedShellStyles()}${statementListArchetypeStyles()}${entryFillRuleStyles()}
-    main { display:grid; gap:14px; margin:0 auto; max-width:1800px; min-width:0; padding:18px 20px; width:100%; }
-    [hidden]{display:none!important}.warning{color:var(--warning);font-weight:600}
-    .account-field[data-all-accounts]{grid-template-columns:minmax(0,1fr) 7rem}.account-field[data-all-accounts]>label#account-picker-label{grid-column:1;grid-row:1}.account-field[data-all-accounts]>.account-select{grid-column:1;grid-row:2}.statement-currency-field{align-content:end;display:grid;font-size:.75rem;gap:6px;grid-column:2;grid-row:1/3;min-width:0}.statement-currency-field select{background:var(--surface);border:1px solid var(--line);border-radius:10px;height:44px;min-width:0;padding:0 6px;width:100%}.statement-row-account{color:var(--muted);font-size:.75rem;font-weight:500;overflow-wrap:anywhere}
-    .filter-form{align-items:end;display:grid;gap:10px;grid-template-columns:minmax(18rem,1.35fr) minmax(12rem,.75fr) minmax(12rem,1fr) minmax(11rem,.75fr) auto}
-    .month-field,.account-field{display:grid;gap:6px;min-width:0}.account-select{min-width:0;position:relative}.account-select-trigger{align-items:center;background:var(--surface);border:1px solid var(--line);color:var(--text);display:flex;gap:8px;justify-content:flex-start;min-height:44px;min-width:0;padding:0 10px;text-align:left;width:100%}.account-select-text{flex:1;font-weight:650;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.account-select-icon{align-items:center;display:inline-flex;flex-shrink:0;height:20px;width:20px}.account-select-chevron{color:var(--muted);flex-shrink:0}.account-select-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);left:0;list-style:none;margin:4px 0 0;max-height:260px;overflow-y:auto;padding:4px;position:absolute;right:0;top:100%;z-index:20}.account-select-menu li{align-items:center;border-radius:var(--radius);cursor:pointer;display:flex;font-size:.875rem;font-weight:600;gap:8px;padding:7px 8px}.account-select-menu li:hover,.account-select-menu li[aria-selected=true]{background:var(--primary-soft)}
-    .month-nav{align-items:center;background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:4px;grid-template-columns:auto minmax(0,1fr) auto;padding:3px}.month-nav input{background:transparent;border:0;font-size:.875rem;min-height:34px;text-align:center}.icon-btn{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--primary);min-height:34px;min-width:34px;padding:0}.ghost-btn{background:var(--surface);border:1px solid var(--line);color:var(--primary)}
-    .statement-layout{align-items:start;display:grid;gap:12px;grid-template-columns:minmax(260px,320px) minmax(0,1fr)}.account-summary{display:grid;gap:12px;position:sticky;top:68px}.account-summary h2{font-size:.9375rem}.summary-balance{background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:var(--radius);display:grid;gap:4px;padding:12px}.summary-balance span,.summary-total span{color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.summary-balance strong,.summary-total strong,.status-line strong,.col-amount,.col-balance{font-variant-numeric:tabular-nums;overflow-wrap:normal;white-space:nowrap;word-break:normal}.summary-balance strong{font-size:1.125rem}.summary-balance p{color:var(--muted);font-size:.8125rem}.summary-totals{display:grid;gap:8px;grid-template-columns:1fr 1fr}.summary-total{border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:3px;min-width:0;padding:10px}.status-overview{border-top:1px solid var(--line);display:grid;gap:8px;padding-top:12px}.status-overview h3{font-size:.8125rem}.status-line{align-items:center;display:grid;gap:6px;grid-template-columns:auto minmax(0,1fr) auto}.status-line p{color:var(--muted);font-size:.8125rem;font-weight:600}.status-line strong{font-size:.8125rem}
-    .statement-panel{overflow:hidden;padding:0}.statement-toolbar{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:12px 14px}.chips{display:flex;flex-wrap:wrap;gap:6px}.chip{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);display:inline-flex;gap:5px;font-size:.75rem;font-weight:700;padding:3px 9px;white-space:nowrap}.chip-pending{background:var(--warning-bg);border-color:#fde68a;color:var(--warning)}.chip-ok{background:var(--success-bg);border-color:#bbf7d0;color:var(--success)}.chip-posted{background:#e0f2fe;border-color:#bae6fd;color:#0369a1}
-    .statement-table{display:grid;max-width:100%;overflow-x:auto}.statement-row{align-items:center;border-bottom:1px solid var(--line);display:grid;gap:8px;grid-template-columns:6rem minmax(8rem,1.3fr) minmax(7rem,.9fr) 7rem 4.5rem 8rem 8rem 3rem;min-width:70rem;padding:8px 12px;position:relative}.col-select{display:grid;left:3px;place-items:center;position:absolute}.statement-body .col-date{padding-left:14px}.col-select input{height:1.1rem;width:1.1rem}.grouped-row{background:color-mix(in srgb,var(--primary) 5%,transparent)}.group-indicator{color:var(--primary)}.statement-head{background:#f1f7fa;color:var(--muted);font-size:.6875rem;font-weight:700;text-transform:uppercase}.statement-head .col-amount,.statement-head .col-balance,.col-amount,.col-balance{text-align:right}.description{display:grid;gap:2px;min-width:0}.description>strong{overflow-wrap:anywhere}.description span{color:var(--muted);font-size:.8125rem}.credit{color:var(--success)!important}.debit{color:var(--danger)!important}
-    .selection-bar{align-items:center;background:var(--surface);border:1px solid var(--primary);border-radius:var(--radius);bottom:16px;box-shadow:var(--shadow);display:flex;gap:12px;justify-content:flex-end;padding:10px 14px;position:sticky;z-index:8}.selection-bar[hidden]{display:none}dialog[data-group-modal]{max-width:min(760px,calc(100% - 32px));overflow:hidden}.group-modal-panel{gap:18px;max-width:760px;padding:22px}.group-modal-panel>header{align-items:start;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;padding-bottom:12px}.group-modal-panel form{display:grid;gap:12px 14px;grid-template-columns:repeat(2,minmax(0,1fr))}.group-readonly,.group-members,.group-modal-panel .save-row,.group-modal-panel .form-error{grid-column:1/-1}.group-readonly{color:var(--muted);font-size:.8125rem}.group-members{border:1px solid var(--line);border-left:0;border-radius:0;border-right:0;max-height:240px;overflow:auto}.group-members>div{align-items:center;border-bottom:1px solid var(--line);display:flex;gap:12px;justify-content:space-between;padding:9px}.group-modal-panel .save-row{border-top:1px solid var(--line);margin-top:2px;padding-top:14px}
-    .statement-status{align-items:center;border:1px solid currentColor;border-radius:999px;cursor:default;display:inline-flex;height:26px;justify-content:center;justify-self:start;padding:0;position:relative;width:26px}.statement-status-ok{background:var(--success-bg);color:var(--success)}.statement-status-posted{background:#e0f2fe;color:#0369a1}.statement-status-pending{background:var(--warning-bg);color:var(--warning)}.statement-status-planned{background:var(--primary-soft);color:var(--primary)}
-    .actions{position:relative}.actions summary{align-items:center;background:var(--primary-soft);border:1px solid #d4e6ec;border-radius:999px;color:var(--primary);cursor:pointer;display:inline-flex;height:28px;justify-content:center;list-style:none;width:28px}.actions summary::-webkit-details-marker{display:none}.actions-menu{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 12px 32px rgba(15,23,42,.14);display:grid;gap:2px;max-width:220px;padding:4px;position:absolute;right:0;top:34px;width:max-content;z-index:50}.actions-item{align-items:center;background:transparent;border:0;border-radius:var(--radius);color:var(--text);display:flex;font-size:.8125rem;font-weight:600;gap:8px;justify-content:flex-start;min-height:32px;padding:0 8px;text-align:left;white-space:nowrap}.actions-item.danger{color:var(--danger)}.actions-divider{border:0;border-top:1px solid var(--line);margin:3px 2px}
-    .statement-row.account-remuneration-row{border-left:3px solid var(--primary)}.statement-row.account-remuneration-row .col-description{min-width:15rem}.statement-row.account-remuneration-row .description{align-items:baseline;column-gap:4px;display:grid;grid-template-columns:max-content minmax(0,1fr);min-width:0}.statement-row.account-remuneration-row .description>strong{grid-column:1;grid-row:1;overflow-wrap:normal;white-space:nowrap}.account-remuneration-summary{color:var(--muted);display:block;font-size:.75rem;grid-column:1/-1;grid-row:2;line-height:1.35}.account-remuneration-audit{background:transparent;border:0;display:block;grid-column:2;grid-row:1;justify-self:start;margin:0;max-width:100%;min-width:0}.account-remuneration-audit[open]{grid-column:1/-1;grid-row:3;margin:4px 0 0}.account-remuneration-audit summary{align-items:center;color:var(--primary);cursor:pointer;display:inline-flex;font-size:.75rem;font-weight:700;line-height:1.2;list-style:none;padding:0;white-space:nowrap}.account-remuneration-audit summary::-webkit-details-marker{display:none}.account-remuneration-audit-content{background:var(--surface-soft);border:1px solid var(--line);border-radius:var(--radius);display:grid;gap:7px;margin-top:4px;padding:8px}.account-remuneration-adjustment{border-radius:999px;font-size:.6875rem;font-weight:800;padding:2px 7px}.account-remuneration-audit-content .account-remuneration-adjustment{background:var(--warning-bg);color:var(--warning);justify-self:start}.account-remuneration-audit-content dl{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(7.5rem,1fr));margin:0}.account-remuneration-audit-content dl div{min-width:0}.account-remuneration-audit-content dt{color:var(--muted);font-size:.625rem;font-weight:700;text-transform:uppercase}.account-remuneration-audit-content dd{font-size:.75rem;font-weight:700;margin:0;overflow-wrap:anywhere}@media(max-width:760px){.account-remuneration-audit-content dl{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    .empty{background:var(--bg);border:1px dashed var(--line);border-radius:var(--radius-lg);display:grid;gap:4px;margin:14px;padding:14px}dialog{border:0;border-radius:var(--radius-lg);box-shadow:0 24px 80px rgba(15,23,42,.24);max-width:min(860px,calc(100% - 32px));padding:0;width:100%}dialog[data-modal]{box-sizing:border-box;inset:0;margin:auto;height:fit-content;max-height:calc(100dvh - 32px);max-width:min(860px,calc(100vw - 32px));overflow:hidden;position:fixed;transform:none}dialog::backdrop{background:rgba(6,25,35,.48)}.modal-panel{display:grid;gap:14px;max-width:100%;min-width:0;padding:18px;width:100%}dialog[data-modal]>.modal-panel{box-sizing:border-box;max-height:inherit;overflow-y:auto;overscroll-behavior:contain}.close-form{display:flex;justify-content:flex-end}.modal-panel form[data-form]{display:grid;gap:10px;grid-template-columns:repeat(3,minmax(0,1fr));max-width:100%;min-width:0;width:100%}.modal-panel form[data-form]>*{max-width:100%;min-width:0}.modal-panel form[data-form] label{min-width:0}.modal-panel form[data-form] input,.modal-panel form[data-form] select,.modal-panel form[data-form] textarea,.modal-panel form[data-form] output{max-width:100%;min-width:0}.modal-panel form[data-form] output,.modal-panel form[data-form] .muted{overflow-wrap:anywhere}.full,.modal-panel button[type=submit],.modal-panel form[data-form] p{grid-column:1/-1}.modal-panel form[data-form] label{align-content:start}.modal-panel form[data-form] .field-label{display:block;min-width:0}.modal-panel form[data-form] .nowrap{white-space:nowrap}.modal-panel form[data-form] input[readonly]{background:var(--bg);color:var(--text);cursor:default}.modal-panel form[data-form] .rate-value{align-items:center;border:1px dashed var(--line);border-radius:var(--radius);display:flex;flex-wrap:wrap;gap:2px 8px;min-height:var(--sf-density-control-min-height);padding:0 var(--sf-density-control-padding-inline)}.save-row{align-items:center;display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between}.status-icons{align-items:center;display:flex;gap:6px}.status-icon-btn{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:999px;color:var(--muted);display:inline-flex;height:32px;justify-content:center;min-height:0;padding:0;width:32px}.status-icon-btn[data-status-option=posted].active{background:#e0f2fe;color:#0369a1}.status-icon-btn[data-status-option=reconciled].active{background:var(--success-bg);color:var(--success)}.status-icon-btn[data-status-option=planned].active{background:var(--warning-bg);color:var(--warning)}.status-label{color:var(--muted);font-size:.75rem;font-weight:600}
-    @media(max-width:1279px){.statement-layout{grid-template-columns:1fr}.account-summary{position:static}.summary-totals{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-form{grid-template-columns:minmax(18rem,1.25fr) minmax(12rem,.75fr)}}
-    @media(max-width:1100px){.statement-filter-actions{grid-column:1/-1}.modal-panel form[data-form]{grid-template-columns:repeat(2,minmax(0,1fr))}}
-    @media(min-width:761px) and (max-width:900px){.filter-form{grid-template-columns:minmax(0,1fr)}.statement-filter-actions{grid-column:1}}
-    @media(max-width:760px){main{padding:14px 14px 24px}.filter-form,.modal-panel form[data-form],.group-modal-panel form,.summary-totals{grid-template-columns:1fr}.statement-filter-actions{align-items:stretch;display:grid}.statement-toolbar{align-items:stretch;display:grid}.save-row{align-items:stretch;flex-direction:column}.statement-table{overflow-x:visible}.statement-head{display:none}.statement-row.statement-body{align-items:center;display:flex;flex-wrap:wrap;gap:5px 8px;min-width:0;padding:10px}.statement-row.statement-body .col-select{left:auto;order:1;position:static}.statement-row.statement-body .col-date{color:var(--muted);flex:0 0 auto;font-size:.75rem;order:1;padding-left:0}.statement-row.statement-body .col-actions{margin-left:auto;order:2}.statement-row.statement-body .col-description{flex:1 1 100%;order:3}.statement-row.statement-body .col-category,.statement-row.statement-body .col-kind{color:var(--muted);font-size:.75rem;order:4}.statement-row.statement-body .col-status{order:5}.statement-row.statement-body .col-amount{font-size:.9375rem;margin-left:auto;order:6}.statement-row.statement-body .col-balance{color:var(--muted);font-size:.75rem;order:7}.statement-date-group{position:sticky;top:0;z-index:2}}
-
-    /* #720: match the neutral Golden Screen status menu used on Cards. */
-    .statement-status-control{display:inline-block;justify-self:start;position:relative}
-    .statement-status-control>summary{align-items:center;border-radius:999px;cursor:pointer;display:inline-flex;height:44px;justify-content:center;list-style:none;min-height:44px;min-width:44px;width:44px}
-    .statement-status-control>summary::-webkit-details-marker{display:none}
-    .statement-status-control>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-    .statement-status-control>summary:hover .statement-status,.statement-status-control[open]>summary .statement-status{box-shadow:0 0 0 2px var(--line)}
-    .statement-status-control[open],.statement-row:has(.statement-status-control[open]){z-index:55}
-    .statement-status-menu{align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:10px;box-shadow:0 12px 30px rgba(15,23,42,.15);display:flex;gap:6px;max-width:calc(100vw - 16px);min-width:0;padding:8px;position:absolute;top:calc(100% + 4px);width:max-content;z-index:60}
-    .statement-status-current{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
-    .statement-status-option{align-items:center;background:transparent;border:0;border-radius:999px;cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;padding:0;width:44px}
-    .statement-status-menu .statement-status-option>.statement-status,.statement-status-menu .statement-status-current .statement-status,.statement-status-readonly>.statement-status{box-sizing:border-box;flex:0 0 26px;height:26px;width:26px}
-    .statement-status-menu .statement-status-option svg,.statement-status-menu .statement-status-current svg,.statement-status-readonly svg{height:15px;width:15px}
-    .statement-status-menu>button.statement-status-option:hover:not(:disabled),.statement-status-menu>button.statement-status-option:focus-visible{background:transparent;border-color:transparent}
-    .statement-status-menu>button.statement-status-option:hover:not(:disabled)>.statement-status,.statement-status-menu>button.statement-status-option:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
-    .statement-status-option:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-    .statement-status-option:disabled{cursor:wait;opacity:.55}
-    .statement-status-readonly{align-items:center;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;width:44px}
-    .statement-status-feedback{align-items:center;border-radius:999px;color:var(--muted);display:inline-flex;flex:0 0 32px;height:32px;justify-content:center;margin:0;width:32px}
-    .statement-status-feedback[hidden]{display:none}
-    .statement-status-feedback-ok,.statement-status-feedback-error{display:none}
-    .statement-status-feedback.success .statement-status-feedback-pending,.statement-status-feedback.error .statement-status-feedback-pending{display:none}
-    .statement-status-feedback.success .statement-status-feedback-ok,.statement-status-feedback.error .statement-status-feedback-error{display:inline-flex}
-    .statement-status-feedback.error{color:var(--danger)}
-    .statement-status-feedback.success{color:var(--success)}
-
-    .statement-entry-attachments{border-top:1px solid var(--line);margin-top:4px;min-width:0}
-    .statement-entry-attachments>summary{align-items:center;color:var(--primary);cursor:pointer;display:flex;font-size:.875rem;font-weight:700;justify-content:space-between;list-style:none;min-height:44px;padding:10px 0}
-    .statement-entry-attachments>summary::-webkit-details-marker{display:none}
-    .statement-entry-attachments>summary::after{border-bottom:2px solid currentColor;border-right:2px solid currentColor;content:"";height:7px;margin-right:6px;transform:rotate(45deg);transition:transform .15s ease;width:7px}
-    .statement-entry-attachments[open]>summary::after{transform:rotate(225deg)}
-    .statement-entry-attachments>summary:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
-    .statement-entry-attachments-body{padding:4px 0 12px}
-    .statement-entry-attachments .attachment-workspace .section-heading h3{display:none}
-    ${recurrencesSectionStyles()}`;
 }
