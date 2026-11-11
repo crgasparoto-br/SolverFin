@@ -1,5 +1,8 @@
 import type { AccountRecord } from "./transactions-statement.js";
-import { statementCloseProtectionScript, statementContinueVisibilityScript } from "./statement-save-flow-scripts.js";
+import {
+  statementCloseProtectionScript,
+  statementContinueVisibilityScript,
+} from "./statement-save-flow-scripts.js";
 
 interface Dependencies {
   resolveAccountCurrency: (account: AccountRecord | undefined) => string | undefined;
