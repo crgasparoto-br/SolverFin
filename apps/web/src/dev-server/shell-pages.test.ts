@@ -45,6 +45,20 @@ const resolveAuthenticatedSources = (
     };
   }
 
+  if (routeId === "settings") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /import \{ baseCss \} from "\.\/settings-page-css\.js"/);
+    assert.match(renderer, /styles: baseCss\(\)/);
+    return { renderer, styles: readModuleSource("settings-page-css.js") };
+  }
+
+  if (routeId === "transactions") {
+    const renderer = readModuleSource(moduleFileName);
+    assert.match(renderer, /import \{ css \} from "\.\/transactions-page-styles\.js"/);
+    assert.match(renderer, /styles: css\(\)/);
+    return { renderer, styles: readModuleSource("transactions-page-styles.js") };
+  }
+
   if (routeId === "adminInstitutions") {
     const renderer = readModuleSource(moduleFileName);
     assert.match(renderer, /import \{ adminPageStyles \} from "\.\/admin-institutions-styles\.js"/);
