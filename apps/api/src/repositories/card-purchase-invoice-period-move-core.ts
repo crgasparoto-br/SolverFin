@@ -15,6 +15,7 @@ import {
   type CardPurchaseContract,
   type InvoiceSummaryContract,
 } from "./card-invoice-contracts.js";
+import { moveInvoiceTotalsInTransaction } from "./card-purchase-invoice-period-move-write.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 export interface MoveCardPurchaseInvoicePeriodPayload {
@@ -93,7 +94,6 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   const originInvoice = current.invoiceId
     ? await findInvoiceForMove(context, current.invoiceId)
     : undefined;
-
   if (!originInvoice || originInvoice.cardId !== cardId || current.invoiceId === null) {
     throw new InvoiceContractError(
       "CARD_PURCHASE_INVOICE_INVALID",
@@ -103,9 +103,7 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   }
 
   assertInvoiceEditable(originInvoice, "CARD_PURCHASE_INVOICE_LOCKED");
-
   const destinationPeriod = resolveDestinationPeriod(card, payload.invoicePeriod);
-
   if (
     toDateOnly(originInvoice.periodStartOn) === destinationPeriod.periodStartOn &&
     toDateOnly(originInvoice.periodEndOn) === destinationPeriod.periodEndOn
@@ -122,11 +120,9 @@ export async function moveCardPurchaseInvoicePeriodForContext(
     cardId,
     destinationPeriod,
   );
-
   if (existingDestinationInvoice !== undefined) {
     assertInvoiceEditable(existingDestinationInvoice, "CARD_PURCHASE_DESTINATION_INVOICE_LOCKED");
   }
-
   const destinationInvoice =
     existingDestinationInvoice ?? buildNewInvoice(context, cardId, destinationPeriod, current);
   const invoiceMoveAmountMinor = await resolveInvoiceMoveAmountMinor(
@@ -136,7 +132,6 @@ export async function moveCardPurchaseInvoicePeriodForContext(
   );
   const destinationOccurredOn = resolveMovedPurchaseDate(current, destinationPeriod);
   const now = new Date().toISOString();
-
   await withTransaction(async (executeQuery) => {
     if (existingDestinationInvoice === undefined) {
       await executeQuery(
@@ -158,11 +153,15 @@ export async function moveCardPurchaseInvoicePeriodForContext(
       );
     }
 
-    await executeQuery(
+    const updatedPurchase = await executeQuery<{ id: string }>(
       `update "Transaction" set
          "invoiceId" = $4, "occurredOn" = $5, "plannedOn" = $5,
          "updatedAt" = $6, "updatedByUserId" = $7
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "cardId" = $8 and "invoiceId" = $9 and "accountId" is null
+         and "kind" = 'EXPENSE' and "status" = $10 and "status" <> 'VOIDED'
+         and "amountMinor" = $11 and "updatedAt" = $12
+       returning "id"`,
       [
         current.id,
         context.organizationId,
@@ -171,8 +170,20 @@ export async function moveCardPurchaseInvoicePeriodForContext(
         destinationOccurredOn,
         now,
         context.userId,
+        cardId,
+        originInvoice.id,
+        current.status,
+        current.amountMinor,
+        current.updatedAt,
       ],
     );
+    if (updatedPurchase.length !== 1) {
+      throw new InvoiceContractError(
+        "CARD_PURCHASE_CONCURRENT_CHANGE",
+        "A compra foi alterada ou anulada durante a transferência.",
+        409,
+      );
+    }
 
     if (current.installmentId !== null) {
       await executeQuery(
@@ -188,30 +199,17 @@ export async function moveCardPurchaseInvoicePeriodForContext(
       );
     }
 
-    await executeQuery(
-      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" - $4, "updatedAt" = $5
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [
-        originInvoice.id,
-        context.organizationId,
-        context.financialProfileId,
-        invoiceMoveAmountMinor,
-        now,
-      ],
+    await moveInvoiceTotalsInTransaction(
+      executeQuery,
+      context,
+      cardId,
+      current.currency,
+      originInvoice.id,
+      destinationInvoice.id,
+      invoiceMoveAmountMinor,
+      now,
+      current.id,
     );
-
-    await executeQuery(
-      `update "Invoice" set "totalAmountMinor" = "totalAmountMinor" + $4, "updatedAt" = $5
-       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
-      [
-        destinationInvoice.id,
-        context.organizationId,
-        context.financialProfileId,
-        invoiceMoveAmountMinor,
-        now,
-      ],
-    );
-
     await insertAuditLogEntry(executeQuery, {
       organizationId: context.organizationId,
       financialProfileId: context.financialProfileId,
@@ -267,7 +265,8 @@ async function findPurchaseForMove(
             "amountMinor", "currency", "status", "reconciledAt", "updatedAt"
        from "Transaction"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'`,
+        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null
+        and "kind" = 'EXPENSE' and "status" <> 'VOIDED'`,
     [transactionId, context.organizationId, context.financialProfileId, cardId],
   );
   const row = rows[0];
@@ -467,6 +466,8 @@ function assertInvoiceEditable(invoice: InvoiceForMoveRow, code: string): void {
 
 function mapPurchaseForMove(row: PurchaseForMoveRow): CardPurchaseContract {
   return {
+    // findPurchaseForMove only selects Transaction.kind = EXPENSE.
+    kind: "expense",
     id: row.id,
     financialProfileId: row.financialProfileId,
     cardId: row.cardId,

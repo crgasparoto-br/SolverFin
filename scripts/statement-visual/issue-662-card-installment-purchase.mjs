@@ -24,8 +24,11 @@ try {
 
   await validateCreateDefault(fixture, "desktop", 1366, 768);
   await validateInstallmentEdit(fixture, "desktop", 1366, 768);
+  await validateInstallmentScopeKeyboard(fixture, "desktop");
   await validateCreateDefault(fixture, "mobile", 390, 844);
   await validateInstallmentEdit(fixture, "mobile", 390, 844);
+  await validateInstallmentScopeKeyboard(fixture, "mobile");
+  await validateAssistivePositionGuard(fixture);
 } finally {
   await browser.close(outputDir);
 }
@@ -142,6 +145,8 @@ async function validateInstallmentEdit(fixture, label, width, height) {
       const installmentAmountField = form?.querySelector('[data-purchase-field="installmentAmountMinor"]');
       const context = form?.querySelector('[data-purchase-field="installmentContext"]');
       const row = document.querySelector('[data-edit-purchase="${fixture.transactionId}"]')?.closest('[data-purchase-item]');
+      const badge = row?.querySelector('.cards-purchase-description .installment-badge');
+      const badgeStyle = badge ? getComputedStyle(badge) : null;
       return {
         open: Boolean(dialog?.open),
         datasetInstallmentPurchase: form?.dataset.installmentPurchase || "",
@@ -161,7 +166,14 @@ async function validateInstallmentEdit(fixture, label, width, height) {
         contextText: context?.textContent?.trim() || "",
         descriptionReadonly: Boolean(form?.querySelector('[name="description"]')?.readOnly),
         instrumentDisabled: Boolean(form?.querySelector('[name="cardInstrumentId"]')?.disabled),
-        rowText: row?.textContent?.replace(/\\s+/g, " ").trim() || "",
+        rowTitle: row?.querySelector('.cards-purchase-description strong')?.textContent?.replace(/\\s+/g, " ").trim() || "",
+        rowInstallmentLabel: row?.querySelector('.cards-installment-label')?.getAttribute('aria-label') || "",
+        rowInstallmentBadges: row?.querySelectorAll('.cards-purchase-description .installment-badge').length || 0,
+        rowBadgeBackground: badgeStyle?.backgroundColor || "",
+        rowBadgeBorder: badgeStyle?.borderTopColor || "",
+        rowBadgeForeground: badgeStyle?.color || "",
+        rowHasSecondaryDetail: Boolean(row?.querySelector('.cards-purchase-description > span, .cards-purchase-description > small')),
+        rowCanonicalTotalMinor: JSON.parse(row?.querySelector('script[data-purchase]')?.textContent || '{}').purchaseTotalAmountMinor,
         noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
         dialogWithinViewport: Boolean(rect && rect.left >= -1 && rect.right <= window.innerWidth + 1 && rect.top >= -1 && rect.bottom <= window.innerHeight + 1),
       };
@@ -174,14 +186,24 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     `${label}: canonical installment context was not recognized`,
     state,
   );
+  const accessibleFraction = `Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`;
   check(
-    state.rowText.includes(`Parcela ${fixture.sequenceNumber} de ${fixture.totalInstallments}`),
-    `${label}: future invoice row does not identify the installment occurrence`,
+    state.rowTitle.includes(accessibleFraction) && state.rowInstallmentLabel === accessibleFraction,
+    `${label}: installment pill must match the Golden Screen text`,
     state,
   );
   check(
-    state.rowText.includes("Total da compra"),
-    `${label}: purchase total is not exposed as secondary information`,
+    state.rowInstallmentBadges === 1 &&
+      state.rowBadgeBackground === "rgb(236, 254, 255)" &&
+      state.rowBadgeBorder === "rgb(165, 243, 252)" &&
+      state.rowBadgeForeground === "rgb(15, 61, 76)",
+    `${label}: invoice must reuse one Golden Screen installment badge`,
+    state,
+  );
+  check(!state.rowHasSecondaryDetail, `${label}: purchase row still displays extra detail`, state);
+  check(
+    state.rowCanonicalTotalMinor === fixture.totalAmountMinor,
+    `${label}: canonical purchase total missing from editing model`,
     state,
   );
   check(
@@ -203,8 +225,8 @@ async function validateInstallmentEdit(fixture, label, width, height) {
     state,
   );
   check(
-    state.installmentAmountVisible && state.installmentAmountReadonly,
-    `${label}: occurrence amount is not visible read-only`,
+    state.installmentAmountVisible && !state.installmentAmountReadonly,
+    `${label}: occurrence amount is not visible and editable`,
     state,
   );
   check(
@@ -238,9 +260,157 @@ async function validateInstallmentEdit(fixture, label, width, height) {
   await sleep(80);
 }
 
+async function validateInstallmentScopeKeyboard(fixture, label) {
+  await openInvoice(fixture);
+  await evaluate(
+    browser.cdp,
+    `document.querySelector('[data-edit-installment-amount="${fixture.transactionId}"]')?.click()`,
+  );
+  await waitFor('dialog[data-modal="installment-value"][open]');
+  await evaluate(
+    browser.cdp,
+    `(() => {
+      const input = document.querySelector('dialog[data-modal="installment-value"] [name="amountMinor"]');
+      input?.focus();
+      window.__installmentKeyboardFetch = window.fetch;
+      window.__installmentKeyboardRequests = 0;
+      window.fetch = (...args) => {
+        window.__installmentKeyboardRequests += 1;
+        throw new Error("Enter must not send a financial request");
+      };
+    })()`,
+  );
+  try {
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "keyDown",
+      key: "Enter",
+      code: "Enter",
+      text: "\r",
+      unmodifiedText: "\r",
+      windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 13,
+    });
+    await browser.cdp.send("Input.dispatchKeyEvent", {
+      type: "keyUp",
+      key: "Enter",
+      code: "Enter",
+      windowsVirtualKeyCode: 13,
+      nativeVirtualKeyCode: 13,
+    });
+    await sleep(100);
+    const state = await evaluate(
+      browser.cdp,
+      `(() => {
+        const dialog = document.querySelector('dialog[data-modal="installment-value"]');
+        return {
+          open: Boolean(dialog?.open),
+          requests: window.__installmentKeyboardRequests,
+          instruction: dialog?.querySelector('[data-installment-amount-status]')?.textContent || "",
+          scopeFocused: document.activeElement?.getAttribute("data-installment-scope") || "",
+        };
+      })()`,
+    );
+    check(state.open, `${label}: Enter closed the installment scope dialog`, state);
+    check(state.requests === 0, `${label}: Enter sent a financial request`, state);
+    check(
+      state.instruction.includes("Escolha Somente esta"),
+      `${label}: scope hint missing`,
+      state,
+    );
+    check(state.scopeFocused === "current", `${label}: scope focus missing`, state);
+    scenarios.push({ observed: state, viewport: label, state: "installment-scope-Enter" });
+  } finally {
+    await evaluate(
+      browser.cdp,
+      `(() => {
+        window.fetch = window.__installmentKeyboardFetch;
+        delete window.__installmentKeyboardFetch;
+        delete window.__installmentKeyboardRequests;
+        document.querySelector('dialog[data-modal="installment-value"] [data-close-modal]')?.click();
+      })()`,
+    );
+  }
+}
+
 async function openInvoice(fixture) {
   await navigate(browser.cdp, `${baseUrl}${invoiceRoute(fixture)}`);
   await waitFor(`[data-edit-purchase="${fixture.transactionId}"]`);
+}
+
+async function validateAssistivePositionGuard(fixture) {
+  await openInvoice(fixture);
+  // The SSR purchase row can appear before the asynchronous installment decoration.
+  // Wait for the assistive text on this purchase, not a reason on another row.
+  await waitFor(
+    `[data-purchase-item]:has([data-edit-purchase="${fixture.transactionId}"]) .installment-assistive-text`,
+  );
+  await evaluate(browser.cdp, `document.querySelector('[data-open-modal="purchase"]')?.click()`);
+  await waitFor('dialog[data-modal="purchase"][open]');
+  const state = await evaluate(
+    browser.cdp,
+    `(() => {
+      const purchaseRow = document.querySelector('[data-edit-purchase="${fixture.transactionId}"]')?.closest('[data-purchase-item]');
+      const reason = purchaseRow?.querySelector('.installment-assistive-text');
+      if (!reason) throw new Error('Installment accessible reason did not render');
+      const originalStyle = reason.getAttribute('style');
+      const originalReasonText = reason.textContent;
+      const title = reason.parentElement.firstChild;
+      const originalTitle = title.textContent;
+      const normalStyle = getComputedStyle(reason);
+      const normalRect = reason.getBoundingClientRect();
+      const baseline = {
+        contained: document.documentElement.scrollWidth <= innerWidth + 1,
+        visuallyHidden: normalStyle.position === 'absolute' &&
+          normalRect.width <= 1.5 && normalRect.height <= 1.5,
+        accessible: Boolean(reason.id && document.querySelector('[aria-describedby="' + reason.id + '"]')),
+      };
+      try {
+        // Removing only left/top no longer creates overflow because #715 makes
+        // long descriptions wrap. Model a real failure: an accessible reason
+        // loses its screen-reader-only positioning and intrinsic size clipping.
+        title.textContent = 'Compra parcelada com uma descrição longa para verificar o limite da página';
+        reason.textContent = [originalReasonText, originalReasonText, originalReasonText].join(' ');
+        reason.style.position = 'static';
+        reason.style.display = 'inline-block';
+        reason.style.width = 'max-content';
+        reason.style.height = 'auto';
+        reason.style.margin = '0';
+        reason.style.whiteSpace = 'nowrap';
+        reason.style.overflow = 'visible';
+        reason.style.clip = 'auto';
+        reason.style.clipPath = 'none';
+        const reasonRect = reason.getBoundingClientRect();
+        const scrollWidth = document.documentElement.scrollWidth;
+        return {
+          ...baseline,
+          rejected: reasonRect.right > innerWidth + 1 || scrollWidth > innerWidth + 1,
+          negativeReasonRight: reasonRect.right,
+          negativeScrollWidth: scrollWidth,
+          viewportWidth: innerWidth,
+        };
+      } finally {
+        reason.textContent = originalReasonText;
+        title.textContent = originalTitle;
+        if (originalStyle === null) reason.removeAttribute('style');
+        else reason.setAttribute('style', originalStyle);
+      }
+    })()`,
+  );
+  check(state.contained, "mobile: accessible reason leaks into normal page overflow", state);
+  check(state.visuallyHidden, "mobile: accessible reason is not visually hidden", state);
+  check(state.accessible, "mobile: accessible reason is not linked to the installment", state);
+  check(state.rejected, "mobile: accessible reason overflow negative control did not fail", state);
+  const restored = await evaluate(
+    browser.cdp,
+    `document.documentElement.scrollWidth <= innerWidth + 1`,
+  );
+  check(restored, "mobile: accessible reason overflow negative control did not restore");
+  scenarios.push({
+    route: invoiceRoute(fixture),
+    viewport: "390x844",
+    state: "accessible-reason-position-negative-control",
+    observed: { rejected: state.rejected, restored },
+  });
 }
 
 function invoiceRoute(fixture) {

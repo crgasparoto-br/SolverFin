@@ -160,10 +160,15 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
             button.disabled = false;
             button.removeAttribute("aria-disabled");
           });
-          const submit = transactionForm.querySelector('[type="submit"]');
+          const submit = transactionForm.querySelector('[data-statement-save-primary]');
           if (submit) {
             submit.disabled = false;
             submit.textContent = "Salvar lançamento";
+          }
+          const continueButton = transactionForm.querySelector('[data-statement-save-continue]');
+          if (continueButton) {
+            continueButton.hidden = transactionForm.dataset.method === "PATCH";
+            continueButton.disabled = !control("accountId")?.value;
           }
         }
 
@@ -211,8 +216,13 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
             button.disabled = true;
             button.setAttribute("aria-disabled", "true");
           });
-          const submit = transactionForm.querySelector('[type="submit"]');
+          const submit = transactionForm.querySelector('[data-statement-save-primary]');
           if (submit) submit.textContent = clone ? "Clonar lançamento" : "Salvar alterações";
+          const continueButton = transactionForm.querySelector('[data-statement-save-continue]');
+          if (continueButton) {
+            continueButton.hidden = true;
+            continueButton.disabled = true;
+          }
         }
 
         function openFlow(group, member, clone) {
@@ -267,7 +277,7 @@ export function enhanceTransactionGroupMemberFormGuard(html: string): string {
           event.stopImmediatePropagation();
           const groupId = transactionForm.dataset.groupId;
           const formStatus = transactionForm.querySelector(".form-status");
-          const submit = transactionForm.querySelector('[type="submit"]');
+          const submit = transactionForm.querySelector('[data-statement-save-primary]');
           if (submit) submit.disabled = true;
           if (formStatus) {
             formStatus.className = "form-status muted full";

@@ -101,7 +101,7 @@ test("mantém todos os dados financeiros integralmente acessíveis e contraste A
   assert.match(enhanced, /row-summary-full-value/);
   assert.match(
     accessibilityStyles,
-    /\.inbox-page button:disabled,[\s\S]*?background: #e2e8f0 !important;[\s\S]*?color: #334155 !important;[\s\S]*?opacity: 1 !important;/,
+    /\.inbox-page button:disabled,[\s\S]*?background: var\(--sf-color-neutral-control-hover\) !important;[\s\S]*?border-color: var\(--sf-color-border\) !important;[\s\S]*?color: var\(--sf-color-muted-text\) !important;[\s\S]*?opacity: 1 !important;/,
   );
 });
 

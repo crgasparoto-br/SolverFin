@@ -35,7 +35,7 @@ test("keeps the modal close action usable during ambiguous recovery", () => {
   assert.match(script, /modal\?\.addEventListener\("close", clearNonIdempotentAmbiguity\)/);
 });
 
-test("blocks blind retry for non-idempotent transaction and recurrence posts", () => {
+test("blocks blind retry for unkeyed transaction and recurrence posts", () => {
   const script = financialOperationRecoveryScript();
 
   assert.match(script, /descriptor\.pathname === "\/api\/transactions"/);
@@ -48,4 +48,13 @@ test("blocks blind retry for non-idempotent transaction and recurrence posts", (
   assert.match(script, /submitButton\.disabled = true/);
   assert.match(script, /clearNonIdempotentAmbiguity/);
   assert.doesNotMatch(script, /nonIdempotentAmbiguousRequest\s*=\s*ambiguousInstallmentAttempt/);
+});
+
+test("permits durable-key transaction replay and protects the actual primary submit", () => {
+  const script = financialOperationRecoveryScript();
+  assert.match(script, /function isDurablyKeyedTransaction\(descriptor\)/);
+  assert.match(script, /JSON\.parse\(descriptor\.body\)\.idempotencyKey/);
+  assert.match(script, /!isDurablyKeyedTransaction\(descriptor\)/);
+  assert.match(script, /querySelector\("\[data-statement-save-primary\]"\)/);
+  assert.doesNotMatch(script, /querySelector\('button\[type="submit"\]'\)/);
 });

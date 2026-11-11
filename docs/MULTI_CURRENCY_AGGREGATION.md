@@ -62,3 +62,7 @@ A cobertura automatizada da issue #595 prova que:
 - o Dashboard preserva secoes de moeda distintas e identifica a moeda dos itens recentes.
 
 Consulte tambem [`API_FINANCIAL_SUMMARY.md`](./API_FINANCIAL_SUMMARY.md), [`API_REPORTS.md`](./API_REPORTS.md), [`API_BUDGETS_GOALS_ALERTS.md`](./API_BUDGETS_GOALS_ALERTS.md), [`FINANCIAL_INSIGHTS.md`](./FINANCIAL_INSIGHTS.md), [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md) e [`adr/0013-multi-currency-financial-aggregation.md`](./adr/0013-multi-currency-financial-aggregation.md).
+
+## Extrato consolidado da Golden Screen (2026-10-14)
+
+A seleção explícita `accountId=all` permite consolidar contas **de uma única moeda** no extrato, mantendo moedas distintas segregadas. Não há conversão implícita nem soma de BRL com USD. Transferências entre contas da moeda escolhida são compensadas no saldo líquido; transferências cambiais usam somente o montante da perna daquela moeda. No modo individual, transferências enviadas/recebidas integram os cards Saídas/Entradas; no consolidado, somente transferências internas da mesma moeda são ignoradas nesses cards, enquanto as cambiais seguem na moeda selecionada. Consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).

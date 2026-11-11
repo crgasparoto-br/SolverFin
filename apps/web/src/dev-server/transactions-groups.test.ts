@@ -54,6 +54,25 @@ test("projects a group once and preserves the final statement balance", () => {
   );
 });
 
+test("keeps authoritative group protection in the statement projection", () => {
+  const members = [member("protected", 100), member("ordinary", 250)];
+  const [projected] = projectTransactionGroups(members, [
+    {
+      id: "group",
+      accountId: "account",
+      description: "Grupo com remuneração",
+      displayOn: "2026-07-05",
+      kind: "expense",
+      status: "posted",
+      currency: "BRL",
+      totalAmountMinor: 350,
+      reconcileProtected: true,
+      members,
+    },
+  ]);
+  assert.equal(projected?.group?.reconcileProtected, true);
+});
+
 test("ignores invalid legacy groups and restores individual members", () => {
   const members = [member("one", 100)];
   const projected = projectTransactionGroups(members, [

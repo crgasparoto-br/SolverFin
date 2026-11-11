@@ -34,6 +34,8 @@ testPlannedTransactionsClearEffectiveDate();
 testDistinctTemporalSemanticsOnPosting();
 testValidations();
 testListAndUpdateTransactions();
+testReconcileSinglePlannedRecurringOccurrence();
+testStatementDateCutoffMatchesDisplayedDate();
 testCategoryRemoval();
 testArchivedCategoryPreservedOnUnrelatedUpdate();
 testTenantIsolation();
@@ -382,6 +384,112 @@ function testListAndUpdateTransactions(): void {
   assertEqual(updated.transaction.status, "reconciled", "updated status");
   assertEqual(updated.transaction.reconciledAt, "2026-06-15T11:00:00.000Z", "reconciled at");
   assertEqual(updated.auditEntry.action, "update", "updated audit action");
+}
+
+function testReconcileSinglePlannedRecurringOccurrence(): void {
+  const account = createAccountFixture(tenantA, "account-recurring", "active");
+  const recurring = {
+    ...createTransactionFixture(tenantA, "recurring-sep", "expense", account.id),
+    status: "planned" as const,
+    plannedOn: "2026-09-10",
+    recurrenceId: "recurrence-shared",
+    installmentId: "installment-sep",
+  };
+  const future = {
+    ...recurring,
+    id: "recurring-oct",
+    plannedOn: "2026-10-10",
+    installmentId: "installment-oct",
+  };
+  const mutation = updateTransaction({
+    context: tenantA,
+    transaction: recurring,
+    now: "2026-09-10T12:00:00.000Z",
+    account,
+    payload: { status: "reconciled" },
+  });
+  assertEqual(mutation.transaction.id, "recurring-sep", "only selected occurrence is reconciled");
+  assertEqual(mutation.transaction.status, "reconciled", "planned recurring occurrence reconciled");
+  assertEqual(
+    mutation.transaction.effectiveOn,
+    "2026-09-10",
+    "effective date assigned on reconcile",
+  );
+  assertEqual(
+    mutation.transaction.reconciledAt,
+    "2026-09-10T12:00:00.000Z",
+    "reconciliation audit timestamp",
+  );
+  assertEqual(mutation.transaction.amountMinor, recurring.amountMinor, "amount preserved");
+  assertEqual(mutation.transaction.plannedOn, recurring.plannedOn, "planned date preserved");
+  assertEqual(future.status, "planned", "sibling recurrence remains planned");
+  assertEqual(future.plannedOn, "2026-10-10", "future recurrence remains unchanged");
+  const backToPosted = updateTransaction({
+    context: tenantA,
+    transaction: mutation.transaction,
+    now: "2026-09-10T13:00:00.000Z",
+    account,
+    payload: { status: "posted" },
+  });
+  assertEqual(
+    backToPosted.transaction.status,
+    "posted",
+    "reconciled occurrence can be unreconciled",
+  );
+  assertEqual(
+    backToPosted.transaction.effectiveOn,
+    mutation.transaction.effectiveOn,
+    "unreconciling keeps the effective date",
+  );
+}
+
+function testStatementDateCutoffMatchesDisplayedDate(): void {
+  const base = createTransactionFixture(tenantA, "statement-date-base", "expense", "account-list");
+  const postedTodayDespiteLaterOccurrence: Transaction = {
+    ...base,
+    id: "today-effective",
+    occurredOn: "2026-10-19",
+    plannedOn: "2026-10-20",
+    effectiveOn: "2026-10-17",
+    status: "posted",
+  };
+  const plannedTodayDespiteLaterOccurrence: Transaction = {
+    ...base,
+    id: "today-planned",
+    occurredOn: "2026-10-21",
+    plannedOn: "2026-10-17",
+    status: "planned",
+  };
+  delete plannedTodayDespiteLaterOccurrence.effectiveOn;
+  const futurePosting: Transaction = {
+    ...base,
+    id: "tomorrow-effective",
+    occurredOn: "2026-10-17",
+    plannedOn: "2026-10-17",
+    effectiveOn: "2026-10-18",
+    status: "posted",
+  };
+  const result = listTransactions(
+    tenantA,
+    [postedTodayDespiteLaterOccurrence, plannedTodayDespiteLaterOccurrence, futurePosting],
+    { statementTo: "2026-10-17" },
+  );
+  assertEqual(result.length, 2, "statement cutoff includes today's canonical movements");
+  assertEqual(
+    result.some((item) => item.id === "today-effective"),
+    true,
+    "effective date wins over occurrence date",
+  );
+  assertEqual(
+    result.some((item) => item.id === "today-planned"),
+    true,
+    "planned date used when effective date is absent",
+  );
+  assertEqual(
+    result.some((item) => item.id === "tomorrow-effective"),
+    false,
+    "future effective date must not leak into today's statement",
+  );
 }
 
 function testCategoryRemoval(): void {

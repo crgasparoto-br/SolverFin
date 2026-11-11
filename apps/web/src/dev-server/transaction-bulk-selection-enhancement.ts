@@ -1,17 +1,35 @@
 import { icon as renderIcon } from "./icons.js";
+import { renderStatementStatusActionIcon } from "./statement-status.js";
 
 const STYLE_MARKER = "data-transaction-bulk-selection-enhancement";
 const SCRIPT_MARKER = "data-transaction-bulk-selection-controller";
+
+function renderBulkSelectionActionIcon(
+  name: "trash-2" | "layers" | "x",
+  tone: "neutral" | "danger",
+): string {
+  return `<span class="statement-status bulk-icon-${tone}" aria-hidden="true">${renderIcon(name, 15)}</span>`;
+}
 
 export function enhanceTransactionBulkSelection(html: string): string {
   if (!html.includes("data-selection-bar") || html.includes(STYLE_MARKER)) return html;
 
   const styles = `
     <style ${STYLE_MARKER}>
-      .selection-bar .bulk-selection-actions{display:flex;flex-wrap:wrap;gap:7px}
-      .selection-bar .bulk-selection-action{align-items:center;display:inline-flex;gap:6px;min-height:34px;white-space:nowrap}
-      .selection-bar .bulk-selection-action.danger{background:var(--surface);border:1px solid var(--danger);color:var(--danger)}
-      .selection-bar .bulk-selection-action.danger:hover,.selection-bar .bulk-selection-action.danger:focus-visible{background:var(--danger-bg)}
+      .selection-bar .bulk-selection-actions{align-items:center;display:flex;flex-wrap:wrap;gap:7px}
+      .selection-bar .bulk-selection-actions button.bulk-icon-action{align-items:center;background:transparent;border:0;border-radius:999px;box-sizing:border-box;cursor:pointer;display:inline-flex;flex:0 0 44px;height:44px;justify-content:center;min-height:44px;min-width:44px;padding:0;width:44px}
+      .selection-bar .bulk-icon-action>.statement-status{box-sizing:border-box;flex:0 0 26px;height:26px;width:26px}
+      .selection-bar .bulk-icon-action>.statement-status svg{display:block;height:15px;width:15px}
+      .selection-bar .bulk-icon-action>.statement-status-ok{background:var(--sf-color-success-surface);border-color:var(--sf-color-success-border);color:var(--sf-color-success)}
+      .selection-bar .bulk-icon-action>.statement-status-posted{background:var(--sf-color-neutral-control-hover);border-color:var(--sf-color-line);color:var(--sf-color-muted-text)}
+      .selection-bar .bulk-icon-action>.bulk-icon-neutral{background:var(--sf-color-neutral-control-hover);border-color:var(--sf-color-line);color:var(--primary)}
+      .selection-bar .bulk-icon-action>.bulk-icon-danger{background:var(--danger-bg);border-color:var(--danger);color:var(--danger)}
+      .selection-bar .bulk-selection-actions button.bulk-icon-action:hover:not(:disabled),.selection-bar .bulk-selection-actions button.bulk-icon-action:focus-visible{background:transparent;border-color:transparent}
+      .selection-bar .bulk-selection-actions button.bulk-icon-action:hover:not(:disabled)>.statement-status,.selection-bar .bulk-selection-actions button.bulk-icon-action:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--neutral-control-border-hover)}
+      .selection-bar .bulk-selection-actions button.bulk-icon-action.danger:hover:not(:disabled)>.statement-status,.selection-bar .bulk-selection-actions button.bulk-icon-action.danger:focus-visible>.statement-status{box-shadow:0 0 0 2px var(--danger)}
+      .selection-bar .bulk-icon-action:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+      .selection-bar .bulk-icon-action.danger:focus-visible{outline-color:var(--danger)}
+      .selection-bar .bulk-icon-action:disabled{cursor:not-allowed;opacity:.55}
       .selection-bar .bulk-selection-help{color:var(--muted);flex-basis:100%;font-size:.8125rem;line-height:1.35;text-align:right}
       .selection-bar .bulk-selection-status{color:var(--muted);flex-basis:100%;font-size:.8125rem;text-align:right}
       .selection-bar .bulk-selection-status.error{color:var(--danger)}
@@ -22,12 +40,6 @@ export function enhanceTransactionBulkSelection(html: string): string {
       .grouped-row .transaction-group-state{align-items:center;border-radius:999px;color:var(--primary);display:inline-flex;flex:0 0 auto;justify-content:center;min-height:28px;min-width:28px;outline-offset:2px}
       .grouped-row .transaction-group-state:focus-visible{outline:2px solid var(--primary)}
       .grouped-row .transaction-group-state svg{display:block}
-      @media(max-width:760px){
-        .selection-bar .bulk-selection-actions{display:grid;flex:1 1 100%;grid-template-columns:repeat(2,minmax(0,1fr))}
-        .selection-bar .bulk-selection-action{justify-content:center;white-space:normal}
-        .selection-bar .bulk-selection-action.danger{grid-column:1/-1}
-        .selection-bar .bulk-selection-help,.selection-bar .bulk-selection-status{text-align:left}
-      }
     </style>`;
 
   const script = `
@@ -39,19 +51,53 @@ export function enhanceTransactionBulkSelection(html: string): string {
         selectionBar.dataset.bulkSelectionEnhanced = "true";
 
         const icon = ${JSON.stringify({
-          check: renderIcon("check", 16),
-          undo: renderIcon("refresh-cw", 16),
-          trash: renderIcon("trash-2", 16),
+          reconcile: renderStatementStatusActionIcon("reconciled"),
+          unreconcile: renderStatementStatusActionIcon("posted"),
+          trash: renderBulkSelectionActionIcon("trash-2", "danger"),
+          groupAction: renderBulkSelectionActionIcon("layers", "neutral"),
+          clear: renderBulkSelectionActionIcon("x", "neutral"),
           group: renderIcon("layers", 16),
         })};
 
+        function updateTooltip(button, label, reason) {
+          if (!button) return;
+          const tooltip = reason ? label + ": " + reason : label;
+          button.title = tooltip;
+          button.setAttribute("data-tooltip", tooltip);
+        }
+
+        function decorateIconButton(button, label, glyph, danger) {
+          button.type = "button";
+          button.classList.remove("ghost-btn");
+          button.classList.add("bulk-icon-action");
+          if (danger) {
+            button.classList.add("danger");
+          } else {
+            button.setAttribute("data-button-variant", "neutral");
+          }
+          button.setAttribute("aria-label", label);
+          updateTooltip(button, label, "");
+          button.innerHTML = glyph;
+          return button;
+        }
+
+        function createIconButton(action, label, glyph, danger) {
+          const button = document.createElement("button");
+          button.dataset.bulkSelectionAction = action;
+          return decorateIconButton(button, label, glyph, danger);
+        }
+
         const actions = document.createElement("span");
         actions.className = "bulk-selection-actions";
-        actions.innerHTML =
-          '<button type="button" class="ghost-btn bulk-selection-action" data-bulk-selection-action="reconcile">' + icon.check + '<span>Marcar como conciliado</span></button>' +
-          '<button type="button" class="ghost-btn bulk-selection-action" data-bulk-selection-action="unreconcile">' + icon.undo + '<span>Desmarcar conciliado</span></button>' +
-          '<button type="button" class="bulk-selection-action danger" data-bulk-selection-action="void">' + icon.trash + '<span>Excluir selecionados</span></button>';
+        actions.setAttribute("role", "group");
+        actions.setAttribute("aria-label", "Ações dos lançamentos selecionados");
         selectionBar.insertBefore(actions, groupOpen || null);
+        actions.appendChild(createIconButton("reconcile", "Marcar como conciliado", icon.reconcile, false));
+        actions.appendChild(createIconButton("unreconcile", "Desmarcar conciliado", icon.unreconcile, false));
+        if (groupOpen) actions.appendChild(decorateIconButton(groupOpen, "Unificar lançamentos", icon.groupAction, false));
+        const clearButton = selectionBar.querySelector("[data-selection-clear]");
+        if (clearButton) actions.appendChild(decorateIconButton(clearButton, "Limpar seleção", icon.clear, false));
+        actions.appendChild(createIconButton("void", "Excluir selecionados", icon.trash, true));
 
         const helpNode = document.createElement("span");
         helpNode.id = "bulk-selection-help";
@@ -84,6 +130,11 @@ export function enhanceTransactionBulkSelection(html: string): string {
           input.dataset.groupId = group.id;
           input.dataset.kind = group.kind || "";
           input.dataset.status = group.status || "";
+          input.dataset.reconcileProtected = String(group.reconcileProtected === true ||
+            group.members.some(function (member) {
+              return member.reconcileProtected === true || member.source === "account_remuneration" ||
+                Boolean(member.cardId || member.invoiceId);
+            }));
           input.dataset.currency = group.currency || "BRL";
           input.dataset.amount = String((group.kind === "expense" ? -1 : 1) * Math.abs(Number(group.totalAmountMinor || 0)));
           input.dataset.memberCount = String(group.members.length);
@@ -134,7 +185,9 @@ export function enhanceTransactionBulkSelection(html: string): string {
         }
 
         function compatibleForGrouping(items) {
-          return items.length >= 2 && items.every(function (item) {
+          return items.length >= 2 &&
+            (items[0].dataset.kind === "income" || items[0].dataset.kind === "expense") &&
+            items.every(function (item) {
             return item.dataset.kind === items[0].dataset.kind &&
               item.dataset.status === items[0].dataset.status &&
               item.dataset.currency === items[0].dataset.currency;
@@ -170,41 +223,63 @@ export function enhanceTransactionBulkSelection(html: string): string {
           if (groupOpen) {
             const canGroup = groups.length === 0 && compatibleForGrouping(simple);
             groupOpen.disabled = !canGroup;
-            groupOpen.title = groups.length > 0
+            updateTooltip(groupOpen, "Unificar lançamentos", groups.length > 0
               ? "Desmarque os agrupamentos para unificar somente lançamentos simples."
-              : simple.length > 1 && !canGroup
-                ? "Selecione lançamentos do mesmo tipo, moeda e situação."
-                : "";
+              : simple.some(function (item) { return item.dataset.kind === "transfer"; })
+                ? "Transferências não podem ser unificadas."
+                : simple.length > 1 && !canGroup
+                  ? "Selecione lançamentos do mesmo tipo, moeda e situação."
+                  : !canGroup ? "Selecione pelo menos dois lançamentos do mesmo tipo, moeda e situação." : "");
             groupOpen.setAttribute("aria-describedby", helpNode.id);
           }
 
-          const eligibleStatuses = items.every(function (item) {
-            return item.dataset.status === "posted" || item.dataset.status === "reconciled";
+          const hasProtected = items.some(function (item) {
+            return item.dataset.reconcileProtected === "true";
+          });
+          const eligibleStatuses = !hasProtected && items.every(function (item) {
+            return item.dataset.status === "planned" ||
+              item.dataset.status === "posted" ||
+              item.dataset.status === "reconciled";
           });
           const reconcileButton = actions.querySelector('[data-bulk-selection-action="reconcile"]');
           const unreconcileButton = actions.querySelector('[data-bulk-selection-action="unreconcile"]');
           const voidButton = actions.querySelector('[data-bulk-selection-action="void"]');
-          const hasPosted = items.some(function (item) { return item.dataset.status === "posted"; });
+          const hasReconcileTarget = items.some(function (item) {
+            return item.dataset.status === "planned" || item.dataset.status === "posted";
+          });
           const hasReconciled = items.some(function (item) { return item.dataset.status === "reconciled"; });
-          reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasPosted;
+          reconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconcileTarget;
           unreconcileButton.disabled = items.length === 0 || !eligibleStatuses || !hasReconciled;
           voidButton.disabled = items.length === 0;
-          reconcileButton.title = eligibleStatuses ? "" : "Efetive os lançamentos previstos antes de conciliá-los.";
-          unreconcileButton.title = eligibleStatuses ? "" : "Somente lançamentos efetivados ou conciliados podem ser alterados.";
+          updateTooltip(reconcileButton, "Marcar como conciliado", hasProtected
+            ? "Conciliação de remuneração automática exige seu fluxo próprio."
+            : !eligibleStatuses
+              ? "Sugestões não confirmadas e lançamentos excluídos não podem ser conciliados."
+              : hasReconcileTarget ? "" : "Todos os lançamentos selecionados já estão conciliados.");
+          updateTooltip(unreconcileButton, "Desmarcar conciliado", hasProtected
+            ? "Conciliação de remuneração automática exige seu fluxo próprio."
+            : !eligibleStatuses
+              ? "Esta seleção contém lançamentos com situação indisponível."
+              : hasReconciled ? "" : "Nenhum lançamento selecionado está conciliado.");
           reconcileButton.setAttribute("aria-describedby", helpNode.id);
           unreconcileButton.setAttribute("aria-describedby", helpNode.id);
           voidButton.setAttribute("aria-describedby", helpNode.id);
+          if (clearButton) clearButton.setAttribute("aria-describedby", helpNode.id);
 
           const explanations = [];
           if (groups.length > 0) {
             explanations.push("Unificar lançamentos indisponível: desmarque os agrupamentos para unificar somente lançamentos simples.");
+          } else if (simple.some(function (item) { return item.dataset.kind === "transfer"; })) {
+            explanations.push("Unificar lançamentos indisponível: transferências não podem ser agrupadas.");
           } else if (simple.length > 1 && !compatibleForGrouping(simple)) {
             explanations.push("Unificar lançamentos indisponível: selecione lançamentos do mesmo tipo, moeda e situação.");
           }
-          if (items.length > 0 && !eligibleStatuses) {
-            explanations.push("Conciliação indisponível: efetive os lançamentos previstos antes de alterar a conciliação.");
+          if (items.length > 0 && hasProtected) {
+            explanations.push("Conciliação indisponível: remuneração automática exige seu fluxo próprio.");
+          } else if (items.length > 0 && !eligibleStatuses) {
+            explanations.push("Conciliação indisponível: a seleção contém sugestões não confirmadas ou lançamentos excluídos.");
           } else if (items.length > 0) {
-            if (!hasPosted) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");
+            if (!hasReconcileTarget) explanations.push("Marcar como conciliado indisponível: todos os lançamentos selecionados já estão conciliados.");
             if (!hasReconciled) explanations.push("Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado.");
           }
           helpNode.textContent = explanations.join(" ");
@@ -271,9 +346,6 @@ export function enhanceTransactionBulkSelection(html: string): string {
         function setBusy(busy) {
           selectionBar.setAttribute("aria-busy", String(busy));
           actions.querySelectorAll("button").forEach(function (button) { button.disabled = busy; });
-          if (groupOpen) groupOpen.disabled = busy;
-          const clearButton = selectionBar.querySelector("[data-selection-clear]");
-          if (clearButton) clearButton.disabled = busy;
         }
 
         function showStatus(message, tone) {

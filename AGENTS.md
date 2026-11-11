@@ -18,7 +18,7 @@ Antes de implementar, leia:
 - `docs/EVOLUTION_STRATEGY.md`, quando a issue tocar core financeiro, multi-moedas, arquitetura web, dashboard, extrato, cartoes, relatorios, orcamentos ou projecoes;
 - `docs/ARCHITECTURE.md`;
 - `docs/BRAND.md`, quando houver interface ou texto visivel;
-- `docs/DESIGN_SYSTEM.md`, quando houver interface;
+- `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md` e `docs/UI_PRIMITIVES.md`, obrigatoriamente em qualquer mudança de interface, mesmo fora do Extrato;
 - `docs/adr/README.md` e ADRs relacionados;
 - `.github/copilot-instructions.md`, quando trabalhar no GitHub/Copilot.
 
@@ -36,7 +36,7 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 8. Nao remova dados financeiros de forma destrutiva sem requisito explicito; prefira exclusao logica e trilha de auditoria.
 9. Use validacao de entrada, tipos explicitos e erros padronizados quando houver codigo.
 10. Atualize documentacao e ADRs quando mudar arquitetura, modelo de dados, contrato publico, fluxo relevante ou decisao duradoura.
-11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel.
+11. Em telas com criacao ou edicao de registros, priorize pop-up/modal sempre que possivel, mantendo a listagem ou contexto atual visivel. Em `/lancamentos`, cadastro, clonagem e edicao usam dialog centralizado (desktop/mobile), nunca painel lateral alinhado a direita; preserve foco, Escape, rolagem interna e contratos existentes.
 12. Mantenha telas clean e modernas conforme o contrato de qualidade visual de `docs/DESIGN_SYSTEM.md`: hierarquia principal reconhecivel rapidamente, poucos cards, superficies discretas, espacamento e tipografia antes de bordas, iconografia acessivel e consistente, metadados visualmente secundarios e no maximo uma acao primaria evidente por escopo visual. Uma tela funcional que ainda pareca CRUD administrativo ou formulario bruto nao esta pronta.
 13. Nunca some valores de moedas diferentes sem uma etapa explicita de conversao. Preserve moeda em dominio, API, view-model e UI; sem conversao, agregue por moeda.
 14. Nao introduza hardcode de BRL em contratos genericos. Um fluxo especificamente BRL deve declarar essa restricao no contrato e validacao.
@@ -44,6 +44,7 @@ Se houver conflito entre issue, documentacao e codigo, explicite o conflito na P
 16. Para novas interfaces, prefira componentes/primitivas estruturadas e view-models. Nao adicione transformacao por regex/string sobre HTML final como mecanismo normal de composicao.
 17. Pos-processadores HTML existentes sao legado de transicao: preserve cobertura enquanto existirem e remova-os gradualmente quando a rota correspondente migrar.
 18. Preserve SSR, acessibilidade, responsividade e evidencia visual durante a migracao da arquitetura de interface. Nao faca big-bang do frontend sem ADR propria.
+19. **Golden Screen é padrão transversal obrigatório de acabamento para TODAS as telas, inclusive administração, filtros e modais.** Aplique os tokens e componentes executáveis de `apps/web/src/design-system/` conforme `docs/DESIGN_SYSTEM.md`; use o Extrato aprovado como referência visual de qualidade, sem copiar sua composição quando a tarefa principal for diferente. Compare repouso, hover, active, focus-visible, disabled, contraste, responsividade e evidências Chrome do SHA. Uma alteração visual sem essa verificação não está pronta.
 
 ## Padrao de trabalho
 

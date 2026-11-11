@@ -1,0 +1,29 @@
+{
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "source": "original binary directly uploaded by user",
+  "pages": 3,
+  "rows_per_page": [
+    11,
+    14,
+    13
+  ],
+  "expected_rows": 38,
+  "actual_rows": 38,
+  "all_rows_compared": true,
+  "fields_compared": [
+    "occurredOn",
+    "description",
+    "externalId",
+    "direction",
+    "amountMinor",
+    "currency",
+    "rowNumber"
+  ],
+  "all_fields_equal": true,
+  "balance_transitions_validated": 38,
+  "summary_totals_equal": true,
+  "unique_operation_ids": 38,
+  "independent_oracle_method": "pdftotext -layout, blank-line row blocks and terminal financial columns, separate from production bbox parser; page images reviewed",
+  "pdf_sha256": "44b7106b387f515f4dd22983d53529c68cf1037ec96ab619b6df6c28c3e95956",
+  "private_values_omitted": true
+}

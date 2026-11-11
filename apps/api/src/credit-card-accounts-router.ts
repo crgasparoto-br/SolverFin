@@ -18,6 +18,11 @@ import {
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { updateCardPurchaseForContext } from "./repositories/card-invoice-contracts.js";
+import {
+  deleteCardPurchaseHandler,
+  reverseCardPurchaseHandler,
+  updateCardReversalHandler,
+} from "./card-purchase-extra-handlers.js";
 import { moveCardPurchaseInvoicePeriodForContext } from "./repositories/card-purchase-invoice-period-move.js";
 import {
   archiveCardInstrumentForContext,
@@ -64,6 +69,17 @@ route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/instruments`, createCardInstrumentH
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/default-instrument`, setDefaultCardInstrumentHandler);
 route("POST", `${ACCOUNTS_BASE_PATH}/:cardId/purchases`, registerCardPurchaseHandler);
 route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`, updateCardPurchaseHandler);
+route(
+  "POST",
+  `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/reverse`,
+  reverseCardPurchaseHandler,
+);
+route("PATCH", `${ACCOUNTS_BASE_PATH}/:cardId/reversals/:reversalId`, updateCardReversalHandler);
+route(
+  "DELETE",
+  `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId`,
+  deleteCardPurchaseHandler,
+);
 route(
   "POST",
   `${ACCOUNTS_BASE_PATH}/:cardId/purchases/:transactionId/move-invoice-period`,
@@ -498,7 +514,7 @@ function readOptionalNumber(value: unknown): number | null {
   return Number(value);
 }
 
-function requireObjectBody(body: unknown): Record<string, unknown> {
+export function requireObjectBody(body: unknown): Record<string, unknown> {
   if (typeof body !== "object" || body === null || Array.isArray(body)) {
     throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
   }
@@ -506,7 +522,7 @@ function requireObjectBody(body: unknown): Record<string, unknown> {
   return body as Record<string, unknown>;
 }
 
-function requireParam(match: Readonly<Record<string, string>>, key: string): string {
+export function requireParam(match: Readonly<Record<string, string>>, key: string): string {
   const value = match[key];
 
   if (!value) {
@@ -516,7 +532,7 @@ function requireParam(match: Readonly<Record<string, string>>, key: string): str
   return value;
 }
 
-function json(statusCode: number, body: unknown): ApiResponse {
+export function json(statusCode: number, body: unknown): ApiResponse {
   return {
     statusCode,
     headers: { "content-type": "application/json; charset=utf-8" },

@@ -21,6 +21,16 @@ export const accountCurrencies = ["BRL", "USD", "EUR"] as const;
 export type ResourceKind = "account" | "card";
 export type ResourceKey = `${ResourceKind}:${string}`;
 
+export interface AccountCdiConfiguration {
+  accountId: string;
+  accountCurrency: string;
+  enabled: boolean;
+  indexKind: "cdi";
+  remunerationPercent?: number;
+  startsOn?: string;
+  categoryId?: string;
+}
+
 export interface ResourceMasterViewModel {
   key: ResourceKey;
   kind: ResourceKind;
@@ -33,6 +43,10 @@ export interface ResourceMasterViewModel {
   secondaryLabel: string;
   currency: string | undefined;
   currencyLabel: string;
+  amountMinor: number;
+  amountLabel: "Saldo inicial" | "Limite total";
+  cdiActive?: boolean;
+  cdiStatus?: "active" | "inactive" | "unavailable" | "ineligible";
   search: string;
   href: string;
   isSelected: boolean;
@@ -91,8 +105,32 @@ export function buildAccountsCardsPageViewModel(
   accounts: AccountRecord[],
   cards: CreditCardAccountRecord[],
   requestedResource?: string | null,
+  cdiConfigurations: readonly AccountCdiConfiguration[] = [],
+  cdiConfigurationsAvailable = true,
 ): AccountsCardsPageViewModel {
-  const accountResources = accounts.map((account) => buildAccountResource(account));
+  const enabledCdiAccountIds = new Set(
+    cdiConfigurations
+      .filter(
+        (configuration) =>
+          configuration.enabled === true &&
+          configuration.indexKind === "cdi" &&
+          configuration.accountCurrency === "BRL",
+      )
+      .map((configuration) => configuration.accountId),
+  );
+  const accountResources = accounts.map((account) => {
+    const cdiEligible =
+      account.status === "active" && normalizeCurrency(account.currency) === "BRL";
+    const cdiActive = cdiEligible && enabledCdiAccountIds.has(account.id);
+    const cdiStatus = !cdiEligible
+      ? "ineligible"
+      : !cdiConfigurationsAvailable
+        ? "unavailable"
+        : cdiActive
+          ? "active"
+          : "inactive";
+    return buildAccountResource(account, cdiActive, cdiStatus);
+  });
   const cardResources = cards.map((card) => buildCardResource(card, accounts));
   const resources = [...accountResources, ...cardResources];
   const requestedKey = parseResourceKey(requestedResource);
@@ -116,7 +154,11 @@ export function buildAccountsCardsPageViewModel(
   };
 }
 
-function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
+function buildAccountResource(
+  account: AccountRecord,
+  cdiActive: boolean,
+  cdiStatus: "active" | "inactive" | "unavailable" | "ineligible",
+): ResourceMasterViewModel {
   const item = buildAccountItemViewModel(account);
   const currency = normalizeCurrency(account.currency);
   const key = `account:${account.id}` as const;
@@ -132,7 +174,24 @@ function buildAccountResource(account: AccountRecord): ResourceMasterViewModel {
     secondaryLabel: formatAccountKind(account.kind),
     currency,
     currencyLabel: currency ?? "Moeda não informada",
-    search: [item.search, currency ?? "moeda indisponível", "conta"].join(" ").toLowerCase(),
+    amountMinor: account.openingBalanceMinor ?? 0,
+    amountLabel: "Saldo inicial",
+    cdiActive,
+    cdiStatus,
+    search: [
+      item.search,
+      currency ?? "moeda indisponível",
+      "conta",
+      cdiStatus === "active"
+        ? "cdi ativo"
+        : cdiStatus === "inactive"
+          ? "sem cdi ativo"
+          : cdiStatus === "ineligible"
+            ? "cdi não elegível"
+            : "cdi não verificado",
+    ]
+      .join(" ")
+      .toLowerCase(),
     href: `/contas-cartoes?resource=${encodeURIComponent(key)}`,
     isSelected: false,
   };
@@ -156,6 +215,8 @@ function buildCardResource(
     secondaryLabel: `${item.brandLabel} · ${item.activeInstrumentCount} ${item.activeInstrumentCount === 1 ? "instrumento ativo" : "instrumentos ativos"}`,
     currency: item.cardCurrency,
     currencyLabel: item.cardCurrency ?? "Moeda não informada",
+    amountMinor: card.creditLimitMinor ?? 0,
+    amountLabel: "Limite total",
     search: [item.search, item.cardCurrency ?? "moeda não informada", "cartão"]
       .join(" ")
       .toLowerCase(),

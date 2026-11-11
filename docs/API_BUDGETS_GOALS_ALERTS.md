@@ -181,6 +181,8 @@ A tabela apresenta, por item:
 
 Para `unbudgeted`, o planejado aparece como **Sem orçamento**. Para `uncategorized`, aparece como **Sem categoria**. O disponivel e explicitamente inaplicavel quando nao existe orcamento real.
 
+A leitura inicial apresenta ate tres recortes individuais, priorizando situacoes que requerem atencao e preservando um destaque por moeda. Cada recorte exibe categoria, periodo, moeda, planejado, realizado, disponivel, restante antes dos compromissos, situacao recebida da API e acao contextual. A tabela continua contendo todos os itens, incluindo comprometido, projetado, disponivel, status e acoes. Contagens de catalogo aparecem apenas em uma faixa auxiliar abaixo da tabela; nenhuma delas se torna um total financeiro. Filtros ativos seguem identificados no SSR, inclusive quando nao ha resultados.
+
 A tela nao calcula `committed`, `projected`, `available` nem `overBudget`.
 
 ## Alertas e status existente
@@ -212,3 +214,11 @@ A condicao futura de estouro e representada numericamente por `overBudgetAmountM
 - inferencia automatica de categoria;
 - orcamento implicito para `Sem categoria` ou `unbudgeted`;
 - alertas push, e-mail ou notificacoes externas.
+
+## Filtro de período e linhas únicas por categoria (Golden Screen — PR #751)
+
+Na rota `/orcamentos`, o filtro **Período** lista as janelas exatas cadastradas (incluindo intervalos parciais) e o mês corrente. A seleção é persistida na URL por `period=YYYY-MM-DD:YYYY-MM-DD`; entrada inválida não é usada como filtro. O backend continua recebendo apenas `periodStartOn` e `periodEndOn` do período válido escolhido. Não recortar arbitrariamente o valor do consumo de um orçamento cujo período original seja maior do que a janela selecionada: o filtro inclui somente janelas exatas para preservar os indicadores retornados pela API.
+
+Sem seleção, **Todos os períodos** é a visão inicial. A tabela mostra **uma linha por categoria e moeda**, agrupando somente a apresentação. Quando uma categoria e moeda possuem mais de um registro, a linha principal exibe os valores originais do período mais recente (com preferência para orçamento em empate) e um disclosure dá acesso às demais janelas, seus valores nativos, composição e ações de edição/arquivamento. **Não somar períodos, não converter moedas e não esconder históricos.** As contagens auxiliares continuam sendo contagens de registros da API, não totais financeiros por categoria.
+
+Na coluna Categoria, o recuo, a indicação de ancestral e a seta de filho visualizam a hierarquia real de `parentCategoryId`, com ícone de situação antes do nome. No menu de três pontos de uma categoria sem orçamento, **Novo orçamento** preenche somente a categoria de despesa ativa selecionada; o comando principal da página continua abrindo o formulário sem categoria preselecionada. Ambos usam o mesmo modal, validações e API. Os controles **Aplicar filtros** e **Limpar** utilizam o mesmo componente visual, altura e largura, inclusive no celular.

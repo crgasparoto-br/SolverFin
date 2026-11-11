@@ -28,6 +28,21 @@ describe("operational attachment workspace", () => {
     assert.match(html, / hidden>/);
   });
 
+  it("shows a staging control before a new transaction receives its database ID", () => {
+    const html = renderAttachmentWorkspace({
+      entityKind: "transaction",
+      title: "Anexos do lançamento",
+      pendingCreate: true,
+    });
+    assert.match(html, /data-pending-create/);
+    assert.doesNotMatch(html, /data-entity-id="" hidden/);
+    const script = attachmentWorkspaceScript();
+    assert.match(script, /const uploadPending = async \(workspace, entityId\)/);
+    assert.match(script, /linkedEntityId: entityId/);
+    assert.match(script, /const resetPending = \(workspace\)/);
+    assert.match(script, /MAX_BYTES = 5 \* 1024 \* 1024/);
+  });
+
   it("uses authenticated API routes for list, upload, open and logical deletion", () => {
     const script = attachmentWorkspaceScript();
 

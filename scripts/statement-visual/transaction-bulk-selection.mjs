@@ -4,6 +4,19 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
+import {
+  inspectProtectedGroupSelection,
+  selectMixed,
+  readBarMetrics,
+  readRenderedStatuses,
+  readSelectionActionIcons,
+  assertSelectionActionIcons,
+  verifyFailureFeedback,
+} from "./transaction-bulk-selection-helpers.mjs";
+import {
+  verifyDeletionAndMixedStatuses,
+  verifyTransferSelection,
+} from "./transaction-bulk-selection-scenarios.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -15,6 +28,7 @@ if (!chromePath) {
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let groupId;
+let additionalIds = [];
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -116,6 +130,21 @@ try {
   assert.equal(mixedSelection.voidDisabled, false);
   assert.match(mixedSelection.help, /desmarque os agrupamentos/i);
   assert.match(mixedSelection.help, /nenhum lançamento selecionado está conciliado/i);
+  const protectedPostedGroup = await inspectProtectedGroupSelection(browser.cdp, created.groupId);
+  assert.equal(protectedPostedGroup.groupProtected, true);
+  assert.equal(protectedPostedGroup.reconcileDisabled, true);
+  assert.equal(protectedPostedGroup.unreconcileDisabled, true);
+  assert.equal(protectedPostedGroup.clearDisabled, false);
+  assert.equal(protectedPostedGroup.voidDisabled, false);
+  assert.match(protectedPostedGroup.reconcileTooltip, /remuneração automática/i);
+  assert.match(protectedPostedGroup.help, /remuneração automática/i);
+  const desktopIcons = await readSelectionActionIcons(browser.cdp);
+  assertSelectionActionIcons(desktopIcons, "desktop");
+  assert.equal(desktopIcons.find((item) => item.action === "group").disabled, true);
+  assert.match(
+    desktopIcons.find((item) => item.action === "group").tooltip,
+    /Desmarque os agrupamentos/,
+  );
 
   await evaluate(
     browser.cdp,
@@ -170,65 +199,69 @@ try {
   assert.equal(mobile.visibleInViewport, true);
   assert.equal(mobile.actionCount, 3);
   assert.equal(mobile.helpVisible, true);
+  const mobileIcons = await readSelectionActionIcons(browser.cdp);
+  assertSelectionActionIcons(mobileIcons, "mobile");
   await screenshot(browser.cdp, join(outputDir, "issue-530-mixed-selection-390x844.png"));
+
+  // Re-establish the desktop page/selection after viewport emulation so
+  // Chrome sends the native Enter key to the focused Clear button reliably.
+  await setViewport(browser.cdp, 1366, 900);
+  await navigate(browser.cdp, `${baseUrl}${route}`);
+  await sleep(150);
+  await selectMixed(browser.cdp, created);
+  const clearReady = await evaluate(
+    browser.cdp,
+    `(() => {
+      const button = document.querySelector('[data-selection-clear]');
+      window.__bulkClearNativeClick = false;
+      button.addEventListener('click', () => { window.__bulkClearNativeClick = true; }, { once: true });
+      button.focus();
+      return {
+        focused: document.activeElement === button,
+        label: button.getAttribute('aria-label'),
+        tooltip: button.getAttribute('data-tooltip')
+      };
+    })()`,
+  );
+  assert.equal(clearReady.focused, true);
+  assert.equal(clearReady.label, "Limpar seleção");
+  assert.equal(clearReady.tooltip, clearReady.label);
+  await browser.cdp.send("Page.bringToFront");
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyDown",
+    text: "\r",
+    unmodifiedText: "\r",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await browser.cdp.send("Input.dispatchKeyEvent", {
+    type: "keyUp",
+    key: "Enter",
+    code: "Enter",
+    windowsVirtualKeyCode: 13,
+    nativeVirtualKeyCode: 13,
+  });
+  await sleep(80);
+  const cleared = await evaluate(
+    browser.cdp,
+    `(() => ({
+      nativeActivated: window.__bulkClearNativeClick === true,
+      selectedCount: document.querySelectorAll('[data-select-transaction]:checked').length,
+      selectionHidden: document.querySelector('[data-selection-bar]').hidden
+    }))()`,
+  );
+  assert.equal(cleared.nativeActivated, true, "Enter should activate Clear selection");
+  assert.equal(cleared.selectedCount, 0);
+  assert.equal(cleared.selectionHidden, true);
 
   await setViewport(browser.cdp, 1366, 900);
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(150);
   await selectMixed(browser.cdp, created);
 
-  const serverFailure = await evaluate(
-    browser.cdp,
-    `(async () => {
-      const originalFetch = window.fetch;
-      window.confirm = () => true;
-      window.fetch = async (input, init) => {
-        if (String(input).includes('/api/transactions/bulk-actions')) {
-          return new Response(JSON.stringify({ error: { message: 'Falha controlada para manter a seleção.' } }), {
-            status: 409,
-            headers: { 'content-type': 'application/json' }
-          });
-        }
-        return originalFetch(input, init);
-      };
-      document.querySelector('[data-bulk-selection-action="reconcile"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 80));
-      const result = {
-        selectedCount: document.querySelectorAll('[data-select-transaction]:checked').length,
-        status: document.querySelector('[data-bulk-selection-status]').textContent.trim(),
-        ariaBusy: document.querySelector('[data-selection-bar]').getAttribute('aria-busy')
-      };
-      window.fetch = originalFetch;
-      return result;
-    })()`,
-  );
-  assert.equal(serverFailure.selectedCount, 2);
-  assert.equal(serverFailure.status, "Falha controlada para manter a seleção.");
-  assert.equal(serverFailure.ariaBusy, "false");
-
-  const networkFailure = await evaluate(
-    browser.cdp,
-    `(async () => {
-      const originalFetch = window.fetch;
-      window.confirm = () => true;
-      window.fetch = async (input, init) => {
-        if (String(input).includes('/api/transactions/bulk-actions')) throw new TypeError('network unavailable');
-        return originalFetch(input, init);
-      };
-      document.querySelector('[data-bulk-selection-action="reconcile"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 80));
-      const result = {
-        selectedCount: document.querySelectorAll('[data-select-transaction]:checked').length,
-        status: document.querySelector('[data-bulk-selection-status]').textContent.trim(),
-        ariaBusy: document.querySelector('[data-selection-bar]').getAttribute('aria-busy')
-      };
-      window.fetch = originalFetch;
-      return result;
-    })()`,
-  );
-  assert.equal(networkFailure.selectedCount, 2);
-  assert.match(networkFailure.status, /verifique sua conexão e tente novamente/i);
-  assert.equal(networkFailure.ariaBusy, "false");
+  const { serverFailure, networkFailure } = await verifyFailureFeedback(browser);
 
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(150);
@@ -255,7 +288,9 @@ try {
         tagName: button.tagName,
         type: button.type,
         tabIndex: button.tabIndex,
-        accessibleText: button.textContent.trim()
+        accessibleText: button.getAttribute("aria-label"),
+        visibleText: button.textContent.trim(),
+        tooltip: button.getAttribute("data-tooltip")
       };
     })()`,
   );
@@ -263,11 +298,15 @@ try {
   assert.equal(keyboardPrepared.tagName, "BUTTON");
   assert.equal(keyboardPrepared.type, "button");
   assert.equal(keyboardPrepared.tabIndex, 0);
+  assert.equal(keyboardPrepared.visibleText, "");
+  assert.equal(keyboardPrepared.tooltip, keyboardPrepared.accessibleText);
   assert.match(keyboardPrepared.accessibleText, /Marcar como conciliado/);
   const reconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await browser.cdp.send("Page.bringToFront");
   await browser.cdp.send("Input.dispatchKeyEvent", {
-    type: "rawKeyDown",
+    type: "keyDown",
+    text: "\r",
+    unmodifiedText: "\r",
     key: "Enter",
     code: "Enter",
     windowsVirtualKeyCode: 13,
@@ -285,16 +324,18 @@ try {
     browser.cdp,
     `(() => {
       const bar = document.querySelector('[data-selection-bar]');
-      const button = bar.querySelector('[data-bulk-selection-action="reconcile"]');
-      const result = {
+      return {
         enterReceived: window.__issue530EnterReceived === true,
         nativeActivation: bar.getAttribute('aria-busy') === 'true'
       };
-      if (!result.nativeActivation) button.click();
-      return result;
     })()`,
   );
   assert.equal(keyboardActivation.enterReceived, true);
+  assert.equal(
+    keyboardActivation.nativeActivation,
+    true,
+    "Enter must activate reconciliation natively.",
+  );
   await sleep(40);
   const loading = await evaluate(
     browser.cdp,
@@ -321,6 +362,13 @@ try {
   assert.equal(reconciled.directStatus, "Conciliado");
 
   await selectMixed(browser.cdp, created);
+  const protectedReconciledGroup = await inspectProtectedGroupSelection(
+    browser.cdp,
+    created.groupId,
+  );
+  assert.equal(protectedReconciledGroup.reconcileDisabled, true);
+  assert.equal(protectedReconciledGroup.unreconcileDisabled, true);
+  assert.match(protectedReconciledGroup.unreconcileTooltip, /remuneração automática/i);
   const unreconcileLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
   await evaluate(
     browser.cdp,
@@ -337,57 +385,38 @@ try {
   assert.equal(unreconciled.groupStatus, "Efetivado não conciliado");
   assert.equal(unreconciled.directStatus, "Efetivado não conciliado");
 
-  await selectMixed(browser.cdp, created);
-  const cancelledDeletion = await evaluate(
-    browser.cdp,
-    `(async () => {
-      const originalFetch = window.fetch;
-      let bulkCalls = 0;
-      window.confirm = () => false;
-      window.fetch = async (input, init) => {
-        if (String(input).includes('/api/transactions/bulk-actions')) bulkCalls += 1;
-        return originalFetch(input, init);
-      };
-      document.querySelector('[data-bulk-selection-action="void"]').click();
-      await new Promise((resolve) => setTimeout(resolve, 80));
-      const result = {
-        bulkCalls,
-        selectedCount: document.querySelectorAll('[data-select-transaction]:checked').length,
-        groupPresent: Boolean(document.querySelector('[data-group-row="${created.groupId}"]')),
-        directPresent: Boolean(document.querySelector('[data-select-transaction][value="${created.directId}"]')),
-        ariaBusy: document.querySelector('[data-selection-bar]').getAttribute('aria-busy')
-      };
-      window.fetch = originalFetch;
-      return result;
-    })()`,
-  );
-  assert.equal(cancelledDeletion.bulkCalls, 0);
-  assert.equal(cancelledDeletion.selectedCount, 2);
-  assert.equal(cancelledDeletion.groupPresent, true);
-  assert.equal(cancelledDeletion.directPresent, true);
-  assert.notEqual(cancelledDeletion.ariaBusy, "true");
+  const {
+    cancelledDeletion,
+    deleted,
+    mixedStatuses,
+    plannedAndPosted,
+    allStatuses,
+    plannedAndReconciled,
+    mixedMobile,
+    afterMixedUnreconcile,
+    afterMixedReconcile,
+  } = await verifyDeletionAndMixedStatuses({
+    browser,
+    created,
+    fixtureIds,
+    baseUrl,
+    route,
+    outputDir,
+    onCreatedIds(ids) {
+      additionalIds = ids;
+    },
+  });
 
-  const deleteLoaded = browser.cdp.once("Page.loadEventFired", 20_000);
-  await evaluate(
-    browser.cdp,
-    `(() => {
-      window.confirm = () => true;
-      document.querySelector('[data-bulk-selection-action="void"]').click();
-    })()`,
-  );
-  await deleteLoaded;
-  await sleep(120);
-  const deleted = await evaluate(
-    browser.cdp,
-    `(() => ({
-      groupPresent: Boolean(document.querySelector('[data-group-row="${created.groupId}"]')),
-      directPresent: Boolean(document.querySelector('[data-select-transaction][value="${created.directId}"]')),
-      selectionBarHidden: document.querySelector('[data-selection-bar]').hidden
-    }))()`,
-  );
-  assert.equal(deleted.groupPresent, false);
-  assert.equal(deleted.directPresent, false);
-  assert.equal(deleted.selectionBarHidden, true);
+  const transfers = await verifyTransferSelection({
+    browser,
+    fixtureIds,
+    baseUrl,
+    route,
+    outputDir,
+    onCreatedIds(ids) {
+      additionalIds.push(...ids);
+    },
+  });
 
   await writeFile(
     join(outputDir, "issue-530-bulk-selection.json"),
@@ -395,6 +424,9 @@ try {
       {
         initial,
         mixedSelection,
+        desktopIcons,
+        mobileIcons,
+        cleared,
         desktop,
         shortDesktop,
         mobile,
@@ -407,12 +439,26 @@ try {
         unreconciled,
         cancelledDeletion,
         deleted,
+        mixedStatuses,
+        plannedAndPosted,
+        allStatuses,
+        plannedAndReconciled,
+        mixedMobile,
+        afterMixedUnreconcile,
+        afterMixedReconcile,
+        transfers,
       },
       null,
       2,
     )}\n`,
   );
 } finally {
+  for (const id of additionalIds) {
+    await evaluate(
+      browser.cdp,
+      `fetch("/api/transactions/" + encodeURIComponent(${JSON.stringify(id)}) + "/void", { method: "POST" })`,
+    ).catch(() => undefined);
+  }
   if (groupId) {
     await evaluate(
       browser.cdp,
@@ -420,76 +466,4 @@ try {
     ).catch(() => undefined);
   }
   await browser.close(outputDir);
-}
-
-async function selectMixed(cdp, created) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const group = document.querySelector('[data-selection-entity="group"][value="${created.groupId}"]');
-      const direct = document.querySelector('[data-select-transaction][value="${created.directId}"]');
-      if (!group || !direct) throw new Error('Issue 530 rows were not found.');
-      group.checked = true;
-      group.dispatchEvent(new Event('change', { bubbles: true }));
-      direct.checked = true;
-      direct.dispatchEvent(new Event('change', { bubbles: true }));
-      const bar = document.querySelector('[data-selection-bar]');
-      return {
-        hidden: bar.hidden,
-        count: bar.querySelector('[data-selection-count]').textContent.trim(),
-        total: bar.querySelector('[data-selection-total]').textContent.trim(),
-        groupDisabled: document.querySelector('[data-group-open]').disabled,
-        reconcileDisabled: bar.querySelector('[data-bulk-selection-action="reconcile"]').disabled,
-        unreconcileDisabled: bar.querySelector('[data-bulk-selection-action="unreconcile"]').disabled,
-        voidDisabled: bar.querySelector('[data-bulk-selection-action="void"]').disabled,
-        help: bar.querySelector('[data-bulk-selection-help]').textContent.trim()
-      };
-    })()`,
-  );
-}
-
-async function readBarMetrics(cdp) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const bar = document.querySelector('[data-selection-bar]');
-      const rect = bar.getBoundingClientRect();
-      const parentRect = bar.parentElement.getBoundingClientRect();
-      const computed = getComputedStyle(bar);
-      return {
-        barHeight: Math.round(rect.height),
-        barWidth: Math.round(rect.width),
-        barTop: Math.round(rect.top),
-        barBottom: Math.round(rect.bottom),
-        barScrollWidth: bar.scrollWidth,
-        barClientWidth: bar.clientWidth,
-        parentHeight: Math.round(parentRect.height),
-        parentWidth: Math.round(parentRect.width),
-        computedDisplay: computed.display,
-        computedPosition: computed.position,
-        computedBottom: computed.bottom,
-        computedHeight: computed.height,
-        computedWidth: computed.width,
-        computedGridTemplateColumns: computed.gridTemplateColumns,
-        visibleInViewport: rect.top >= 0 && rect.bottom <= window.innerHeight,
-        bodyOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth
-      };
-    })()`,
-  );
-}
-
-async function readRenderedStatuses(cdp, created) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const groupRow = document.querySelector('[data-group-row="${created.groupId}"]');
-      const directInput = document.querySelector('[data-select-transaction][value="${created.directId}"]');
-      const directRow = directInput?.closest('.statement-row');
-      return {
-        groupPresent: Boolean(groupRow),
-        groupStatus: groupRow?.querySelector('.grouped-status > .statement-status:not(.transaction-group-state)')?.getAttribute('aria-label') || '',
-        directStatus: directRow?.querySelector('.col-status')?.getAttribute('aria-label') || ''
-      };
-    })()`,
-  );
 }

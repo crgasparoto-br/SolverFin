@@ -1,9 +1,22 @@
+import { fixtureExpression } from "./issue-539-operational-fixture.mjs";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import {
+  manualFinitePlanSetupScript,
+  assertFullRecurringLine,
+} from "./issue-539-account-regression-helpers.mjs";
+import {
+  validatePlannedRecurringAccountEdit,
+  validateUnreconciledRecurringAccountEdit,
+} from "./issue-774-recurring-unreconcile-edit.mjs";
+import {
+  validateRecurringScopeDesktop,
+  validateRecurringScopeViewports,
+} from "./issue-748-recurring-scope-responsive.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -24,10 +37,29 @@ try {
 
   await validateAccountDesktop(fixture);
   await validateAccountMobile(fixture);
+  await validateRecurringScopeViewports({
+    fixture,
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+    scenarios,
+    check,
+    waitForAccountLine,
+  });
   await validateBlockedAccountDesktop(fixture);
   await validateConflictAccountDesktop(fixture);
   await validateCardDesktop(fixture);
   await validateCardMobile(fixture);
+  await validateUnreconciledRecurringAccountEdit({
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+  });
+  await validatePlannedRecurringAccountEdit({
+    cdp: browser.cdp,
+    baseUrl,
+    outputDir,
+  });
 } finally {
   await browser.close(outputDir);
 }
@@ -55,10 +87,10 @@ async function validateAccountDesktop(fixture) {
   await setViewport(browser.cdp, 1366, 768);
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
+  await assertFullRecurringLine(browser.cdp, fixture.recurringAccountTransactionId, check);
   const line = await waitForAccountLine(fixture.accountTransactionId);
-  check(line.badge === fixture.accountBadge, "Account installment badge is missing", line);
-  check(line.hasRecurrenceIndicator, "Recurrence indicator was not preserved", line);
-  check(line.editable, "Installment edit action did not become available", line);
+  check(line.badge === fixture.accountBadge, "Finite plan must keep its installment badge", line);
+  check(!line.hasRecurrenceIndicator, "Finite installment must not acquire a recurring icon", line);
 
   await evaluate(
     browser.cdp,
@@ -76,12 +108,20 @@ async function validateAccountDesktop(fixture) {
   check(modal.categoryLabel.includes("arquivada"), "Archived category is not identified", modal);
   check(modal.categoryOptionDisabled, "Archived historical option should be read-only", modal);
   check(
-    modal.visibleEditableNames.join(",") === "categoryId,description,note",
+    modal.visibleEditableNames.join(",") ===
+      "adjustedInstallmentAmount,categoryId,description,note",
     "Restricted modal exposes fields outside the allowlist",
     modal,
   );
   check(modal.focusName === "description", "Initial focus did not move to description", modal);
 
+  await validateRecurringScopeDesktop({
+    cdp: browser.cdp,
+    outputDir,
+    scenarios,
+    check,
+    route,
+  });
   const filename = "issue-539-account-installment-desktop-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, filename));
   scenarios.push({
@@ -355,34 +395,25 @@ async function validateCardDesktop(fixture) {
   const route = `/cartoes?cardId=${encodeURIComponent(fixture.cardId)}&invoiceId=${encodeURIComponent(fixture.invoiceId)}`;
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const line = await waitForCardLine(fixture.cardTransactionId);
-  check(line.badge === fixture.cardBadge, "Card installment badge is missing", line);
+  check(line.hasRecurringIcon, "Card recurring purchase must display its shared icon", line);
+  check(!line.hasFiniteBadge, "Card recurring purchase must not display a finite pill", line);
   check(line.purchaseEditEnabled, "Open invoice purchase was incorrectly blocked", line);
   check(!line.hasInstallmentEdit, "Card purchase was redirected to installment PATCH", line);
   check(
-    line.blockReason === "Esta parcela é alterada pela compra da fatura.",
-    "Invoice-linked installment exposed the wrong block reason",
-    line,
-  );
-  check(line.badgeTabIndex === 0, "Blocked installment badge is not keyboard focusable", line);
-  check(
-    line.accessibleDescription === line.blockReason,
-    "Blocked installment badge is missing an accessible description",
+    line.iconLabel === "Lançamento recorrente" && line.iconTooltip === line.iconLabel,
+    "Card recurrence icon lost its accessible tooltip",
     line,
   );
 
-  const badgeFocus = await evaluate(
+  const iconFocus = await evaluate(
     browser.cdp,
     `(() => {
-      const badge = document.querySelector('[data-installment-badge="${fixture.cardInstallmentId}"]');
-      badge.focus();
-      return {
-        focused: document.activeElement === badge,
-        tooltipVisible: getComputedStyle(badge, "::after").display !== "none"
-      };
+      const indicator = document.querySelector('.cards-purchase-description .recurrence-indicator');
+      indicator.focus();
+      return { focused: document.activeElement === indicator };
     })()`,
   );
-  check(badgeFocus.focused, "Blocked installment badge did not receive focus", badgeFocus);
-  check(badgeFocus.tooltipVisible, "Block reason tooltip did not open on focus", badgeFocus);
+  check(iconFocus.focused, "Recurring card icon did not receive keyboard focus", iconFocus);
 
   const installmentState = await evaluate(
     browser.cdp,
@@ -448,7 +479,7 @@ async function validateCardMobile(fixture) {
   scenarios.push({
     route,
     viewport: "390x844",
-    state: "installment badge",
+    state: "recurrence icon only",
     screenshot: filename,
     line,
   });
@@ -463,9 +494,9 @@ async function waitForAccountLine(transactionId) {
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge && !edit.disabled) {
+        if (row && edit?.dataset.installmentEdit && !edit.disabled) {
           return {
-            badge: badge.textContent.trim(),
+            badge: badge?.textContent.trim() || "",
             editable: Boolean(edit.dataset.installmentEdit) && !edit.disabled,
             installmentEditable: edit.dataset.installmentEditable === "true",
             hasRecurrenceIndicator: Boolean(row.querySelector(".recurrence-indicator")),
@@ -487,16 +518,15 @@ async function waitForCardLine(transactionId) {
         const node = document.querySelector('script[data-purchase="${transactionId}"]');
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit-purchase="${transactionId}"]');
-        const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge) {
-          const descriptionId = badge.getAttribute("aria-describedby") || "";
+        const indicator = row?.querySelector(".cards-purchase-description .recurrence-indicator");
+        if (row && edit && indicator?.dataset.recurrenceIconOnly === "true") {
           return {
-            badge: badge.textContent.trim(),
+            hasRecurringIcon: true,
+            hasFiniteBadge: Boolean(row.querySelector(".installment-badge")),
+            iconLabel: indicator.getAttribute("aria-label"),
+            iconTooltip: indicator.getAttribute("title"),
             purchaseEditEnabled: !edit.disabled,
             hasInstallmentEdit: Boolean(edit.dataset.installmentEdit),
-            blockReason: badge.dataset.installmentBlockReason || "",
-            badgeTabIndex: badge.tabIndex,
-            accessibleDescription: document.getElementById(descriptionId)?.textContent || "",
             globalOverflow: document.documentElement.scrollWidth > window.innerWidth
           };
         }
@@ -549,133 +579,6 @@ async function readAccountModal(categoryId) {
       };
     })()`,
   );
-}
-
-function fixtureExpression() {
-  return `(async () => {
-    async function request(path, method = "GET", body) {
-      const response = await fetch(path, {
-        method,
-        headers: body === undefined ? undefined : { "content-type": "application/json" },
-        body: body === undefined ? undefined : JSON.stringify(body)
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        throw new Error(method + " " + path + " failed with " + response.status + ": " + JSON.stringify(payload));
-      }
-      return payload;
-    }
-
-    const suffix = Date.now().toString(36);
-    const account = (await request("/api/accounts", "POST", {
-      name: "QA Issue 539 - Conta " + suffix,
-      kind: "checking",
-      openingBalanceMinor: 0,
-      currency: "BRL"
-    })).account;
-    const category = (await request("/api/categories", "POST", {
-      name: "Categoria historica QA " + suffix,
-      kind: "expense"
-    })).category;
-    const accountRecurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-05",
-      endOn: "2026-09-05",
-      amountMinor: 12345,
-      description: "QA issue 539 parcela conta",
-      kind: "expense",
-      accountId: account.id,
-      categoryId: category.id
-    })).recurrence;
-    await request("/api/recurrences/" + accountRecurrence.id + "/generate-installments", "POST", {
-      through: "2026-09-05",
-      maxOccurrences: 3
-    });
-    const accountInstallments = (await request(
-      "/api/installments?recurrenceId=" + accountRecurrence.id + "&status=all"
-    )).installments;
-    const accountInstallment = accountInstallments.find(
-      (item) => item.dueOn === "2026-07-05" && item.transaction?.id,
-    );
-    const blockedAccountInstallment = accountInstallments.find(
-      (item) => item.dueOn === "2026-08-05" && item.transaction?.id,
-    );
-    const conflictAccountInstallment = accountInstallments.find(
-      (item) => item.dueOn === "2026-09-05" && item.transaction?.id,
-    );
-    let blockedAccountMonth = "";
-    if (blockedAccountInstallment?.transaction?.id) {
-      const reconciled = await request(
-        "/api/transactions/" + blockedAccountInstallment.transaction.id,
-        "PATCH",
-        { status: "reconciled" },
-      );
-      const effectiveOn = reconciled.transaction?.effectiveOn || "";
-      blockedAccountMonth = String(effectiveOn).slice(0, 7);
-    }
-    await request("/api/categories/" + category.id + "/archive", "POST");
-
-    const card = (await request("/api/credit-card-accounts", "POST", {
-      name: "QA Issue 539 - Cartao " + suffix,
-      closingDay: 20,
-      dueDay: 10,
-      creditLimitMinor: 80000,
-      currency: "BRL",
-      instruments: [{
-        type: "physical",
-        holder: "primary",
-        name: "Fisico QA",
-        maskedIdentifier: "**** 5390"
-      }]
-    })).creditCardAccount;
-    const instrument = card.instruments[0];
-    const cardRecurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-08",
-      endOn: "2026-09-08",
-      amountMinor: 2468,
-      description: "QA issue 539 parcela cartao",
-      cardId: card.id,
-      cardInstrumentId: instrument.id
-    })).recurrence;
-    await request("/api/recurrences/" + cardRecurrence.id + "/generate-installments", "POST", {
-      through: "2026-09-08",
-      maxOccurrences: 3
-    });
-    const cardInstallments = (await request(
-      "/api/installments?recurrenceId=" + cardRecurrence.id + "&status=all"
-    )).installments;
-    const cardInstallment = cardInstallments.find(
-      (item) => item.dueOn === "2026-07-08" && item.transaction?.invoiceId,
-    );
-
-    if (
-      !accountInstallment?.transaction?.id ||
-      !blockedAccountInstallment?.transaction?.id ||
-      !blockedAccountMonth ||
-      !conflictAccountInstallment?.transaction?.id ||
-      !cardInstallment?.transaction?.invoiceId
-    ) {
-      throw new Error("Issue 539 fixture did not create linked operational installments");
-    }
-
-    return {
-      accountId: account.id,
-      archivedCategoryId: category.id,
-      accountInstallmentId: accountInstallment.id,
-      accountTransactionId: accountInstallment.transaction.id,
-      accountBadge: "Parcela " + accountInstallment.sequenceNumber + " de " + accountInstallment.totalInstallments,
-      blockedAccountMonth,
-      blockedAccountTransactionId: blockedAccountInstallment.transaction.id,
-      conflictAccountTransactionId: conflictAccountInstallment.transaction.id,
-      conflictAccountOriginalDescription: conflictAccountInstallment.transaction.description,
-      cardId: card.id,
-      invoiceId: cardInstallment.transaction.invoiceId,
-      cardInstallmentId: cardInstallment.id,
-      cardTransactionId: cardInstallment.transaction.id,
-      cardBadge: "Parcela " + cardInstallment.sequenceNumber + " de " + cardInstallment.totalInstallments
-    };
-  })()`;
 }
 
 function check(condition, message, details) {

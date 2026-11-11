@@ -38,7 +38,10 @@ export class CdpClient {
   send(method, params = {}) {
     const id = this.id++;
     return new Promise((resolve, reject) => {
-      const timeout = method === "Runtime.evaluate" ? 45_000 : 20_000;
+      // Screenshots can stall during Chrome compositor startup on shared CI runners.
+      const timeout = ["Runtime.evaluate", "Page.captureScreenshot"].includes(method)
+        ? 45_000
+        : 20_000;
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new Error(`CDP command timeout: ${method}`));
@@ -109,11 +112,17 @@ export async function launchChrome({ baseUrl, chromePath, debugPort = 0 }) {
       "--remote-debugging-address=127.0.0.1",
       `--remote-debugging-port=${debugPort}`,
       `--user-data-dir=${profile}`,
+      "--lang=pt-BR",
+      "--accept-lang=pt-BR,pt",
       "--force-device-scale-factor=1",
       "--window-size=1920,1200",
       "about:blank",
     ],
-    { stdio: ["ignore", "pipe", "pipe"] },
+    {
+      // The product is pt-BR; the native month control must render in the target locale.
+      env: { ...process.env, LANG: "pt_BR.UTF-8", LANGUAGE: "pt_BR", LC_ALL: "pt_BR.UTF-8" },
+      stdio: ["ignore", "pipe", "pipe"],
+    },
   );
   let stdout = "";
   let stderr = "";
@@ -198,12 +207,23 @@ export async function evaluate(cdp, expression) {
 }
 
 export async function screenshot(cdp, path) {
-  const result = await cdp.send("Page.captureScreenshot", {
-    format: "png",
-    fromSurface: true,
-    captureBeyondViewport: false,
-  });
-  await writeFile(path, Buffer.from(result.data, "base64"));
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      const result = await cdp.send("Page.captureScreenshot", {
+        format: "png",
+        fromSurface: true,
+        captureBeyondViewport: false,
+      });
+      await writeFile(path, Buffer.from(result.data, "base64"));
+      return;
+    } catch (error) {
+      // Retry only transient compositor timeouts, never protocol errors or artifact writes.
+      if (attempt === 1 || error?.message !== "CDP command timeout: Page.captureScreenshot") {
+        throw error;
+      }
+      await sleep(300);
+    }
+  }
 }
 
 export function sleep(milliseconds) {
@@ -249,6 +269,19 @@ async function waitForExpression(cdp, expression, timeout = 10_000) {
   throw new Error(`Timed out waiting for expression: ${expression}`);
 }
 
+/**
+ * Chrome with an ephemeral debugging port may expose its listening socket in
+ * stderr before DevToolsActivePort becomes visible in the profile directory.
+ * The endpoint is still actively checked through /json/version before use.
+ */
+export function parseChromeDebugPort(output) {
+  const match = /DevTools listening on ws:\/\/127\.0\.0\.1:(\d{1,5})\/devtools\/browser\//.exec(
+    output,
+  );
+  const port = Number(match?.[1]);
+  return Number.isInteger(port) && port > 0 && port <= 65_535 ? port : undefined;
+}
+
 async function waitForChromeDebugUrl({ chrome, profile, requestedPort, output, timeout = 30_000 }) {
   const started = Date.now();
   let debugPort = requestedPort > 0 ? requestedPort : undefined;
@@ -259,7 +292,7 @@ async function waitForChromeDebugUrl({ chrome, profile, requestedPort, output, t
     }
 
     if (debugPort === undefined) {
-      debugPort = await readDevToolsPort(profile);
+      debugPort = (await readDevToolsPort(profile)) ?? parseChromeDebugPort(output());
     }
 
     if (debugPort !== undefined) {

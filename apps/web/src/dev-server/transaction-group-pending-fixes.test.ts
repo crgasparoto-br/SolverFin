@@ -4,14 +4,14 @@ import { enhanceTransactionGroupPendingFixes } from "./transaction-group-pending
 
 const source = `<!doctype html><html><head></head><body>
 <form data-form><label>Descrição<input name="description"></label></form>
-<article class="statement-row statement-body grouped-row" data-group-row="group-1">
+<article class="statement-row statement-body grouped-row" data-group-row="group-1" data-balance-order="1">
   <div class="col-description"><strong>Grupo</strong><span>3 lançamentos agrupados</span></div>
   <span class="statement-status statement-status-posted col-status"></span>
   <strong class="col-amount credit">R$ 60,00</strong>
   <strong class="col-balance">R$ 100,00</strong>
   <script type="application/json" data-group="group-1">{"id":"group-1","kind":"income","status":"posted","currency":"BRL","totalAmountMinor":6000,"members":[{},{},{}]}</script>
 </article>
-<article class="statement-row statement-body"><strong class="col-balance">R$ 130,00</strong></article>
+<article class="statement-row statement-body" data-balance-order="2"><strong class="col-balance">R$ 130,00</strong></article>
 <dialog data-group-modal><form data-group-form><div data-group-members><button data-member-action="clone"></button></div></form></dialog>
 </body></html>`;
 
@@ -25,6 +25,12 @@ assert.match(enhanced, /MutationObserver/);
 assert.match(enhanced, /groupProjectionAmountMinor/);
 assert.match(enhanced, /deltaMinor = nextAmountMinor - previousAmountMinor/);
 assert.match(enhanced, /updateBalance\(affectedRow, deltaMinor, group\.currency\)/);
+assert.match(enhanced, /data-balance-order="1"/);
+assert.match(enhanced, /data-balance-order="2"/);
+assert.match(enhanced, /const groupOrder = row\.dataset\.balanceOrder/);
+assert.match(enhanced, /const rawOrder = affectedRow\.dataset\.balanceOrder/);
+assert.match(enhanced, /Number\.isSafeInteger\(order\) && order >= start/);
+assert.doesNotMatch(enhanced, /affectedRow = affectedRow\.nextElementSibling/);
 assert.match(enhanced, /statement-status-/);
 assert.match(enhanced, /lançamentos agrupados/);
 assert.equal(

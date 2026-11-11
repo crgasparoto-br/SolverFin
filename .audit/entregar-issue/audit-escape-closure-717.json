@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-717-02",
+      "escape_class": "foreign-target-handoff-inheritance",
+      "status": "passed",
+      "revalidated_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:72d01a43-cea3-4d7a-bb85-5eaffc32883a",
+        "audited_head_sha": "2e5a2d1ba2834d15259309ab0a7f81f8fc15e57d",
+        "finding_id": "A-717-02",
+        "finding_ids": [
+          "A-717-02"
+        ],
+        "audit_report_sha256": "fa56b80fbc7b377fb63d9eb94bd215f7a7a0559b1165f40542b3e0ba3e22a0ba"
+      },
+      "plausible_wrong_implementation": "Treat an inherited handoff from #702/#713 as a valid terminal certificate for #717/#731, simply because CI is green.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Compare base and PR inherited handoff identity; rebuild all source/closure/evidence for issue #717; certify final material SHA and check direct result-only child with remote current head.",
+        "observed": "Initial inherited-base-artifact classified stale; new local #717 snapshot/closure/evidence generated for candidate 5e63423beefaf57598f3490365a5acee0e123526 and controlled by terminal prepublication simulation."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-717-02-S1",
+          "surface": "delivery-handoff-target",
+          "dimension": "foreign-issue-and-PR",
+          "status": "passed"
+        },
+        {
+          "id": "A-717-02-S2",
+          "surface": "delivery-handoff-target",
+          "dimension": "material-head-changed-after-freeze",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Official subject-binding requires current repository, issue #717, PR #731, base develop, branch feat/717-golden-categorias, final material head."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Prepublication terminal guard and remote post-write guard reject inherited and non-direct result-only commit and material drift."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-handoff-target",
+          "dimension": "foreign-issue-or-pr"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "delivery-handoff-target",
+          "dimension": "post-handoff-material-write"
+        }
+      ]
+    },
+    {
+      "escape_id": "A-717-03",
+      "escape_class": "outdated-source-location",
+      "status": "passed",
+      "revalidated_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
+        "audited_head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
+        "finding_id": "A-717-03",
+        "finding_ids": [
+          "A-717-03"
+        ],
+        "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
+      },
+      "plausible_wrong_implementation": "Accept false source reference or unsupported negative control proof",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
+        "observed": "104 fully qualified source ranges verified against immutable material SHA 5e63423beefaf57598f3490365a5acee0e123526 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-717-03-S1",
+          "surface": "SSR",
+          "dimension": "invalid-evidence",
+          "status": "passed"
+        },
+        {
+          "id": "A-717-03-S2",
+          "surface": "Chrome/GitHub",
+          "dimension": "cross-SHA evidence",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Corrected source and per-control evidence data"
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Exact material pointers and raw log hashes"
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "source evidence",
+          "dimension": "invalid proof"
+        }
+      ]
+    },
+    {
+      "escape_id": "A-717-04",
+      "escape_class": "negative-control-proof-gap",
+      "status": "passed",
+      "revalidated_head_sha": "5e63423beefaf57598f3490365a5acee0e123526",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:0ce37213-dbc0-4a21-b821-8e7c24c35d87",
+        "audited_head_sha": "18b1a397be0edcc737ae0e8f9c03cc16ac4a974a",
+        "finding_id": "A-717-04",
+        "finding_ids": [
+          "A-717-04"
+        ],
+        "audit_report_sha256": "497c54270c0573b01cf6cfabd2b429d96af45bd032a4e1611ff0531879f1767b"
+      },
+      "plausible_wrong_implementation": "Accept false source reference or unsupported negative control proof",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Verify source anchor/run metadata and control-specific raw log traces",
+        "observed": "104 fully qualified source ranges verified against immutable material SHA 5e63423beefaf57598f3490365a5acee0e123526 by official validate_evidence_source_locations.py on the exact material checkout; 13 negative-control traces corroborated by material-CI logs (synthetic assertion mutations, not production-code mutations). Official validate_terminal_handoff.py returned READY for the prepublication child and is required again after remote publication."
+      },
+      "sibling_cases": [
+        {
+          "id": "A-717-04-S1",
+          "surface": "SSR",
+          "dimension": "invalid-evidence",
+          "status": "passed"
+        },
+        {
+          "id": "A-717-04-S2",
+          "surface": "Chrome/GitHub",
+          "dimension": "cross-SHA evidence",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Corrected source and per-control evidence data"
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Exact material pointers and raw log hashes"
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "source evidence",
+          "dimension": "invalid proof"
+        }
+      ]
+    }
+  ]
+}

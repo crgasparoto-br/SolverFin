@@ -1,9 +1,69 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { renderTransactionsPageV2 } from "./transactions-page-v2.js";
+import { renderTransactionsPageV2, statementTodayInSaoPaulo } from "./transactions-page-v2.js";
 
 const originalFetch = globalThis.fetch;
+
+test("Today resolves Brazil's civil day across UTC midnight", () => {
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-10-18T01:20:00.000Z")), "2026-10-17");
+  assert.equal(statementTodayInSaoPaulo(new Date("2026-11-01T03:10:00.000Z")), "2026-11-01");
+});
+
+test("Today shortcut uses the real current month and preserves the chosen profile/account", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?profileId=profile-custom&accountId=account-usd&month=2026-09&day=2026-09-15&kind=expense&currency=USD",
+      ),
+    );
+    const link = /data-period-shortcut="today" href="([^"]+)"/.exec(html);
+    assert.ok(link, "Today must be a navigable period shortcut");
+    const todayUrl = new URL(link[1]!.replaceAll("&amp;", "&"), "http://solverfin.test");
+    const today = statementTodayInSaoPaulo();
+    assert.equal(todayUrl.searchParams.get("month"), today.slice(0, 7));
+    assert.equal(todayUrl.searchParams.get("day"), today);
+    assert.equal(todayUrl.searchParams.get("profileId"), "profile-custom");
+    assert.equal(todayUrl.searchParams.get("accountId"), "account-usd");
+    assert.equal(todayUrl.searchParams.get("currency"), "USD");
+    assert.equal(todayUrl.searchParams.get("kind"), "expense");
+    assert.equal(todayUrl.searchParams.get("from"), null);
+    assert.equal(todayUrl.searchParams.get("to"), null);
+    assert.equal(todayUrl.searchParams.getAll("day").length, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("period heading shows real range, not month bounds, and daily filter has no duplicate active control", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const rangeHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&from=2026-08-25&to=2026-09-07",
+      ),
+    );
+    assert.ok(rangeHtml.includes("Período 25/08/2026 – 07/09/2026"));
+    const dailyHtml = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09&day=2026-09-07",
+      ),
+    );
+    assert.match(
+      dailyHtml,
+      /id="filter-day" name="day" type="date"[^>]+min="2026-09-01" max="2026-09-30" value="2026-09-07"/,
+    );
+    assert.equal((dailyHtml.match(/name="day" type="date"/g) ?? []).length, 1);
+    assert.doesNotMatch(dailyHtml, /<noscript><input type="hidden" name="day"/);
+    assert.match(dailyHtml, /data-clear-statement-day/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
 
 test("A2 statement keeps account and USD currency explicit while sorting before render", async () => {
   globalThis.fetch = mockFetch([
@@ -20,6 +80,17 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     );
 
     assert.match(html, /data-statement-archetype="A2"/);
+    assert.match(
+      html,
+      /data-attachment-workspace data-entity-kind="transaction" data-entity-id="" data-pending-create/,
+    );
+    assert.match(
+      html,
+      /window\.SolverFinAttachments\.uploadPending\(attachmentWorkspace, linkedId\)/,
+    );
+    assert.match(html, /response\.clone\(\)\.json\(\)/);
+    assert.match(html, /form\.dataset\.method = "PATCH"/);
+    assert.match(html, /Em parcelas ou recorrências, anexe na edição de uma ocorrência/);
     assert.match(html, /class="sf-page-header"/);
     assert.match(html, /class="sf-filter-bar"/);
     assert.match(html, /Conta internacional/);
@@ -30,6 +101,302 @@ test("A2 statement keeps account and USD currency explicit while sorting before 
     assert.match(html, /data-statement-date-group="2026-08-20"/);
     assert.match(html, /name="q" type="search"/);
     assert.match(html, /name="sort"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 day grouping is expandable and keeps monetary values in separate columns", async () => {
+  globalThis.fetch = mockFetch([
+    transaction("expense-aug20", "Despesa", 2500, "2026-08-20"),
+    transaction("income-aug20", "Entrada", 15000, "2026-08-20", "income"),
+    transaction("expense-aug21", "Outra despesa", 4100, "2026-08-21"),
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.equal((html.match(/class="statement-day-group"/g) ?? []).length, 2);
+    assert.match(html, /data-statement-date-group="2026-08-20" open>/);
+    assert.match(html, /2 lançamentos/);
+    assert.match(html, /Entradas US\$\s150,00/);
+    assert.match(html, /Saídas US\$\s25,00/);
+    assert.match(html, /<span class="col-balance">Saldo<\/span>/);
+    assert.match(html, /<strong class="col-balance[^"]*" data-balance-minor="/);
+    assert.match(html, /aria-label="[^"]*Expandir ou recolher lançamentos deste dia"/);
+    const amountSorted = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&sort=amount_desc",
+      ),
+    );
+    assert.doesNotMatch(amountSorted, /class="statement-day-group"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 statement status icon offers reconciliation and shows restrictions without changing values", async () => {
+  globalThis.fetch = mockFetch([
+    transaction("posted-row", "Despesa não conciliada", 2500, "2026-08-03"),
+    {
+      ...transaction("reconciled-row", "Receita conciliada", 5000, "2026-08-04", "income"),
+      status: "reconciled",
+    },
+    {
+      ...transaction("planned-row", "Despesa prevista", 1300, "2026-08-05"),
+      status: "planned",
+      effectiveOn: undefined,
+    },
+    {
+      ...transaction("finite-planned", "Parcela finita prevista", 900, "2026-08-06"),
+      status: "planned",
+      effectiveOn: undefined,
+      installmentId: "installment-one",
+    },
+    {
+      ...transaction("finite-posted", "Parcela finita efetivada", 950, "2026-08-06"),
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("finite-reconciled", "Parcela finita conciliada", 980, "2026-08-06"),
+      status: "reconciled",
+      installmentId: "installment-three",
+    },
+    {
+      ...transaction("suggested-row", "Sugestão sem confirmação", 990, "2026-08-06"),
+      status: "suggested",
+      effectiveOn: undefined,
+    },
+    { ...transaction("card-row", "Compra protegida", 1100, "2026-08-06"), cardId: "card-one" },
+    {
+      ...transaction("recurring-planned", "Conta fixa prevista", 2500, "2026-08-07"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-one",
+    },
+    {
+      ...transaction("recurring-installment", "Ocorrência fixa materializada", 2800, "2026-08-08"),
+      status: "planned",
+      effectiveOn: undefined,
+      recurrenceId: "recurrence-two",
+      installmentId: "installment-two",
+    },
+    {
+      ...transaction("recurring-posted", "Conta fixa efetivada", 3200, "2026-08-09"),
+      recurrenceId: "recurrence-three",
+    },
+    {
+      ...transaction("recurring-grouped", "Conta fixa agrupada", 3500, "2026-08-10"),
+      recurrenceId: "recurrence-four",
+      transactionGroupId: "group-four",
+    },
+    {
+      ...transaction("recurring-voided", "Conta fixa excluída", 3400, "2026-08-11"),
+      recurrenceId: "recurrence-five",
+      status: "voided",
+    },
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="posted-row" aria-label="Marcar como conciliado"'),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="reconciled-row" aria-label="Desconciliar"'),
+    );
+    assert.ok(html.includes("Situação: Efetivado não conciliado. Alterar situação"));
+    assert.ok(html.includes("Situação: Conciliado. Alterar situação"));
+    assert.ok(
+      html.includes('data-status-transaction-id="planned-row" aria-label="Marcar como conciliado"'),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="finite-planned" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="finite-posted" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes('data-status-transaction-id="finite-reconciled" aria-label="Desconciliar"'),
+    );
+    assert.ok(html.includes("Altere a conciliação na fatura do cartão"));
+    assert.ok(!html.includes("Este lançamento exige manutenção pelo fluxo de parcelas."));
+    assert.ok(!html.includes('data-status-transaction-id="suggested-row"'));
+    assert.ok(!html.includes('data-status-transaction-id="card-row"'));
+    assert.ok(html.includes("Confirme a sugestão antes de conciliar."));
+    assert.match(
+      html,
+      /class="statement-status-current" role="img" aria-label="Situação atual: Efetivado não conciliado" title="Efetivado não conciliado"/,
+    );
+    assert.ok(!html.includes("Atual: Efetivado não conciliado"));
+    assert.match(html, /data-tooltip="Marcar como conciliado"><span/);
+    assert.match(html, /statement-status-ok" aria-hidden="true"/);
+    assert.match(html, /aria-label="Desconciliar"[^>]*><span/);
+    assert.match(html, /statement-status-posted" aria-hidden="true"/);
+    assert.match(html, /statement-status-readonly"[^>]*><span/);
+    assert.match(html, /statement-status-pending" aria-hidden="true"/);
+    assert.ok(html.includes("flex:0 0 26px;height:26px;width:26px"));
+    assert.ok(html.includes("height:15px;width:15px"));
+    assert.ok(html.includes("flex:0 0 44px;height:44px"));
+    assert.match(html, /class="statement-status-readonly" role="img"/);
+    assert.doesNotMatch(html, /<button[^>]*data-set-statement-status[^>]*>[^<]+<\/button>/);
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-planned" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-installment" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(
+      html.includes(
+        'data-status-transaction-id="recurring-posted" aria-label="Marcar como conciliado"',
+      ),
+    );
+    assert.ok(!html.includes('data-status-transaction-id="recurring-grouped"'));
+    assert.ok(!html.includes('data-status-transaction-id="recurring-voided"'));
+    assert.ok(html.includes("Situação: Previsto. Alterar situação"));
+    assert.ok(html.includes('role="group" aria-label="Situação do lançamento"'));
+    assert.ok(
+      html.includes('class="statement-status-feedback" role="status" aria-live="polite" hidden'),
+    );
+    assert.ok(
+      html.includes(
+        'send("/api/transactions/" + encodeURIComponent(transactionId), "PATCH", { status: nextStatus })',
+      ),
+    );
+    assert.ok(
+      !html.includes('data-action data-method="PATCH" data-path="/api/transactions/posted-row"'),
+    );
+    assert.ok(html.includes("positionStatementStatus(control)"));
+    assert.ok(
+      html.includes(".statement-status-menu>button.statement-status-option:hover:not(:disabled)"),
+    );
+    assert.ok(html.includes(".statement-status-control>summary{align-items:center"));
+    assert.ok(html.includes('window.addEventListener("scroll", syncStatementMenus, true)'));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 attachments in installment and statement dialogs start collapsed like More options", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.ok(
+      html.includes(
+        'class="statement-entry-attachments full" data-statement-attachments><summary>Anexos do lançamento</summary>',
+      ),
+    );
+    assert.ok(
+      html.includes('class="statement-entry-advanced full"><summary>Mais opções</summary>'),
+    );
+    assert.ok(html.includes('data-attachment-workspace data-entity-kind="transaction"'));
+    assert.ok(!html.includes("data-statement-attachments open"));
+    assert.ok(html.includes(".statement-entry-attachments>summary:focus-visible"));
+    assert.ok(html.includes(".statement-entry-attachments[open]>summary::after"));
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 transaction modal exposes status through tooltips and keeps Cancel and Save together", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.match(html, /class="status-icons" role="radiogroup"/);
+    assert.match(
+      html,
+      /data-status-option="planned"[^>]*aria-label="Previsto\/pendente" title="Previsto\/pendente"/,
+    );
+    assert.match(
+      html,
+      /data-status-option="posted"[^>]*aria-label="Efetivado não conciliado" title="Efetivado não conciliado"/,
+    );
+    assert.match(
+      html,
+      /data-status-option="reconciled"[^>]*aria-label="Conciliado" title="Conciliado"/,
+    );
+    assert.match(html, /data-status-label aria-live="polite"/);
+    assert.match(
+      html,
+      /\.save-row \.status-label\{position:absolute;width:1px;height:1px;overflow:hidden/,
+    );
+    assert.match(
+      html,
+      /class="statement-save-actions"><button type="button" class="ghost-btn" data-transaction-cancel data-statement-entry-cancel>Cancelar<\/button><button type="submit"/,
+    );
+    // Integration contract: the rendered dialog uses the responsive grid rather
+    // than the legacy nowrap flex footer that clipped buttons at 440px.
+    assert.ok(html.includes("data-statement-save-continue"));
+    assert.ok(html.includes('>Salvar e continuar</button><button type="submit"'));
+    assert.ok(
+      html.includes(
+        ".statement-save-actions{box-sizing:border-box;display:grid;gap:8px;grid-template-columns:repeat(2,minmax(0,1fr))",
+      ),
+    );
+    assert.ok(
+      html.includes(".save-row{align-items:start;border-top:1px solid var(--line);display:grid"),
+    );
+    assert.ok(
+      html.includes(
+        ".statement-save-actions>button[type=submit]:not([data-statement-save-continue]){grid-column:1/-1}",
+      ),
+    );
+    assert.ok(
+      html.includes(
+        "max-width:100%;min-height:44px;min-width:0;overflow-wrap:anywhere;padding:8px;white-space:normal;width:100%",
+      ),
+    );
+    assert.ok(html.includes(".statement-save-actions{grid-template-columns:minmax(0,1fr)}"));
+    assert.doesNotMatch(
+      html,
+      /\.statement-save-actions\{align-items:center;display:flex;flex:0 0 auto;flex-wrap:nowrap/,
+    );
+    assert.match(
+      html,
+      /\.statement-save-actions \[data-popup-action-icon\]\{display:none!important\}/,
+    );
+    assert.match(html, /\[data-transaction-cancel\].*addEventListener\("click"/s);
+    assert.match(html, /button\.setAttribute\("aria-checked", String\(active\)\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 account picker allocates a wider responsive filter column (#708)", async () => {
+  globalThis.fetch = mockFetch([]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+
+    assert.match(html, /grid-template-columns:minmax\(18rem,1\.35fr\) minmax\(12rem,\.75fr\)/);
+    assert.match(
+      html,
+      /@media\(max-width:1279px\)\{\.statement-layout\{[^}]+\}\.account-summary\{[^}]+\}\.summary-totals\{[^}]+\}\.filter-form\{grid-template-columns:minmax\(18rem,1\.25fr\) minmax\(12rem,\.75fr\)\}/,
+    );
+    assert.match(html, /class="account-select-trigger"[^>]+aria-haspopup="listbox"/);
+    assert.match(html, /class="account-select-menu" role="listbox"/);
+    assert.match(html, /name="accountId"[^>]+data-account-input/);
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -187,14 +554,126 @@ test("A2 statement applies insight and text filters before rendering rows", asyn
     assert.match(html, /Filtro do insight ativo/);
     assert.match(html, /Mercado Central 123/);
     assert.doesNotMatch(html, /Farmácia/);
-    assert.match(html, /name="categoryId" value="category-food"/);
+    assert.match(
+      html,
+      /<option value="category-food" data-kind="expense" selected>Alimentação<\/option>/,
+    );
     assert.match(html, /name="merchantKey" value="mercado central"/);
   } finally {
     globalThis.fetch = originalFetch;
   }
 });
 
-function mockFetch(transactions: Record<string, unknown>[]) {
+test("A2 category filter displays the same selectable parent-child hierarchy as the entry form", async () => {
+  const categories = [
+    {
+      id: "restaurant",
+      name: "Restaurantes",
+      kind: "expense",
+      status: "active",
+      parentCategoryId: "food",
+    },
+    { id: "food", name: "Alimentação", kind: "expense", status: "active", parentCategoryId: null },
+    {
+      id: "delivery",
+      name: "Delivery",
+      kind: "expense",
+      status: "active",
+      parentCategoryId: "restaurant",
+    },
+    { id: "health", name: "Saúde", kind: "expense", status: "active" },
+    {
+      id: "orphan",
+      name: "Sem pai cadastrado",
+      kind: "expense",
+      status: "active",
+      parentCategoryId: "removed",
+    },
+  ];
+  globalThis.fetch = mockFetch(
+    [transaction("lunch", "Almoço", 2400, "2026-08-05", "expense", "delivery")],
+    categories,
+  );
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&categoryId=delivery",
+      ),
+    );
+    const select = /<select id="statement-category"[^>]*>([\s\S]*?)<\/select>/.exec(html)?.[1];
+    assert.ok(select, "The category filter must render a native selectable combobox.");
+    const root = select.indexOf('value="food"');
+    const child = select.indexOf('value="restaurant"');
+    const grandchild = select.indexOf('value="delivery"');
+    assert.ok(
+      root >= 0 && root < child && child < grandchild,
+      "Parents must precede nested children.",
+    );
+    assert.match(select, /<option value="food" data-kind="expense">Alimentação<\/option>/);
+    assert.match(
+      select,
+      /<option value="restaurant" data-kind="expense">\u00a0\u00a0↳ Restaurantes<\/option>/,
+    );
+    assert.match(
+      select,
+      /<option value="delivery" data-kind="expense" selected>\u00a0\u00a0\u00a0\u00a0↳ Delivery<\/option>/,
+    );
+    assert.match(select, /<option value="orphan" data-kind="expense">Sem pai cadastrado<\/option>/);
+    assert.match(
+      html,
+      /Almoço/,
+      "Choosing a nested category must keep its existing exact-ID filter.",
+    );
+    assert.ok(
+      html.indexOf('value="food"') < html.indexOf('value="restaurant"'),
+      "The dialog must share the same category hierarchy.",
+    );
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 statement filters type, effective status and reconciliation without changing totals", async () => {
+  const income = transaction("income", "Receita exemplo", 9000, "2026-08-04", "income");
+  const reconciled = {
+    ...transaction("reconciled", "Despesa conciliada", 1200, "2026-08-05"),
+    status: "reconciled",
+  };
+  const pending = {
+    ...transaction("pending", "Despesa pendente", 1700, "2026-08-06"),
+    status: "suggested",
+    effectiveOn: undefined,
+  };
+  globalThis.fetch = mockFetch([income, reconciled, pending]);
+
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL(
+        "http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08&kind=expense&status=suggested&reconciliation=unreconciled",
+      ),
+    );
+    assert.match(html, /Despesa pendente/);
+    assert.doesNotMatch(html, /Receita exemplo/);
+    assert.doesNotMatch(html, /Despesa conciliada/);
+    assert.match(html, /<option value="expense" selected>Despesa<\/option>/);
+    assert.match(html, /<option value="suggested" selected>Pendente<\/option>/);
+    assert.match(html, /<option value="unreconciled" selected>Não conciliado<\/option>/);
+    assert.match(html, /name="status"/);
+    assert.match(html, /name="reconciliation"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+function mockFetch(
+  transactions: Record<string, unknown>[],
+  categories: Record<string, unknown>[] = [
+    { id: "category-food", name: "Alimentação", kind: "expense", status: "active" },
+    { id: "category-health", name: "Saúde", kind: "expense", status: "active" },
+  ],
+) {
   return async (input: string | URL | Request): Promise<Response> => {
     const url = new URL(String(input), "http://solverfin.test");
     if (url.pathname === "/api/accounts") {
@@ -220,12 +699,7 @@ function mockFetch(transactions: Record<string, unknown>[]) {
       });
     }
     if (url.pathname === "/api/categories") {
-      return jsonResponse({
-        categories: [
-          { id: "category-food", name: "Alimentação", kind: "expense", status: "active" },
-          { id: "category-health", name: "Saúde", kind: "expense", status: "active" },
-        ],
-      });
+      return jsonResponse({ categories });
     }
     if (url.pathname === "/api/recurrences") return jsonResponse({ recurrences: [] });
     if (url.pathname === "/api/transaction-groups") return jsonResponse({ groups: [] });
@@ -263,3 +737,296 @@ function jsonResponse(body: unknown): Response {
     headers: { "content-type": "application/json; charset=utf-8" },
   });
 }
+
+test("A2 transfer selection is available in each account but not in All accounts", async () => {
+  const movements: Record<string, unknown>[] = [
+    ...(["posted", "planned", "reconciled", "suggested"] as const).map((status, index) => ({
+      ...transaction(
+        "transfer-" + status,
+        "Transferência " + status,
+        10000,
+        "2026-08-0" + (index + 1),
+      ),
+      kind: "transfer",
+      status,
+      ...(status === "planned" || status === "suggested" ? { effectiveOn: undefined } : {}),
+      destinationAccountId: "account-brl",
+      destinationAmountMinor: 48000,
+      destinationCurrency: "BRL",
+    })),
+    { ...transaction("card-protected", "Compra cartão", 4000, "2026-08-07"), cardId: "card-1" },
+  ];
+  const inputFor = (html: string, id: string): string => {
+    const input = html.match(
+      new RegExp('<input type="checkbox" data-select-transaction value="' + id + '"[^>]*>'),
+    );
+    assert.ok(input, "Missing selection for " + id);
+    return input[0];
+  };
+  globalThis.fetch = mockFetch(movements);
+  try {
+    for (const accountId of ["account-usd", "account-brl"]) {
+      const html = await renderTransactionsPageV2(
+        "session-token",
+        new URL("http://solverfin.test/lancamentos?accountId=" + accountId + "&month=2026-08"),
+      );
+      for (const status of ["posted", "planned", "reconciled"]) {
+        const input = inputFor(html, "transfer-" + status);
+        assert.match(input, /data-kind="transfer"/);
+        assert.match(input, /data-reconcile-protected="false"/);
+        assert.doesNotMatch(input, / disabled>/);
+      }
+      assert.match(inputFor(html, "transfer-suggested"), / disabled>/);
+      assert.match(inputFor(html, "card-protected"), / disabled>/);
+      assert.match(html, /data-selection-bar/);
+    }
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-08"),
+    );
+    assert.match(inputFor(consolidated, "transfer-posted"), / disabled>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 consolidated BRL mode identifies each account and excludes USD without changing financial actions", async () => {
+  globalThis.fetch = mockFetch([
+    {
+      ...transaction("brl-expense", "Mercado BRL", 2500, "2026-08-05"),
+      currency: "BRL",
+      accountId: "account-brl",
+    },
+    transaction("usd-income", "Receita USD", 5000, "2026-08-06", "income"),
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
+    );
+    assert.match(html, /data-account-option="all"/);
+    assert.match(html, /data-all-accounts/);
+    assert.match(
+      html,
+      /<select id="statement-currency" name="currency" required data-auto-currency>/,
+    );
+    assert.match(html, /data-context="currency">BRL/);
+    assert.match(html, /Todas as contas \(1\)/);
+    assert.match(html, /Saldo consolidado/);
+    assert.match(html, /Mercado BRL/);
+    assert.match(html, /Conta: Conta principal/);
+    assert.doesNotMatch(html, /Receita USD/);
+    assert.match(html, /data-edit="brl-expense"/);
+    assert.match(html, /Ver lançamento na conta/);
+    assert.match(html, /data-clone="brl-expense"/);
+    assert.match(html, /data-status-transaction-id="brl-expense" aria-label=/);
+    assert.match(
+      html,
+      /data-action data-method="POST" data-path="\/api\/transactions\/brl-expense\/void"/,
+    );
+    assert.match(
+      html,
+      /<details class="actions col-actions"><summary aria-label="Ações do lançamento Mercado BRL"/,
+    );
+    assert.match(html, /<span>Ver na conta<\/span>/);
+    assert.match(html, /rowSourceId = String\(transaction.accountId \|\| ""\)/);
+    assert.match(html, /accountLabels.get\(rowSourceId\)/);
+    assert.match(html, /submitButton.disabled = false/);
+    assert.match(html, /submitButton.disabled = !accountCurrencies.get\(sourceAccountId\(\)\)/);
+    assert.match(
+      html,
+      /accountId=account-brl&amp;month=2026-08|accountId=account-brl&month=2026-08/,
+    );
+    assert.match(html, /currencyInput\.setAttribute\('form', filterForm\.id\)/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 consolidated USD mode preserves USD and does not merge BRL totals", async () => {
+  globalThis.fetch = mockFetch([
+    {
+      ...transaction("brl-income", "Receita BRL", 2500, "2026-08-05", "income"),
+      currency: "BRL",
+      accountId: "account-brl",
+    },
+    transaction("usd-expense", "Despesa USD", 900, "2026-08-06"),
+  ]);
+  try {
+    const html = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-08"),
+    );
+    assert.match(html, /data-context="currency">USD/);
+    assert.match(html, /Despesa USD/);
+    assert.match(html, /Conta: Conta internacional/);
+    assert.doesNotMatch(html, /Receita BRL/);
+    assert.match(html, /data-edit="usd-expense"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 account and consolidated cards both include FX legs while same-currency transfers net out in All accounts", async () => {
+  const movements: Record<string, unknown>[] = [
+    {
+      ...transaction("brl-out", "Transferência Bradesco → Mercado Livre", 500000, "2026-09-01"),
+      kind: "transfer",
+      currency: "BRL",
+      accountId: "account-brl",
+      destinationAccountId: "account-usd",
+      destinationCurrency: "USD",
+      destinationAmountMinor: 95000,
+    },
+    {
+      ...transaction("deposit", "Depósito em Dinheiro", 35000, "2026-09-08", "income"),
+      currency: "BRL",
+      accountId: "account-brl",
+    },
+    {
+      ...transaction("brl-in", "Transferência Mercado Livre → Bradesco", 100000, "2026-09-10"),
+      kind: "transfer",
+      currency: "USD",
+      accountId: "account-usd",
+      destinationAccountId: "account-brl",
+      destinationCurrency: "BRL",
+      destinationAmountMinor: 100000,
+    },
+  ];
+  const baseFetch = mockFetch(movements);
+  globalThis.fetch = async (input) => {
+    const url = new URL(String(input), "http://solverfin.test");
+    const accountId = url.searchParams.get("accountId");
+    if (url.pathname === "/api/transactions" && accountId) {
+      return jsonResponse({
+        transactions: movements.filter(
+          (transaction) =>
+            transaction.accountId === accountId || transaction.destinationAccountId === accountId,
+        ),
+      });
+    }
+    return baseFetch(input);
+  };
+  const card = (html: string, name: string) => {
+    const start = html.indexOf(`<div class="summary-total" data-summary-total="${name}">`);
+    assert.ok(start >= 0, `Missing ${name} card`);
+    return html.slice(start, html.indexOf("</div>", start));
+  };
+  try {
+    const individual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-brl&month=2026-09"),
+    );
+    assert.match(card(individual, "income"), /R\$\s1\.350,00/);
+    assert.match(card(individual, "expense"), /R\$\s5\.000,00/);
+    assert.match(individual, /Transferência Bradesco → Mercado Livre/);
+    assert.match(individual, /Transferência Mercado Livre → Bradesco/);
+
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-09"),
+    );
+    assert.match(card(consolidated, "income"), /R\$\s1\.350,00/);
+    assert.match(card(consolidated, "expense"), /R\$\s5\.000,00/);
+    assert.match(consolidated, /Transferência Bradesco → Mercado Livre/);
+    assert.match(consolidated, /Transferência Mercado Livre → Bradesco/);
+
+    const usdConsolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-09"),
+    );
+    assert.match(card(usdConsolidated, "income"), /US\$\s950,00/);
+    assert.match(card(usdConsolidated, "expense"), /US\$\s1\.000,00/);
+
+    const usdIndividual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-09"),
+    );
+    assert.match(card(usdIndividual, "income"), /US\$\s950,00/);
+    assert.match(card(usdIndividual, "expense"), /US\$\s1\.000,00/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 consolidated FX transfer opens the account of the displayed currency", async () => {
+  globalThis.fetch = mockFetch([
+    {
+      ...transaction("fx-in", "Câmbio recebido", 10000, "2026-08-07"),
+      kind: "transfer",
+      destinationAccountId: "account-brl",
+      destinationCurrency: "BRL",
+      destinationAmountMinor: 48000,
+    },
+  ]);
+  try {
+    const brl = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
+    );
+    assert.match(brl, /Conta: Conta internacional → Conta principal/);
+    assert.match(brl, /Recebida de Conta internacional/);
+    assert.match(brl, /data-edit="fx-in"/);
+    assert.match(brl, /data-clone="fx-in"/);
+    assert.match(brl, /data-set-statement-status="reconciled" data-status-transaction-id="fx-in"/);
+    assert.match(brl, /data-method="POST" data-path="\/api\/transactions\/fx-in\/void"/);
+    assert.match(brl, /<span>Ver na conta<\/span>/);
+    assert.match(brl, /"accountId":"account-usd"/);
+    assert.match(
+      brl,
+      /href="\/lancamentos\?accountId=account-brl&month=2026-08" aria-label="Ver lançamento na conta"/,
+      "BRL movement opens the destination, not the USD source",
+    );
+    assert.doesNotMatch(
+      brl,
+      /href="\/lancamentos\?accountId=account-usd&month=2026-08" aria-label="Ver lançamento na conta"/,
+    );
+
+    const usd = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=USD&month=2026-08"),
+    );
+    assert.match(
+      usd,
+      /href="\/lancamentos\?accountId=account-usd&month=2026-08" aria-label="Ver lançamento na conta"/,
+      "USD movement opens the source",
+    );
+    assert.match(usd, /Enviada para Conta principal/);
+    assert.match(usd, /data-edit="fx-in"/);
+    assert.match(usd, /data-clone="fx-in"/);
+    assert.match(usd, /data-transaction="fx-in"/);
+    assert.match(usd, /"accountId":"account-usd"/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("A2 currency selector is visible but locked for an individual account and editable for all accounts", async () => {
+  globalThis.fetch = mockFetch([]);
+  try {
+    const individual = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=account-usd&month=2026-08"),
+    );
+    assert.match(individual, /data-currency-picker/);
+    assert.match(individual, /Moeda: USD/);
+    assert.doesNotMatch(individual, /<select id="statement-currency"/);
+    assert.doesNotMatch(
+      individual,
+      /<div class="account-field" data-currency-picker data-all-accounts/,
+    );
+
+    const consolidated = await renderTransactionsPageV2(
+      "session-token",
+      new URL("http://solverfin.test/lancamentos?accountId=all&currency=BRL&month=2026-08"),
+    );
+    assert.match(consolidated, /data-all-accounts/);
+    assert.match(
+      consolidated,
+      /<label class="statement-currency-field" for="statement-currency"><span>Moeda<\/span><select id="statement-currency" name="currency" required data-auto-currency>/,
+    );
+    assert.match(consolidated, /<option value="BRL" selected>BRL<\/option>/);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});

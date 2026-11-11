@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:1bc557a9-4ae9-4fd9-ab6d-d815019e7ba2",
+    "audit_report_sha256": "8d282dcf230bd56c18c1ba6d8019f07f39ff2888ac725d7a5c36513617f185ec",
+    "audited_head_sha": "b027adad59be5367038f0942a5f339ca8a89b2c7"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-004",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "scripts/statement-visual/issue-755-ci-determinism.mjs",
+        "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+      ],
+      "evidence": [
+        "Fixed safeErrorMessage categorizes errors without persisting free-form message or personal/monetary content; unknown errors become unclassified-test-failure.",
+        "Node focused test 3/3 PASS at 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; log sha256=8e11d78656593de9825a3a31c4dbe60b2d130f6fa5793cbbb81f6f166d62cd97.",
+        "Authenticated exact-SHA GitHub Actions CI 41381655011 + Chrome 41381654966; raw artifact 13114220297 with restored and rejected negative controls."
+      ],
+      "validations": [
+        "Node --test focused suite includes low-value monetary decimals and personal identities; leaked literals rejected and restored safe categories accepted.",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297. Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-005",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "scripts/statement-visual/fixtures.mjs",
+        "scripts/statement-visual/issue-755-budget-list.mjs",
+        "scripts/statement-visual/issue-606-budgets-pilot.mjs",
+        "scripts/statement-visual/issue-755-ci-determinism.test.mjs"
+      ],
+      "evidence": [
+        "Ten fixture months bound by exact returned IDs, category and currency; grouped DOM uses the newest persisted budget ID and nine same-row historical periods.",
+        "Synthetic Chromium real DOM CDP: missing-month, wrong-category, no-history and duplicate-row mutations rejected; exact restoration accepted.",
+        "CODE-GROWTH-001 PASS: 6 tracked source files measured, no blocking files.",
+        "Authenticated exact-SHA GitHub Actions CI 41381655011 + Chrome 41381654966; raw artifact 13114220297 with restored and rejected negative controls."
+      ],
+      "validations": [
+        "Node --test focused suite 3/3 PASS; 75 visual scenario registry fingerprints retained.",
+        "Repository CI #41381655011 (CRITICAL, completed/success) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; Chrome Statement visual validation #41381654966 (completed/success, 75/75) at exact material SHA 4150fb3545a7bbdf5079e5032cdc50e5ab6b2cb9; artifact 13114220297. Observed actual Chrome JSON: nineCreated=9, nineReadback=9, tenCreated=10, tenReadback=10, all missing-month/missing-history/wrong-category/duplicate-row negatives rejected, restored=true; attachment modal-absent, modal-hidden and wrong-entity rejected and restored."
+      ]
+    }
+  ]
+}

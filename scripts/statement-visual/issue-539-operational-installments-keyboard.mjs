@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { manualFinitePlanRequestScript } from "./issue-539-account-regression-helpers.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -25,6 +26,11 @@ try {
   await navigate(browser.cdp, `${baseUrl}${route}`);
   const requestScope = await waitForInstallmentLine(fixture.transactionId);
   check(
+    requestScope.badgePresent,
+    "Manual finite installment must display its installment badge",
+    requestScope,
+  );
+  check(
     requestScope.installmentQuery.includes("operationalFrom=2026-07-15") &&
       requestScope.installmentQuery.includes("operationalTo=2026-07-15"),
     "Daily statement did not request the exact displayed day",
@@ -40,30 +46,81 @@ try {
   const focusOrder = [await activeControl()];
   await pressKey("Tab", { shift: true });
   focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-  await pressKey("Tab");
-  focusOrder.push(await activeControl());
-
+  for (let step = 0; step < 10; step += 1) {
+    await pressKey("Tab");
+    focusOrder.push(await activeControl());
+  }
+  const expected = [
+    "description",
+    "Fechar",
+    "description",
+    "categoryId",
+    "note",
+    "adjustedInstallmentAmount",
+    "Cancelar",
+    "Salvar parcela",
+    "Anexos do lançamento",
+    "Fechar",
+    "description",
+    "categoryId",
+  ];
   check(
-    focusOrder.join(",") === "description,categoryId,description,note,Salvar parcela,Fechar",
-    "Restricted installment modal has an unexpected keyboard order",
-    { focusOrder },
+    focusOrder.join(",") === expected.join(","),
+    "Restricted installment modal must follow its visual order and keep focus inside",
+    { focusOrder, expected },
+  );
+  const restrictions = await evaluate(
+    browser.cdp,
+    `(() => {
+    const form = document.querySelector('[data-form]');
+    const kinds = Array.from(form.querySelectorAll('[data-statement-entry-kind]'));
+    return {
+      canonicalKindDisabled: form.elements.kind.disabled,
+      kindButtonsDisabled: kinds.length === 3 && kinds.every(button => button.disabled),
+      editableNames: Array.from(form.querySelectorAll('input,select,textarea'))
+        .filter(control => !control.disabled && control.type !== 'hidden')
+        .map(control => control.name).sort(),
+      cancelEnabled: !form.querySelector('[data-statement-entry-cancel]').disabled
+    };
+  })()`,
+  );
+  check(
+    restrictions.canonicalKindDisabled &&
+      restrictions.kindButtonsDisabled &&
+      restrictions.editableNames.join(",") ===
+        "adjustedInstallmentAmount,categoryId,description,note" &&
+      restrictions.cancelEnabled,
+    "Mockup controls must not relax restricted installment editing",
+    restrictions,
+  );
+
+  const attachmentBinding = await evaluate(
+    browser.cdp,
+    `(() => {
+      const workspace = document.querySelector('[data-modal] [data-attachment-workspace][data-entity-kind="transaction"]');
+      return { entityId: workspace?.dataset.entityId || "", visible: workspace && !workspace.hidden };
+    })()`,
+  );
+  check(
+    attachmentBinding.visible && attachmentBinding.entityId === fixture.transactionId,
+    "Restricted installment attachments must remain linked and keyboard-accessible",
+    attachmentBinding,
   );
 
   const filename = "issue-539-installment-keyboard-1366x768.png";
   await screenshot(browser.cdp, join(outputDir, filename));
-
   await pressKey("Escape");
   await sleep(100);
   const closed = await evaluate(browser.cdp, `!document.querySelector("[data-modal]").open`);
   check(closed, "Escape did not close the restricted installment modal", { closed });
-
-  scenarios.push({ route, viewport: "1366x768", focusOrder, screenshot: filename, requestScope });
+  scenarios.push({
+    route,
+    viewport: "1366x768",
+    focusOrder,
+    screenshot: filename,
+    requestScope,
+    restrictions,
+  });
 } finally {
   await browser.close(outputDir);
 }
@@ -96,13 +153,13 @@ async function waitForInstallmentLine(transactionId) {
         const row = node?.closest("article");
         const edit = row?.querySelector('[data-edit="${transactionId}"]');
         const badge = row?.querySelector("[data-installment-badge]");
-        if (row && edit && badge && !edit.disabled) {
+        if (row && edit?.dataset.installmentEdit && !edit.disabled) {
           const installmentQuery = performance.getEntriesByType("resource")
             .map((entry) => new URL(entry.name, window.location.origin))
             .find((url) => url.pathname === "/api/installments" && url.searchParams.has("accountId"));
           return {
             installmentQuery: installmentQuery ? installmentQuery.pathname + installmentQuery.search : "",
-            badge: badge.textContent.trim()
+            badgePresent: Boolean(badge)
           };
         }
         await new Promise((resolve) => setTimeout(resolve, 100));
@@ -117,7 +174,7 @@ async function activeControl() {
     browser.cdp,
     `(() => {
       const active = document.activeElement;
-      return active?.name || active?.textContent?.trim() || active?.getAttribute("aria-label") || "";
+      return active?.name || active?.getAttribute("aria-label") || active?.textContent?.trim() || "";
     })()`,
   );
 }
@@ -168,23 +225,9 @@ function fixtureExpression() {
       name: "Categoria teclado " + suffix,
       kind: "expense"
     })).category;
-    const recurrence = (await request("/api/recurrences", "POST", {
-      frequency: "monthly",
-      startOn: "2026-07-15",
-      endOn: "2026-07-15",
-      amountMinor: 12345,
-      description: "QA issue 539 teclado",
-      kind: "expense",
-      accountId: account.id,
-      categoryId: category.id
-    })).recurrence;
-    await request("/api/recurrences/" + recurrence.id + "/generate-installments", "POST", {
-      through: "2026-07-15",
-      maxOccurrences: 1
-    });
-    const installments = (await request(
-      "/api/installments?recurrenceId=" + recurrence.id + "&status=all"
-    )).installments;
+    // Keep keyboard and attachment coverage on the restricted finite-installment
+    // editor; planned bank recurrences now open the full transaction editor.
+    const installments = (await ${manualFinitePlanRequestScript("2026-07-15", "QA issue 539 teclado", 2)}).installments;
     const installment = installments.find((item) => item.transaction?.id);
     if (!installment?.transaction?.id) throw new Error("Keyboard fixture did not create an installment");
     return { accountId: account.id, transactionId: installment.transaction.id };

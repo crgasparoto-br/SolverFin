@@ -62,7 +62,8 @@ async function findPurchaseInvoiceId(
     `select "invoiceId"
        from "Transaction"
       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null and "kind" = 'EXPENSE'
+        and "cardId" = $4 and "invoiceId" is not null and "accountId" is null
+        and "kind" = 'EXPENSE' and "status" <> 'VOIDED'
       limit 1`,
     [transactionId, context.organizationId, context.financialProfileId, cardId],
   );
@@ -83,7 +84,7 @@ async function assertInvoiceCurrencyIntegrity(
         and t."financialProfileId" = i."financialProfileId"
         and t."cardId" = i."cardId"
         and t."accountId" is null
-        and t."kind" = 'EXPENSE'
+        and t."kind" = 'EXPENSE' and t."status" <> 'VOIDED'
       where i."id" = $1 and i."organizationId" = $2 and i."financialProfileId" = $3`,
     [invoiceId, context.organizationId, context.financialProfileId],
   );

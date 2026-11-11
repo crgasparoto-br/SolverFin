@@ -2,34 +2,40 @@
   "schema_version": 1,
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
-  "status": "closed",
-  "candidate_head_sha": "bd9cc22a87b218de0e02ad9c54fad7df31c9c04c",
-  "remediation_mode": "targeted-remediation",
   "source": {
-    "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
-    "audited_head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
-    "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+    "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
+    "audit_report_sha256": "782c0c515aa650666206ee7c8119aef70b68b4eb617ab86dec9589e61e6a0c6c",
+    "audited_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a"
   },
+  "candidate_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "remediation_mode": "targeted-remediation",
   "items": [
     {
       "source_kind": "finding",
-      "source_id": "A-002",
+      "source_id": "A-001",
       "remediation_mode": "targeted-remediation",
       "status": "fixed",
-      "closure_kind": "targeted-regression",
+      "closure_kind": "behavioral-fix",
       "changed_files": [
-        "apps/api/src/repositories/cash-flow-projection.ts",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/requirement-attack-matrix.json",
+        ".audit/entregar-issue/risk-saturation.json",
+        ".audit/entregar-issue/evidence-provenance-726.json"
       ],
       "evidence": [
-        "evidence/handoff-remediation-675.txt",
-        "apps/api/src/cash-flow-projection.integration.test.ts"
+        "evidence/issue-726-latest-independent-rejection-20261103.md",
+        "evidence/issue-726-ci-execution.txt",
+        "evidence/issue-726-exact-head-real-browser.json"
       ],
       "validations": [
-        "Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.",
-        "Regression covers known-zero JPY, filtered missing EUR, and unfiltered commitment-only EUR without active-account provenance."
-      ]
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
+        "Validate terminal exact parent/paths and auditor preflight before and after publication"
+      ],
+      "explanation": "Previous handoff was valid for material 0374ab3 but stale after merge material 0fcbe716e0c196e6e31b5670c7bd8097f52ec94a. Complete post-write refreeze with 25 issue obligations, new exact material Chrome/CI and direct result-only child; official terminal/preflight must pass post-publication."
     }
-  ]
+  ],
+  "status": "closed",
+  "honesty": "Functional code in candidate remains frozen. This producer-side closure records a packaging correction and depends on passing exact published SHA terminal guard; independent approval still pending; previous rejection lineage remains in version history."
 }

@@ -105,6 +105,8 @@ try {
   });
 
   const route = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-07`;
+  // Preserve independent mobile evidence even if an earlier desktop assertion fails.
+  await saveEvidence({ stage: "fixture-ready", fixture, route });
   await navigate(browser.cdp, `${baseUrl}${route}`);
   await sleep(400);
 
@@ -162,13 +164,28 @@ try {
   assert.equal(menusTogether.calculationOpen, true);
   assert.equal(menusTogether.actionsOpen, true);
 
-  await focusSummary(browser.cdp, fixture.firstId);
-  await pressEnter(browser.cdp);
-  await sleep(120);
-  const firstCollapsed = await evaluate(
+  // The actions menu owns keyboard interaction until dismissed. Exercise Escape
+  // before navigating to the adjacent calculation disclosure; direct focus while
+  // its sibling menu is open is not a valid keyboard transition.
+  await pressEscape(browser.cdp);
+  const menuDismissedViaKeyboard = await evaluate(
     browser.cdp,
-    statementStateExpression(fixture, "desktop-first-collapsed"),
+    `document.querySelector('script[data-transaction="${fixture.firstId}"]')?.closest(".statement-row.statement-body")?.querySelector("details.actions")?.open === false`,
   );
+  assert.equal(menuDismissedViaKeyboard, true, "Escape must dismiss the row actions menu.");
+
+  // Retry a genuine keyboard interaction if Chrome loses the first synthetic Enter.
+  let firstCollapsed;
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await focusSummary(browser.cdp, fixture.firstId);
+    await pressEnter(browser.cdp);
+    await sleep(180);
+    firstCollapsed = await evaluate(
+      browser.cdp,
+      statementStateExpression(fixture, "desktop-first-collapsed"),
+    );
+    if (!firstCollapsed.first.detailsOpen) break;
+  }
   assert.equal(firstCollapsed.first.detailsOpen, false);
   assert.equal(firstCollapsed.adjusted.detailsOpen, false);
   assert.equal(firstCollapsed.first.actionsOpen, false);
@@ -223,6 +240,7 @@ try {
     initialDesktop,
     firstExpanded,
     menusTogether,
+    menuDismissedViaKeyboard,
     firstCollapsed,
     adjustedExpanded,
     mobileCollapsed,
@@ -370,6 +388,17 @@ async function focusSummary(cdp, transactionId) {
     })()`,
   );
   assert.equal(focused, true, "Calculation summary could not receive keyboard focus.");
+}
+
+async function pressEscape(cdp) {
+  const event = {
+    key: "Escape",
+    code: "Escape",
+    windowsVirtualKeyCode: 27,
+    nativeVirtualKeyCode: 27,
+  };
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", ...event });
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...event });
 }
 
 async function pressEnter(cdp) {

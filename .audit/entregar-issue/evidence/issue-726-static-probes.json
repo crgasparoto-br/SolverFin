@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "kind": "structural-adversarial-probes",
+  "not_browser_execution": true,
+  "not_independent_audit": true,
+  "total": 13,
+  "passed": 13,
+  "failed": 0,
+  "probes": [
+    {
+      "id": "STRUCT-726-01",
+      "source": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "e9971b72eab350303e2debc60ffbe6a382d4e1e8",
+      "plausible_wrong_implementation": "Queue loses distinct primary region before secondary",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-02",
+      "source": "apps/web/src/dev-server/inbox-page.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "2d4a64efabf0cecf72e5b80339e2d9c1bc48d99c",
+      "plausible_wrong_implementation": "Drop insufficient insight fallback from secondary while moving panels",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-03",
+      "source": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "e9971b72eab350303e2debc60ffbe6a382d4e1e8",
+      "plausible_wrong_implementation": "Drop CSV/OFX evidence workspace from secondary",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-04",
+      "source": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "e9971b72eab350303e2debc60ffbe6a382d4e1e8",
+      "plausible_wrong_implementation": "Return competing register and import buttons to header",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-05",
+      "source": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "e9971b72eab350303e2debc60ffbe6a382d4e1e8",
+      "plausible_wrong_implementation": "Expose ready decision state before loading selected evidence",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-06",
+      "source": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "50652f99df06c44d838f2a49dfe3724dcd7c77de",
+      "plausible_wrong_implementation": "Send fresh B fingerprint without matching reviewed A",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-07",
+      "source": "apps/web/src/dev-server/category-learning-controller.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "8082bf343eb234f385ecdc2191148c034a60b8bf",
+      "plausible_wrong_implementation": "Allow category correction despite changed evidence fingerprint",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-08",
+      "source": "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "6c317f09d9a4a9dc0c5dad07f6b9e2a6144bd1c9",
+      "plausible_wrong_implementation": "Allow typed edit or legacy route to decide on nonselected fingerprint",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-09",
+      "source": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "50652f99df06c44d838f2a49dfe3724dcd7c77de",
+      "plausible_wrong_implementation": "Render multi-currency amount without proposal currency",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-10",
+      "source": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "50652f99df06c44d838f2a49dfe3724dcd7c77de",
+      "plausible_wrong_implementation": "Skip explicit human confirmation for approve",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-11",
+      "source": "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "50652f99df06c44d838f2a49dfe3724dcd7c77de",
+      "plausible_wrong_implementation": "Treat hidden evidence as visible and allow contextual decision",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-12",
+      "source": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "source_blob_sha1": "8acbd915550aba29365dcc61871e549ad3af7418",
+      "plausible_wrong_implementation": "Negative control incorrectly approves import above review",
+      "baseline_passed": true,
+      "mutation_rejected": true,
+      "passed": true,
+      "mutation": "ephemeral source string mutation; no code changes or Git writes",
+      "observed": "exact-sha baseline checked and perturbed in memory; assertions rejected changed source"
+    },
+    {
+      "id": "STRUCT-726-13",
+      "source": "git diff exact issue-local SHA",
+      "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+      "passed": true,
+      "negative_probe": {
+        "plausible_wrong_implementation": "Change finance or API contract for a presentation-only issue",
+        "mutation": "add synthetic apps/api/src/handler.ts to changed path list",
+        "mutation_rejected": true
+      },
+      "changed_paths": [
+        "apps/web/src/dev-server/category-learning-controller.test.ts",
+        "apps/web/src/dev-server/category-learning-controller.ts",
+        "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+        "apps/web/src/dev-server/inbox-page.ts",
+        "apps/web/src/dev-server/inbox-review-queue-enhancement.test.ts",
+        "apps/web/src/dev-server/inbox-review-queue-enhancement.ts",
+        "apps/web/src/dev-server/inbox-review-queue-target-enhancement.test.ts",
+        "apps/web/src/dev-server/inbox-review-queue-target-enhancement.ts",
+        "docs/AI_REVIEW_QUEUE.md",
+        "scripts/statement-visual/issue-564-category-learning.mjs",
+        "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+        "scripts/statement-visual/issue-726-inbox-controls.mjs"
+      ],
+      "observed": "No API, domain, Prisma or package changes in issue-local diff"
+    }
+  ]
+}

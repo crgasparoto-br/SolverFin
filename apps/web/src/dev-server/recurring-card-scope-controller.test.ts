@@ -19,11 +19,21 @@ async function main(): Promise<void> {
     expectedScope: "current_and_future",
   });
   await assertScopeRequest("account", "current", {
-    expectedPath: "/api/transactions/transaction-1",
+    expectedPath: "/api/transactions/transaction-1/current-only",
   });
   await assertScopeRequest("account", "current_and_future", {
     expectedPath: "/api/transactions/transaction-1",
     expectedApplyToFuture: true,
+  });
+  await assertScopeRequest("account", "current", {
+    expectedPath: "/api/transactions/transaction-1/current-only",
+    categoryValue: "",
+    accountValue: "account-reassigned",
+  });
+  await assertScopeRequest("account", "current_and_future", {
+    expectedPath: "/api/transactions/transaction-1",
+    expectedApplyToFuture: true,
+    categoryValue: "",
   });
 }
 
@@ -56,14 +66,22 @@ function assertAccountEditContract(): void {
   assert.match(script, /data-edit-account-field/);
   assert.match(script, /data-edit-account-select/);
   assert.match(script, /transaction\.accountId \|\| createAccountId/);
+  assert.ok(script.includes('get("accountId") === "all"'));
+  assert.ok(script.includes("setAccountMode(consolidatedContext ? transaction : null)"));
   assert.match(script, /accountField\.hidden = !editing/);
+  assert.match(script, /readOnlyAccountField\.hidden = editing/);
+  assert.match(script, /data-edit-account-full-name/);
+  assert.match(script, /data-account-readonly-full-name/);
+  assert.match(script, /staticAccountInput\.hidden = true/);
+  assert.match(script, /updateAccountFullName\(\)/);
+  assert.match(script, /form\.kind\.dispatchEvent/);
   assert.match(script, /accountSelect\.disabled = !editing/);
   assert.match(script, /accountInput\.disabled = editing/);
   assert.match(script, /Revise a conta usada neste lançamento\./);
   assert.match(script, /A conta vem do filtro principal\./);
   assert.match(
     script,
-    /const requestPath = isCard && scope === "current_only" \? path \+ "\/current-only" : path/,
+    /const requestPath = scope === "current_only" \? path \+ "\/current-only" : path/,
   );
 }
 
@@ -74,6 +92,8 @@ async function assertScopeRequest(
     expectedPath: string;
     expectedScope?: string;
     expectedApplyToFuture?: boolean;
+    categoryValue?: string;
+    accountValue?: string;
   },
 ): Promise<void> {
   const requests: Array<{ path: string; init: { body?: string } }> = [];
@@ -123,9 +143,9 @@ async function assertScopeRequest(
         note: "Observação",
         kind: "expense",
         status: "planned",
-        accountId: "account-1",
+        accountId: expected.accountValue ?? "account-1",
         destinationAccountId: "",
-        categoryId: "category-1",
+        categoryId: expected.categoryValue ?? "category-1",
         cardInstrumentId: "instrument-1",
         recurrenceId: "recurrence-1",
       };
@@ -198,7 +218,18 @@ async function assertScopeRequest(
   const payload = JSON.parse(requests[0]?.init.body ?? "{}") as Record<string, unknown>;
   assert.equal(payload.editScope, expected.expectedScope);
   assert.equal(payload.applyToFuturePlanned, expected.expectedApplyToFuture);
-  if (targetKind === "account") assert.equal(payload.accountId, "account-1");
+  if (targetKind === "account") {
+    assert.equal(payload.accountId, expected.accountValue ?? "account-1");
+    assert.equal(
+      payload.categoryId,
+      expected.categoryValue === "" && buttonKind === "current_and_future"
+        ? undefined
+        : (expected.categoryValue ?? "category-1") || null,
+    );
+    if (buttonKind === "current" && expected.categoryValue === "") {
+      assert.equal(Object.hasOwn(payload, "categoryId"), true);
+    }
+  }
   assert.equal(currentButton.disabled, true);
   assert.equal(futureButton.disabled, true);
   assert.equal(backButton.disabled, true);

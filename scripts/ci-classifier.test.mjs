@@ -126,3 +126,34 @@ test("FAST public SVG installs dependencies before merge-preview typecheck", () 
   const typecheckIndex = preview.indexOf("FAST web type compatibility");
   assert.ok(installIndex < typecheckIndex);
 });
+
+test("web-only typechecks run after building workspace packages in all CI paths", () => {
+  const workflow = readFileSync(".github/workflows/delivery-v2-ci.yml", "utf8");
+  const paths = [
+    ["merge_preview", "fast_validation", "FAST web type compatibility"],
+    ["fast_validation", "standard_validation", "Web typecheck"],
+    ["standard_validation", "critical_validation", "npm run typecheck --workspace @solverfin/web"],
+  ];
+  for (const [job, nextJob, typecheck] of paths) {
+    const section = workflow.split(`  ${job}:\n`)[1]?.split(`  ${nextJob}:\n`)[0];
+    assert.ok(section, `${job} section exists`);
+    const installAt = section.indexOf("npm ci --no-audit --no-fund");
+    const buildAt = section.indexOf("run: npm run build:packages");
+    const typecheckAt = section.indexOf(typecheck);
+    assert.ok(
+      installAt >= 0 && installAt < buildAt && buildAt < typecheckAt,
+      `${job}: build before typecheck`,
+    );
+  }
+
+  const preview = workflow.split("  merge_preview:\n")[1]?.split("  fast_validation:\n")[0];
+  const fast = workflow.split("  fast_validation:\n")[1]?.split("  standard_validation:\n")[0];
+  assert.match(
+    preview,
+    /name: Build workspace packages for FAST merge preview\n        if: needs\.classify\.outputs\.risk_profile == 'fast' && needs\.classify\.outputs\.web_changed == 'true'\n        run: npm run build:packages/,
+  );
+  assert.match(
+    fast,
+    /name: Build workspace packages for FAST web validation\n        if: needs\.classify\.outputs\.web_changed == 'true'\n        run: npm run build:packages/,
+  );
+});

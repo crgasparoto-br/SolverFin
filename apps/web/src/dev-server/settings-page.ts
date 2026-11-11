@@ -1,7 +1,12 @@
-import { renderPageContainer, renderPageHeader, renderTabs } from "../design-system/primitives.js";
+import {
+  renderPageContainer,
+  renderPageHeader,
+  renderSolverFinUiInteractionsScriptTag,
+  renderTabs,
+} from "../design-system/primitives.js";
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
-import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
+import { baseCss } from "./settings-page-css.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
@@ -120,7 +125,7 @@ function renderSettingsDocument(section: SettingsSection, selectedSection: strin
     ${renderSettingsNavigation(section)}
     ${selectedSection}
     ${settingsScript()}
-    ${dialogScript()}
+    ${renderSolverFinUiInteractionsScriptTag()}
   `;
 }
 
@@ -145,15 +150,20 @@ function renderSettingsNavigation(section: SettingsSection): string {
 function renderProfilesSection(
   profiles: { ok: true; data: FinancialProfilesResponse } | { ok: false; error: string },
 ): string {
+  const heading = `
+    <header class="settings-section-heading">
+      <div>
+        <h2 id="profiles-section-title">Perfis financeiros</h2>
+        <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
+      </div>
+      ${profiles.ok ? `<button type="button" class="sf-button sf-button-primary" data-open-dialog="new-profile-dialog" data-sf-dialog-open="new-profile-dialog" title="Criar novo perfil financeiro">${icon("plus", 14)} Novo perfil</button>` : ""}
+    </header>
+  `;
+
   if (!profiles.ok) {
     return `
-      <section class="panel settings-section-panel" aria-labelledby="profiles-section-title">
-        <div class="page-heading secondary-heading">
-          <div>
-            <h2 id="profiles-section-title">Perfis financeiros</h2>
-            <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
-          </div>
-        </div>
+      <section class="settings-section" data-settings-scope="profiles" aria-labelledby="profiles-section-title">
+        ${heading}
         ${renderLoadError(
           "Não foi possível carregar os perfis financeiros.",
           profiles.error,
@@ -168,25 +178,18 @@ function renderProfilesSection(
     .join("");
 
   return `
-    <section class="panel settings-section-panel" aria-labelledby="profiles-section-title">
-      <div class="page-heading secondary-heading">
-        <div>
-          <h2 id="profiles-section-title">Perfis financeiros</h2>
-          <p class="muted">Separe contextos como pessoal, família, MEI e negócio.</p>
-        </div>
-        <button type="button" data-open-dialog="new-profile-dialog" title="Criar novo perfil financeiro">${icon("plus", 14)} Novo perfil</button>
-      </div>
-      <div class="section-heading">
+    <section class="settings-section" data-settings-scope="profiles" aria-labelledby="profiles-section-title">
+      ${heading}
+      <div class="settings-collection-heading">
         <h3>Perfis disponíveis</h3>
-        <span>${profiles.data.profiles.length} itens</span>
+        <span>${profiles.data.profiles.length} perfis</span>
       </div>
       <div class="rows maintenance-rows">
         ${
           profileRows ||
           renderEmptyState(
             "Nenhum perfil financeiro.",
-            "Crie seu primeiro perfil para começar a organizar os dados financeiros.",
-            `<button type="button" data-open-dialog="new-profile-dialog">${icon("plus", 14)} Criar primeiro perfil</button>`,
+            "Use Novo perfil para começar a organizar os dados financeiros.",
           )
         }
       </div>
@@ -204,41 +207,47 @@ function renderRulesSection(
   const automationRules = rules.ok ? rules.data.rules : [];
 
   return `
-    <section class="panel settings-section-panel" aria-labelledby="rules-section-title">
-      <div class="page-heading secondary-heading">
+    <section class="settings-section" data-settings-scope="rules" aria-labelledby="rules-section-title">
+      <header class="settings-section-heading">
         <div>
           <h2 id="rules-section-title">Regras automáticas</h2>
-          <p class="muted">Regras geram sugestões revisáveis e nunca confirmam um lançamento final sem sua aprovação.</p>
+          <p class="muted">Configure os critérios que geram sugestões para revisão.</p>
         </div>
-        <div class="heading-actions">
-          <button type="button" data-open-dialog="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
-          <button type="button" class="secondary-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-confirm="Executar regras sobre sugestões pendentes?" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : ' disabled aria-disabled="true"'}>${icon("play", 14)} Aplicar regras</button>
-        </div>
-      </div>
-      <p class="priority-help">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
-      <div class="section-heading">
+        <button type="button" class="sf-button sf-button-primary" data-open-dialog="new-automation-rule-dialog" data-sf-dialog-open="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
+      </header>
+      <p class="settings-priority-note">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
+      <div class="settings-collection-heading">
         <h3>Regras configuradas</h3>
-        ${rules.ok ? `<span>${automationRules.length} itens</span>` : ""}
+        ${rules.ok ? `<span>${automationRules.length} regras</span>` : ""}
       </div>
       ${
         rules.ok
           ? `<div class="rows maintenance-rows">
-              ${
-                automationRules
-                  .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
-                  .join("") ||
-                renderEmptyState(
-                  "Nenhuma regra automática.",
-                  "Crie uma regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
-                )
-              }
-            </div>`
+             ${
+               automationRules
+                 .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
+                 .join("") ||
+               renderEmptyState(
+                 "Nenhuma regra automática.",
+                 "Use Nova regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
+               )
+             }
+           </div>`
           : renderLoadError(
               "Não foi possível carregar as regras automáticas.",
               rules.error,
               `${SETTINGS_PATH}?section=rules`,
             )
       }
+      <section class="settings-operation" aria-labelledby="rules-apply-title">
+        <div>
+          <h3 id="rules-apply-title">Aplicar regras às sugestões</h3>
+          <p id="rules-apply-description" class="muted">A aplicação gera sugestões revisáveis; nunca confirma lançamentos finais sem sua aprovação.</p>
+        </div>
+        <div class="settings-operation-actions">
+          <button type="button" class="sf-button sf-button-secondary" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/apply" data-api-success="Regras aplicadas. Revise as sugestões antes de confirmar." data-api-confirm="Executar regras sobre sugestões pendentes?" aria-describedby="rules-apply-description" title="Aplicar regras sobre sugestões pendentes"${rules.ok ? "" : ' disabled aria-disabled="true"'}>${icon("play", 14)} Aplicar regras</button>
+        </div>
+      </section>
     </section>
     ${renderNewAutomationRuleDialog(accounts, categories)}
   `;
@@ -247,19 +256,18 @@ function renderRulesSection(
 function renderNewProfileDialog(): string {
   return `
     <dialog id="new-profile-dialog" class="master-dialog" aria-labelledby="new-profile-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+            <div class="dialog-heading">
         <p class="eyebrow">Novo cadastro</p>
         <h2 id="new-profile-title">Novo perfil</h2>
       </div>
-      <form data-api-form data-api-path="/api/financial-profiles" class="edit-grid">
-        <label>Nome<input name="name" required placeholder="Ex.: Família" /></label>
+      <form data-api-form data-api-path="/api/financial-profiles" data-api-success="Perfil criado. Atualizando..." class="edit-grid">
+        <label>Nome<input name="name" required autofocus placeholder="Ex.: Família" /></label>
         <label>Tipo
           <select name="kind" required>
             ${renderProfileKindOptions()}
           </select>
         </label>
-        <button type="submit" title="Salvar novo perfil">${icon("save", 14)} Criar perfil</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar novo perfil">${icon("save", 14)} Criar perfil</button></div>
       </form>
     </dialog>
   `;
@@ -270,14 +278,14 @@ function renderNewAutomationRuleDialog(
   categories: DependencyState<CategoryRecord>,
 ): string {
   return `
-    <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+    <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title" aria-describedby="new-rule-dialog-context">
+            <div class="dialog-heading">
         <p class="eyebrow">Nova automação</p>
         <h2 id="new-automation-rule-title">Nova regra automática</h2>
       </div>
-      <form data-api-form data-api-path="/api/automation-rules" class="edit-grid" novalidate>
-        <label>Nome<input name="name" required placeholder="Ex.: Mercado vira Alimentação" /></label>
+      <p class="settings-dialog-context" id="new-rule-dialog-context">Cada execução gera sugestões revisáveis, não confirma lançamentos.</p>
+      <form data-api-form data-api-path="/api/automation-rules" data-api-success="Regra criada. Atualizando..." class="edit-grid" novalidate>
+        <label>Nome<input name="name" required autofocus placeholder="Ex.: Mercado vira Alimentação" /></label>
         <label>Prioridade<input name="priority" type="number" value="100" /></label>
         <label>Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
         <label>Tipo
@@ -301,7 +309,7 @@ function renderNewAutomationRuleDialog(
           </select>
         </label>
         <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
-        <button type="submit" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button></div>
       </form>
     </dialog>
   `;
@@ -362,15 +370,14 @@ function renderProfileEditDialog(profile: FinancialProfileRecord): string {
 
   return `
     <dialog id="${escapeHtml(dialogId)}" class="master-dialog" aria-labelledby="${escapeHtml(titleId)}">
-      <form method="dialog" class="dialog-close-form"><button type="submit" class="secondary-button">Fechar</button></form>
-      <div class="dialog-heading">
+            <div class="dialog-heading">
         <p class="eyebrow">Editar cadastro</p>
         <h2 id="${escapeHtml(titleId)}">${escapeHtml(profile.name)}</h2>
       </div>
-      <form data-api-form data-api-method="PATCH" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}" class="edit-grid">
-        <label>Nome<input name="name" value="${escapeHtml(profile.name)}" required /></label>
+      <form data-api-form data-api-method="PATCH" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}" data-api-success="Perfil atualizado. Atualizando..." class="edit-grid">
+        <label>Nome<input name="name" value="${escapeHtml(profile.name)}" required autofocus /></label>
         <label>Tipo<select name="kind">${renderProfileKindOptions(profile.kind)}</select></label>
-        <button type="submit" title="Salvar alterações do perfil">${icon("save", 14)} Salvar perfil</button>
+        <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar alterações do perfil">${icon("save", 14)} Salvar perfil</button></div>
       </form>
     </dialog>
   `;
@@ -385,13 +392,13 @@ function renderProfileRow(
   const profileQuery = `profileId=${encodeURIComponent(profile.id)}`;
 
   return `
-    <article class="maintenance-item profile-item">
+    <article class="maintenance-item profile-item${isSelected ? " is-current-profile" : ""}" data-current-profile="${isSelected}">
       <div class="maintenance-summary">
-        <div>
+        <div class="profile-identity">
           <div class="item-title-line">
             <strong>${escapeHtml(profile.name)}</strong>
             ${isSelected ? '<span class="status-badge status-in-use">Em uso</span>' : ""}
-            ${renderProfileStatusBadge(profile.status)}
+            ${isSelected && isActive ? "" : renderProfileStatusBadge(profile.status)}
           </div>
           <span>${escapeHtml(formatProfileKind(profile.kind))}</span>
         </div>
@@ -399,18 +406,18 @@ function renderProfileRow(
       <div class="maintenance-actions" aria-label="Ações do perfil ${escapeHtml(profile.name)}">
         ${
           isActive
-            ? `<div class="profile-links" aria-label="Abrir áreas com este perfil">
-                <a class="button-link secondary-link" href="/dashboard?${profileQuery}">Dashboard</a>
-                <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
-                <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
-              </div>`
-            : ""
+            ? `<nav class="profile-links" aria-label="Abrir áreas do perfil ${escapeHtml(profile.name)}">
+               <a class="button-link secondary-link" href="/dashboard?${profileQuery}">Dashboard</a>
+               <a class="button-link secondary-link" href="/contas?${profileQuery}">Contas</a>
+               <a class="button-link secondary-link" href="/lancamentos?${profileQuery}">Extrato</a>
+             </nav>`
+            : '<span class="profile-disabled-note">Perfil arquivado.</span>'
         }
         <div class="item-actions">
-          <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}">${renderEditIcon()}</button>
+          <button type="button" class="icon-button" data-open-dialog="edit-profile-dialog-${escapeHtml(profile.id)}" data-sf-dialog-open="edit-profile-dialog-${escapeHtml(profile.id)}" aria-label="Editar perfil ${escapeHtml(profile.name)}" title="Editar perfil">${renderEditIcon()}</button>
           ${
             isActive
-              ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-confirm="Arquivar este perfil financeiro?" title="Arquivar este perfil">${icon("archive", 13)} Arquivar perfil</button>`
+              ? `<button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/financial-profiles/${escapeHtml(profile.id)}/archive" data-api-success="Perfil arquivado. Atualizando..." data-api-confirm="Arquivar este perfil financeiro?" aria-label="Arquivar perfil ${escapeHtml(profile.name)}" title="Arquivar perfil">${icon("archive", 14)}</button>`
               : ""
           }
         </div>
@@ -433,7 +440,7 @@ function renderAutomationRuleRow(
           <strong>${escapeHtml(rule.name)}</strong>
           ${renderAutomationStatusBadge(rule.status)}
         </div>
-        <span class="priority-badge" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
+        <span class="rule-priority" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
       </div>
       <div class="rule-detail-grid">
         <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
@@ -446,13 +453,13 @@ function renderAutomationRuleRow(
         </section>
       </div>
       ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
-      <div class="item-actions rule-actions">
-        ${
-          isActive
-            ? `<button type="button" class="secondary-button danger-action" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-confirm="Inativar esta regra automática?" title="Inativar esta regra automática">${icon("archive", 13)} Inativar regra</button>`
-            : ""
-        }
-      </div>
+      ${
+        isActive
+          ? `<div class="item-actions rule-actions">
+             <button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-success="Regra inativada. Atualizando..." data-api-confirm="Inativar esta regra automática?" aria-label="Inativar regra ${escapeHtml(rule.name)}" title="Inativar regra">${icon("archive", 14)}</button>
+           </div>`
+          : ""
+      }
     </article>
   `;
 }
@@ -522,7 +529,7 @@ function settingsScript(): string {
           const error = input.parentElement.querySelector("[data-decimal-error]");
           const invalid = !result.ok;
           if (invalid) input.setAttribute("aria-invalid", "true");
-else input.removeAttribute("aria-invalid");
+          else input.removeAttribute("aria-invalid");
           if (error) error.hidden = !invalid;
           if (invalid && !firstInvalid) firstInvalid = input;
         });
@@ -545,9 +552,9 @@ else input.removeAttribute("aria-invalid");
         return payload;
       }
 
-      async function readApiMessage(response) {
+      async function readApiMessage(response, successMessage) {
         const body = await response.json().catch(() => ({}));
-        if (response.ok) return "Ação concluída. Atualizando a tela...";
+        if (response.ok) return successMessage || "Ação concluída. Atualizando a tela...";
         return (body.error && body.error.message) || "Não foi possível concluir a ação.";
       }
 
@@ -576,23 +583,28 @@ else input.removeAttribute("aria-invalid");
           if (submitButton) submitButton.disabled = true;
           status.className = "form-status muted";
           status.textContent = "Salvando...";
-          const response = await fetch(form.dataset.apiPath, {
-            method: form.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(buildPayload(form)),
-          });
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+          try {
+            const response = await fetch(form.dataset.apiPath, {
+              method: form.dataset.apiMethod || "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify(buildPayload(form)),
+            });
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = await readApiMessage(response, form.dataset.apiSuccess);
+            if (response.ok) {
+              window.setTimeout(() => window.location.reload(), 450);
+              return;
+            }
+          } catch {
+            status.className = "form-status error";
+            status.textContent = "Falha de conexão. Revise os dados e tente novamente.";
           }
           if (submitButton) submitButton.disabled = false;
         });
       });
 
       document.querySelectorAll("[data-api-action]").forEach((button) => {
-        const container = button.closest(".maintenance-actions") || button.closest(".heading-actions") || button.parentElement;
+        const container = button.closest(".maintenance-actions") || button.closest(".settings-operation") || button.parentElement;
         const status = ensureStatus(container);
         button.addEventListener("click", async () => {
           if (button.disabled) return;
@@ -601,15 +613,20 @@ else input.removeAttribute("aria-invalid");
           button.disabled = true;
           status.className = "form-status muted";
           status.textContent = "Enviando...";
-          const response = await fetch(button.dataset.apiPath, {
-            method: button.dataset.apiMethod || "POST",
-            headers: { "content-type": "application/json" },
-          });
-          status.className = response.ok ? "form-status success" : "form-status error";
-          status.textContent = await readApiMessage(response);
-          if (response.ok) {
-            window.setTimeout(() => window.location.reload(), 450);
-            return;
+          try {
+            const response = await fetch(button.dataset.apiPath, {
+              method: button.dataset.apiMethod || "POST",
+              headers: { "content-type": "application/json" },
+            });
+            status.className = response.ok ? "form-status success" : "form-status error";
+            status.textContent = await readApiMessage(response, button.dataset.apiSuccess);
+            if (response.ok) {
+              window.setTimeout(() => window.location.reload(), 450);
+              return;
+            }
+          } catch {
+            status.className = "form-status error";
+            status.textContent = "Falha de conexão. Tente novamente.";
           }
           button.disabled = false;
         });
@@ -756,37 +773,4 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-function baseCss(): string {
-  return `
-    ${sharedShellStyles()}
-    ${sharedDialogStyles()}
-    .secondary-link { background: var(--surface); border: 1px solid var(--line); color: var(--primary); } .secondary-link:hover { background: var(--primary-soft); border-color: #c8dde5; }
-    main { display: grid; gap: 14px; margin: 0 auto; max-width: 1440px; padding: 18px 20px; width: 100%; } .page-heading { align-items: center; display: flex; gap: 12px; justify-content: space-between; min-width: 0; } .page-heading > div { display: grid; gap: 4px; max-width: 780px; min-width: 0; }
-    .settings-heading { padding-bottom: 2px; } .secondary-heading { margin-top: 0; }
-    .settings-sections { border-bottom: 1px solid var(--line); display: flex; gap: 4px; overflow-x: auto; scrollbar-width: thin; }
-    .settings-section-link { border-bottom: 3px solid transparent; color: var(--muted); font-weight: 700; padding: 10px 12px 8px; text-decoration: none; white-space: nowrap; }
-    .settings-section-link:hover, .settings-section-link:focus-visible { background: var(--surface-soft); color: var(--primary); }
-    .settings-section-link[aria-current="page"] { border-bottom-color: var(--primary); color: var(--primary); }
-    .settings-section-panel { display: grid; gap: 14px; min-width: 0; }
-    .heading-actions { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
-    .priority-help { background: var(--surface-soft); border-left: 3px solid var(--primary); border-radius: 0 var(--radius) var(--radius) 0; color: var(--muted); margin: 0; padding: 8px 10px; }
-    .section-heading { align-items: center; display: flex; gap: 10px; justify-content: space-between; } .section-heading h3 { font-size: 0.9375rem; margin: 0; } .section-heading span { background: var(--primary-soft); border-radius: 999px; color: var(--primary); font-size: 0.6875rem; font-weight: 700; padding: 2px 7px; white-space: nowrap; }
-    .rows { display: grid; gap: 10px; } .maintenance-item { border-top: 1px solid var(--line); display: grid; gap: 10px; min-width: 0; padding-top: 10px; } .maintenance-item:first-child { border-top: 0; padding-top: 0; } .maintenance-summary { align-items: start; display: flex; gap: 12px; justify-content: space-between; min-width: 0; } .maintenance-summary > div { display: grid; gap: 3px; min-width: 0; } .maintenance-summary span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
-    .item-title-line { align-items: center; display: flex; flex-wrap: wrap; gap: 6px; min-width: 0; } .item-title-line strong { overflow-wrap: anywhere; }
-    .status-badge, .priority-badge { border: 1px solid var(--line); border-radius: 999px; display: inline-flex; font-size: 0.6875rem; font-weight: 700; line-height: 1; padding: 4px 7px; white-space: nowrap; }
-    .status-active { background: #dcfce7; border-color: #bbf7d0; color: #166534; } .status-archived { background: var(--surface-soft); color: var(--muted); } .status-in-use { background: var(--primary-soft); border-color: #c8dde5; color: var(--primary); } .status-neutral { background: #fef3c7; border-color: #fde68a; color: #92400e; }
-    .maintenance-actions { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: var(--radius); display: grid; gap: 8px; min-width: 0; padding: 10px; } .item-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; } .profile-links { display: flex; flex-wrap: wrap; gap: 6px; }
-    .rule-summary { align-items: center; display: flex; gap: 10px; justify-content: space-between; min-width: 0; } .priority-badge { background: var(--surface-soft); color: var(--primary); }
-    .rule-detail-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
-    .rule-detail { background: var(--surface-soft); border: 1px solid #d8e7ec; border-radius: var(--radius); min-width: 0; padding: 10px; } .rule-detail h3 { font-size: 0.8125rem; margin: 0 0 6px; } .rule-detail ul { display: grid; gap: 4px; margin: 0; padding-left: 18px; } .rule-detail li { overflow-wrap: anywhere; }
-    .rule-explanation { margin: 0; overflow-wrap: anywhere; } .rule-actions { border-top: 1px solid var(--line); padding-top: 8px; }
-    .field-error { color: var(--danger); display: block; font-size: 0.75rem; margin-top: 4px; } .field-error[hidden] { display: none; } .field-warning { color: #92400e; display: block; font-size: 0.75rem; line-height: 1.4; margin-top: 4px; } .field-warning a { color: inherit; font-weight: 700; }
-    .load-error { background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius); display: grid; gap: 8px; padding: 12px; } .load-error p { color: var(--danger); margin: 0; overflow-wrap: anywhere; } .load-error .button-link { justify-self: start; }
-    .empty-state { display: grid; gap: 8px; justify-items: start; }
-    .full-span { grid-column: 1 / -1; }
-    @media (max-width: 760px) { main { padding: 16px; } .page-heading { align-items: stretch; display: grid; } .heading-actions { justify-content: stretch; } .heading-actions > * { flex: 1 1 auto; } .maintenance-summary, .section-heading, .rule-summary { align-items: stretch; display: grid; } .maintenance-summary > *, .section-heading > *, .rule-summary > * { min-width: 0; } .rule-detail-grid { grid-template-columns: 1fr; } .item-actions { justify-content: stretch; } .item-actions > * { flex: 1 1 auto; } .status-badge, .priority-badge, .settings-section-link { white-space: normal; } }
-    @media (max-width: 430px) { .settings-section-link { flex: 1 0 auto; text-align: center; } .profile-links { display: grid; grid-template-columns: 1fr; } .profile-links .button-link { justify-content: center; } }
-  `;
 }

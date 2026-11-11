@@ -5,6 +5,7 @@ export interface AnalysisSummaryItem {
   label: string;
   primaryHtml: string;
   secondaryHtml?: string;
+  emphasis?: boolean;
   tone?: "positive" | "negative" | "neutral" | "attention" | "information";
 }
 
@@ -48,27 +49,23 @@ interface AnalysisSummaryGridOptions {
 export function renderReportAnalysisBlock(props: ReportAnalysisBlockProps): string {
   const periodLabel = `${props.periodCount} período${props.periodCount === 1 ? "" : "s"}`;
   return `<section class="report-analysis-block" data-report-analysis="a5" data-currency="${renderText(props.currency)}" aria-labelledby="${renderText(props.id)}">
-    <header class="report-analysis-heading">
-      <div><p class="eyebrow">Moeda</p><h2 id="${renderText(props.id)}">${renderText(props.currency)}</h2></div>
-      <span>${renderText(periodLabel)}</span>
-    </header>
     <section class="report-analysis-layer" data-analysis-layer="summary" aria-label="Resumo em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Resumo</p><h3>Leitura do período</h3></div>
+      <div class="report-layer-topline"><div class="report-layer-heading"><p class="eyebrow">Resumo</p><h2 id="${renderText(props.id)}">Leitura do período - ${renderText(props.currency)}</h2></div><span class="report-period-count">${renderText(periodLabel)}</span></div>
       ${renderAnalysisSummaryGrid(props.summaryItems, {
         wrapperClassName: props.summaryWrapperClassName,
         itemClassName: props.summaryItemClassName,
       })}
     </section>
     <section class="report-analysis-layer" data-analysis-layer="visualization" aria-label="Visualização em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(props.visualizationTitle)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Visualização</p><h3>${renderText(props.visualizationTitle)} - ${renderText(props.currency)}</h3></div>
       ${props.visualizationHtml}
     </section>
     <section class="report-analysis-layer" data-analysis-layer="highlights" aria-label="Destaques em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Destaques</p><h3>Pontos para revisar</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Destaques</p><h3>Pontos para revisar - ${renderText(props.currency)}</h3></div>
       ${props.highlightsHtml}
     </section>
     <section class="report-analysis-layer report-detail-layer" data-analysis-layer="detail" aria-label="Detalhe em ${renderText(props.currency)}">
-      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)}</h3></div>
+      <div class="report-layer-heading"><p class="eyebrow">Detalhe</p><h3>${renderText(props.detailTitle)} - ${renderText(props.currency)}</h3></div>
       ${props.detailHtml}
     </section>
   </section>`;
@@ -157,7 +154,7 @@ export function renderAnalysisSummaryGrid(
       const secondary = item.secondaryHtml
         ? `<div class="report-summary-secondary">${item.secondaryHtml}</div>`
         : "";
-      return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
+      return `<article class="${renderText(itemClassName)}" data-tone="${item.tone ?? "neutral"}"${item.emphasis ? ' data-emphasis="true"' : ""}><span>${renderText(item.label)}</span><strong>${item.primaryHtml}</strong>${secondary}</article>`;
     })
     .join("");
 
@@ -167,9 +164,16 @@ export function renderAnalysisSummaryGrid(
   return renderSummaryGrid({ childrenHtml });
 }
 
-export function renderResultTrend(points: readonly TrendPoint[]): string {
+export function renderResultTrend(
+  points: readonly TrendPoint[],
+  ariaLabel = "Resultado por período",
+  layout: "scroll" | "grid" = "scroll",
+): string {
   const maxAbsolute = Math.max(1, ...points.map((point) => Math.abs(point.amountMinor)));
-  return `<ol class="report-trend" aria-label="Resultado por período">${points
+  const layoutClass = layout === "grid" ? " report-trend-grid" : "";
+  const layoutStyle =
+    layout === "grid" ? ` style="--report-trend-columns:${Math.min(points.length || 1, 12)}"` : "";
+  return `<ol class="report-trend${layoutClass}" data-trend-layout="${layout}"${layoutStyle} tabindex="0" aria-label="${renderText(ariaLabel)}">${points
     .map((point) => {
       const scale =
         point.amountMinor === 0
@@ -211,5 +215,5 @@ export function renderAnalysisHighlights(input: {
             "Use a matriz detalhada para entender quais categorias sustentam o resultado.",
         });
 
-  return `<div class="report-highlights-grid">${items}</div>${negativeAlert}`;
+  return `<div class="report-highlights-grid">${items}${negativeAlert}</div>`;
 }

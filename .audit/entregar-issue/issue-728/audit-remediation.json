@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:1729b972-8d92-4071-a0dd-e2d15a19163c",
+    "audit_report_sha256": "174319285f6cd10f345e9174187a1b1edb2c53c8e105965ea62781676bfc4138",
+    "audited_head_sha": "4b904abbf7db6033ae6e096cf62fa5398f50672a"
+  },
+  "candidate_head_sha": "6faa75259168ab01ffde20bf1212c98090546244",
+  "remediation_mode": "targeted-remediation",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/api.ts",
+        "apps/web/src/dev-server/admin-institutions-error-page.ts",
+        "apps/web/src/dev-server/admin-institutions-page.test.ts",
+        "scripts/statement-visual/issue-728-admin-states.mjs"
+      ],
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535: SSR 403/502/503 and fetch rejection tests",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593: Chrome 502, 503, network, permission tests with retry + retained GET filters"
+      ],
+      "validations": [
+        "npm run test: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417535/job/126236158573",
+        "Chrome scenario issue-728-admin-states: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "docs/audits/ISSUE_728_PREEDIT_CHROME_BASELINE.md"
+      ],
+      "evidence": [
+        "Original authenticated pre-edit Chrome artifact https://github.com/crgasparoto-br/SolverFin/actions/runs/41652781220/artifacts/13239385633",
+        "Commit 97c5fcab predates first implementation 63d556c; unchanged UI files through develop@008f097b",
+        "docs/audits/ISSUE_728_PREEDIT_CHROME_BASELINE.md"
+      ],
+      "validations": [
+        "Raw JSON and screenshots capture 4 metric cards and 8 exposed filters; commit dates and unchanged SSR paths verified with git diff"
+      ]
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "R-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/admin-institutions-page.ts",
+        "apps/web/src/dev-server/admin-institutions-styles.ts",
+        "scripts/statement-visual/issue-615-secondary-route.mjs"
+      ],
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593: logged viewport-dependent firstRowTop and no horizontal overflow",
+        "Chrome 320x740 initial fold firstRowTop=712.17 px (less than 740); 390x844=691.17 px"
+      ],
+      "validations": [
+        "Chrome firstRowTop < viewport height: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593",
+        "Layout inspection and first fold screenshot 320x740: https://github.com/crgasparoto-br/SolverFin/actions/runs/41727417593/artifacts/13274878548"
+      ]
+    }
+  ],
+  "status": "closed"
+}

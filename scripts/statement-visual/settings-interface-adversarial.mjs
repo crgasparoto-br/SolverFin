@@ -1,3 +1,4 @@
+import { createSettingsInterfaceProbes } from "./settings-interface-probes.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
@@ -5,20 +6,31 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { captureSettingsGoldenEvidence } from "./settings-golden-evidence.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
 const chromePath = process.env.CHROME_BIN;
 const failures = [];
 const screenshots = [];
+const {
+  validateDecimalFormBehavior,
+  validateLongProfileName,
+  validateActionHierarchy,
+  measurementExpression,
+} = createSettingsInterfaceProbes({ outputDir, screenshots });
 let browserVersion = "unknown";
 
 if (!chromePath) throw new Error("CHROME_BIN is required for settings visual validation.");
 await mkdir(outputDir, { recursive: true });
 
 const profilesDesktop = await runScenario("profiles-desktop", 1440, 1000, "profiles");
+const profilesGoldenDesktop = await runScenario("profiles-1366", 1366, 768, "profiles");
+const profilesSmallMobile = await runScenario("profiles-320", 320, 740, "profiles");
 const profilesMobile = await runScenario("profiles-mobile", 390, 844, "profiles");
 const rulesDesktop = await runScenario("rules-desktop", 1440, 1000, "rules");
+const rulesGoldenDesktop = await runScenario("rules-1366", 1366, 768, "rules");
+const rulesSmallMobile = await runScenario("rules-320", 320, 740, "rules");
 const rulesTablet = await runScenario("rules-tablet", 768, 1024, "rules");
 const rulesMobile = await runScenario("rules-mobile", 390, 844, "rules");
 const rulesZoom = await runScenario("rules-mobile-zoom-200", 390, 844, "rules", true);
@@ -43,8 +55,12 @@ const report = {
   screenshots,
   zoomEvidence,
   profilesDesktop,
+  profilesGoldenDesktop,
+  profilesSmallMobile,
   profilesMobile,
   rulesDesktop,
+  rulesGoldenDesktop,
+  rulesSmallMobile,
   rulesTablet,
   rulesMobile,
   rulesZoom,
@@ -80,6 +96,35 @@ async function runScenario(name, width, height, section, zoom = false) {
       section === "rules" ? await validateRenderedRuleFixtures(browser.cdp, ruleFixtures) : null;
     const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const textScale = await applyTextScale(browser.cdp, zoom);
+    const hierarchy = await validateActionHierarchy(browser.cdp, section);
+    const restFilename = `issue-727-${name}-rest.png`;
+    await screenshot(browser.cdp, join(outputDir, restFilename));
+    screenshots.push(restFilename);
+    const longNameEvidence =
+      section === "profiles" ? await validateLongProfileName(browser.cdp, name) : null;
+    if (section === "profiles") {
+      check(
+        longNameEvidence?.wrapped === true && longNameEvidence?.noHorizontalOverflow === true,
+        `${name}: nome longo de perfil cortado ou com overflow`,
+        longNameEvidence,
+      );
+      check(
+        longNameEvidence?.truncationRejected === true && longNameEvidence?.restored === true,
+        `${name}: controle negativo de texto truncado não detectado/restaurado`,
+        longNameEvidence,
+      );
+    }
+    check(
+      hierarchy.primaryCount === 1,
+      `${name}: hierarquia tem mais de uma ação principal`,
+      hierarchy,
+    );
+    check(
+      hierarchy.negativeControlRejectsCompetingPrimary,
+      `${name}: controle negativo da ação principal`,
+      hierarchy,
+    );
+    check(hierarchy.restored, `${name}: controle negativo não restaurou a hierarquia`, hierarchy);
     const dialogSelector =
       section === "profiles"
         ? '[data-open-dialog="new-profile-dialog"]'
@@ -196,7 +241,29 @@ async function runScenario(name, width, height, section, zoom = false) {
         `${name}: erro não associado ao campo`,
         decimalForm,
       );
+      check(
+        decimalForm?.networkErrorVisible === true && decimalForm?.retryEnabled === true,
+        `${name}: erro de rede não recuperável`,
+        decimalForm,
+      );
+      check(
+        decimalForm?.networkValuePreserved === true,
+        `${name}: falha de rede perdeu dados do formulário`,
+        decimalForm,
+      );
     }
+
+    const goldenEvidence = await captureSettingsGoldenEvidence({
+      cdp: browser.cdp,
+      name,
+      section,
+      outputDir,
+      check,
+      pressKey,
+      openDialogWithKeyboard,
+      waitForDialogClosed,
+    });
+    if (goldenEvidence) screenshots.push(...goldenEvidence.screenshots);
 
     return {
       name,
@@ -207,6 +274,10 @@ async function runScenario(name, width, height, section, zoom = false) {
       ruleFixtures,
       renderedRules,
       keyboardNavigation,
+      hierarchy,
+      goldenEvidence,
+      restScreenshot: restFilename,
+      longNameEvidence,
       textScale,
       dialogKeyboard,
       decimalForm,
@@ -390,67 +461,6 @@ async function applyTextScale(cdp, requested) {
   };
 }
 
-async function validateDecimalFormBehavior(cdp) {
-  return evaluate(
-    cdp,
-    `(async () => {
-      const form = document.querySelector('#new-automation-rule-dialog form[data-api-form]');
-      const name = form?.elements.namedItem('name');
-      const minimum = form?.elements.namedItem('amountMinMinor');
-      const error = document.querySelector('#amount-minor-error');
-      if (!form || !name || !minimum || !error) {
-        return { validPayloadMinor: null, invalidBlocked: false, invalidValuePreserved: false, errorAssociated: false, reason: 'form controls missing' };
-      }
-
-      const originalFetch = window.fetch;
-      const requests = [];
-      window.fetch = async (input, init = {}) => {
-        requests.push({
-          url: String(input),
-          method: init.method ?? 'GET',
-          body: init.body ? JSON.parse(String(init.body)) : null
-        });
-        return new Response(JSON.stringify({ error: { message: 'QA intercepted request' } }), {
-          status: 422,
-          headers: { 'content-type': 'application/json' }
-        });
-      };
-
-      try {
-        name.value = 'QA Issue 558 - validação decimal no navegador';
-        minimum.value = '10,50';
-        minimum.dispatchEvent(new Event('input', { bubbles: true }));
-        form.requestSubmit();
-        for (let attempt = 0; attempt < 30 && requests.length < 1; attempt += 1) {
-          await new Promise((resolve) => setTimeout(resolve, 20));
-        }
-
-        const validPayloadMinor = requests[0]?.body?.amountMinMinor ?? null;
-        const validValuePreserved = minimum.value === '10,50';
-
-        minimum.value = '10,501';
-        minimum.dispatchEvent(new Event('input', { bubbles: true }));
-        form.requestSubmit();
-        await new Promise((resolve) => setTimeout(resolve, 120));
-
-        return {
-          validPayloadMinor,
-          validValuePreserved,
-          requestCount: requests.length,
-          invalidBlocked: requests.length === 1,
-          invalidValuePreserved: minimum.value === '10,501',
-          errorAssociated:
-            minimum.getAttribute('aria-invalid') === 'true' &&
-            minimum.getAttribute('aria-describedby') === error.id &&
-            !error.hidden,
-        };
-      } finally {
-        window.fetch = originalFetch;
-      }
-    })()`,
-  );
-}
-
 async function compareZoomEvidence(normalScenario, zoomScenario) {
   const normalFile = normalScenario?.screenshot;
   const zoomFile = zoomScenario?.screenshot;
@@ -609,40 +619,6 @@ async function waitForDialog(cdp) {
     await sleep(50);
   }
   throw new Error("Settings dialog did not open.");
-}
-
-function measurementExpression(section) {
-  return `(() => {
-    const bodyText = document.body.innerText;
-    const active = document.querySelector('.sf-tab[aria-current="page"]');
-    const dialog = document.querySelector('dialog[open]');
-    const dialogRect = dialog?.getBoundingClientRect();
-    const links = Array.from(document.querySelectorAll('.sf-tab'));
-    const expectedLinks = ['/configuracoes?section=profiles', '/configuracoes?section=rules'];
-    return {
-      viewport: { width: window.innerWidth, height: window.innerHeight },
-      rootFontSizePx: parseFloat(getComputedStyle(document.documentElement).fontSize),
-      noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-      h1Count: document.querySelectorAll('h1').length,
-      h1Text: document.querySelector('h1')?.textContent?.trim() || '',
-      activeSection: active?.getAttribute('href')?.endsWith('section=rules') ? 'rules' : 'profiles',
-      linksAreGet: links.length === 2 && links.every((link, index) => link.tagName === 'A' && link.getAttribute('href') === expectedLinks[index]),
-      focusableNavigation: links.every((link) => link.tabIndex >= 0),
-      dialogOpen: Boolean(dialog?.open),
-      dialogInsideViewport: Boolean(dialogRect && dialogRect.left >= 0 && dialogRect.right <= window.innerWidth && dialogRect.top >= 0 && dialogRect.bottom <= window.innerHeight),
-      hasTenantOperational: bodyText.includes('Tenant operacional'),
-      hasCentavosLabel: bodyText.includes('em centavos'),
-      hasProfileHeading: Array.from(document.querySelectorAll('h2')).some((item) => item.textContent?.trim() === 'Perfis financeiros'),
-      hasProfileListHeading: Array.from(document.querySelectorAll('h3')).some((item) => item.textContent?.trim() === 'Perfis disponíveis'),
-      hasRulesHeading: Array.from(document.querySelectorAll('h2')).some((item) => item.textContent?.trim() === 'Regras automáticas'),
-      hasProfileAction: Boolean(document.querySelector('[data-open-dialog="new-profile-dialog"]')),
-      hasPriorityHelp: bodyText.includes('Números maiores são aplicados primeiro; em empate, vence a regra criada antes.'),
-      hasDecimalInputs: Boolean(document.querySelector('[name="amountMinMinor"][inputmode="decimal"]') && document.querySelector('[name="amountMaxMinor"][inputmode="decimal"]')),
-      hasReviewMessage: bodyText.includes('sugestões revisáveis') && bodyText.includes('aprovação'),
-      ruleItemCount: document.querySelectorAll('.rule-item').length,
-      section: ${JSON.stringify(section)},
-    };
-  })()`;
 }
 
 function check(condition, message, details) {

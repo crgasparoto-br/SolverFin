@@ -1,0 +1,16 @@
+HEAD: 64f2011c828b65eda92c7807a0fd085374d5d2c8
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/shared-styles.test.ts
+SOURCE: authenticated GitHub Actions Repository CI (CRITICAL validation)
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251
+JOB: https://github.com/crgasparoto-br/SolverFin/actions/runs/40800860251/job/123208635395
+EXCERPT_FROM_RUN_LOG:
+2026-10-29T01:33:41.6289160Z ##[group]Run npm run test
+2026-10-29T01:33:41.6289472Z npm run test
+2026-10-29T01:35:25.7338108Z [test] dev-server/shared-styles.test.js
+2026-10-29T01:35:25.7973101Z TAP version 13
+2026-10-29T01:35:25.7991300Z # Subtest: shared shell styles
+2026-10-29T01:35:25.8006828Z     # Subtest: keeps the compact shell header content-sized in short SSR states
+2026-10-29T01:35:25.8010313Z     ok 3 - keeps the compact shell header content-sized in short SSR states
+CI_JOB_STATUS: completed/success (queried independently from GitHub)

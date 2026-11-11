@@ -1,0 +1,24 @@
+{
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "mutations": [
+    {
+      "mutation": "old-lower-page-cutoff",
+      "exit_code": 1,
+      "killed": true,
+      "production_modified": false
+    },
+    {
+      "mutation": "silent-footer-clipping",
+      "exit_code": 1,
+      "killed": true,
+      "production_modified": false
+    },
+    {
+      "mutation": "old-header-gap",
+      "exit_code": 1,
+      "killed": true,
+      "production_modified": false
+    }
+  ],
+  "scope": "three targeted mutation controls; not a claim of complete formal saturation"
+}

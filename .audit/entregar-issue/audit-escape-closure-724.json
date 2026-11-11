@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-74401",
+      "escape_class": "inherited-foreign-handoff",
+      "status": "passed",
+      "revalidated_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
+        "audited_head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+        "finding_id": "A-74401",
+        "finding_ids": [
+          "A-74401"
+        ],
+        "audit_report_sha256": "ba3648bae39ad4f8b49c34446dfd9faebbf8d12dab23e751efa5eed4a7ffe1f0"
+      },
+      "plausible_wrong_implementation": "Reuse an unchanged inherited issue 747 certificate to falsely certify an unrelated issue 724 because the path exists and CI is green.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run official delivery_target_binding.py with immutable base and material head for issue 724 / PR 744, preserving source audit paths.",
+        "observed": "The source certificate targets issue 747 / PR 749 and the official classifier returned inherited-base-artifact, reuse_allowed=false. Fresh source-specific target 724 package is built instead.",
+        "evidence": "evidence/target-binding.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "A-74401-foreign",
+          "surface": "certificate-subject",
+          "dimension": "foreign issue / PR mutation",
+          "status": "passed",
+          "evidence": "Skill test_delivery_target_binding.py covers modified foreign-target rejection."
+        },
+        {
+          "id": "A-74401-partial",
+          "surface": "specification-snapshot",
+          "dimension": "certificate and snapshot mismatch",
+          "status": "passed",
+          "evidence": "Skill test_delivery_target_binding.py covers partial-current-target rejection."
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "New issue-specific snapshot, closure and exact-SHA certificate produced by official Skill without reusing any previous foreign-target SHA/hash."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Official delivery_target_binding.py rejects inherited-base-artifact and official validate_handoff_certificate.py checks issue, PR, base, material SHA, allowlisted child."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "certificate-target",
+          "dimension": "inherited-foreign-subject"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specification-snapshot",
+          "dimension": "mismatched-issue-or-head"
+        }
+      ]
+    },
+    {
+      "escape_id": "A-74402",
+      "escape_class": "incomplete-multi-currency-first-fold-coverage",
+      "status": "passed",
+      "revalidated_head_sha": "64f2011c828b65eda92c7807a0fd085374d5d2c8",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:9e62ce8b-5fde-423e-88fe-44368132e81b",
+        "audited_head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff",
+        "finding_id": "A-74402",
+        "finding_ids": [
+          "A-74402"
+        ],
+        "audit_report_sha256": "ba3648bae39ad4f8b49c34446dfd9faebbf8d12dab23e751efa5eed4a7ffe1f0"
+      },
+      "plausible_wrong_implementation": "Test first fold only for one currency and leave both currency KPI panels stacked before the next action, while a multi-currency test checks only element existence.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run the corrected five-state Chrome runner at 320x740, 390x844 and 1366x768 with controlled SSR sources, and assert first-fold visibility of the next action after both currency summaries.",
+        "observed": "At 320x740 and 390x844, Chrome 12866566790 confirms first title AND operational action link visible with BRL+USD; all nonerror SSR states pass, overlay test fails and restoration recovers.",
+        "evidence": "evidence/issue-724-chrome-exact-head.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "A-74402-intrusion",
+          "surface": "mobile-viewport",
+          "dimension": "600px panel insertion",
+          "status": "passed",
+          "evidence": "GitHub Chrome run 40800860319; real visual 600px intrusion on mobile, report sha256 in evidence/issue-724-chrome-exact-head.json"
+        },
+        {
+          "id": "A-74402-wrap",
+          "surface": "primary-currency-value",
+          "dimension": "long monetary amount wrapping",
+          "status": "passed",
+          "evidence": "Current Node 119/119 run includes adapter mutated currency value wrapping assertion; raw log evidence/issue-724-visual-unit-tests.log"
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Multi-currency mobile styling groups KPI metrics by currency in compact semantic rows, preserving values, labels and evidence links."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Visual runner now independently gates next-action first fold, primary value wrapping, currency-before-action order, and intrusive-panel negative controls in mobile multimoeda."
+      },
+      "required_risk_families": [
+        "visual-behavior"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "visual-behavior",
+          "surface": "multi-currency-mobile",
+          "dimension": "first-fold-hidden"
+        },
+        {
+          "risk_family": "visual-behavior",
+          "surface": "intrusion-probe",
+          "dimension": "panel-overflow"
+        }
+      ]
+    }
+  ]
+}

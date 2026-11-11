@@ -1,0 +1,592 @@
+{
+  "schema_version": 1,
+  "subject_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "source": "GitHub Actions Statement visual validation, exact material SHA and browser artifact",
+  "run_id": 41128555517,
+  "job_id": 124313276374,
+  "artifact_id": 13011839149,
+  "artifact_name": "statement-visual-evidence-6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+  "report_file": "issue-606-budgets-pilot.json",
+  "report_sha256": "f293076a962429813ed77dd40ac1f5b3e8a45ff1f8589a053eb3b9dfdc721e66",
+  "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/41128555517",
+  "screenshot_sha256": {
+    "issue-606-budgets-compact-mobile.png": "598129947e6ab61a429e7245f1f9c77b890923a893b0e05a2d537a9409b389a0",
+    "issue-606-budgets-desktop.png": "1efafd33939b7806b8b152d01302a4f5117ed94bfef06a1b1fc566e0f2b2f6d3",
+    "issue-606-budgets-empty-1366.png": "b306ffac9b32aee001df2642fb5c9a3f46f9a5506a863af3b268c000fb86de22",
+    "issue-606-budgets-empty-390.png": "eba5444bdf62078909f75fb1784774affd550dcbbf519ff6dedde93ba099364a",
+    "issue-606-budgets-mobile.png": "30599ed5c1ba2f776a20f94133e67f41d60df0c2b05f095d7f8c9594376ca2ef",
+    "issue-606-budgets-wide-desktop.png": "29ea169cc84b910848b8b8ba2fe95237eeda2df13e653ddaa58ff4a30a3ad9c0",
+    "issue-725-budget-actions-compact-mobile.png": "ec8c22c8c6c0ea13544cf7cf7205cea550bca7acd9905cce3c35f8f654ee91e5",
+    "issue-725-budget-actions-desktop.png": "4b34ad2e4cbe287a827a9ff129c6b23c3647062154c966de7661b25a164875df",
+    "issue-725-budget-actions-mobile.png": "939bdb1a2cdfc1b1dd126f66b0acd7e6a65767f69921c8131ed9cfd8eb457b92",
+    "issue-725-budget-create-dialog-compact-mobile.png": "59f22bcf4fa7652b99ce6add19c98142805ca4fa85daa68b5c07aa8d7030ad2b",
+    "issue-725-budget-create-dialog-desktop.png": "3bbdad0b2029fd68438021fe71c6966c2a663de699c58aa889e7f6376ed9be01",
+    "issue-725-budget-create-dialog-mobile.png": "709a1e282a1a261c0466098ead1927bd555585de1d17fc89996933878421836c",
+    "issue-725-budget-edit-dialog-compact-mobile.png": "7ebb541bffab6bd614fe28dac66535f8c78ec919c1f3e71abbf3d984cb1bbff0",
+    "issue-725-budget-edit-dialog-desktop.png": "3c177d2937003b657eb97e7cdb886fc3247562e5a1f0899644a009ee9e46965b",
+    "issue-725-budget-edit-dialog-mobile.png": "1847c66fa45273d8718942f3ea67d91ab06cc5fedd84fb1cf1d19502f45e01ff",
+    "issue-725-budgets-created-desktop.png": "22cc5a87062d061714ce98811a9d45787cc60488be90d22d53cd7c31b288cd6e",
+    "issue-725-budgets-edited-desktop.png": "6994faf834256ac4c1a5345776a786bde13ba5cc9113db05fc49448ed17a5ccd",
+    "issue-725-budgets-error-retry-desktop.png": "b54144d9f89875fbedcbd19eb4b79af3d93a3ec94ec0725302e2641ddf2cd399",
+    "issue-725-budgets-filter-empty-compact.png": "b53159dfddd841044182324ad2c69164ea7fec4f267fcbdf54cf33d2c5f45423",
+    "issue-725-budgets-filter-usd-mobile.png": "4dab0c275605ad51c09fb81f0b1fd8c7a219ed4524227ccea5ed45ba58121c8e",
+    "issue-725-budgets-menu-layer-desktop.png": "a042c40d4b1ae1bc21ca1ed017ca8dbfcf51119d95317f140d8240d3d9507972",
+    "issue-725-budgets-period-selected-desktop.png": "da5ea2ba7fc732f9bc4e5f88a203d883eafcc932e598a6dfc0150504fc617990",
+    "issue-725-budgets-two-currencies-desktop.png": "c14e161ab53df043b3da41586bb27dcc145b5b942c5bbc8750486c78ec29161d"
+  },
+  "observed_scenarios": [
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "1440x900",
+      "screenshot": "issue-606-budgets-wide-desktop.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
+        "pathname": "/orcamentos",
+        "viewportWidth": 1440,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 1425
+      }
+    },
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "1366x768",
+      "screenshot": "issue-606-budgets-desktop.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": false,
+        "pathname": "/orcamentos",
+        "viewportWidth": 1366,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 1351
+      }
+    },
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "390x844",
+      "screenshot": "issue-606-budgets-mobile.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
+        "pathname": "/orcamentos",
+        "viewportWidth": 390,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 375
+      }
+    },
+    {
+      "route": "/orcamentos",
+      "state": "normal",
+      "viewport": "320x740",
+      "screenshot": "issue-606-budgets-compact-mobile.png",
+      "measurements": {
+        "hierarchyValid": true,
+        "decisionLabelsVisible": true,
+        "financialLabelsLegible": true,
+        "tableMoneyUnbroken": true,
+        "trailingCurrencyCodesAbsent": true,
+        "mobileFilterCollapsed": true,
+        "pathname": "/orcamentos",
+        "viewportWidth": 320,
+        "documentFits": true,
+        "hasMain": true,
+        "hasHeading": true,
+        "essentialOutsideViewport": [],
+        "contentViewportWidth": 305
+      }
+    }
+  ],
+  "observed_acceptance": {
+    "fixtureCurrency": "USD",
+    "mixed": {
+      "rows": 11,
+      "historyCount": 1,
+      "uniqueCategories": true,
+      "currencies": [
+        "",
+        "BRL",
+        "USD",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR",
+        "BRL",
+        "USD",
+        "EUR"
+      ],
+      "focused": [
+        "BRL",
+        "USD"
+      ]
+    },
+    "filtered": {
+      "currency": "USD",
+      "status": "active",
+      "focused": [
+        "USD"
+      ],
+      "documentFits": true,
+      "activeFiltersExpanded": true
+    },
+    "empty": {
+      "currency": "EUR",
+      "message": true,
+      "focusCount": 0,
+      "documentFits": true,
+      "activeFiltersExpanded": true
+    },
+    "dialogs": {
+      "createOpen": true,
+      "editOpen": true,
+      "neutralCancel": true,
+      "createCanceled": true,
+      "editCanceled": true
+    },
+    "creation": {
+      "categoryId": "1142adc7-c366-462b-876c-91cffd8f2c9e",
+      "id": "a528b701-d10d-4dcb-a2a1-6a5cdbc4f5e9",
+      "persisted": {
+        "present": true,
+        "currency": "USD",
+        "planned": "US$ 1.234,56"
+      }
+    },
+    "editing": {
+      "id": "a528b701-d10d-4dcb-a2a1-6a5cdbc4f5e9",
+      "persisted": {
+        "present": true,
+        "planned": "US$ 2.345,67",
+        "currency": "USD"
+      }
+    },
+    "rejection": {
+      "errorVisible": true,
+      "buttonEnabled": true,
+      "dialogOpen": true,
+      "retainedValue": "2.345,67",
+      "url": "?currency=USD&status=active"
+    }
+  },
+  "observed_negative_controls": {
+    "hierarchyRejected": true,
+    "hierarchyRestored": true,
+    "clippedValueRejected": true,
+    "clippedValueRestored": true,
+    "brokenNumberRejected": true,
+    "brokenNumberRestored": true,
+    "trailingCodeRejected": true,
+    "trailingCodeRestored": true
+  },
+  "observed_menu_layering": {
+    "opened": true,
+    "upperZ": 3,
+    "lowerZ": 1,
+    "overlapsNextTrigger": true,
+    "menuAboveTrigger": true,
+    "negativeOccluded": true,
+    "contained": true
+  },
+  "observed_category_prefill": {
+    "found": true,
+    "selected": true,
+    "reset": true
+  },
+  "observed_selected_period": {
+    "selected": "2028-04-01:2028-04-30",
+    "active": true,
+    "context": true
+  },
+  "observed_golden_dialogs": [
+    {
+      "viewport": "1366x768",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 692.015625,
+          "y": 518.09375,
+          "width": 127.640625,
+          "height": 44
+        }
+      },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "390x844",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 639.09375,
+          "width": 158.5,
+          "height": 44
+        }
+      },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": null,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    },
+    {
+      "viewport": "320x740",
+      "geometry": {
+        "open": true,
+        "centered": true,
+        "contained": true,
+        "scrollablePanel": true,
+        "cancelNeutral": true,
+        "confirmPrimary": true,
+        "cancelRect": {
+          "x": 25,
+          "y": 561.09375,
+          "width": 255,
+          "height": 44
+        }
+      },
+      "createActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Criar orçamento"
+        ],
+        "readable": true,
+        "oldLayoutRejected": true,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Criar orçamento",
+            "readable": true,
+            "words": [
+              {
+                "word": "Criar",
+                "intact": true
+              },
+              {
+                "word": "orçamento",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "editActions": {
+        "dialogOpen": true,
+        "labels": [
+          "Cancelar",
+          "Salvar alterações"
+        ],
+        "readable": true,
+        "oldLayoutRejected": true,
+        "restoredReadable": true,
+        "original": [
+          {
+            "label": "Cancelar",
+            "readable": true,
+            "words": [
+              {
+                "word": "Cancelar",
+                "intact": true
+              }
+            ]
+          },
+          {
+            "label": "Salvar alterações",
+            "readable": true,
+            "words": [
+              {
+                "word": "Salvar",
+                "intact": true
+              },
+              {
+                "word": "alterações",
+                "intact": true
+              }
+            ]
+          }
+        ]
+      },
+      "fieldStates": {
+        "defaultBRL": true,
+        "currencies": [
+          "BRL",
+          "USD",
+          "EUR"
+        ],
+        "emptyCategoryRejected": true,
+        "chosenCategoryValid": true,
+        "switchedToUSD": true,
+        "typedMoneyFormatted": true,
+        "switchedToEUR": true,
+        "invalidNegativeRejected": true,
+        "validMoneyRestored": true,
+        "fieldContained": true
+      },
+      "modalStates": {
+        "hoverNeutral": true,
+        "disabledReducedOpacity": true,
+        "canceled": true,
+        "focusRestored": true
+      },
+      "menuEvidence": {
+        "opened": true,
+        "contained": true,
+        "labels": [
+          "Atualizar",
+          "Editar",
+          "Arquivar"
+        ],
+        "icons": true
+      }
+    }
+  ],
+  "inspection_scope": "Producer materialized Chrome artifact and verified immutable report and screenshot hashes on exact material M. Independent visual review remains deferred.",
+  "known_historical_limitation": "The implementer did not inspect authenticated Chrome before original edits. Run 40811518620 predates PR 751 and matches the base blob; this remains a historical limitation rather than a claim of real pre-edit inspection."
+}

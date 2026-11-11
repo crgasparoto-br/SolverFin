@@ -1,0 +1,23 @@
+Repository: crgasparoto-br/SolverFin
+PR: #763 | issue: #762 | base: 96eca4f0046d07a29dba459a4a048e4bd47df2f4
+Current material HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+Git bundle: Delivery audit workspace run 42657603233, artifact 13692267791
+python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+174 passed (pytest on immutable restored Git bundle, exit 0)
+python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -q
+23 tests OK, exit 0
+A-76312 integration cases: legacy-with-merge success, github-linear success, github-with-merge failure, malformed-legacy failure.
+No weakening of git history validation, policy enablement, Check Run writer or user identity controls.
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review.py
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review_certificate.py
+HEAD: d6b74862c721cccc3977e3cb5723ec2bc4560acd
+COMMAND: python -m pytest -q tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_verifier.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review_verifier.py
+REACHED: test_complete_review_route_selects_provenance_without_bypassing_trust

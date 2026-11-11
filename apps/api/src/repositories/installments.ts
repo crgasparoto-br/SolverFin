@@ -1,12 +1,16 @@
-import type {
-  EntityId,
-  InstallmentStatus,
-  InvoiceStatus,
-  TenantContext,
-  TransactionStatus,
-} from "@solverfin/domain";
+import { mapInstallmentHistoryRow, readNestedId } from "./installments-history-mapper.js";
+export {
+  canEditInstallmentAmount,
+  resolveEditBlockedReason,
+} from "./installments-history-mapper.js";
+import type { EntityId, InstallmentStatus, TenantContext } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
+import {
+  assertUncancelledRecurringInstallment,
+  throwInstallmentEditBlocked,
+  updateRecurringInstallmentFutureScope,
+} from "./recurring-installment-update.js";
 import { updateTransactionForContext } from "./transactions.js";
 
 export interface ListInstallmentsFilters {
@@ -29,11 +33,14 @@ export interface UpdateInstallmentPayload {
   description?: string;
   note?: string | null;
   categoryId?: EntityId | null;
+  amountMinor?: number;
+  scope?: "current" | "current_and_future";
 }
 
 export type InstallmentEditBlockedReason =
   | "linked_transaction_missing"
   | "installment_status_locked"
+  | "recurrence_cancelled"
   | "transaction_status_locked"
   | "invoice_linked";
 
@@ -56,6 +63,7 @@ export interface InstallmentHistoryItem {
   cardInstrument?: Record<string, unknown>;
   category?: Record<string, unknown>;
   editable: boolean;
+  amountEditable: boolean;
   editBlockedReason?: InstallmentEditBlockedReason;
 }
 
@@ -74,7 +82,11 @@ export async function listInstallmentsForContext(
 ): Promise<InstallmentHistoryItem[]> {
   validateFilters(filters);
   const params: unknown[] = [context.organizationId, context.financialProfileId];
-  const where = [`i."organizationId" = $1`, `i."financialProfileId" = $2`];
+  const where = [
+    `i."organizationId" = $1`,
+    `i."financialProfileId" = $2`,
+    `(i."cardId" is null or p."status" is distinct from 'VOIDED')`,
+  ];
 
   addEqualsFilter(where, params, `i."id"`, filters.installmentId);
   addEqualsFilter(where, params, `coalesce(t."id", p."id")`, filters.transactionId);
@@ -215,23 +227,158 @@ export async function listInstallmentsForContext(
   return rows.map(mapInstallmentHistoryRow);
 }
 
+export interface InstallmentUpdateResult {
+  installment: InstallmentHistoryItem;
+  updatedCount: number;
+  skippedCount: number;
+}
+
+/** Provenance comes only from the persisted idempotent creation receipt, never description/date. */
+export function readManualInstallmentFamily(
+  response: unknown,
+  selectedId: EntityId,
+): Array<{ id: EntityId; sequenceNumber: number }> {
+  if (!response || typeof response !== "object" || !("installments" in response)) return [];
+  const items = (response as { installments?: unknown }).installments;
+  if (!Array.isArray(items) || items.length < 2 || items.length > 60) return [];
+  const valid = items.every(
+    (item) =>
+      item &&
+      typeof item === "object" &&
+      typeof item.id === "string" &&
+      Number.isSafeInteger(item.sequenceNumber) &&
+      item.sequenceNumber > 0,
+  );
+  if (!valid) return [];
+  const rows = items.map((item) => ({
+    id: item.id as string,
+    sequenceNumber: item.sequenceNumber as number,
+  }));
+  if (
+    new Set(rows.map((row) => row.id)).size !== rows.length ||
+    new Set(rows.map((row) => row.sequenceNumber)).size !== rows.length ||
+    !rows.some((row) => row.id === selectedId)
+  )
+    return [];
+  return rows.sort((a, b) => a.sequenceNumber - b.sequenceNumber);
+}
+
+async function findManualInstallmentFamily(
+  context: TenantContext,
+  installmentId: EntityId,
+): Promise<{ requestId: EntityId; members: Array<{ id: EntityId; sequenceNumber: number }> }> {
+  const matches = await query<{ id: EntityId; response: unknown }>(
+    'select "id", "response" from "InstallmentCreationRequest" ' +
+      'where "organizationId" = $1 and "financialProfileId" = $2 ' +
+      "and \"response\"->'installments' @> $3::jsonb limit 2",
+    [context.organizationId, context.financialProfileId, JSON.stringify([{ id: installmentId }])],
+  );
+  if (matches.length !== 1) {
+    // Preserve the ordinary tenant-scoped 404 for IDs outside the active profile.
+    await getInstallmentForMutation(context, installmentId);
+    throw Object.assign(
+      new Error("Não foi possível identificar com segurança o parcelamento original."),
+      {
+        code: "INSTALLMENT_SCOPE_UNAVAILABLE",
+        statusCode: 409,
+      },
+    );
+  }
+  const request = matches[0]!;
+  const members = readManualInstallmentFamily(request.response, installmentId);
+  if (!members.length) {
+    throw Object.assign(new Error("As próximas parcelas não puderam ser identificadas."), {
+      code: "INSTALLMENT_SCOPE_UNAVAILABLE",
+      statusCode: 409,
+    });
+  }
+  return { requestId: request.id, members };
+}
+
 export async function updateInstallmentForContext(
   context: TenantContext,
   installmentId: EntityId,
   payload: UpdateInstallmentPayload,
-): Promise<InstallmentHistoryItem> {
+): Promise<InstallmentUpdateResult> {
+  const recurring = await updateRecurringInstallmentFutureScope(
+    context,
+    installmentId,
+    payload,
+    getInstallmentForMutation,
+  );
+  if (recurring) return recurring;
   return withSharedTransaction(async () => {
+    const isFutureScope = payload.scope === "current_and_future";
+    const family = isFutureScope
+      ? await findManualInstallmentFamily(context, installmentId)
+      : undefined;
+    if (family) {
+      await query("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
+        "installment-amount-scope:" +
+          context.organizationId +
+          ":" +
+          context.financialProfileId +
+          ":" +
+          family.requestId,
+      ]);
+    }
     await lockInstallmentMutationRows(context, installmentId);
     const current = await getInstallmentForMutation(context, installmentId);
-
-    if (!current.editable) {
+    if (current.recurrenceId) {
+      await assertUncancelledRecurringInstallment(context, current.recurrenceId);
+    }
+    const metadataChanged =
+      payload.description !== undefined ||
+      payload.note !== undefined ||
+      payload.categoryId !== undefined;
+    if (
+      (metadataChanged && !current.editable) ||
+      (payload.amountMinor !== undefined && !current.amountEditable)
+    ) {
       throwInstallmentEditBlocked(current.editBlockedReason ?? "installment_status_locked");
     }
-
     const transactionId = readNestedId(current.transaction);
+    if (!transactionId) throwInstallmentEditBlocked("linked_transaction_missing");
+    if (
+      isFutureScope &&
+      (payload.amountMinor === undefined ||
+        metadataChanged ||
+        current.recurrenceId ||
+        current.card ||
+        current.invoice)
+    ) {
+      throw Object.assign(
+        new Error("A atualização futura aceita apenas valor de parcelamento manual."),
+        {
+          code: "INSTALLMENT_SCOPE_INVALID",
+          statusCode: 409,
+        },
+      );
+    }
 
-    if (!transactionId) {
-      throwInstallmentEditBlocked("linked_transaction_missing");
+    const eligibleFuture: Array<{ id: EntityId; transactionId: EntityId }> = [];
+    let skippedCount = 0;
+    if (family) {
+      const selected = family.members.find((row) => row.id === installmentId)!;
+      const future = family.members.filter((row) => row.sequenceNumber > selected.sequenceNumber);
+      for (const row of future) await lockInstallmentMutationRows(context, row.id);
+      for (const row of future) {
+        const item = await getInstallmentForMutation(context, row.id);
+        if (
+          !item.amountEditable ||
+          item.recurrenceId ||
+          item.invoice ||
+          item.card ||
+          item.sequenceNumber !== row.sequenceNumber ||
+          item.currency !== current.currency ||
+          item.dueOn < current.dueOn ||
+          !readNestedId(item.transaction)
+        ) {
+          skippedCount += 1;
+          continue;
+        }
+        eligibleFuture.push({ id: row.id, transactionId: readNestedId(item.transaction)! });
+      }
     }
 
     await updateTransactionForContext(
@@ -239,8 +386,16 @@ export async function updateInstallmentForContext(
       transactionId,
       buildTransactionUpdatePayload(payload),
     );
-
-    return getInstallmentForMutation(context, installmentId);
+    for (const row of eligibleFuture) {
+      await updateTransactionForContext(context, row.transactionId, {
+        amountMinor: payload.amountMinor!,
+      });
+    }
+    return {
+      installment: await getInstallmentForMutation(context, installmentId),
+      updatedCount: 1 + eligibleFuture.length,
+      skippedCount,
+    };
   });
 }
 
@@ -281,12 +436,19 @@ function buildTransactionUpdatePayload(payload: UpdateInstallmentPayload): {
   description?: string;
   note?: string | null;
   categoryId?: EntityId | null;
+  amountMinor?: number;
 } {
-  const update: { description?: string; note?: string | null; categoryId?: EntityId | null } = {};
+  const update: {
+    description?: string;
+    note?: string | null;
+    categoryId?: EntityId | null;
+    amountMinor?: number;
+  } = {};
 
   if (payload.description !== undefined) update.description = payload.description;
   if (payload.note !== undefined) update.note = payload.note;
   if (payload.categoryId !== undefined) update.categoryId = payload.categoryId;
+  if (payload.amountMinor !== undefined) update.amountMinor = payload.amountMinor;
 
   return update;
 }
@@ -374,189 +536,4 @@ function throwInstallmentsFilterInvalid(message: string): never {
     code: "INSTALLMENTS_FILTER_INVALID",
     statusCode: 400,
   });
-}
-
-function throwInstallmentEditBlocked(reason: InstallmentEditBlockedReason): never {
-  throw Object.assign(new Error(`Parcela bloqueada para edicao: ${reason}.`), {
-    code: "INSTALLMENT_EDIT_BLOCKED",
-    statusCode: 409,
-  });
-}
-
-function mapInstallmentHistoryRow(row: Row): InstallmentHistoryItem {
-  const blockedReason = resolveEditBlockedReason(row);
-  const installment: InstallmentHistoryItem = {
-    id: text(row.id),
-    organizationId: text(row.organizationId),
-    financialProfileId: text(row.financialProfileId),
-    ...(row.recurrenceId ? { recurrenceId: text(row.recurrenceId) } : {}),
-    status: lower(row.status) as InstallmentStatus,
-    sequenceNumber: numberValue(row.sequenceNumber),
-    totalInstallments: numberValue(row.totalInstallments),
-    dueOn: dateOnly(row.dueOn),
-    amountMinor: numberValue(row.amountMinor),
-    currency: text(row.currency),
-    editable: blockedReason === undefined,
-  };
-
-  if (row.initialSequenceNumber !== null && row.initialSequenceNumber !== undefined) {
-    installment.initialSequenceNumber = numberValue(row.initialSequenceNumber);
-  }
-
-  if (blockedReason !== undefined) installment.editBlockedReason = blockedReason;
-  attachTransaction(installment, row);
-  attachRecurrence(installment, row);
-  attachInvoice(installment, row);
-  attachCard(installment, row);
-  attachCardInstrument(installment, row);
-  attachCategory(installment, row);
-
-  return installment;
-}
-
-function attachTransaction(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.transactionId) {
-    return;
-  }
-
-  installment.transaction = {
-    id: text(row.transactionId),
-    status: lower(row.transactionStatus) as TransactionStatus,
-    kind: lower(row.transactionKind),
-    source: lower(row.transactionSource),
-    amountMinor: numberValue(row.transactionAmountMinor ?? row.amountMinor),
-    currency: text(row.transactionCurrency ?? row.currency),
-    occurredOn: dateOnly(row.transactionOccurredOn ?? row.dueOn),
-    plannedOn: dateOnly(row.transactionPlannedOn ?? row.dueOn),
-    description: text(row.transactionDescription),
-    note: text(row.transactionNote),
-    ...optionalId("accountId", row.transactionAccountId),
-    ...optionalId("cardId", row.transactionCardId),
-    ...optionalId("cardInstrumentId", row.transactionCardInstrumentId),
-    ...optionalId("invoiceId", row.transactionInvoiceId),
-    ...optionalId("categoryId", row.transactionCategoryId),
-    ...optionalId("recurrenceId", row.transactionRecurrenceId),
-  };
-}
-
-function attachRecurrence(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.recurrenceId) {
-    return;
-  }
-
-  installment.recurrence = {
-    id: text(row.recurrenceId),
-    status: lower(row.recurrenceStatus),
-    kind: lower(row.recurrenceKind),
-    frequency: lower(row.recurrenceFrequency),
-    interval: numberValue(row.recurrenceInterval ?? 1),
-    description: text(row.recurrenceDescription),
-  };
-}
-
-function attachInvoice(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.invoiceId) {
-    return;
-  }
-
-  installment.invoice = {
-    id: text(row.invoiceId),
-    status: lower(row.invoiceStatus) as InvoiceStatus,
-    cardId: text(row.invoiceCardId),
-    periodStartOn: dateOnly(row.invoicePeriodStartOn ?? row.dueOn),
-    periodEndOn: dateOnly(row.invoicePeriodEndOn ?? row.dueOn),
-    dueOn: dateOnly(row.invoiceDueOn ?? row.dueOn),
-  };
-}
-
-function attachCard(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardId || !row.cardName) {
-    return;
-  }
-
-  installment.card = {
-    id: text(row.cardId),
-    name: text(row.cardName),
-    status: lower(row.cardStatus),
-  };
-}
-
-function attachCardInstrument(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.cardInstrumentId) {
-    return;
-  }
-
-  installment.cardInstrument = {
-    id: text(row.cardInstrumentId),
-    cardId: text(row.cardId ?? row.transactionCardId),
-    type: lower(row.cardInstrumentType),
-    holder: lower(row.cardInstrumentHolder),
-    status: lower(row.cardInstrumentStatus),
-    isDefault: row.cardInstrumentIsDefault === true,
-    ...optionalText("name", row.cardInstrumentName),
-    ...optionalText("maskedIdentifier", row.cardInstrumentMaskedIdentifier),
-  };
-}
-
-function attachCategory(installment: InstallmentHistoryItem, row: Row): void {
-  if (!row.categoryId || !row.categoryName) {
-    return;
-  }
-
-  installment.category = {
-    id: text(row.categoryId),
-    name: text(row.categoryName),
-    kind: lower(row.categoryKind),
-    status: lower(row.categoryStatus),
-  };
-}
-
-export function resolveEditBlockedReason(
-  row: Readonly<Record<string, unknown>>,
-): InstallmentEditBlockedReason | undefined {
-  if (!row.transactionId || !row.transactionStatus) {
-    return "linked_transaction_missing";
-  }
-
-  if (row.invoiceId) {
-    return "invoice_linked";
-  }
-
-  if (lower(row.status) !== "planned") {
-    return "installment_status_locked";
-  }
-
-  if (lower(row.transactionStatus) !== "planned") {
-    return "transaction_status_locked";
-  }
-
-  return undefined;
-}
-
-function readNestedId(record: Record<string, unknown> | undefined): string | undefined {
-  return typeof record?.id === "string" && record.id.trim() ? record.id : undefined;
-}
-
-function optionalId(key: string, value: unknown): Record<string, string> {
-  return value ? { [key]: text(value) } : {};
-}
-
-function optionalText(key: string, value: unknown): Record<string, string> {
-  return value ? { [key]: text(value) } : {};
-}
-
-function text(value: unknown): string {
-  return typeof value === "string" ? value : "";
-}
-
-function lower(value: unknown): string {
-  return text(value).toLowerCase();
-}
-
-function numberValue(value: unknown): number {
-  return typeof value === "number" ? value : 0;
-}
-
-function dateOnly(value: unknown): string {
-  return value instanceof Date ? value.toISOString().slice(0, 10) : text(value);
 }

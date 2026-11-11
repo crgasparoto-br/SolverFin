@@ -153,10 +153,20 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
     new RegExp(`name="month" value="${currentMonth}"`),
     "entrada sem competência deve permanecer no mês corrente",
   );
-  assert.equal(
-    initialNavigation.includes("Sem fatura"),
-    false,
+  assert.match(
+    initialNavigation,
+    /<span class="cards-invoice-period-status">Aberta<\/span>/,
     "fatura corrente existente deve ser selecionada na entrada implícita",
+  );
+  assert.doesNotMatch(
+    initialNavigation,
+    /<span class="cards-invoice-period-status">Sem fatura<\/span>/,
+    "rótulo acessível da navegação não deve ser confundido com ausência da fatura",
+  );
+  assert.match(
+    initialNavigation,
+    /aria-label="Sem fatura anterior"/,
+    "navegação desabilitada deve continuar acessível",
   );
   assert.equal(
     initialNavigation.includes("invoice-later"),
@@ -269,7 +279,11 @@ async function cardsNavigationStartsAtCurrentMonthAndMovesForward(): Promise<voi
   );
   const currentNavigation = invoiceNavigation(currentHtml);
 
-  assert.match(currentNavigation, /Sem fatura/, "mês corrente sem fatura deve manter o estado");
+  assert.match(
+    currentNavigation,
+    /<span class="cards-invoice-period-status">Sem fatura<\/span>/,
+    "mês corrente sem fatura deve manter o estado, independentemente dos rótulos de navegação",
+  );
   assert.match(
     currentNavigation,
     /cards-invoice-period-link-previous is-disabled/,

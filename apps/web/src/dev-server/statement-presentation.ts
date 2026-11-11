@@ -144,36 +144,22 @@ export function statementPresentationScript(): string {
         }
 
         function setupStatementDayFilter() {
+          // Fields come from SSR, so filtering works with or without JavaScript.
+          // Golden refinements move the month picker outside the GET form.
           const monthInput = document.querySelector("#filter-month");
-          const form = monthInput?.closest("form");
-          if (!monthInput || !form || form.querySelector("[data-statement-day-field]")) return;
+          const form = document.querySelector('.filter-form');
+          const dayField = form?.querySelector("[data-statement-day-field]");
+          const dayInput = dayField?.querySelector("[name='day']");
+          const clearButton = dayField?.querySelector("[data-clear-statement-day]");
+          if (!monthInput || !form || !dayInput || !clearButton) return;
 
-          const dayField = document.createElement("div");
-          dayField.className = "statement-day-field";
-          dayField.dataset.statementDayField = "";
-
-          const dayLabel = document.createElement("label");
-          dayLabel.htmlFor = "filter-day";
-          dayLabel.textContent = "Dia";
-
-          const dayInput = document.createElement("input");
-          dayInput.id = "filter-day";
-          dayInput.name = "day";
-          dayInput.type = "date";
-          dayInput.setAttribute("aria-label", "Filtrar extrato por dia");
-
-          dayField.append(dayLabel, dayInput);
-
-          const clearButton = document.createElement("button");
-          clearButton.type = "button";
-          clearButton.className = "ghost-btn";
-          clearButton.dataset.clearStatementDay = "";
-          clearButton.textContent = "Mês completo";
-          clearButton.setAttribute("aria-label", "Remover filtro por dia e exibir o mês completo");
-
-          const currentMonthButton = form.querySelector("[data-month-current]");
-          form.insertBefore(dayField, currentMonthButton);
-          form.insertBefore(clearButton, currentMonthButton);
+          function clearPreviousRange() {
+            // A new day/month takes precedence over an earlier 7/30-day shortcut.
+            for (const name of ["from", "to"]) {
+              const hidden = form.querySelector('input[name="' + name + '"]');
+              if (hidden) hidden.disabled = true;
+            }
+          }
 
           function syncDayBounds(clearInvalid) {
             const monthValue = monthInput.value;
@@ -196,18 +182,21 @@ export function statementPresentationScript(): string {
           if (dayInput.value) rewriteActiveDayCopy(form, dayInput.value);
 
           monthInput.addEventListener("change", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             dayInput.value = "";
             syncDayBounds(true);
           });
 
           dayInput.addEventListener("change", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             syncDayBounds(true);
             form.requestSubmit();
           });
 
           clearButton.addEventListener("click", () => {
+            clearPreviousRange();
             dayInput.disabled = false;
             dayInput.value = "";
             clearButton.hidden = true;

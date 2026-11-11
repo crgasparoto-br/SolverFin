@@ -1,0 +1,353 @@
+{
+  "schema_version": 1,
+  "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+  "requirements": [
+    {
+      "requirement_id": "REQ-789-001",
+      "obligation_ids": [
+        "OBL-001"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "A validação visual da PR #760 apresentou falha intermitente em `Installment accessible reason did not render` (run https://github.com/crgasparoto-br/SolverFin/actions/runs/42904542703), enquanto o mesmo cenário passou no SHA material. O SSR da fatura cria primeiro a linha da compra; `decorateCardInstallments()` posteriormente busca as parcelas e insere o texto assistivo. O teste procurava o elemento antes de aguardar essa segunda etapa."
+      ],
+      "plausible_wrong_implementation": "Call the ARIA reason assertion immediately after the SSR row is rendered, without waiting for the async decorator to insert it.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+        "evidence": ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+        "evidence_sha256": "25ffa08b97cdf5fbf3c96f5a9209b80f52025ea18a72c544d68fc9e55625e467",
+        "procedure": "Execute Chrome visual suite 42909142626 on the material HEAD and observe the accessible reason scenario.",
+        "expected": "A missing reason is rejected and the delayed valid reason is awaited.",
+        "observed": "The helper raises on missing decoration at iteration 80; the new exact-SHA Chrome run 42909142626 reports no failures."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-789-001",
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/timeout-negative-control-789.log",
+          "evidence_sha256": "a7e06de81c97b4ba57da67d511622509365078aade1a695e7e14e4effda63749",
+          "control_type": "test",
+          "risk_family": "temporal-consistency",
+          "surface": "async-decoration-readiness",
+          "dimension": "divergent-behavior-rejected",
+          "failure_mode": "Call the ARIA reason assertion immediately after the SSR row is rendered, without waiting for the async decorator to insert it.",
+          "plausible_wrong_implementation": "Call the ARIA reason assertion immediately after the SSR row is rendered, without waiting for the async decorator to insert it.",
+          "procedure": "Invoke the real waitFor helper with 80 absent readiness responses and inspect the former Chrome failure at run 42904542703.",
+          "expected": "A missing reason is rejected and the delayed valid reason is awaited.",
+          "observed": "The helper raises on missing decoration at iteration 80; the new exact-SHA Chrome run 42909142626 reports no failures.",
+          "sibling_cases": [
+            {
+              "id": "NC-789-001-S1",
+              "surface": "async-decoration-readiness",
+              "dimension": "authorized-valid-case",
+              "status": "passed"
+            },
+            {
+              "id": "NC-789-001-S2",
+              "surface": "async-decoration-readiness",
+              "dimension": "rejected-invalid-case",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+          "evidence_sha256": "a31662a4336568ad6bee0db13a973c8f4a475384ae504f69ee345b689ac965ae",
+          "procedure": "Re-read completed Repository CI run 42909142491 and Chrome run 42909142626 for exact material SHA; compare local 124 contract tests.",
+          "expected": "Repository CI and Chrome complete successfully without failing or skipped recorded visual scenario.",
+          "observed": "Repository CI and Chrome both completed/success at 906178554d2cb8ee7d9e88c7eb014356add21950; contract tests 124/124."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-001",
+          "primary_negative_control_id": "NC-789-001"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "async-decoration-readiness",
+          "reason": "Discriminating current risk using exact material SHA and a concrete negative control."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-789-002",
+      "obligation_ids": [
+        "OBL-002"
+      ],
+      "risk_families": [
+        "rollback"
+      ],
+      "source_texts": [
+        "[ ] O teste Chrome aguarda o texto assistivo da **transação-alvo**, sem aceitar elemento de outro lançamento como falso positivo."
+      ],
+      "plausible_wrong_implementation": "Wait for any assistive reason anywhere on the page, allowing another purchase row to satisfy the first query.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+        "evidence": ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+        "evidence_sha256": "25ffa08b97cdf5fbf3c96f5a9209b80f52025ea18a72c544d68fc9e55625e467",
+        "procedure": "Execute Chrome visual suite 42909142626 on the material HEAD and observe the accessible reason scenario.",
+        "expected": "Only the fixture transaction identity can satisfy the readiness condition.",
+        "observed": "The decoy does not satisfy the scoped selector; after inserting the correct target reason, exactly one scoped match is found."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-789-002",
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/selector-negative-control-789.log",
+          "evidence_sha256": "d9ea3e9b3500ee5c8a194d6de0a675f8714705e4dad4884f00ed2bd29ec995d4",
+          "control_type": "test",
+          "risk_family": "rollback",
+          "surface": "purchase-row-identity",
+          "dimension": "divergent-behavior-rejected",
+          "failure_mode": "Wait for any assistive reason anywhere on the page, allowing another purchase row to satisfy the first query.",
+          "plausible_wrong_implementation": "Wait for any assistive reason anywhere on the page, allowing another purchase row to satisfy the first query.",
+          "procedure": "Run CSS :has selector against two purchase rows, a decoy already populated and the target initially empty, then insert target text.",
+          "expected": "Only the fixture transaction identity can satisfy the readiness condition.",
+          "observed": "The decoy does not satisfy the scoped selector; after inserting the correct target reason, exactly one scoped match is found.",
+          "sibling_cases": [
+            {
+              "id": "NC-789-002-S1",
+              "surface": "purchase-row-identity",
+              "dimension": "authorized-valid-case",
+              "status": "passed"
+            },
+            {
+              "id": "NC-789-002-S2",
+              "surface": "purchase-row-identity",
+              "dimension": "rejected-invalid-case",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+          "evidence_sha256": "a31662a4336568ad6bee0db13a973c8f4a475384ae504f69ee345b689ac965ae",
+          "procedure": "Re-read completed Repository CI run 42909142491 and Chrome run 42909142626 for exact material SHA; compare local 124 contract tests.",
+          "expected": "Repository CI and Chrome complete successfully without failing or skipped recorded visual scenario.",
+          "observed": "Repository CI and Chrome both completed/success at 906178554d2cb8ee7d9e88c7eb014356add21950; contract tests 124/124."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-002",
+          "primary_negative_control_id": "NC-789-002"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "rollback",
+          "surface": "purchase-row-identity",
+          "reason": "Discriminating current risk using exact material SHA and a concrete negative control."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-789-003",
+      "obligation_ids": [
+        "OBL-003"
+      ],
+      "risk_families": [
+        "semantic-effect",
+        "documentation"
+      ],
+      "source_texts": [
+        "[ ] A ausência permanente do texto continua causando falha; preservar as asserções sobre ocultação visual, vínculo `aria-describedby`, overflow adversarial e restauração."
+      ],
+      "plausible_wrong_implementation": "Silence the missing reason by skipping or relaxing the existing aria-describedby, screen-reader-only, overflow and restoration assertions.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+        "evidence": ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+        "evidence_sha256": "25ffa08b97cdf5fbf3c96f5a9209b80f52025ea18a72c544d68fc9e55625e467",
+        "procedure": "Execute Chrome visual suite 42909142626 on the material HEAD and observe the accessible reason scenario.",
+        "expected": "The accessibility reason is hidden, linked, overflow mutation rejected, and DOM state restored.",
+        "observed": "The real Chrome negative scenario reports rejected=true and restored=true; no failures and both mobile/desktop scenarios executed."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-789-003",
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+          "evidence_sha256": "25ffa08b97cdf5fbf3c96f5a9209b80f52025ea18a72c544d68fc9e55625e467",
+          "control_type": "test",
+          "risk_family": "semantic-effect",
+          "surface": "accessible-overflow-restore",
+          "dimension": "divergent-behavior-rejected",
+          "failure_mode": "Silence the missing reason by skipping or relaxing the existing aria-describedby, screen-reader-only, overflow and restoration assertions.",
+          "plausible_wrong_implementation": "Silence the missing reason by skipping or relaxing the existing aria-describedby, screen-reader-only, overflow and restoration assertions.",
+          "procedure": "Read actual issue-662 Chrome scenario accessible-reason-position-negative-control from trusted artifact 13807825750.",
+          "expected": "The accessibility reason is hidden, linked, overflow mutation rejected, and DOM state restored.",
+          "observed": "The real Chrome negative scenario reports rejected=true and restored=true; no failures and both mobile/desktop scenarios executed.",
+          "sibling_cases": [
+            {
+              "id": "NC-789-003-S1",
+              "surface": "accessible-overflow-restore",
+              "dimension": "authorized-valid-case",
+              "status": "passed"
+            },
+            {
+              "id": "NC-789-003-S2",
+              "surface": "accessible-overflow-restore",
+              "dimension": "rejected-invalid-case",
+              "status": "passed"
+            }
+          ]
+        },
+        {
+          "id": "NC-789-003-DOC",
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/scope-negative-control-789.log",
+          "evidence_sha256": "a150a32f0ab795bc981cc19a25be5ffa18c01e4dfaa42543e1be9a66c6d48ad6",
+          "control_type": "test",
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "no-unrelated-contract-drift",
+          "failure_mode": "A test harness correction changes or hides the canonical product documentation or runtime behavior.",
+          "plausible_wrong_implementation": "Edit production financial code, UI or documentation to make the Chrome check green instead of preserving the ARIA assertions.",
+          "procedure": "Run exact Git diff guard for base..material and reject all paths other than the one Chrome scenario.",
+          "expected": "Only a single issue-662 Chrome scenario file changes; canonical claims remain unchanged.",
+          "observed": "The exact Git diff guard printed the single changed test script path and rejected unrelated scope.",
+          "sibling_cases": [
+            {
+              "id": "NC-789-003-DOC-S1",
+              "surface": "canonical-claims",
+              "dimension": "only-allowed-file",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+          "evidence_sha256": "a31662a4336568ad6bee0db13a973c8f4a475384ae504f69ee345b689ac965ae",
+          "procedure": "Re-read completed Repository CI run 42909142491 and Chrome run 42909142626 for exact material SHA; compare local 124 contract tests.",
+          "expected": "Repository CI and Chrome complete successfully without failing or skipped recorded visual scenario.",
+          "observed": "Repository CI and Chrome both completed/success at 906178554d2cb8ee7d9e88c7eb014356add21950; contract tests 124/124."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-003",
+          "primary_negative_control_id": "NC-789-003"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "accessible-overflow-restore",
+          "reason": "Discriminating current risk using exact material SHA and a concrete negative control."
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "reason": "No existing accessible reason documentation or product behavior may be silently removed by a test-only fix."
+        }
+      ],
+      "quantitative_evidence_required": false
+    },
+    {
+      "requirement_id": "REQ-789-004",
+      "obligation_ids": [
+        "OBL-004"
+      ],
+      "risk_families": [
+        "temporal-consistency"
+      ],
+      "source_texts": [
+        "[ ] Validar sintaxe, contrato de cobertura e regressões focadas, além do Chrome integrado no SHA exato; não alterar regra financeira, UI produtiva ou enfraquecer os gates de acessibilidade."
+      ],
+      "plausible_wrong_implementation": "Treat a green status or artifact from PR 760 as CI of PR 788 without matching the material SHA.",
+      "positive_control": {
+        "status": "passed",
+        "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+        "evidence": ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+        "evidence_sha256": "a31662a4336568ad6bee0db13a973c8f4a475384ae504f69ee345b689ac965ae",
+        "procedure": "Execute Chrome visual suite 42909142626 on the material HEAD and observe the accessible reason scenario.",
+        "expected": "Only completed success evidence from the exact material SHA is usable.",
+        "observed": "Exact-SHA CI and Chrome are green; a stale or failed control is rejected by the local provenance guard."
+      },
+      "negative_controls": [
+        {
+          "id": "NC-789-004",
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/stale-ci-negative-control-789.log",
+          "evidence_sha256": "dc926396d4dbdddeacd7fe5b5e59418785d7f86e979ccfae9bd469c1576581d0",
+          "control_type": "test",
+          "risk_family": "temporal-consistency",
+          "surface": "reporting-availability-window",
+          "dimension": "divergent-behavior-rejected",
+          "failure_mode": "Treat a green status or artifact from PR 760 as CI of PR 788 without matching the material SHA.",
+          "plausible_wrong_implementation": "Treat a green status or artifact from PR 760 as CI of PR 788 without matching the material SHA.",
+          "procedure": "Compare run and artifact material SHAs against 906178554 and mutate a copy to a foreign PR SHA or failing CI result.",
+          "expected": "Only completed success evidence from the exact material SHA is usable.",
+          "observed": "Exact-SHA CI and Chrome are green; a stale or failed control is rejected by the local provenance guard.",
+          "sibling_cases": [
+            {
+              "id": "NC-789-004-S1",
+              "surface": "reporting-availability-window",
+              "dimension": "authorized-valid-case",
+              "status": "passed"
+            },
+            {
+              "id": "NC-789-004-S2",
+              "surface": "reporting-availability-window",
+              "dimension": "rejected-invalid-case",
+              "status": "passed"
+            }
+          ]
+        }
+      ],
+      "regression_controls": [
+        {
+          "status": "passed",
+          "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+          "evidence": ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+          "evidence_sha256": "a31662a4336568ad6bee0db13a973c8f4a475384ae504f69ee345b689ac965ae",
+          "procedure": "Re-read completed Repository CI run 42909142491 and Chrome run 42909142626 for exact material SHA; compare local 124 contract tests.",
+          "expected": "Repository CI and Chrome complete successfully without failing or skipped recorded visual scenario.",
+          "observed": "Repository CI and Chrome both completed/success at 906178554d2cb8ee7d9e88c7eb014356add21950; contract tests 124/124."
+        }
+      ],
+      "obligation_control_map": [
+        {
+          "obligation_id": "OBL-004",
+          "primary_negative_control_id": "NC-789-004"
+        }
+      ],
+      "risk_surfaces": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "reporting-availability-window",
+          "reason": "Discriminating current risk using exact material SHA and a concrete negative control."
+        }
+      ],
+      "quantitative_evidence_required": false
+    }
+  ],
+  "uncovered_requirements": []
+}

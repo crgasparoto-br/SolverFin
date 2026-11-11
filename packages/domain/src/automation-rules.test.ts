@@ -27,6 +27,7 @@ testRuleMatchAndExplanation();
 testNoMatchKeepsTargetUnchanged();
 testPriorityResolvesConflictingActions();
 testInactiveRuleIsIgnored();
+testManualPurposeIsNeverAutomatic();
 testTenantIsolation();
 
 function testRuleMatchAndExplanation(): void {
@@ -142,6 +143,34 @@ function testInactiveRuleIsIgnored(): void {
 
   assertEqual(result.target.categoryId, undefined, "inactive rule category remains empty");
   assertEqual(result.appliedRules.length, 0, "inactive rule count");
+}
+
+function testManualPurposeIsNeverAutomatic(): void {
+  const target = buildTarget(tenantA, { description: "Assinatura Demo" });
+  const manual = buildRule("rule-manual", tenantA, {
+    name: "Regra renomeada",
+    purpose: "manual_entry",
+    status: "active", // Defense in depth against invalid persisted state.
+    priority: 100,
+    conditions: { descriptionIncludes: "assinatura" },
+    actions: { categoryId: "category-manual" },
+  });
+  const automatic = buildRule("rule-automatic", tenantA, {
+    purpose: "automation",
+    priority: 10,
+    conditions: { descriptionIncludes: "assinatura" },
+    actions: { categoryId: "category-automatic" },
+  });
+
+  const result = applyAutomationRules({
+    context: tenantA,
+    target,
+    rules: [manual, automatic],
+    now,
+  });
+  assertEqual(result.target.categoryId, "category-automatic", "automatic category is retained");
+  assertEqual(result.appliedRules.length, 1, "manual-origin rule was excluded");
+  assertEqual(result.appliedRules[0]?.ruleId, automatic.id, "only legitimate rule applied");
 }
 
 function testTenantIsolation(): void {

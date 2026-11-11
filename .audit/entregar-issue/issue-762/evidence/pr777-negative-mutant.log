@@ -1,0 +1,47 @@
+MUTATION TEST (not a material-head candidate): raw unencoded CHECK_NAME resurrected for test sensitivity only
+BASE_HEAD=241849d93dbbf8a7db4e8338acecaceea8a365c5
+DIFF:
+diff --git a/scripts/session_review_checks.py b/scripts/session_review_checks.py
+index 1e589d0d..aa012ea2 100644
+--- a/scripts/session_review_checks.py
++++ b/scripts/session_review_checks.py
+@@ -88,7 +88,7 @@ def finish_check(repo: str, head: str, check_id: int, run_id: str, receipt: dict
+
+
+ def review_watermark(repo: str, head: str) -> int:
+-    records = paged(repo, f"commits/{head}/check-runs?check_name={quote(CHECK_NAME, safe='')}&filter=all",
++    records = paged(repo, f"commits/{head}/check-runs?check_name={CHECK_NAME}&filter=all",
+                     field="check_runs")
+     watermark = 0
+     for record in records:
+COMMAND: python -m pytest -q tests/test_session_review_verifier.py::test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection __
+
+    def test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection():
+        """Real GitHub read must not send whitespace in the check_name query."""
+        from urllib.parse import parse_qs, urlsplit
+
+        prior = {"name": checks.CHECK_NAME, "head_sha": HEAD, "app": {"id": 15368},
+                 "output": {"text": json.dumps({"review_comment_id": 17, "minimum_comment_id": 19})}}
+        with patch.object(checks, "paged", return_value=[prior]) as page:
+            assert checks.review_watermark(REPO, HEAD) == 19
+        path = page.call_args.args[1]
+>       assert " " not in path and "(" not in path and ")" not in path
+E       AssertionError: assert (' ' not in 'commits/aaa...)&filter=all'
+E
+E         ' ' is contained here:
+E           ame=Verify session review (exact SHA)&filter=all
+E         ?           +)
+
+tests/test_session_review_verifier.py:450: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_session_review_verifier.py::test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection - AssertionError: assert (' ' not in 'commits/aaa...)&filter=all'
+
+  ' ' is contained here:
+    ame=Verify session review (exact SHA)&filter=all
+  ?           +)
+1 failed in 0.10s
+MUTANT_TEST_EXIT_CODE=1
+MUTANT_REJECTED_AS_EXPECTED=TRUE

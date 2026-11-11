@@ -1,6 +1,15 @@
 import {
-  TenantAuthorizationError,
-  TenantError,
+  buildAuthHeaders,
+  readCardPurchaseFilters,
+  readOptionalDate,
+  readOptionalText,
+  requireObjectBody,
+  requireParam,
+  json,
+  mapDomainError,
+} from "./router-request-helpers.js";
+export { requireObjectBody, requireParam, json } from "./router-request-helpers.js";
+import {
   type BudgetStatus,
   type CardStatus,
   type CategoryKind,
@@ -13,7 +22,7 @@ import {
   type TransactionStatus,
 } from "@solverfin/domain";
 
-import { AuthError } from "./auth.js";
+import { withSharedTransaction } from "./db.js";
 import type { ApiHeaders } from "./http-headers.js";
 import { auth } from "./auth-service.js";
 import {
@@ -23,12 +32,13 @@ import {
 } from "./card-currency-contract.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleAccountsApiRequest } from "./accounts-router.js";
+import { adjustInvoiceInstallmentAmountHandler } from "./card-installment-amount-handler.js";
 import { readCreateTransactionOccurredOn } from "./transaction-create-temporal-input.js";
 import {
   closeInvoiceForContext,
   listCardPurchasesForContext,
+  reconcileInvoiceInstallmentForContext,
   summarizeInvoiceForContext,
-  type PurchaseReconciliationFilter,
 } from "./repositories/card-invoice-contracts.js";
 import {
   archiveCategoryForContext,
@@ -89,6 +99,7 @@ import {
   listTransactionGroupsForContext,
   ungroupTransactionsForContext,
 } from "./repositories/transaction-groups.js";
+import { createTransactionIdempotentlyForContext } from "./repositories/transaction-idempotency.js";
 import { loadFinancialProfilesForUser, resolveRequestTenantContext } from "./tenant-context.js";
 
 export interface ApiRequest {
@@ -167,6 +178,16 @@ route("GET", "/api/invoices", listInvoicesHandler);
 route("GET", "/api/invoices/:invoiceId", getInvoiceHandler);
 route("GET", "/api/invoices/:invoiceId/summary", getInvoiceSummaryHandler);
 route("GET", "/api/invoices/:invoiceId/purchases", listInvoicePurchasesHandler);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/reconciliation",
+  reconcileInvoiceInstallmentHandler,
+);
+route(
+  "PATCH",
+  "/api/invoices/:invoiceId/installments/:installmentId/amount",
+  adjustInvoiceInstallmentAmountHandler,
+);
 route("POST", "/api/invoices/:invoiceId/close", closeInvoiceHandler);
 route("POST", "/api/invoices/:invoiceId/pay", payInvoiceHandler);
 
@@ -445,6 +466,7 @@ async function listTransactionsHandler(
   const categoryId = request.query.get("categoryId");
   const occurredFrom = request.query.get("occurredFrom");
   const occurredTo = request.query.get("occurredTo");
+  const statementTo = request.query.get("statementTo");
   const plannedFrom = request.query.get("plannedFrom");
   const plannedTo = request.query.get("plannedTo");
   const effectiveFrom = request.query.get("effectiveFrom");
@@ -456,6 +478,7 @@ async function listTransactionsHandler(
     ...(categoryId ? { categoryId } : {}),
     ...(occurredFrom ? { occurredFrom } : {}),
     ...(occurredTo ? { occurredTo } : {}),
+    ...(statementTo ? { statementTo } : {}),
     ...(plannedFrom ? { plannedFrom } : {}),
     ...(plannedTo ? { plannedTo } : {}),
     ...(effectiveFrom ? { effectiveFrom } : {}),
@@ -470,7 +493,7 @@ async function createTransactionHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const transaction = await createTransactionForContext(context, {
+  const payload = {
     kind: body.kind as TransactionKind,
     amountMinor: Number(body.amountMinor),
     occurredOn: readCreateTransactionOccurredOn(body),
@@ -488,9 +511,22 @@ async function createTransactionHandler(
       : {}),
     ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
     ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-  });
-
-  return json(201, { transaction });
+  };
+  if (body.idempotencyKey === undefined) {
+    return json(201, { transaction: await createTransactionForContext(context, payload) });
+  }
+  if (typeof body.idempotencyKey !== "string") {
+    throw Object.assign(new Error("A chave de idempotência deve ser um UUID."), {
+      code: "TRANSACTION_IDEMPOTENCY_KEY_INVALID",
+      statusCode: 400,
+    });
+  }
+  const result = await createTransactionIdempotentlyForContext(
+    context,
+    payload,
+    body.idempotencyKey,
+  );
+  return json(result.idempotentReplay ? 200 : 201, { transaction: result.transaction });
 }
 
 async function listTransactionGroupsHandler(
@@ -558,33 +594,45 @@ async function updateTransactionHandler(
   match: Readonly<Record<string, string>>,
 ): Promise<ApiResponse> {
   const body = requireObjectBody(request.body);
-  const transaction = await updateTransactionForContext(
-    context,
-    requireParam(match, "transactionId"),
-    {
-      ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
-      ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
-      ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
-      ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
-      ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
-      ...(body.effectiveOn !== undefined
-        ? { effectiveOn: readOptionalDate(body.effectiveOn) }
-        : {}),
-      ...(body.description !== undefined ? { description: String(body.description) } : {}),
-      ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
-      ...(body.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
-      ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
-      ...(body.destinationAccountId !== undefined
-        ? { destinationAccountId: String(body.destinationAccountId) }
-        : {}),
-      ...(body.destinationAmountMinor !== undefined
-        ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
-        : {}),
-      ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
-      ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-    },
-    { denyCanonicalInstallmentMutation: true },
-  );
+  const transactionId = requireParam(match, "transactionId");
+  const payload = {
+    ...(body.kind !== undefined ? { kind: body.kind as TransactionKind } : {}),
+    ...(body.status !== undefined ? { status: body.status as TransactionStatus } : {}),
+    ...(body.amountMinor !== undefined ? { amountMinor: Number(body.amountMinor) } : {}),
+    ...(body.occurredOn !== undefined ? { occurredOn: String(body.occurredOn) } : {}),
+    ...(body.plannedOn !== undefined ? { plannedOn: String(body.plannedOn) } : {}),
+    ...(body.effectiveOn !== undefined ? { effectiveOn: readOptionalDate(body.effectiveOn) } : {}),
+    ...(body.description !== undefined ? { description: String(body.description) } : {}),
+    ...(body.note !== undefined ? { note: readOptionalText(body.note) } : {}),
+    ...(body.applyToFuturePlanned === true ? { applyToFuturePlanned: true } : {}),
+    ...(body.accountId !== undefined ? { accountId: String(body.accountId) } : {}),
+    ...(body.destinationAccountId !== undefined
+      ? { destinationAccountId: String(body.destinationAccountId) }
+      : {}),
+    ...(body.destinationAmountMinor !== undefined
+      ? { destinationAmountMinor: Number(body.destinationAmountMinor) }
+      : {}),
+    ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+    ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
+  };
+  const update = () =>
+    updateTransactionForContext(context, transactionId, payload, {
+      denyCanonicalInstallmentMutation: true,
+    });
+  // A status-only PATCH must read the locked row. Otherwise a reconciliation
+  // based on a stale snapshot can overwrite a concurrent current-only edit.
+  const transaction =
+    Object.keys(body).length === 1 && body.status !== undefined
+      ? await withSharedTransaction(async (executeQuery) => {
+          await executeQuery(
+            `select "id" from "Transaction"
+             where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+             for update`,
+            [transactionId, context.organizationId, context.financialProfileId],
+          );
+          return update();
+        })
+      : await update();
 
   return json(200, { transaction });
 }
@@ -600,10 +648,6 @@ async function voidTransactionHandler(
   );
 
   return json(200, { transaction });
-}
-
-function buildAuthHeaders(authorization: string | undefined): { authorization?: string } {
-  return authorization === undefined ? {} : { authorization };
 }
 
 async function listRecurrencesHandler(
@@ -960,6 +1004,29 @@ async function listInvoicePurchasesHandler(
   return json(200, { purchases });
 }
 
+async function reconcileInvoiceInstallmentHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  if (Object.keys(body).length !== 1 || !["posted", "reconciled"].includes(String(body.status))) {
+    return json(400, {
+      error: {
+        code: "CARD_INSTALLMENT_STATUS_INVALID",
+        message: "Informe apenas a situação de conciliação.",
+      },
+    });
+  }
+  const result = await reconcileInvoiceInstallmentForContext(
+    context,
+    requireParam(match, "invoiceId"),
+    requireParam(match, "installmentId"),
+    body.status as "posted" | "reconciled",
+  );
+  return json(200, result);
+}
+
 async function closeInvoiceHandler(
   _request: ApiRequest,
   context: TenantContext,
@@ -1073,91 +1140,4 @@ async function getBudgetUsageHandler(
   const usage = await summarizeBudgetUsageForContext(context, requireParam(match, "budgetId"));
 
   return json(200, { usage });
-}
-
-function readCardPurchaseFilters(request: ApiRequest) {
-  const reconciliation = readReconciliationFilter(request.query.get("reconciliation"));
-
-  return {
-    ...(request.query.get("invoiceId")
-      ? { invoiceId: String(request.query.get("invoiceId")) }
-      : {}),
-    ...(request.query.get("cardId") ? { cardId: String(request.query.get("cardId")) } : {}),
-    ...(request.query.get("occurredFrom")
-      ? { occurredFrom: String(request.query.get("occurredFrom")) }
-      : {}),
-    ...(request.query.get("occurredTo")
-      ? { occurredTo: String(request.query.get("occurredTo")) }
-      : {}),
-    ...(reconciliation ? { reconciliation } : {}),
-    ...(request.query.get("search") ? { search: String(request.query.get("search")) } : {}),
-  };
-}
-
-function readReconciliationFilter(value: string | null): PurchaseReconciliationFilter | undefined {
-  if (value === "all" || value === "reconciled" || value === "unreconciled") {
-    return value;
-  }
-
-  return undefined;
-}
-
-function readOptionalDate(value: unknown): string | null {
-  if (value === null) {
-    return null;
-  }
-
-  const text = String(value);
-
-  return text.trim() ? text : null;
-}
-
-function readOptionalText(value: unknown): string | null {
-  if (value === null) {
-    return null;
-  }
-
-  const text = String(value).trim();
-
-  return text ? text : null;
-}
-
-function requireObjectBody(body: unknown): Record<string, unknown> {
-  if (typeof body !== "object" || body === null) {
-    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
-  }
-
-  return body as Record<string, unknown>;
-}
-
-function requireParam(match: Readonly<Record<string, string>>, name: string): string {
-  const value = match[name];
-
-  if (!value) {
-    throw new AuthError("AUTH_SESSION_REQUIRED", `Missing required path parameter: ${name}.`, 400);
-  }
-
-  return value;
-}
-
-function json(statusCode: number, body: unknown): ApiResponse {
-  return {
-    statusCode,
-    headers: { "content-type": "application/json; charset=utf-8" },
-    body,
-  };
-}
-
-function mapDomainError(error: unknown): unknown {
-  if (error instanceof TenantError) {
-    const statusCode = error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403;
-
-    return { code: error.code, statusCode, message: error.message };
-  }
-
-  if (error instanceof TenantAuthorizationError) {
-    return { code: error.code, statusCode: error.statusCode, message: error.message };
-  }
-
-  return error;
 }

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:aab741ac-4c6b-4b33-aea5-058ba7182ebb",
+    "audit_report_sha256": "c88607fd254817e496be7f71c0259fb07ab4852d79b4f9f6ebc561cad3184072",
+    "finding_ids": [
+      "A719-01"
+    ]
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The official skill already enforces inherited-base-artifact isolation and exact-target certificate publication; the omission is delivery-specific rather than missing a global prevention/detection rule."
+  },
+  "skill_changes": []
+}

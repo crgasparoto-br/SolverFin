@@ -105,6 +105,64 @@ PATCH /api/credit-card-accounts/:cardId/default-instrument
 
 `POST /api/credit-card-accounts/:cardId/purchases` registra compra no agrupador. Quando `cardInstrumentId` e informado, a API carrega os instrumentos do agrupador, aplica as validacoes do dominio e persiste a origem da compra em `Transaction.cardInstrumentId` e nas parcelas.
 
+As respostas de leitura e atualização de compras expõem `kind` (`expense` ou `income`) a partir de `Transaction.kind`. Em `/cartoes`, `expense` é débito positivo e `income` é crédito negativo, independentemente da descrição. A totalização da fatura usa a mesma direção no banco, inclusive quando uma descrição de despesa contiver texto semelhante a `[estorno:...]`; o marcador não é indicador de sinal financeiro.
+
+### Exclusão lógica de compra simples
+
+A ação **Excluir** no menu de uma compra simples de fatura aberta aplica anulação lógica:
+`Transaction.status = VOIDED`, `voidedAt` e `updatedByUserId` são registrados, enquanto
+identidade, valor e vínculos financeiros são preservados para auditoria. A operação é
+atômica com a correção do total da fatura e o evento `AuditLogEntry.SOFT_DELETE`.
+Não há `DELETE FROM Transaction` neste fluxo.
+
+Compras anuladas não aparecem na lista operacional, no número/valor de ocorrências
+da fatura nem no limite utilizado. Um segundo pedido de exclusão ou edição não
+altera o registro. Compras conciliadas, com parcelas, recorrências ou membros de
+agrupamentos não podem ser excluídas por esse endpoint; a API valida tenant, perfil,
+fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão física.
+
+Uma compra com **estorno ativo** não pode ser anulada isoladamente nem
+transferida para outra fatura, mesmo quando outras compras deixam o total
+positivo: a API retorna `CARD_PURCHASE_ACTIVE_REVERSAL` (HTTP 409) e reverte
+integralmente a operação, preservando compra, crédito, totais e auditoria.
+O vínculo é verificado em todas as faturas do cartão, não apenas na atual.
+Primeiro deve-se anular o crédito pelo fluxo especializado de estorno; depois
+é possível anular ou transferir a compra original, se continuar elegível.
+Os ajustes de exclusão e transferência também exigem saldo de fatura não
+negativo na própria gravação SQL; saldos incompatíveis são recusados com erro
+de contrato HTTP 409, sem expor a violação de constraint do banco.
+A rota e o envelope de resposta existentes são mantidos para compatibilidade.
+Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
+lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
+Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
+mudado antes da persistência, inclusive quando anulada por outra requisição.
+A edição também revalida o estado da fatura sob lock transacional, após o
+UPDATE condicional da compra, inclusive em mudanças sem efeito monetário:
+fechamento, pagamento ou cancelamento concorrente causa HTTP 409 e rollback
+integral da edição. Ajustes no total exigem fatura e moeda correspondentes e
+saldo não negativo, com conferência do UPDATE antes de registrar auditoria.
+A movimentação entre faturas confirma novamente, na gravação, o vínculo à
+fatura de origem, o estado e a versão da compra. Débito e crédito da movimentação
+exigem faturas ainda abertas, do mesmo cartão e moeda; qualquer disputa com
+outra movimentação, anulação ou fechamento provoca rollback completo e HTTP 409,
+sem duplicar impacto nos totais.
+
+As rotas gerais `POST /api/transactions/:transactionId/void` e
+`POST /api/transactions/bulk-actions` (`action: "void"`) reutilizam a exclusão
+lógica especializada para compras e créditos de estorno vinculados a faturas.
+Um lote misto é atômico: item inelegível provoca rollback de toda a seleção;
+cada compra recebe apenas um evento de auditoria `SOFT_DELETE`. Compras
+parceladas, recorrentes, conciliadas ou com fatura bloqueada são rejeitadas.
+Parcelas cujo registro principal esteja `VOIDED` são excluídas da listagem
+operacional e dos resumos, sem perda do histórico; conciliação e ajuste de
+valor também são bloqueados.
+
+### Ajuste pontual ou futuro de valores de parcelas (#742)
+
+`PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` é o endpoint operacional para corrigir o valor exibido de parcelas **finitas** de compras de cartão. Exige sessão/tenant/perfil, `amountMinor` inteiro seguro e positivo e `scope` igual a `current` ou `current_and_future`. O segundo escopo atualiza a parcela indicada e as posteriores elegíveis do mesmo cronograma; responde `updatedCount` e `skippedCount`. A resposta inclui a fatura escolhida atualizada.
+
+A mutação valida vínculo de parcela/compra/fatura, moeda nativa da fatura, status aberto de cada fatura e estado planejado ou efetivado não conciliado. Não reabre faturas bloqueadas, não altera parcelas conciliadas ou de recorrência, não edita `Transaction.amountMinor` da compra de origem e não altera datas, quantidade, instrumento ou vínculos. Atualiza atomicamente `Installment.amountMinor`, o total de cada fatura afetada e a trilha de auditoria minimizada. Ausência de parcela/tenant equivale a não encontrada; seleção bloqueada retorna conflito. A rota genérica `PATCH /api/installments/:id` continua sem permitir valor de parcelas de fatura.
+
 ## Modelo persistente alvo
 
 ### Cartao agrupador/fatura

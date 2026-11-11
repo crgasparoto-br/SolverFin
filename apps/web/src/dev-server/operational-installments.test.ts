@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { runInNewContext } from "node:vm";
 
 import {
   buildAccountInstallmentsPath,
@@ -11,11 +12,87 @@ import {
   translateInstallmentBlockReason,
 } from "./operational-installments.js";
 
+test("installment editing has one managed primary submit and suppresses create-only continuation", () => {
+  const script = operationalInstallmentsController();
+  assert.match(script, /continueButton\.dataset\.installmentManaged = ""/);
+  assert.match(script, /rememberAndSet\(continueButton, "hidden", true\)/);
+  assert.match(script, /rememberAndSet\(continueButton, "disabled", true\)/);
+  assert.match(script, /form\.querySelector\('\[data-statement-save-primary\]'\)/);
+  assert.doesNotMatch(script, /\.save-row button\[type="submit"\]/);
+  assert.match(script, /form\.querySelectorAll\("\[data-installment-managed\]"\)/);
+});
+
+test("planned and posted account recurrences use current-only scope without unlocking other installments", () => {
+  const script = operationalInstallmentsController();
+  // Evaluate the actual generated controller guard against discriminating data;
+  // checking only a matching string would miss a broken planned branch.
+  const guard = script.match(
+    /const recurringAccountOccurrence = Boolean\(([\s\S]*?)\);\s*if \(recurringAccountOccurrence\)/,
+  );
+  assert.ok(guard, "Account recurrence eligibility guard must exist in the generated controller");
+  const eligible = (overrides = {}) => {
+    const record = {
+      id: "installment-1",
+      recurrenceId: "recurrence-1",
+      status: "planned",
+      recurrence: { status: "active" },
+      transaction: { id: "transaction-1", recurrenceId: "recurrence-1", status: "planned" },
+      ...overrides,
+    };
+    return runInNewContext(`Boolean(${guard[1]})`, { installment: record }) === true;
+  };
+  assert.equal(eligible(), true, "Planned bank recurrence must open the full transaction editor");
+  assert.equal(eligible({ transaction: { recurrenceId: "recurrence-1", status: "posted" } }), true);
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "reconciled" } }),
+    false,
+  );
+  assert.equal(
+    eligible({ transaction: { recurrenceId: "recurrence-1", status: "voided" } }),
+    false,
+  );
+  assert.equal(eligible({ transaction: { recurrenceId: "other", status: "planned" } }), false);
+  assert.equal(eligible({ recurrenceId: null }), false, "Manual installment remains restricted");
+  assert.equal(eligible({ recurrence: { status: "cancelled" } }), false);
+  assert.equal(eligible({ invoice: { id: "invoice-1" } }), false);
+  assert.equal(eligible({ card: { id: "card-1" } }), false);
+  assert.equal(eligible({ cardInstrument: { id: "instrument-1" } }), false);
+  assert.equal(
+    eligible({
+      transaction: { recurrenceId: "recurrence-1", status: "planned", cardId: "card-1" },
+    }),
+    false,
+  );
+  assert.equal(
+    eligible({
+      transaction: { recurrenceId: "recurrence-1", status: "planned", invoiceId: "invoice-1" },
+    }),
+    false,
+  );
+  assert.equal(eligible({ status: "reconciled" }), false);
+  assert.match(script, /if \(recurringAccountOccurrence\) \{/);
+  assert.match(script, /editButton\.dataset\.installmentEdit = installment\.id/);
+});
+
 test("builds one scoped account installments query for the selected month", () => {
   assert.equal(
     buildAccountInstallmentsPath("account-demo", "2026-02", "profile-demo"),
     "/api/installments?accountId=account-demo&operationalFrom=2026-02-01&operationalTo=2026-02-28&status=all&profileId=profile-demo",
   );
+});
+
+test("consolidated All accounts never passes the all sentinel as a UUID to installments API", () => {
+  assert.equal(
+    buildAccountInstallmentsPath("all", "2026-09", "profile-demo"),
+    "/api/installments?operationalFrom=2026-09-01&operationalTo=2026-09-30&status=all&profileId=profile-demo",
+  );
+  assert.equal(
+    buildAccountInstallmentsPath("all", "2026-09", undefined, "2026-09-15"),
+    "/api/installments?operationalFrom=2026-09-15&operationalTo=2026-09-15&status=all",
+  );
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('accountId === "all" ? "" : "accountId="'));
+  assert.doesNotMatch(buildAccountInstallmentsPath("all", "2026-09"), /accountId=all/);
 });
 
 test("uses the exact displayed day when the statement has a valid daily filter", () => {
@@ -107,6 +184,10 @@ test("translates stable backend block reasons", () => {
     translateInstallmentBlockReason("transaction_status_locked"),
     "O lançamento já foi efetivado, conciliado ou cancelado.",
   );
+  assert.equal(
+    translateInstallmentBlockReason("recurrence_cancelled"),
+    "Esta recorrência foi cancelada. Suas parcelas estão disponíveis somente para consulta.",
+  );
 });
 
 test("controller preserves purchase editing and handles stale edit conflicts", () => {
@@ -115,8 +196,11 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.doesNotMatch(script, /data-installment-edit.*data-edit-purchase/s);
   assert.match(script, /INSTALLMENT_EDIT_BLOCKED/);
   assert.match(script, /Recarregar estado atual/);
-  assert.match(script, /rememberAndSet\(saveButton, "hidden", !editable\)/);
+  assert.match(script, /rememberAndSet\(saveButton, "hidden", !anyEditable\)/);
   assert.match(script, /data-installment-reload/);
+  assert.ok(script.includes('attachments.dataset.entityId = installment.transaction?.id || ""'));
+  assert.ok(script.includes("window.SolverFinAttachments?.resetPending(attachments)"));
+  assert.ok(script.includes("window.SolverFinAttachments?.refresh(attachments)"));
   assert.match(script, /data-installment-historical-category/);
   assert.match(script, /ensureHistoricalCategoryOption\(form\.categoryId, installment\)/);
   assert.match(script, /setAccountEditLookupState\("loading"\)/);
@@ -140,4 +224,80 @@ test("controller preserves purchase editing and handles stale edit conflicts", (
   assert.match(script, /aria-describedby/);
   assert.match(script, /installment-assistive-text/);
   assert.match(script, /installmentBlockReason/);
+});
+
+test("installment value correction sends only changed cents and keeps metadata protected on posted records", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("const amountEditable = installment.amountEditable === true"));
+  assert.ok(script.includes('name="adjustedInstallmentAmount"'));
+  assert.ok(script.includes("parseInstallmentAmount(value)"));
+  assert.ok(script.includes("patch.amountMinor = cents"));
+  assert.ok(script.includes('rememberAndSet(saveButton, "hidden", !anyEditable)'));
+  assert.ok(script.includes("Ajuste somente o valor desta parcela"));
+  assert.ok(script.includes("sem redistribuir as demais"));
+  assert.ok(script.includes("installment.editable === true && !form.description.value.trim()"));
+  assert.ok(script.includes('method: "PATCH"'));
+});
+
+test("fixed recurring occurrences do not display finite installment badges", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("if (!installment.recurrenceId"));
+  assert.ok(script.includes("Number(installment.totalInstallments) > 0"));
+  assert.ok(script.includes("const total = Number(installment.totalInstallments) > 0"));
+  assert.ok(script.includes('return "Parcela " + installment.sequenceNumber + " de " + total;'));
+  assert.ok(script.includes('findNodeByData("script[data-purchase]", transactionId)'));
+  assert.ok(script.includes("addBadge(row, installment)"));
+  assert.ok(
+    script.includes('row.querySelector(".cards-purchase-description .cards-installment-label")'),
+  );
+  assert.ok(script.includes("if (!existingBadge) description.appendChild(badge)"));
+  assert.ok(
+    script.includes("!installment.recurrenceId && Number(installment.totalInstallments) > 1"),
+  );
+});
+
+test("installment scope selection follows Golden Screen neutral button states", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes('data-button-variant="neutral" data-scope="current"'));
+  assert.ok(script.includes('data-button-variant="neutral" data-scope="current_and_future"'));
+  assert.ok(
+    script.includes(
+      ".installment-scope-dialog button.installment-scope-option:hover:not(:disabled)",
+    ),
+  );
+  assert.ok(
+    script.includes(".installment-scope-dialog button.installment-scope-option:focus-visible"),
+  );
+  assert.ok(script.includes("background: var(--neutral-control-hover)"));
+  assert.ok(script.includes("border-color: var(--neutral-control-border-hover)"));
+  assert.ok(script.includes("color: var(--neutral-control-text-hover)"));
+  assert.ok(script.includes("box-shadow: var(--shadow-focus)"));
+  assert.ok(script.includes("background: var(--surface)"));
+  assert.ok(script.includes("color: var(--primary)"));
+});
+
+test("amount edit requires an explicit current or future scope before the PATCH", () => {
+  const script = operationalInstallmentsController();
+  assert.ok(script.includes("function chooseInstallmentScope(installment)"));
+  assert.ok(script.includes("Onde aplicar o novo valor?"));
+  assert.ok(script.includes("Somente esta parcela"));
+  assert.ok(script.includes("Esta e as próximas"));
+  assert.ok(script.includes("data-scope-cancel>Voltar sem salvar"));
+  assert.ok(script.includes("const scope = await chooseInstallmentScope(installment)"));
+  assert.ok(script.includes("patch.scope = scope"));
+  assert.ok(script.includes("const isRecurring = Boolean(installment.recurrenceId)"));
+  assert.ok(script.includes('installment.recurrence?.status !== "cancelled"'));
+  assert.ok(
+    script.includes("Number(installment.totalInstallments) > Number(installment.sequenceNumber)"),
+  );
+  assert.ok(script.includes("const hasFuture = isRecurring"));
+  assert.ok(
+    script.includes("[data-statement-save-primary]"),
+    "only the canonical save button is repurposed in installment mode",
+  );
+  assert.ok(script.includes('rememberAndSet(continueButton, "hidden", true)'));
+  assert.ok(script.includes("if (!scope) {"));
+  assert.ok(script.includes('Object.keys(patch).some((field) => field !== "amountMinor")'));
+  assert.ok(script.includes("body: JSON.stringify(patch)"));
+  assert.ok(script.includes(".installment-scope-dialog::backdrop"));
 });

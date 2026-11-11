@@ -20,6 +20,27 @@ Principios:
 - cards apenas quando criarem agrupamento semantico real, evitando grade de cards como layout padrao para qualquer informacao;
 - consistencia compartilhada antes de customizacao local por rota.
 
+## Paleta canonica obrigatoria (Golden Screen)
+
+A paleta de cores da Golden Screen do Extrato e o **padrao global** de todas as telas
+SolverFin, incluindo Cartoes, Contas, Relatorios, Categorias e dialogos. Os valores
+sao definidos em `apps/web/src/design-system/tokens.ts` e publicados pelo
+design system compartilhado; nenhuma tela deve manter cores semanticas paralelas.
+
+- **Entradas/receitas/creditos:** texto `#047857`, superficie `#ECFDF5`.
+- **Saidas/despesas/debitos/valores negativos:** texto `#B91C1C`, superficie `#FEF2F2`.
+- **Transferencias/estados neutros:** texto `#475569`, superficie `#F1F5F9`.
+- Acoes primarias preservam a identidade azul-petroleo; cores de estados
+  financeiros nao devem ser usadas como cores indiscriminadas de botoes.
+- Usar tokens CSS `--sf-color-success`, `--sf-color-danger`,
+  `--sf-color-muted-text` e respectivas superficies, sem valores hexadecimais
+  repetidos em componentes ou por rota.
+- Modos claro/escuro precisam preservar semantica e contraste; estado financeiro
+  nao pode depender apenas da cor (icone, sinal e rotulo acessivel).
+- A revisao de qualquer tela ou PR deve comparar cores com a Golden Screen e
+  bloquear divergencias injustificadas. Ajustes futuros de paleta acontecem nos
+  tokens compartilhados, nao por pagina.
+
 ## Contrato de qualidade visual
 
 "Moderno", "clean" e "refinado" sao requisitos observaveis, nao preferencias esteticas abertas. Uma interface SolverFin so atende a direcao visual quando, alem de funcional, acessivel e responsiva, demonstra hierarquia, densidade e acabamento coerentes com uma aplicacao financeira moderna.
@@ -53,6 +74,18 @@ Uma implementacao deve ser revisada quando introduzir, sem justificativa funcion
 - medidas, raios, sombras, espacamentos ou iconografia locais que criem linguagem visual paralela ao design system;
 - aprovacao baseada somente em "funciona", "esta responsivo" ou "os testes passaram" sem inspecao da composicao final.
 
+### Navegacao autenticada unificada (Issue #717)
+
+O menu lateral do shell autenticado usa **sempre o tema claro aprovado no Extrato**,
+inclusive em Dashboard, Categorias, Contas, Cartoes e rotas administrativas. A
+fonte executavel e `sharedShellStyles()` em
+`apps/web/src/dev-server/shared-styles.ts`; telas individuais nao podem
+sobrescrever o tema da sidebar por rota. A estrutura de navegacao e permissao
+continua centralizada em `shell.ts`. O fundo e claro, o texto e legivel, o
+item ativo usa realce azul discreto, e hover/foco seguem o mesmo contrato em
+todas as telas. A composicao compacta/mobile preserva os mesmos tokens,
+alvos acessiveis e navegacao por teclado.
+
 ### Referencia visual e Golden Screens
 
 Rotas ou estados explicitamente designados como referencia visual podem funcionar como **Golden Screens**. Uma Golden Screen nao autoriza copia cega de layout; ela fixa o nivel esperado de acabamento, hierarquia, densidade, tipografia, espacamento e iconografia para telas da mesma familia. Quando uma issue indicar uma Golden Screen, a validacao deve comparar o candidato contra esses atributos, nao apenas contra a presenca dos mesmos componentes.
@@ -82,6 +115,48 @@ A referencia inclui, sem exigir copia estrutural:
 - dialogs e drawers com o mesmo nivel de refinamento da tela principal;
 - comportamento mobile equivalente em clareza e acabamento.
 
+### Regra normativa para TODAS as telas — Golden Screen
+
+**Obrigatorio em qualquer alteracao visual** (telas autenticadas, administrativas, publicas, dialogs, drawers, menus, formularios e estados de erro/vazio): usar este documento como **fonte de verdade**, o Extrato `/lancamentos` como **referencia oficial de acabamento visual** e os tokens/primitivas de `apps/web/src/design-system/` como implementacao executavel. A Golden Screen rege **qualidade e linguagem visual**, nao impõe a todos os arquetipos a mesma grade, os mesmos campos ou a mesma largura de painel. A hierarquia segue sempre a tarefa dominante da rota; em `/contas-cartoes`, a lista de contas/cartoes e dominante, e o detalhe e auxiliar.
+
+O padrao transversal de aceite inclui:
+
+1. **Superficies e ritmo:** tipografia, espacamento, densidade, bordas e cores do design system; sem nova paleta, sombras, botoes ou espacamentos locais se houver token equivalente.
+2. **Controles operacionais:** busca, select, filtros, menus e opcoes equivalentes com variante neutra, borda discreta e texto legivel; repouso, hover, active, focus-visible e disabled coerentes. Escolha nao e confirmacao; somente o ato final de salvar/confirmar utiliza primary.
+3. **Acoes:** uma acao primaria por contexto; demais secondary/ghost, perigo sem ambiguidade e com confirmacao; icones compartilhados com aria-label e foco visivel.
+4. **Dados financeiros e lista:** informacao decisiva domina, metadados secundarios, alinhamento numerico a direita e moeda explicita; nunca somar moedas sem conversao.
+5. **Modais e estados:** mesmo acabamento e acessibilidade em criar, editar, excluir, vazio, loading, indisponivel e erro; dialogs centralizados quando a tarefa e CRUD curta, cancelar neutro e confirmacao primaria; sem regex para compor HTML final.
+6. **Evidencia bloqueante:** screenshots e interacoes no SHA final em desktop 1440x900 e 1366x768 e mobile 390x844, 320x740 quando relevante, verificando computed styles de background/foreground/border, hover, foco e disabled, overflow, teclado/Escape e volta do foco. Testes/CI verdes nao comprovam paridade por si.
+
+**Ordem de precedencia:** contrato financeiro/funcional da rota e acessibilidade > componentes/tokens compartilhados > arquetipo de `docs/SCREEN_ARCHETYPES.md` > disposicao especifica da referencia visual. Desvios necessarios devem ficar justificados e cobertos por evidencia na PR. A conformidade transversal deve ser verificada a cada issue de interface, nao apenas na epica #702.
+
+### Contrato obrigatorio: escolhas em modal e menus da Golden Screen
+
+A padronizacao da Golden Screen se aplica a **todos os estados** dos controles, nao
+apenas ao visual estatico. Ao adicionar uma escolha em modal, popover, combobox ou
+menu, reutilizar as variantes compartilhadas de `docs/UI_PRIMITIVES.md`. Escolhas
+equivalentes (por exemplo, "Somente esta parcela" e "Esta e as proximas") sao
+**controles neutros**: mesmo fundo claro, texto legivel e borda discreta;
+nenhuma recebe o estilo `primary` antes de uma escolha explicita. A cor
+primaria e reservada a acao final de confirmar/salvar, nunca a opcao que o
+usuario ainda nao selecionou.
+
+No SSR atual, preferir `button[data-button-variant="neutral"]` e as cores
+canonicas `--surface`, `--primary`, `--neutral-control-hover`,
+`--neutral-control-border-hover` e `--neutral-control-text-hover`
+(aliases de `--sf-*`). O estilo global `button:hover:not(:disabled)`
+pinta o fundo `primary-hover`: **revisar a especificidade** de todo seletor
+local de `:hover` e `:focus-visible` para nao produzir fundo escuro com
+texto escuro, nem substituir foco/hover neutro por aparencia primaria.
+
+Aceite obrigatorio: validar computed styles de **fundo, texto e borda** em
+repouso, hover, foco pelo teclado e disabled, nos modos desktop e mobile;
+verificar contraste WCAG AA, ausencia de selecao falsa, foco visivel,
+navegacao por Tab, Escape e retorno de foco. Se um estado divergir dos tokens
+ou da Golden Screen, a implementacao visual esta **reprovada**, mesmo com
+testes funcionais verdes. Registrar evidencia no HEAD exato da PR antes
+de dar o ajuste como concluido.
+
 A Golden Screen so pode ser considerada valida como referencia depois que a implementacao de `/lancamentos` atender ao contrato de qualidade visual e possuir evidencia visual aprovada. Ate esse ponto, o mockup e a especificacao funcionam como alvo de design, nao como prova de implementacao concluida.
 
 ### Identidade visual de instituicoes financeiras
@@ -94,6 +169,8 @@ A identidade visual de uma instituicao financeira e responsabilidade de um catal
 - nenhuma rota deve manter uma tabela local de logos ou permitir que cada conta defina sua propria identidade visual;
 - instituicoes sem identidade conhecida devem usar fallback padronizado, acessivel e consistente;
 - Extrato, Cartoes, Contas e Cartoes, Relatorios, seletores e formularios devem consumir o mesmo componente/contrato de identidade institucional.
+
+Em `/contas-cartoes`, a lista mestre e o cabecalho dos detalhes devem apresentar o mesmo enquadramento institucional aprovado em `/lancamentos`: **imagem de 44 x 44 px, raio de 11 px, sem moldura cinza adicional e `object-fit: contain` para logos rasterizados**. O SVG de fallback ocupa a mesma area e a hierarquia/listagem responsiva deve reservar exatamente a largura da imagem. A regra estiliza `renderInstitutionIcon()` sem recriar tabelas locais de instituicoes.
 
 O banco pode manter metadados administrativos da instituicao ou do asset global quando necessario para gestao do catalogo, mas esses dados nao pertencem ao registro individual da conta nem podem transformar a conta em dona do logo.
 
@@ -297,6 +374,10 @@ Textos visiveis devem explicar o que a pessoa pode fazer, revisar ou corrigir. E
 - Icon-only buttons precisam de label acessivel.
 - Tabelas/listas devem ter estado vazio com orientacao de proxima acao.
 - Dialogs devem prender foco quando abertos e permitir fechamento por Escape quando nao forem bloqueantes.
+- No Extrato (`/lancamentos`), os formularios de novo lancamento, clonagem e edicao
+  abrem como dialogs centralizados na viewport em desktop e mobile, nunca como
+  painel lateral ancorado a direita. Respeitar margens seguras, altura disponivel,
+  rolagem interna e retorno do foco, sem alterar campos ou contratos financeiros.
 - Toasts confirmam resultado; erros de formulario devem aparecer perto do campo quando possivel.
 - Consuma escalas compartilhadas de espacamento, tipografia, raio, elevacao, layout e densidade antes de criar uma medida local.
 - Nao duplique valores de tokens ou shell completo em um renderer quando um provedor compartilhado ja existir.

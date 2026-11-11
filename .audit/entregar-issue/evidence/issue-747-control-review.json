@@ -1,0 +1,191 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 747,
+  "pull_request": 749,
+  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
+  "repository_ci": {
+    "run_id": 40696535294,
+    "conclusion": "success",
+    "job_id": 122845120994
+  },
+  "statement_visual_validation": {
+    "run_id": 40696534811,
+    "conclusion": "success",
+    "artifact_id": 12820740707,
+    "artifact_digest": "sha256:6b16a8584097920f9d5c2df63d3db78c0ac08917e663c133f78120e717343cb4"
+  },
+  "delivery_audit_workspace": {
+    "run_id": 40696534938,
+    "conclusion": "success"
+  },
+  "controls": [
+    {
+      "id": "CASE-001",
+      "status": "passed",
+      "claim": "Extrato and Cards share manual description/category rule controls.",
+      "sources": [
+        "apps/web/src/dev-server/entry-fill-rules.ts:1-13",
+        "apps/web/src/dev-server/cards-page-v2.test.ts:271-273",
+        "apps/web/src/dev-server/transactions-page-v2-form-defaults.test.ts:19-59"
+      ]
+    },
+    {
+      "id": "CASE-002",
+      "status": "passed",
+      "claim": "Prefix suggestions select description/category by mouse or keyboard.",
+      "sources": [
+        "apps/web/src/dev-server/entry-fill-rules.ts:13-13",
+        "apps/web/src/dev-server/entry-fill-rules.test.ts:10-34"
+      ]
+    },
+    {
+      "id": "CASE-003",
+      "status": "passed",
+      "claim": "Manual fill rules are persisted inactive and cannot be promoted to active background automation.",
+      "sources": [
+        "apps/api/src/repositories/manual-entry-fill-rules.ts:37-69",
+        "apps/api/src/repositories/automation-rules.ts:125-136",
+        "apps/api/src/manual-entry-fill-rules.integration.test.ts:34-80"
+      ]
+    },
+    {
+      "id": "CASE-004",
+      "status": "passed",
+      "claim": "Save and continue persists first, then preserves account/kind/status/dates and clears remaining fields.",
+      "sources": [
+        "apps/web/src/dev-server/statement-save-flow-scripts.ts:36-71",
+        "apps/web/src/dev-server/statement-save-flow-scripts.ts:74-87",
+        "docs/ENTRY_FILL_RULES.md:9-9"
+      ]
+    },
+    {
+      "id": "CASE-005",
+      "status": "passed",
+      "claim": "New-entry action layout is focusable and contained without horizontal clipping at 320x740, 390x844 and 1366x768.",
+      "sources": [
+        "scripts/statement-visual/issue-606-core-pages-execution.mjs:101-173",
+        "evidence/issue-747-viewport-evidence.json"
+      ]
+    },
+    {
+      "id": "CASE-006",
+      "status": "passed",
+      "claim": "Manual rules and category validation are isolated by organization and financial profile.",
+      "sources": [
+        "apps/api/src/repositories/manual-entry-fill-rules.ts:44-69",
+        "apps/api/src/manual-entry-fill-rules.integration.test.ts:28-106"
+      ]
+    },
+    {
+      "id": "CASE-007",
+      "status": "passed",
+      "claim": "Manual transaction create is idempotent across duplicate/concurrent/replayed requests while preserving profile isolation.",
+      "sources": [
+        "apps/api/src/repositories/transaction-idempotency.ts:12-61",
+        "apps/api/src/transaction-creation-idempotency.integration.test.ts:23-100",
+        "evidence/issue-747-transaction-ambiguity.json"
+      ]
+    },
+    {
+      "id": "CASE-008",
+      "status": "passed",
+      "claim": "Suggestion interaction fills only description/category; keyboard and mouse use same choose path.",
+      "sources": [
+        "apps/web/src/dev-server/entry-fill-rules.ts:13-13",
+        "apps/web/src/dev-server/entry-fill-rules.test.ts:10-34"
+      ]
+    },
+    {
+      "id": "CASE-009",
+      "status": "passed",
+      "claim": "Closing a modal after a save attempt reloads the list; idempotency prevents duplicate persisted transactions.",
+      "sources": [
+        "apps/web/src/dev-server/statement-save-flow-scripts.ts:9-19",
+        "apps/api/src/transaction-creation-idempotency.integration.test.ts:41-66"
+      ]
+    },
+    {
+      "id": "CASE-010",
+      "status": "passed",
+      "claim": "Frontend/backend and rule contract suites were reached in CRITICAL CI on the material head.",
+      "sources": [
+        "evidence/issue-747-ci-test-reach.txt"
+      ]
+    },
+    {
+      "id": "CASE-011",
+      "status": "passed",
+      "claim": "Chrome exact-head evidence covers the three required new-entry viewport sizes and actions.",
+      "sources": [
+        "evidence/issue-747-viewport-evidence.json",
+        "scripts/statement-visual/issue-606-core-pages-execution.mjs:101-173"
+      ]
+    },
+    {
+      "id": "CASE-012",
+      "status": "passed",
+      "claim": "Material CI is green while independent audit remains a separate pre-merge gate.",
+      "sources": [
+        "evidence/issue-747-ci-test-reach.txt"
+      ]
+    },
+    {
+      "id": "CASE-013",
+      "status": "passed",
+      "claim": "Issue-local changed paths contain no Dashboard page files and no recurring-account implementation files; operational-installments changes are compatibility reconciliation only.",
+      "sources": [
+        "evidence/issue-747-scope-diff.txt"
+      ]
+    },
+    {
+      "id": "CASE-014",
+      "status": "passed",
+      "claim": "Inactive manual fill rules are excluded from active automation application.",
+      "sources": [
+        "apps/api/src/repositories/automation-rules.ts:203-220",
+        "apps/api/src/manual-entry-fill-rules.integration.test.ts:61-80"
+      ]
+    },
+    {
+      "id": "CASE-015",
+      "status": "passed",
+      "claim": "PR #749 remains open, draft, unmerged; delivery does not perform automatic merge.",
+      "sources": [
+        "GitHub PR #749 remote metadata observed at material head 2274927adaf4ee7679a4b3e322d727a3145f03c7"
+      ]
+    },
+    {
+      "id": "CASE-016",
+      "status": "passed",
+      "claim": "The group member controller only rewrites the specifically selected primary submit action, preserving Save and continue button name and hiding the continue action in group member mode.",
+      "sources": [
+        "apps/web/src/dev-server/transaction-group-member-form-guard.ts:135-226",
+        "apps/web/src/dev-server/transaction-group-member-form-guard.test.ts:20-65"
+      ]
+    },
+    {
+      "id": "CASE-017",
+      "status": "passed",
+      "claim": "Immutable manual_entry purpose survives rename and cannot be activated even with name and status changes on the same PATCH request; PostgreSQL enforces immutability.",
+      "sources": [
+        "apps/api/src/repositories/automation-rules.ts:127-195",
+        "apps/api/src/manual-entry-fill-rules.integration.test.ts:70-139",
+        "prisma/migrations/20261028124500_immutable_manual_rule_purpose/migration.sql:1-29"
+      ]
+    },
+    {
+      "id": "CASE-018",
+      "status": "passed",
+      "claim": "Inherited Statement footer-clipping controls were observed in real Chrome on the exact material SHA in 320, 390, 1366, with clipped-action and duplicate-name negative mutations rejected.",
+      "sources": [
+        "scripts/statement-visual/statement-contextual-surfaces.mjs:100-180",
+        "scripts/statement-visual/statement-contextual-action-labels.mjs:1-40",
+        "scripts/statement-visual/statement-contextual-assertions.mjs:1-95",
+        "evidence/issue-747-footer-controls.json",
+        "evidence/issue-747-footer-controls.json"
+      ]
+    }
+  ]
+}

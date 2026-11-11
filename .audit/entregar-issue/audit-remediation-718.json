@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "2d90c077aa6e25644c648b8e44d72e4516edcc71",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:14498b49-3a8e-48e2-8284-9707a85cb77e",
+    "audit_report_sha256": "7f378c17733bbf463385097d6f63488acffe9e4ef0f28ecfb9500928df8bc878",
+    "audited_head_sha": "31ff29fd2a3bb6b9836d2e156a379652d9737cb0"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A718-05",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/reports-route-page-styles.ts",
+        "scripts/statement-visual/report-page-viewport.mjs",
+        "scripts/statement-visual/report-page-viewport.test.mjs",
+        "scripts/statement-visual/reports-718-behavior-evidence.mjs",
+        "scripts/statement-visual/reports-718-behavior-evidence.test.mjs",
+        "scripts/statement-visual/reports-718-extra-browser.mjs",
+        "scripts/statement-visual/reports-718-multicurrency-browser.mjs",
+        "scripts/statement-visual/reports-installments-regression.mjs",
+        "docs/REPORTS.md"
+      ],
+      "evidence": [
+        "Chrome desktop installment month label width 121.66px with available width 290.13px; forced regression width 114.06px detected/rejected and restored",
+        "Chrome desktop evolution account/month/currency selected label fits=true; forced six-column mutation rejected and restored",
+        "Chrome tablet 1024x768 and mobile 390x844 / 320x740 filter values fit across reports, negative controls preserved",
+        "reports-route-page-styles.ts three columns at desktop 1181..1920px; reusable reportSelectedFilterFitExpression helper; docs/REPORTS.md updated"
+      ],
+      "validations": [
+        "Repository CI run 39879361620 completed/success material 2d90c077aa6e25644c648b8e44d72e4516edcc71",
+        "Statement visual validation run 39879361649 completed/success material 2d90c077aa6e25644c648b8e44d72e4516edcc71, artifact 12470087005; raw reports-installments-regression.json SHA256=b9d73f2d60fd76cc29d86c82dab81d927beea783902ffdb83a3749760cc0e475 and reports-category-evolution.json SHA256=7baa836f00c129b4a97d0b566394d42b7be3aaa7961b0516d91c01b0877524f4; failures=[]",
+        "19/19 focused Node tests passed, and codebase grounding + CODE-GROWTH-001 exact SHA READY"
+      ]
+    }
+  ]
+}

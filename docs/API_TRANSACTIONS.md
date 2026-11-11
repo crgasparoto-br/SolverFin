@@ -14,6 +14,24 @@ Os contratos sao autenticados e isolados por organizacao e perfil financeiro. Re
 contexto retornam `404 TENANT_RESOURCE_NOT_FOUND`. Erros especificos distinguem selecao
 insuficiente, incompatibilidade, inelegibilidade, associacao existente e conflito concorrente.
 
+## Idempotência de lançamentos manuais (#747)
+
+`POST /api/transactions` aceita o campo opcional `idempotencyKey` (UUID)
+para tentativas iniciadas na interface de Novo lançamento. Clientes existentes
+sem essa chave mantêm o contrato anterior. A chave é isolada por organização
+e perfil financeiro e registrada em `TransactionCreationRequest` na mesma
+transação PostgreSQL que grava o lançamento e sua auditoria.
+
+- Primeira gravação válida: `201`, com `{ "transaction": ... }`.
+- Reenvio da mesma chave e do mesmo payload: `200`, com o mesmo lançamento.
+- Reutilização da chave com outro payload: `409 TRANSACTION_IDEMPOTENCY_CONFLICT`.
+- Chave inválida: `400 TRANSACTION_IDEMPOTENCY_KEY_INVALID`.
+
+A interface preserva a chave entre falhas ambíguas de transporte e só cria
+nova tentativa após confirmação. Ao fechar o modal após uma tentativa de gravação,
+o Extrato recarrega os lançamentos confirmados, inclusive quando a resposta
+original se perdeu. Uma falha na transação reverte também a reserva da chave.
+
 ## Objetivo
 
 Este contrato descreve a API inicial de lancamentos financeiros do SolverFin.
@@ -324,3 +342,9 @@ Todos os exemplos usam dados ficticios.
 ## Parcelamento manual canônico
 
 A criação parcelada do Extrato não usa múltiplos `POST /api/transactions`. O cliente chama `POST /api/installments`, e cada transação resultante recebe `source=installment` e `installmentId`. A descrição base não recebe sufixo `N/M`; a sequência pertence ao registro `Installment`, e a observação permanece em `Transaction.note`.
+
+## Filtro opcional de data canonica do Extrato
+
+`GET /api/transactions?accountId=...&status=all&statementTo=YYYY-MM-DD` aplica um cutoff inclusivo sobre a data de exibicao da movimentacao (`effectiveOn ?? plannedOn ?? occurredOn`). Essa regra garante que uma movimentacao efetivada no dia consultado nao desapareca apenas porque `occurredOn` difere do dia efetivo. O filtro respeita o contexto autenticado de organizacao e perfil e nao altera lancamentos.
+
+Os filtros existentes `occurredFrom`/`occurredTo`, `plannedFrom`/`plannedTo` e `effectiveFrom`/`effectiveTo` conservam a semantica original, para os consumidores que necessitam da data de ocorrencia, previsao ou efetivacao isoladamente. No Extrato, as consultas especificas de evidencia `posted` e `planned` usam o cutoff da respectiva evidencia; as demais usam `statementTo` para compor saldos/linhas pela mesma data exibida.

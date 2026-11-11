@@ -11,6 +11,7 @@ import type { TenantContext } from "./tenant.js";
 import { getTenantScopedResource, listTenantScopedResources } from "./tenant-authorization.js";
 
 export type AutomationRuleStatus = "active" | "inactive";
+export type AutomationRulePurpose = "automation" | "manual_entry";
 export type AutomationRuleActionStatus = TransactionStatus | ImportSuggestionStatus;
 
 export interface AutomationRuleAmountCondition {
@@ -38,6 +39,8 @@ export interface AutomationRuleActions {
 
 export interface AutomationRule extends Traceable, TenantScoped {
   name: string;
+  /** Immutable persistence origin. Missing only in legacy test fixtures. */
+  purpose?: AutomationRulePurpose;
   status: AutomationRuleStatus;
   priority: number;
   conditions: AutomationRuleConditions;
@@ -94,7 +97,12 @@ export function applyAutomationRules<TTarget extends AutomationRuleTarget>(
   const appliedFields = new Set<keyof AutomationRuleActions>();
   const appliedRules: AppliedAutomationRule[] = [];
   const matchingRules = listTenantScopedResources(input.context, input.rules)
-    .filter((rule) => rule.status === "active" && matchesAutomationRule(rule, target))
+    .filter(
+      (rule) =>
+        rule.status === "active" &&
+        rule.purpose !== "manual_entry" &&
+        matchesAutomationRule(rule, target),
+    )
     .sort(compareAutomationRules);
 
   for (const rule of matchingRules) {

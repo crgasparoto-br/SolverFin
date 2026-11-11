@@ -6,6 +6,8 @@ Este contrato adiciona leitura historica, atual e futura de parcelas e a criacao
 
 A manutencao direta continua controlada pelo backend e limitada a campos seguros da transacao vinculada. O cliente nao pode alterar fatura, cartao agrupador, instrumento, valor, vencimento, tenant ou perfil financeiro pela rota de manutencao.
 
+**Complemento de compras de cartão (#742):** a operação dedicada `PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` corrige valores de ocorrências de compra parcelada quando a fatura está aberta e a parcela não está conciliada. Seu escopo `current` ou `current_and_future` e os totais ajustados estão documentados em `docs/API_CREDIT_CARDS_INVOICES.md`. Essa rota não altera o contrato genérico de `PATCH /api/installments/:installmentId` nem a transação-base da compra; não deve ser utilizada para recorrências.
+
 ## Endpoints
 
 ```http
@@ -228,11 +230,12 @@ Razoes iniciais:
 ```text
 linked_transaction_missing
 installment_status_locked
+recurrence_cancelled
 transaction_status_locked
 invoice_linked
 ```
 
-Parcelas ligadas a fatura, transacao postada/conciliada/cancelada, parcela nao planejada ou sem transacao vinculada nao devem exibir acao de edicao direta. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
+A edicao de descricao, observacao e categoria permanece restrita a parcelas planejadas. O ajuste especifico de valor e permitido tambem para parcelas efetivadas nao conciliadas, desde que a transacao vinculada esteja efetivada. Parcelas conciliadas, canceladas, ligadas a fatura/cartao ou sem transacao vinculada nao admitem ajuste direto. Quando existe `invoiceId`, `invoice_linked` prevalece sobre os bloqueios genericos de situacao porque a manutencao deve ser explicada pelo contrato operacional da compra da fatura. Para uma recorrência cancelada, `editable=false` e `amountEditable=false` em todas as parcelas, e o motivo é `recurrence_cancelled` (salvo precedência de fatura). O `PATCH` individual com `scope="current"` ou escopo omitido também retorna `409 INSTALLMENT_EDIT_BLOCKED`. O backend bloqueia a regra canônica de recorrência dentro da transação, impedindo que um cancelamento concorrente autorize alteração parcial após a consulta inicial. O backend revalida a mesma elegibilidade durante o `PATCH` para cobrir mudancas de estado entre consulta e salvamento.
 
 ## PATCH /api/installments/:installmentId
 
@@ -242,13 +245,21 @@ Payload permitido:
 {
   "description": "Assinatura ficticia ajustada",
   "note": "Observacao ficticia opcional",
-  "categoryId": "category-demo"
+  "categoryId": "category-demo",
+  "amountMinor": 10125,
+  "scope": "current"
 }
 ```
 
-Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
+Todos os campos sao opcionais, mas o payload deve trazer pelo menos um deles. `note` pode ser `null` para limpar a observacao. `amountMinor` e inteiro positivo de centavos e precisa ser um inteiro seguro. Campos fora da allowlist retornam `400 INSTALLMENT_PAYLOAD_INVALID`.
 
-A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente de transacao, sincroniza a parcela quando necessario e grava auditoria minimizada/redigida da mutacao financeira. A resposta retorna a parcela recarregada:
+**Elegibilidade separada:** descricao, observacao e categoria continuam editaveis apenas quando `editable=true` (parcela planejada elegivel). O valor da parcela e editavel quando `amountEditable=true`: parcelas planejadas ou efetivadas nao conciliadas, com estados da parcela e da transacao correspondentes, sem vinculo com cartao/fatura. Parcelas conciliadas, canceladas, de cartao, com fatura ou sem transacao vinculada permanecem bloqueadas. Para uma parcela efetivada, enviar somente `amountMinor`; os demais campos sao rejeitados por `409 INSTALLMENT_EDIT_BLOCKED`.
+
+O ajuste de valor exige escopo explícito na experiência web: `scope="current"` aplica somente à parcela selecionada; `scope="current_and_future"` aplica à atual e às parcelas posteriores elegíveis do **mesmo parcelamento manual ou recorrência de conta**. O escopo é aceito somente no `PATCH` da parcela; quando omitido, mantém-se a compatibilidade de atualização individual. No modo futuro, o payload deve conter somente `amountMinor` e `scope`. Valores, datas e situações das parcelas anteriores, conciliadas, canceladas ou não elegíveis são preservados.
+
+Nos **parcelamentos manuais**, a associação das parcelas futuras é obtida exclusivamente pelo recibo persistido de `InstallmentCreationRequest.response.installments` filtrado por `organizationId` e `financialProfileId`, sem heurística por descrição, calendário, categoria ou valor. Em série legada sem recibo inequívoco, o servidor retorna `409 INSTALLMENT_SCOPE_UNAVAILABLE`; IDs fora do perfil retornam `404`. A operação utiliza transação e bloqueios por grupo/parcela, revalida elegibilidade antes de escrever e atualiza atomicamente `Transaction.amountMinor` e `Installment.amountMinor` em cada parcela autorizada. A resposta preserva `installment` e acrescenta `updatedCount` e `skippedCount`. O valor de cada parcela selecionada passa a ser o informado, sem redistribuição residual, sem mudar datas, contas ou situação.
+
+Nas **ocorrências de recorrência de conta**, `current_and_future` reutiliza a operação canônica de alteração da recorrência: ajusta a ocorrência atual, as futuras planejadas elegíveis e o valor da regra para novas materializações; as conciliadas, canceladas e efetivadas posteriormente não são alteradas. Não há transferência de contexto para compras de cartão, e a operação continua limitada a `amountMinor` e `scope`. A mutacao atualiza a transacao vinculada de forma atomica pelo fluxo existente de transacao, sincroniza a parcela quando necessario e grava auditoria minimizada/redigida da mutacao financeira. A resposta retorna a parcela recarregada:
 
 ```json
 {
@@ -311,3 +322,21 @@ Essa decisao preserva a acao de exclusao logica ja existente no Extrato sem tran
 - A edicao direta de parcela de conta envia apenas os campos efetivamente alterados entre `description`, `note` e `categoryId`. Sem alteracao, o cliente nao envia `PATCH`. Categoria arquivada vinculada ao historico e preservada no formulario e so e removida quando o usuario escolhe explicitamente **Sem categoria**.
 - Para `409 INSTALLMENT_EDIT_BLOCKED`, o modal permanece aberto, conserva os valores digitados e permite recarregar o estado atual. O endpoint generico `PATCH /api/transactions/:transactionId` retorna `409 INSTALLMENT_DIRECT_UPDATE_REQUIRED` para mutacoes de dados de uma transacao com `installmentId`; a unica excecao e o payload exclusivo de situacao usado pela acao operacional existente de conciliar ou desconciliar. A excecao valida o estado atual: `planned|posted -> reconciled` e `reconciled -> posted` sao permitidos; `planned -> posted`, payload combinado e qualquer outro status continuam bloqueados. Assim, indisponibilidade ou atraso da consulta complementar nao libera alteracao de valor, datas, conta, descricao, categoria ou outros campos fora do contrato da parcela.
 - Parcelas com `invoice_linked` sao mantidas em leitura no contrato de parcelas; a edicao operacional continua exclusivamente no endpoint da compra da fatura.
+
+## Edição da ocorrência recorrente após desconciliação — issue #774
+
+A regra de bloqueio do `PATCH /api/transactions/:transactionId` **continua
+vigente** para alterações combinadas de dados de qualquer parcela canônica.
+O endpoint genérico admite somente a conciliação/desconciliação por payload
+exclusivo de situação.
+
+O modal do Extrato oferece **Somente este lançamento** de recorrência de
+conta na rota dedicada `PATCH /api/transactions/:transactionId/current-only`.
+Esta rota permite editar uma ocorrência `planned` ou `posted`, inclusive após
+conciliar e desconciliar, desde que a recorrência não esteja cancelada, não
+pertença a cartão/fatura e a parcela relacionada não esteja bloqueada.
+O servidor rejeita transação sem recorrência, compras de cartão, lançamentos
+ainda conciliados/anulados, mudança de status pelo editor e tentativa de
+expandir o escopo futuro. Tenant e perfil são validados. Valor e data da
+parcela selecionada são sincronizados, sem modificar as demais ocorrências
+ou a regra da recorrência.

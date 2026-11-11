@@ -4,6 +4,7 @@ import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { verifyAdminNetworkRecovery } from "./admin-institutions-network-check.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -54,6 +55,8 @@ let browser;
 let compat;
 let desktop;
 let mobile;
+let compactMobile;
+let adminScenarios;
 let browserVersion = "unknown";
 
 await mkdir(outputDir, { recursive: true });
@@ -67,6 +70,10 @@ try {
   assert.equal(login.ok, true, "Demo login failed: " + login.status);
   desktop = await verify(browser.cdp, 1366, 768, "desktop");
   mobile = await verify(browser.cdp, 390, 844, "mobile");
+  if (route === "/admin/instituicoes") {
+    compactMobile = await verify(browser.cdp, 320, 740, "compact-mobile");
+    adminScenarios = await verifyAdminScenarios(browser.cdp);
+  }
 } catch (error) {
   failures.push({
     message: "Issue #615 route validation crashed",
@@ -89,6 +96,8 @@ const report = {
   failures,
   desktop,
   mobile,
+  compactMobile,
+  adminScenarios,
 };
 await writeFile(
   join(outputDir, "issue-615-secondary-" + slug + ".json"),
@@ -145,15 +154,30 @@ async function verify(cdp, width, height, label) {
 
   if (route === "/admin/instituicoes") {
     check(
-      measurements.routeSpecific.summaryCards >= 4,
-      label + ": summary incomplete",
+      measurements.routeSpecific.summaryCards === 0 &&
+        measurements.routeSpecific.compactSummary === 4,
+      label + ": metrics still compete with catalog",
       measurements,
     );
     check(
-      measurements.routeSpecific.filterControls >= 8,
-      label + ": filters incomplete",
+      measurements.routeSpecific.filterControls === 8 &&
+        measurements.routeSpecific.primaryFilters === 3,
+      label + ": progressive filter controls incomplete",
       measurements,
     );
+    check(
+      measurements.routeSpecific.advancedCollapsed &&
+        measurements.routeSpecific.catalogAfterFilters,
+      label + ": advanced filters compete with catalog",
+      measurements,
+    );
+    if (width <= 390 && measurements.routeSpecific.firstRowTop !== null) {
+      check(
+        measurements.routeSpecific.firstRowTop < height,
+        label + ": first catalog row is below the initial viewport",
+        measurements,
+      );
+    }
   }
   if (route === "/admin/indices-financeiros") {
     check(
@@ -177,6 +201,112 @@ async function verify(cdp, width, height, label) {
   }
 
   return { viewport: { width, height }, measurements, keyboard, screenshot: image };
+}
+
+async function verifyAdminScenarios(cdp) {
+  const filterRuns = [];
+  const modalRuns = [];
+  const networkRuns = [];
+  for (const [width, height, label] of [
+    [1366, 768, "desktop"],
+    [390, 844, "mobile"],
+    [320, 740, "compact-mobile"],
+  ]) {
+    await setViewport(cdp, width, height);
+    await navigate(
+      cdp,
+      baseUrl + route + "?q=__issue728_no_match__&logoStatus=fallback&sort=bankCode&order=desc",
+    );
+    await waitReady(cdp);
+    const filtered = await evaluate(
+      cdp,
+      `(() => {
+      const details = document.querySelector(".admin-advanced-filters");
+      const chips = document.querySelectorAll(".active-filter-chip");
+      return {
+        noResults: document.querySelector(".empty-state")?.textContent?.includes("Nenhum resultado para os filtros aplicados"),
+        chips: chips.length,
+        chipsVisible: Array.from(chips).every((chip) => chip.getClientRects().length > 0),
+        detailsClosed: Boolean(details && !details.open),
+        filterCount: document.querySelector(".advanced-count")?.textContent?.trim(),
+        sorting: document.querySelector('select[name="sort"]')?.value,
+        order: document.querySelector('input[name="order"]')?.value,
+        horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+      };
+    })()`,
+    );
+    check(
+      filtered.noResults &&
+        filtered.chips === 1 &&
+        filtered.chipsVisible &&
+        filtered.detailsClosed &&
+        filtered.filterCount === "1 ativos",
+      label + ": active filter not visible with empty catalog",
+      filtered,
+    );
+    check(
+      filtered.sorting === "bankCode" && filtered.order === "desc" && !filtered.horizontalOverflow,
+      label + ": sorting or reflow failed",
+      filtered,
+    );
+    const filteredImage = "issue-728-admin-filtered-" + label + "-" + width + "x" + height + ".png";
+    await screenshot(cdp, join(outputDir, filteredImage));
+    filterRuns.push({
+      viewport: { width, height },
+      screenshot: filteredImage,
+      assertions: filtered,
+    });
+
+    await navigate(cdp, baseUrl + route);
+    await waitReady(cdp);
+    const dialog = await evaluate(
+      cdp,
+      `(() => {
+      const trigger = document.querySelector(".institution-logo-trigger");
+      trigger?.click();
+      const modal = document.querySelector(".logo-upload-dialog[open]");
+      const rect = modal?.getBoundingClientRect();
+      return {
+        triggerFound: Boolean(trigger),
+        open: Boolean(modal),
+        labelled: Boolean(modal?.getAttribute("aria-labelledby")),
+        acceptsImages: Boolean(modal?.querySelector('input[accept="image/png,image/jpeg,image/webp"]')),
+        withinViewport: Boolean(rect && rect.left >= -1 && rect.right <= innerWidth + 1 && rect.top >= -1 && rect.bottom <= innerHeight + 1),
+        horizontalOverflow: document.documentElement.scrollWidth > document.documentElement.clientWidth + 1,
+        fallbackAvailable: Boolean(document.querySelector(".institution-logo-trigger span:not(.logo-upload-hint)")),
+      };
+    })()`,
+    );
+    check(
+      dialog.triggerFound &&
+        dialog.open &&
+        dialog.labelled &&
+        dialog.acceptsImages &&
+        dialog.withinViewport &&
+        dialog.fallbackAvailable &&
+        !dialog.horizontalOverflow,
+      label + ": logo upload dialog not accessible or clipped",
+      dialog,
+    );
+    const modalImage = "issue-728-admin-upload-" + label + "-" + width + "x" + height + ".png";
+    await screenshot(cdp, join(outputDir, modalImage));
+    modalRuns.push({ viewport: { width, height }, screenshot: modalImage, assertions: dialog });
+    await evaluate(cdp, `document.querySelector(".logo-upload-dialog[open]")?.close(); true`);
+
+    const network = await verifyAdminNetworkRecovery(cdp);
+    check(
+      network.refreshExists &&
+        network.statusExists &&
+        network.refreshEnabled &&
+        network.statusEnabled &&
+        network.refreshMessage?.includes("Tente novamente") &&
+        network.statusMessage.includes("Tente novamente"),
+      label + ": network rejection left an admin action disabled or without feedback",
+      network,
+    );
+    networkRuns.push({ viewport: { width, height }, assertions: network });
+  }
+  return { filtered: filterRuns, upload: modalRuns, network: networkRuns };
 }
 
 async function waitReady(cdp) {
@@ -255,7 +385,12 @@ function measurementExpression() {
         ready: Boolean(root.querySelector(${routeSelector})),
         restricted: Boolean(root.querySelector('[data-state="permission"]')),
         summaryCards: root.querySelectorAll(".sf-metric-card").length,
-        filterControls: root.querySelectorAll(".filters-grid input,.filters-grid select,.filters-grid button").length,
+        compactSummary: root.querySelectorAll(".admin-summary-item").length,
+        firstRowTop: root.querySelector(".admin-institution-row")?.getBoundingClientRect().top ?? null,
+        primaryFilters: root.querySelectorAll(".filters-grid input,.filters-grid select").length,
+        filterControls: root.querySelectorAll(".filters-grid input,.filters-grid select,.advanced-filters-grid input,.advanced-filters-grid select").length,
+        advancedCollapsed: Boolean(root.querySelector(".admin-advanced-filters:not([open]) summary")),
+        catalogAfterFilters: Boolean(root.querySelector(".filters-panel")?.compareDocumentPosition(root.querySelector(".list-panel")) & Node.DOCUMENT_POSITION_FOLLOWING),
         operationCards: root.querySelectorAll(".operation-card").length,
         infoAlert: Boolean(root.querySelector(".sf-alert")),
         port: location.port,

@@ -7,13 +7,19 @@ import {
 } from "@solverfin/domain";
 
 import { AuthError } from "./auth.js";
+import { withSharedTransaction, type QueryExecutor } from "./db.js";
 import { auth } from "./auth-service.js";
 import { handleCreditCardAccountsApiRequest as handleBaseCreditCardAccountsApiRequest } from "./credit-card-accounts-router.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import type { ApiRequest, ApiResponse } from "./router.js";
+import { listInstallmentsForContext } from "./repositories/installments.js";
+import { getRecurrenceForContext } from "./repositories/recurrences.js";
 import { updateRecurringAccountTransactionForContext } from "./repositories/recurring-account-transaction-edit.js";
 import { updateRecurringCardPurchaseForContext } from "./repositories/recurring-card-purchase-edit.js";
-import { updateTransactionForContext } from "./repositories/transactions.js";
+import {
+  getTransactionForContext,
+  updateTransactionForContext,
+} from "./repositories/transactions.js";
 import { resolveRequestTenantContext } from "./tenant-context.js";
 
 const RECURRING_PURCHASE_PATH = /^\/api\/credit-card-accounts\/([^/]+)\/purchases\/([^/]+)$/;
@@ -59,10 +65,17 @@ export async function handleCreditCardAccountsApiRequest(
     const context = await resolveContext(request);
 
     if (isCurrentOnlyAccountEdit && currentOnlyTransactionMatch && body) {
-      const transaction = await updateTransactionForContext(
-        context,
-        decodeURIComponent(currentOnlyTransactionMatch[1] ?? ""),
-        {
+      const transactionId = decodeURIComponent(currentOnlyTransactionMatch[1] ?? "");
+      const transaction = await withSharedTransaction(async (executeQuery) => {
+        // Serialize status changes, recurrence cancellation and installment edits.
+        await executeQuery(
+          `select "id" from "Transaction"
+             where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+             for update`,
+          [transactionId, context.organizationId, context.financialProfileId],
+        );
+        await assertCurrentOnlyRecurringAccountEdit(context, transactionId, body, executeQuery);
+        return updateTransactionForContext(context, transactionId, {
           ...(body.kind !== undefined ? { kind: String(body.kind) as TransactionKind } : {}),
           ...(body.status !== undefined
             ? { status: String(body.status) as TransactionStatus }
@@ -79,10 +92,12 @@ export async function handleCreditCardAccountsApiRequest(
           ...(body.destinationAccountId !== undefined
             ? { destinationAccountId: String(body.destinationAccountId) }
             : {}),
-          ...(body.categoryId !== undefined ? { categoryId: String(body.categoryId) } : {}),
+          ...(body.categoryId !== undefined
+            ? { categoryId: readOptionalString(body.categoryId) }
+            : {}),
           ...(body.currency !== undefined ? { currency: String(body.currency) } : {}),
-        },
-      );
+        });
+      });
 
       return json(200, { transaction, editScope: "current_only" });
     }
@@ -139,6 +154,69 @@ export async function handleCreditCardAccountsApiRequest(
     });
 
     return json(response.statusCode, response.body);
+  }
+}
+
+/**
+ * Only an eligible account recurrence may bypass the generic installment edit
+ * guard for a single occurrence. Status changes keep their status-only route.
+ */
+async function assertCurrentOnlyRecurringAccountEdit(
+  context: TenantContext,
+  transactionId: string,
+  body: Record<string, unknown>,
+  executeQuery: QueryExecutor,
+): Promise<void> {
+  const blocked = (): never => {
+    throw Object.assign(
+      new Error(
+        "Desconcilie a ocorrência recorrente antes de editar; outras parcelas exigem manutenção própria.",
+      ),
+      { code: "RECURRING_ACCOUNT_CURRENT_ONLY_EDIT_BLOCKED", statusCode: 409 },
+    );
+  };
+  const transaction = await getTransactionForContext(context, transactionId);
+  const recurrenceId = transaction.recurrenceId;
+  if (!recurrenceId) return blocked();
+  if (
+    transaction.cardId ||
+    transaction.invoiceId ||
+    transaction.accountRemuneration ||
+    !["planned", "posted"].includes(transaction.status) ||
+    body.applyToFuturePlanned === true ||
+    (body.editScope !== undefined && body.editScope !== "current_only") ||
+    (body.status !== undefined && body.status !== transaction.status)
+  )
+    blocked();
+
+  await executeQuery(
+    `select "id" from "Recurrence"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+       for update`,
+    [recurrenceId, context.organizationId, context.financialProfileId],
+  );
+  const recurrence = await getRecurrenceForContext(context, recurrenceId);
+  if (!recurrence.accountId || recurrence.cardId || recurrence.status === "cancelled") blocked();
+
+  if (transaction.installmentId) {
+    await executeQuery(
+      `select "id" from "Installment"
+         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         for update`,
+      [transaction.installmentId, context.organizationId, context.financialProfileId],
+    );
+    const [installment] = await listInstallmentsForContext(context, {
+      installmentId: transaction.installmentId,
+    });
+    if (
+      !installment ||
+      installment.recurrenceId !== recurrenceId ||
+      !["planned", "posted"].includes(installment.status) ||
+      installment.invoice ||
+      installment.card ||
+      installment.cardInstrument
+    )
+      blocked();
   }
 }
 

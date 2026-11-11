@@ -1,3 +1,4 @@
+import { seedReportData } from "./issue-606-report-fixture.mjs";
 import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
@@ -5,7 +6,9 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, setViewport, sleep } from "./cdp.mjs";
 import { fixtureExpression, loginExpression } from "./fixtures.mjs";
 import { pageMeasurementExpression } from "./measurements.mjs";
+import { reportPageViewportExpression } from "./report-page-viewport.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
+import { inspectStatementActionMenu } from "./statement-action-menu-visual.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -348,18 +351,44 @@ async function validateStatement(cdp) {
   assert.equal(structure.mainPresent, true, "Statement has no main region.");
   assert.equal(structure.visibleH1Count, 1, "Statement must expose one visible h1.");
   assert.ok(structure.rowCount > 0, "Statement has no data rows.");
+  assert.ok(structure.accountPickerWidth >= 288 && structure.accountPickerFitsViewport);
 
   const focus = await evaluate(
     cdp,
     `(() => {
-      const trigger = document.querySelector('.statement-status[data-tooltip]');
-      if (!trigger) return { exists: false, focused: false };
+      const control = document.querySelector('[data-statement-status-control]');
+      const trigger = control?.querySelector(':scope > summary');
+      const indicator = trigger?.querySelector('.statement-status[data-tooltip]');
+      if (!trigger || !indicator) return { exists: false, focused: false, accessible: false };
       trigger.focus();
-      return { exists: true, focused: document.activeElement === trigger };
+      return {
+        exists: true,
+        focused: document.activeElement === trigger,
+        accessible: trigger.getAttribute('aria-label')?.includes(indicator.getAttribute('aria-label')) === true
+      };
     })()`,
   );
   assert.equal(focus.exists, true, "Statement exposes no focusable status indicator.");
-  assert.equal(focus.focused, true, "Statement status indicator did not accept focus.");
+  assert.equal(focus.focused, true, "Statement status control did not accept focus.");
+  assert.equal(
+    focus.accessible,
+    true,
+    "Focusable status control lost its accessible situation label.",
+  );
+  for (const viewportWidth of [1101, 1100, 761, 760]) {
+    await setViewport(cdp, viewportWidth, 900);
+    await navigate(cdp, `${baseUrl}${baseRoute}`);
+    await sleep(100);
+    const layout = await inspectStatementStructure(cdp);
+    assert.equal(
+      layout.pageFits,
+      true,
+      `Statement overflows at ${viewportWidth}px: ${JSON.stringify(layout)}`,
+    );
+    assert.equal(layout.accountPickerFitsViewport, true);
+  }
+
+  const actionMenu = await inspectStatementActionMenu(cdp);
 
   const dateAsc = await inspectStatementSort(cdp, baseRoute, "date_asc");
   const dateDesc = await inspectStatementSort(cdp, baseRoute, "date_desc");
@@ -418,9 +447,10 @@ async function validateStatement(cdp) {
   assert.equal(mobileStructure.mainPresent, true, "Statement mobile has no main region.");
   assert.equal(mobileStructure.visibleH1Count, 1, "Statement mobile must expose one visible h1.");
   assert.ok(mobileStructure.rowCount > 0, "Statement mobile has no data rows.");
+  assert.ok(mobileStructure.accountPickerWidth > 0 && mobileStructure.accountPickerFitsViewport);
 
   return {
-    desktop: { measurements, structure, focus },
+    desktop: { measurements, structure, focus, actionMenu },
     mobile: { measurements: mobileMeasurements, structure: mobileStructure },
     sorting: { dateAsc, dateDesc },
     insight,
@@ -432,6 +462,11 @@ async function inspectStatementStructure(cdp) {
     cdp,
     `(() => {
       const main = document.querySelector('main');
+      const accountField = document.querySelector('.account-field');
+      const accountTrigger = document.querySelector('.account-select-trigger');
+      document.querySelector('.account-select-text')?.replaceChildren('Conta internacional muito longa para validar largura · USD');
+      const accountRect = accountTrigger?.getBoundingClientRect();
+      const accountFieldRect = accountField?.getBoundingClientRect();
       const headings = Array.from(document.querySelectorAll('main h1')).filter((heading) => {
         const rect = heading.getBoundingClientRect();
         const style = getComputedStyle(heading);
@@ -449,6 +484,8 @@ async function inspectStatementStructure(cdp) {
         rowCount: document.querySelectorAll('.statement-row.statement-body').length,
         tablePresent: Boolean(document.querySelector('.statement-table[role="table"]')),
         pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        accountPickerWidth: accountRect?.width ?? 0,
+        accountPickerFitsViewport: Boolean(accountRect && accountFieldRect && accountRect.right <= accountFieldRect.right && accountRect.right <= innerWidth),
       };
     })()`,
   );
@@ -549,7 +586,16 @@ async function validateReports(cdp) {
   const mobile = await inspectReportStructure(cdp, true);
   assert.equal(mobile.focused, true, "Reports matrix did not accept focus.");
   assert.equal(mobile.localOverflow, true, "Reports mobile matrix lost local overflow.");
-  assert.equal(mobile.pageFits, true, "Reports mobile page leaks horizontal overflow.");
+  assert.equal(
+    mobile.trendGridFits,
+    true,
+    "Reports mobile category trend must wrap without horizontal overflow.",
+  );
+  assert.equal(
+    mobile.pageFits,
+    true,
+    `Reports mobile page leaks horizontal overflow: ${JSON.stringify(mobile.overflowDiagnostics)}`,
+  );
   assert.equal(mobile.filterVisible, true, "Reports mobile filter bar is not visible.");
   assert.ok(mobile.tableCount >= 1, "Reports mobile has no semantic table.");
 
@@ -565,11 +611,14 @@ async function inspectReportStructure(cdp, focusScroller) {
       const form = document.querySelector('.evolution-filters');
       const formRect = form?.getBoundingClientRect();
       const tables = Array.from(document.querySelectorAll('table.evolution-table'));
+      const pageViewport = ${reportPageViewportExpression()};
       return {
         viewportWidth: innerWidth,
         focused: document.activeElement === scroller,
         localOverflow: Boolean(scroller && scroller.scrollWidth > scroller.clientWidth + 1),
-        pageFits: document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1,
+        trendGridFits: (() => { const trends = Array.from(document.querySelectorAll('.report-trend-grid')); return trends.length > 0 && trends.every((element) => element.scrollWidth <= element.clientWidth + 1 && getComputedStyle(element).gridAutoFlow === 'row'); })(),
+        pageFits: pageViewport.fits,
+        overflowDiagnostics: pageViewport.fits ? null : pageViewport,
         filterVisible: Boolean(formRect && formRect.width > 0 && formRect.height > 0),
         filterControlCount: form?.querySelectorAll('input, select, button, a').length || 0,
         tableCount: tables.length,
@@ -590,59 +639,6 @@ async function waitForReportReady(cdp) {
     cdp,
     `document.querySelector('[data-report-state]')?.getAttribute('data-report-state') === 'ready'`,
     "Reports did not reach ready state.",
-  );
-}
-
-async function seedReportData(cdp) {
-  return evaluate(
-    cdp,
-    `(() => {
-      const run = async () => {
-        const request = async (path, options = {}) => {
-          const response = await fetch(path, {
-            credentials: 'same-origin',
-            ...options,
-            headers: { 'content-type': 'application/json', ...(options.headers || {}) },
-          });
-          const body = await response.json().catch(() => ({}));
-          if (!response.ok) throw new Error(path + ' -> ' + response.status);
-          return body;
-        };
-        const suffix = Date.now().toString(36);
-        const accountsBody = await request('/api/accounts');
-        let account = accountsBody.accounts?.find((item) => item.status === 'active');
-        if (!account) {
-          account = (await request('/api/accounts', {
-            method: 'POST',
-            body: JSON.stringify({
-              name: 'Conta semantica ' + suffix,
-              kind: 'checking',
-              openingBalanceMinor: 0,
-            }),
-          })).account;
-        }
-        const category = (await request('/api/categories', {
-          method: 'POST',
-          body: JSON.stringify({ name: 'Despesa semantica ' + suffix, kind: 'expense' }),
-        })).category;
-        const occurredOn = new Date().toISOString().slice(0, 10);
-        await request('/api/transactions', {
-          method: 'POST',
-          body: JSON.stringify({
-            status: 'posted',
-            occurredOn,
-            plannedOn: occurredOn,
-            accountId: account.id,
-            kind: 'expense',
-            categoryId: category.id,
-            amountMinor: 87500,
-            description: 'Despesa semantica ' + suffix,
-          }),
-        });
-        return occurredOn.slice(0, 7);
-      };
-      return run();
-    })()`,
   );
 }
 

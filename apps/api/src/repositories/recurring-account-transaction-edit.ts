@@ -8,6 +8,7 @@ import {
 
 import { withTransaction, type query } from "../db.js";
 import { insertAuditLogEntry } from "./audit.js";
+import { updateRecurringInstallmentAmountOnly } from "./recurring-account-installment-amount.js";
 import { toDateOnly } from "./repository-date-utils.js";
 
 export interface RecurringAccountTransactionEditPayload {
@@ -50,7 +51,7 @@ export interface RecurringAccountTransactionEditResult {
   }>;
 }
 
-interface SelectedTransactionRow {
+export interface SelectedTransactionRow {
   id: string;
   accountId: string | null;
   destinationAccountId: string | null;
@@ -71,15 +72,19 @@ interface SelectedTransactionRow {
   frequency: string | null;
   interval: number | null;
   recurrenceStartOn: Date | null;
+  recurrenceStatus: string | null;
+  transactionInvoiceId: string | null;
+  transactionCardId: string | null;
 }
 
-interface FutureTransactionRow {
+export interface FutureTransactionRow {
   id: string;
   installmentId: string | null;
   sequenceNumber: number | null;
   status: string;
   plannedOn: Date;
   voidedAt: Date | null;
+  transactionInvoiceId: string | null;
 }
 
 class RecurringAccountEditError extends Error {
@@ -98,6 +103,7 @@ export async function updateRecurringAccountTransactionForContext(
   context: TenantContext,
   transactionId: EntityId,
   payload: RecurringAccountTransactionEditPayload,
+  options: { amountOnly?: boolean } = {},
 ): Promise<RecurringAccountTransactionEditResult> {
   return withTransaction(async (executeQuery) => {
     const selected = await findSelectedForUpdate(executeQuery, context, transactionId);
@@ -127,6 +133,16 @@ export async function updateRecurringAccountTransactionForContext(
         409,
       );
     }
+
+    if (options.amountOnly)
+      return updateRecurringInstallmentAmountOnly(
+        executeQuery,
+        context,
+        selected,
+        payload,
+        findFutureForUpdate,
+        buildSkipped,
+      );
 
     const accountId = payload.accountId ?? selected.accountId;
     if (!accountId) {
@@ -375,7 +391,9 @@ async function findSelectedForUpdate(
        t."recurrenceId", t."installmentId", t."kind", t."status", t."amountMinor",
        t."currency", t."occurredOn", t."plannedOn", t."effectiveOn",
        t."description", t."note", t."voidedAt",
-       i."sequenceNumber", r."frequency", r."interval", r."startOn" as "recurrenceStartOn"
+       t."invoiceId" as "transactionInvoiceId", t."cardId" as "transactionCardId",
+       i."sequenceNumber", r."frequency", r."interval", r."startOn" as "recurrenceStartOn",
+       r."status" as "recurrenceStatus"
      from "Transaction" t
      join "Recurrence" r
        on r."id" = t."recurrenceId"
@@ -403,7 +421,8 @@ async function findFutureForUpdate(
   selectedPlannedOn: string,
 ): Promise<FutureTransactionRow[]> {
   return executeQuery<FutureTransactionRow>(
-    `select t."id", t."installmentId", i."sequenceNumber", t."status", t."plannedOn", t."voidedAt"
+    `select t."id", t."installmentId", i."sequenceNumber", t."status", t."plannedOn", t."voidedAt",
+       t."invoiceId" as "transactionInvoiceId"
      from "Transaction" t
      left join "Installment" i
        on i."id" = t."installmentId"

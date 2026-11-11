@@ -1,0 +1,202 @@
+{
+  "schema_version": 2,
+  "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+  "base_sha": "6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9",
+  "creations": [
+    {
+      "path": "apps/web/src/dev-server/reports-export-common.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-common.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export-evolution.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-evolution.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export-installments.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-installments.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export-parity.test-helpers.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-export.test.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-parity.test-helpers.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-export.test.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export-pdf.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-pdf.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export-serializers.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export-serializers.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    },
+    {
+      "path": "apps/web/src/dev-server/reports-export.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep -n \"export\" apps/web/src/dev-server/reports-route-page.ts",
+          "git diff --name-status 6be8966a0abbe3dd9eac2243dc12ceb9e57bbcd9..fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55 -- apps/web/src/dev-server/reports-export.ts"
+        ],
+        "scope": "Compared the original SSR report renderer, canonical API views and changed test consumers before creating a focused helper.",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/reports-route-page.ts",
+            "reason_not_reused": "The existing SSR module retains its distinct page-rendering responsibility; a separate export or test helper avoids combining presentation and serialization."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Provides a narrowly scoped export concern reusing canonical API paths, with an independent test parser where applicable."
+    }
+  ],
+  "references": [],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/web/src/dev-server/reports-export.test.ts",
+      "operation": "added",
+      "scenario": "Financial export API and format semantic parity, negative filters, empty states, cross-profile authorization and PDF wrapping",
+      "requirement": "REQ-692-027",
+      "search": {
+        "queries": [
+          "git diff 534c492f..fe7dc09f -- apps/web/src/dev-server/reports-export.test.ts",
+          "git grep -n \"test\\|describe\\|it\" -- apps/web/src/dev-server/reports-export.test.ts"
+        ],
+        "scope": "Compared existing repo tests and Node built-in test runner before editing the export and CDP suites.",
+        "runner": "node --test in npm run test workspace graph",
+        "candidates": []
+      },
+      "decision": "new-test-required",
+      "justification": "New tests are necessary to detect swapped currency values and clipped PDF text that earlier tests did not test.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+        "reached_tests": [
+          "apps/web/src/dev-server/reports-export.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-692/evidence/reports-export-ci-reach.log",
+        "evidence_sha256": "fce98dfdcafcf6fd1aecae7292b7b7678979984735dd33100bad62a92db9ccea"
+      }
+    },
+    {
+      "path": "scripts/statement-visual/cdp.test.mjs",
+      "operation": "modified",
+      "scenario": "Chrome DevTools port discovery, 404 fallback, HTTP reachability and transient error negative tests",
+      "requirement": "REQ-692-029",
+      "search": {
+        "queries": [
+          "git diff 534c492f..fe7dc09f -- scripts/statement-visual/cdp.test.mjs",
+          "git grep -n \"test\\|describe\\|it\" -- scripts/statement-visual/cdp.test.mjs"
+        ],
+        "scope": "Compared existing repo tests and Node built-in test runner before editing the export and CDP suites.",
+        "runner": "node --test scripts/statement-visual/cdp.test.mjs",
+        "candidates": []
+      },
+      "decision": "extend-existing",
+      "justification": "Extended the existing CDP test suite without replacing original retry or event-discovery coverage.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "node --test scripts/statement-visual/cdp.test.mjs",
+        "exit_code": 0,
+        "subject_sha": "fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55",
+        "reached_tests": [
+          "scripts/statement-visual/cdp.test.mjs"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-692/evidence/cdp-exact-head-reach.log",
+        "evidence_sha256": "62191883a25dabb0c56759fb729aa1d092aa37a0d7334d3a025123fbc663309c"
+      }
+    }
+  ]
+}

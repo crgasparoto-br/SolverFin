@@ -4,6 +4,13 @@ import { join } from "node:path";
 
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import { assertBrowserDiagnosticPrivacy } from "./issue-755-browser-diagnostics.mjs";
+import {
+  assertAttachmentEditState,
+  assertBrowserAttachmentNegativeControls,
+  attachmentStateReaderExpression,
+  watchVisualFailures,
+} from "./issue-755-ci-determinism.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -19,6 +26,7 @@ if (!route) {
 await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let evidence;
+const diagnostics = watchVisualFailures(browser.cdp);
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -30,7 +38,18 @@ try {
   else if (route === "/cartoes") evidence = await validateInvoiceJourney();
   else if (route === "/inbox") evidence = await validateImportBatchJourney();
   else throw new Error(`Unsupported attachment visual route: ${route}`);
+} catch (error) {
+  try {
+    await diagnostics.save(outputDir, scenarioId, error);
+  } catch (diagnosticError) {
+    console.error(
+      "[issue-755] Could not preserve failure-only diagnostics:",
+      diagnosticError?.name,
+    );
+  }
+  throw error;
 } finally {
+  diagnostics.stop();
   await browser.close(outputDir);
 }
 
@@ -57,20 +76,53 @@ async function validateTransactionJourney() {
   const journeyRoute = `/lancamentos?accountId=${encodeURIComponent(fixture.accountId)}&month=2026-10`;
   await navigate(browser.cdp, `${baseUrl}${journeyRoute}`);
   await waitFor(`[data-edit="${fixture.transactionId}"]`);
-  await evaluate(
-    browser.cdp,
-    `document.querySelector('[data-edit="${fixture.transactionId}"]')?.click()`,
-  );
-  await waitFor(
-    `dialog[open] [data-attachment-workspace][data-entity-kind="transaction"][data-entity-id="${fixture.transactionId}"]`,
-  );
-  return exerciseWorkspace({
+  // Exercise the visible three-dot menu, rather than clicking a hidden action programmatically.
+  const menu = await evaluate(browser.cdp, `(() => {
+    const action = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const details = action?.closest('details.actions');
+    details?.querySelector('summary')?.click();
+    return { opened: details?.open === true, actionFound: Boolean(action) };
+  })()`);
+  assert.deepEqual(menu, { opened: true, actionFound: true });
+  await waitForExpression(`(() => {
+    const node = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const rect = node?.getBoundingClientRect();
+    if (!node || !rect || !rect.width || !rect.height) return false;
+    const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    return target === node || node.contains(target);
+  })()`);
+  const action = await evaluate(browser.cdp, `(() => {
+    const node = document.querySelector('[data-edit="${fixture.transactionId}"]');
+    const rect = node?.getBoundingClientRect();
+    if (!node || !rect || !rect.width || !rect.height) return { visible: false, clicked: false };
+    const target = document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    if (target !== node && !node.contains(target)) return { visible: false, clicked: false };
+    node.click();
+    return { visible: true, clicked: true };
+  })()`);
+  assert.deepEqual(action, { visible: true, clicked: true });
+  await waitFor(`dialog[open] [data-attachment-workspace][data-entity-kind="transaction"][data-entity-id="${fixture.transactionId}"]`);
+  const disclosureOpen = await evaluate(browser.cdp, `(() => {
+    const dialog = document.querySelector('dialog[data-modal][open]');
+    const disclosure = dialog?.querySelector('[data-statement-attachments]');
+    if (disclosure && !disclosure.open) disclosure.querySelector('summary')?.click();
+    return disclosure?.open === true;
+  })()`);
+  assert.equal(disclosureOpen, true, "Transaction attachment disclosure did not expand");
+  const editState = await evaluate(browser.cdp, `${attachmentStateReaderExpression(menu.opened, action.visible)}()`);
+  assertAttachmentEditState(editState, fixture.transactionId);
+  const lifecycle = await exerciseWorkspace({
     entityKind: "transaction",
     entityId: fixture.transactionId,
     fileName: `transaction-attachment-${fixture.suffix}.txt`,
     content: `transaction attachment ${fixture.suffix}`,
     journeyRoute,
   });
+  const negativeControls = await assertBrowserAttachmentNegativeControls(
+    browser.cdp, fixture.transactionId, menu.opened, action.visible,
+  );
+  const diagnosticPrivacy = await assertBrowserDiagnosticPrivacy(browser.cdp);
+  return { ...lifecycle, negativeControls, diagnosticPrivacy };
 }
 
 // prettier-ignore

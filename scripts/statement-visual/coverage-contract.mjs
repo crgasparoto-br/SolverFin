@@ -266,6 +266,22 @@ const keyScenarios = [
       }),
     ],
   },
+  // #715: exercise the actual acceptance scenario, not only the legacy
+  // behavioral claim adapters used by cards-interface's split execution.
+  {
+    id: "cards-golden-715",
+    module: "scripts/statement-visual/cards-golden-715.mjs",
+    coverage: [
+      coverage({
+        route: "/cartoes",
+        archetype: "A3",
+        state: "golden-acceptance",
+        layout: "desktop-1366-mobile-390-320",
+        interaction: "invoice-hierarchy-empty-long-description-modal-close",
+        dataProfile: "invoice-purchases-715",
+      }),
+    ],
+  },
   {
     id: "cards-interface",
     module: "scripts/statement-visual/cards-interface.mjs",
@@ -346,6 +362,7 @@ const simpleScenarios = [
   ["non-idempotent-ambiguity", "scripts/statement-visual/issue-553-non-idempotent-ambiguity.mjs", "/lancamentos", "A2", "ambiguous", "dialog", "no-blind-retry", "non-idempotent"],
   ["reports-category-controls", "scripts/statement-visual/issue-546-reports-category-controls.mjs", "/relatorios", "A5", "filtered", "responsive", "filters", "category-controls"],
   ["reports-selected-view-navigation", "scripts/statement-visual/issue-546-selected-view-navigation.mjs", "/relatorios", "A5", "normal", "responsive", "navigation", "selected-view"],
+  ["reports-718-visual-acceptance", "scripts/statement-visual/reports-718-visual-acceptance.mjs", "/relatorios", "A5", "normal", "desktop-mobile", "currency-isolation-long-label-overflow", "BRL-USD-long-category"],
   ["reports-installments-regression", "scripts/statement-visual/reports-installments-regression.mjs", "/relatorios", "A5", "normal", "responsive", "regression", "installments"],
   ["settings-interface", "scripts/statement-visual/settings-interface.mjs", "/configuracoes", "A4", "normal", "desktop-mobile", "form-flow", "settings"],
   ["settings-interface-reservations", "scripts/statement-visual/settings-interface-reservations.mjs", "/configuracoes", "A4", "reserved", "responsive", "form-flow", "reserved-fields"],
@@ -379,6 +396,7 @@ const simpleScenarios = [
     "master-institutions",
     "master",
   ],
+  ["admin-institutions-728-states", "scripts/statement-visual/issue-728-admin-states.mjs", "/admin/instituicoes", "admin-maintenance", "alternate", "responsive", "keyboard-native-get", "master-institutions-states", "master"],
   [
     "secondary-admin-financial-indexes",
     "scripts/statement-visual/issue-615-secondary-admin-financial-indexes.mjs",
