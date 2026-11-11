@@ -75,7 +75,7 @@ const ROW_GLYPH_KEYWORDS: ReadonlyArray<readonly [RegExp, string]> = [
  * A decorative glyph for the movement row. It is derived from the category when one is present and
  * falls back to the movement direction, so no financial meaning is invented.
  */
-function resolveRowGlyph(categoryName: string, kind: string): { key: string; html: string } {
+export function resolveRowGlyph(categoryName: string, kind: string): { key: string; html: string } {
   const match =
     categoryName && categoryName !== "Sem categoria"
       ? ROW_GLYPH_KEYWORDS.find(([pattern]) => pattern.test(categoryName))
@@ -101,9 +101,9 @@ export function renderRowGlyph(categoryName: string, kind: string): string {
  * The direction is decorative here (`aria-hidden`); the word and the row's own direction column
  * remain the accessible carriers of the information.
  */
-type CategoryDirection = "in" | "out" | "transfer";
+export type CategoryDirection = "in" | "out" | "transfer";
 
-const CATEGORY_DIRECTION_GLYPHS: Record<CategoryDirection, string> = {
+export const CATEGORY_DIRECTION_GLYPHS: Record<CategoryDirection, string> = {
   in: '<path d="M10 16.5V4.5"/><path d="m5.5 9 4.5-4.5L14.5 9"/>',
   out: '<path d="M10 3.5v12"/><path d="m5.5 11 4.5 4.5L14.5 11"/>',
   transfer:

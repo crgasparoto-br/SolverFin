@@ -1,6 +1,16 @@
 import { createStatementFilters } from "./transactions-filters.js";
 import { css } from "./transactions-page-styles.js";
-import { escapeHtml, formatDate, formatMoney, formatMovementDate, formatPercentage, renderRowGlyph } from "./transactions-render-helpers.js";
+import {
+  escapeHtml,
+  formatDate,
+  formatMoney,
+  formatMovementDate,
+  formatPercentage,
+  renderRowGlyph,
+  resolveRowGlyph,
+  CATEGORY_DIRECTION_GLYPHS,
+  type CategoryDirection,
+} from "./transactions-render-helpers.js";
 import { statementClientScriptPart1 } from "./transactions-script-part-1.js";
 import { statementClientScriptPart2 } from "./transactions-script-part-2.js";
 
