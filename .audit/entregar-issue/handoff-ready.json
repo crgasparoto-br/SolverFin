@@ -3,89 +3,71 @@
   "status": "ready",
   "phase": "final",
   "completion": {
-    "issue_completion": "complete",
-    "deferred_obligation_ids": [],
-    "remaining_issue_ids": [],
-    "parent_issue_must_remain_open": false
+    "issue_completion": "partial",
+    "deferred_obligation_ids": [
+      "OBL-005"
+    ],
+    "remaining_issue_ids": [
+      789
+    ],
+    "parent_issue_must_remain_open": true
   },
-  "created_at": "2026-11-10T16:24:42.980368+00:00",
+  "created_at": "2026-11-11T00:51:37.694439+00:00",
   "identity": {
-    "head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
-    "material_head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
-    "base_sha": "ba6af8e1a1231788740a512c24623fed25062829",
-    "merge_preview_sha": null,
-    "material_merge_preview_sha": null
+    "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+    "material_head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+    "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
+    "merge_preview_sha": "833ebc8bd5a0f867d4609b78ccd71e6b324173f7",
+    "material_merge_preview_sha": "833ebc8bd5a0f867d4609b78ccd71e6b324173f7"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 778,
-    "pull_request_number": 779,
+    "issue_number": 789,
+    "pull_request_number": 788,
     "work_item_kind": "issue",
-    "work_item_number": 778,
-    "pull_request": 779,
+    "work_item_number": 789,
+    "pull_request": 788,
     "base_ref": "develop",
-    "head_ref": "fix/778-transferencias-conciliacao-lote"
+    "head_ref": "fix/760-chrome-assistive-ready-20261110"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "ba6af8e1a1231788740a512c24623fed25062829",
-    "material_head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
+    "work_item_start_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
+    "material_head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
     "issue_changed_paths": [
-      ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-778/audit-escape-closure.json",
-      ".audit/entregar-issue/issue-778/audit-remediation.json",
-      ".audit/entregar-issue/issue-778/audit-source-result.json",
-      ".audit/entregar-issue/issue-778/code-growth.json",
-      ".audit/entregar-issue/issue-778/codebase-grounding.json",
-      ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-      ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-      ".audit/entregar-issue/issue-778/evidence/ci-test-reach-778.log",
-      ".audit/entregar-issue/issue-778/evidence/independent-audit-pr779.md",
-      ".audit/entregar-issue/issue-778/evidence/inherited-certificate-778.json",
-      ".audit/entregar-issue/issue-778/evidence/issue-778-material-diff.json",
-      ".audit/entregar-issue/issue-778/evidence/issue-778-previous-escape-verified-empty.json",
-      ".audit/entregar-issue/issue-778/evidence/static-discriminant-controls.log",
-      ".audit/entregar-issue/issue-778/inherited-controls.json",
-      ".audit/entregar-issue/issue-778/learning-closure.json",
-      ".audit/entregar-issue/issue-778/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-778/requirement-closure.json",
-      ".audit/entregar-issue/issue-778/risk-saturation.json",
-      ".audit/entregar-issue/issue-778/specification-snapshot.json",
-      ".audit/entregar-issue/issue-778/specification-sources/SRC-ISSUE-778.txt",
-      "apps/api/src/transaction-bulk-actions.integration.test.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts",
-      "apps/web/src/dev-server/transaction-bulk-selection-enhancement.ts",
-      "apps/web/src/dev-server/transactions-page-v2.test.ts",
-      "apps/web/src/dev-server/transactions-page-v2.ts",
-      "docs/API_TRANSACTION_BULK_ACTIONS.md",
-      "docs/TRANSACTIONS.md",
-      "scripts/statement-visual/transaction-bulk-selection-scenarios.mjs",
-      "scripts/statement-visual/transaction-bulk-selection.mjs"
+      "scripts/statement-visual/issue-662-card-installment-purchase.mjs"
     ],
-    "issue_delta_sha256": "3428a0fc5b47bd60cf63f471b7a03187446e2a9e14998173fa649f16fc28a862"
+    "issue_delta_sha256": "6c233013b7a987660add203b78a1d495e78fe7d03e15605ae1573b06cf655ff7"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-778/audit-escape-closure.json",
-      ".audit/entregar-issue/issue-778/audit-remediation.json",
-      ".audit/entregar-issue/issue-778/code-growth.json",
-      ".audit/entregar-issue/issue-778/codebase-grounding.json",
-      ".audit/entregar-issue/issue-778/evidence/chrome-transfer-778.json",
-      ".audit/entregar-issue/issue-778/evidence/ci-gate-observations-778.json",
-      ".audit/entregar-issue/issue-778/evidence/ci-test-reach-778.log",
-      ".audit/entregar-issue/issue-778/evidence/issue-778-material-diff.json",
-      ".audit/entregar-issue/issue-778/evidence/static-discriminant-controls.log",
-      ".audit/entregar-issue/issue-778/inherited-controls.json",
-      ".audit/entregar-issue/issue-778/learning-closure.json",
-      ".audit/entregar-issue/issue-778/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-778/risk-saturation.json"
+      ".audit/entregar-issue/issue-789/code-growth.json",
+      ".audit/entregar-issue/issue-789/codebase-grounding.json",
+      ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+      ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
+      ".audit/entregar-issue/issue-789/evidence/contract-tests-789.log",
+      ".audit/entregar-issue/issue-789/evidence/coverage-789.log",
+      ".audit/entregar-issue/issue-789/evidence/scope-negative-control-789.log",
+      ".audit/entregar-issue/issue-789/evidence/scope-negative-control-789.py",
+      ".audit/entregar-issue/issue-789/evidence/selector-negative-control-789.log",
+      ".audit/entregar-issue/issue-789/evidence/selector-negative-control-789.py",
+      ".audit/entregar-issue/issue-789/evidence/stale-ci-negative-control-789.log",
+      ".audit/entregar-issue/issue-789/evidence/stale-ci-negative-control-789.py",
+      ".audit/entregar-issue/issue-789/evidence/timeout-negative-control-789.log",
+      ".audit/entregar-issue/issue-789/evidence/timeout-negative-control-789.mjs",
+      ".audit/entregar-issue/issue-789/inherited-controls.json",
+      ".audit/entregar-issue/issue-789/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-789/requirement-closure.json",
+      ".audit/entregar-issue/issue-789/risk-saturation.json",
+      ".audit/entregar-issue/issue-789/specification-snapshot.json",
+      ".audit/entregar-issue/issue-789/specification-sources/SRC-ISSUE-789.txt"
     ]
   },
   "contract_version": "2026-08-20.3",
   "evidence_profile": "critical",
-  "remediation_mode": "targeted-remediation",
+  "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
     "skill_sha256": "1b1872db4640f75c6c26c49bcd6663aef42be5706fc46199f44a740385767e6a"
@@ -113,8 +95,8 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "7a8708985f7cdc785eb4013a2d53bd04d3ab95ffb8ebb35f173e4cdf109d3e5f",
-      "logical_sha256": "7a8708985f7cdc785eb4013a2d53bd04d3ab95ffb8ebb35f173e4cdf109d3e5f",
+      "sha256": "e056c05cc797e34887108cb2d7c1dba9bd52fa2b16a550db3cff821fdb9b0edb",
+      "logical_sha256": "e056c05cc797e34887108cb2d7c1dba9bd52fa2b16a550db3cff821fdb9b0edb",
       "logical_size": 586,
       "artifact_transport": {
         "format": "plain-json",
@@ -123,9 +105,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "59700fc8616a768d2f9e30f530be32c3085c4befe9286e43edd78f77bf13425d",
-      "logical_sha256": "59700fc8616a768d2f9e30f530be32c3085c4befe9286e43edd78f77bf13425d",
-      "logical_size": 17871,
+      "sha256": "75c2f1372bb63122f3d6f67c5247544a03731a86d3939ca3311d8423439a804f",
+      "logical_sha256": "75c2f1372bb63122f3d6f67c5247544a03731a86d3939ca3311d8423439a804f",
+      "logical_size": 8307,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -133,9 +115,9 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "6b16212039af4b31f5119603eabf16e2798916830ab0e588c373bbc31248820d",
-      "logical_sha256": "6b16212039af4b31f5119603eabf16e2798916830ab0e588c373bbc31248820d",
-      "logical_size": 73896,
+      "sha256": "f7d975e5f6e1dddd970d531fa8ffaf2e5fae99a0a109be5da75e5517f2c3abc0",
+      "logical_sha256": "f7d975e5f6e1dddd970d531fa8ffaf2e5fae99a0a109be5da75e5517f2c3abc0",
+      "logical_size": 18758,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -143,9 +125,9 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "0033fb70d8f0f572768c87f3cef175b6fc732aa0a89aaf228eeb3065c9062b26",
-      "logical_sha256": "0033fb70d8f0f572768c87f3cef175b6fc732aa0a89aaf228eeb3065c9062b26",
-      "logical_size": 6282,
+      "sha256": "8620afed27a4db11a2c225d5d46870e930ba533d87f06ff2aa373f4a0d0642df",
+      "logical_sha256": "8620afed27a4db11a2c225d5d46870e930ba533d87f06ff2aa373f4a0d0642df",
+      "logical_size": 4125,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -153,49 +135,9 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "98a062ca93363898db9e78c1ecea2def740e0f7fcc1c31b99c7c48ac77793914",
-      "logical_sha256": "98a062ca93363898db9e78c1ecea2def740e0f7fcc1c31b99c7c48ac77793914",
-      "logical_size": 180,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "71568cfecf89d83f5d11bde330a13ef4b7edd8823e1782eda76e9595eff126ad",
-      "logical_sha256": "71568cfecf89d83f5d11bde330a13ef4b7edd8823e1782eda76e9595eff126ad",
-      "logical_size": 3371,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "0dfc37f8ac989ff453ccf0f40f5b5dd32b26f9ba00f76cb0703b29f02a1942b6",
-      "logical_sha256": "0dfc37f8ac989ff453ccf0f40f5b5dd32b26f9ba00f76cb0703b29f02a1942b6",
-      "logical_size": 842,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_remediation": {
-      "name": "audit-remediation.json",
-      "sha256": "20dbec17827c95e274e4cd1e9b9e16651ea24351389a0a5d6e788a1fbacec44e",
-      "logical_sha256": "20dbec17827c95e274e4cd1e9b9e16651ea24351389a0a5d6e788a1fbacec44e",
-      "logical_size": 2459,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_source_result": {
-      "name": "audit-source-result.json",
-      "sha256": "c55afaa124c5eb41afd739e0f2c16e34823ce7287aae469e69c9224105f5a1ff",
-      "logical_sha256": "c55afaa124c5eb41afd739e0f2c16e34823ce7287aae469e69c9224105f5a1ff",
-      "logical_size": 2571,
+      "sha256": "a820fc3a3c82ba59bfcba87018fe76b6e7b100b6c530d2916ad2e451e1356cdf",
+      "logical_sha256": "a820fc3a3c82ba59bfcba87018fe76b6e7b100b6c530d2916ad2e451e1356cdf",
+      "logical_size": 1035,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -203,9 +145,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "430230b3c9d77bcbd42d60e81f66bb7eac898f85a534dea8b63ebe587aab31db",
-      "logical_sha256": "430230b3c9d77bcbd42d60e81f66bb7eac898f85a534dea8b63ebe587aab31db",
-      "logical_size": 7258,
+      "sha256": "0c7946c0e918268340ab81bb94410dadc07a90ad431de6abce50bb11f1fadaeb",
+      "logical_sha256": "0c7946c0e918268340ab81bb94410dadc07a90ad431de6abce50bb11f1fadaeb",
+      "logical_size": 230,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -213,9 +155,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "589a1c4a06bab369c85f4d8fbb564057c69ded7fbbb22247a4769cb27f4ae1e9",
-      "logical_sha256": "589a1c4a06bab369c85f4d8fbb564057c69ded7fbbb22247a4769cb27f4ae1e9",
-      "logical_size": 1142,
+      "sha256": "02f861f4dc4cabcb1a703d0a7b08550a77e8d49cd76dbb47805086e8269cdcbd",
+      "logical_sha256": "02f861f4dc4cabcb1a703d0a7b08550a77e8d49cd76dbb47805086e8269cdcbd",
+      "logical_size": 723,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -233,9 +175,9 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
+      "subject_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": false
 }

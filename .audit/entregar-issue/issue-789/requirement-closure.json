@@ -1,0 +1,190 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "specification-snapshot.json",
+    "sha256": "e056c05cc797e34887108cb2d7c1dba9bd52fa2b16a550db3cff821fdb9b0edb"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-789",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "cc19957b6607e7633fe02cd0597c4ec0c02f15eead5769345ab5ca2e7c70b32f",
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "source_line": 2,
+      "source_text": "A validação visual da PR #760 apresentou falha intermitente em `Installment accessible reason did not render` (run https://github.com/crgasparoto-br/SolverFin/actions/runs/42904542703), enquanto o mesmo cenário passou no SHA material. O SSR da fatura cria primeiro a linha da compra; `decorateCardInstallments()` posteriormente busca as parcelas e insere o texto assistivo. O teste procurava o elemento antes de aguardar essa segunda etapa.",
+      "flags": [
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-789-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Diagnosed the SSR first paint versus asynchronous installment decoration with the failing Chrome run and the changed wait boundary."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "31dc7eb1c363952ee7461ed218e1a465a96789da5f5e8c315dc695cb10eb7de2",
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "source_line": 5,
+      "source_text": "[ ] O teste Chrome aguarda o texto assistivo da **transação-alvo**, sem aceitar elemento de outro lançamento como falso positivo.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-789-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "The selector uses :has on the purchase row containing the exact fixture transaction ID before testing the assistive reason."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "53e74ce3ccce351022052997f23b886fb1b5248c47fac83ae51a1bf371810dd4",
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "source_line": 6,
+      "source_text": "[ ] A ausência permanente do texto continua causando falha; preservar as asserções sobre ocultação visual, vínculo `aria-describedby`, overflow adversarial e restauração.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-789-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "The original explicit aria-describedby, screen-reader-only positioning, overflow negative, and finally restoration guards remain unchanged."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "a3d342bc5a5f92e4893b8902dcff1fd7d21a3fdae35a1fc9460ae715c0d6cce0",
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "source_line": 7,
+      "source_text": "[ ] Validar sintaxe, contrato de cobertura e regressões focadas, além do Chrome integrado no SHA exato; não alterar regra financeira, UI produtiva ou enfraquecer os gates de acessibilidade.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-789-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "The exact material SHA has successful Repository CI and Chrome; local contract suite and coverage were executed on the patch."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "6d75c1587131ee2932613088f51f2f2a89a1cc2f09452ffb28de08d82ec05603",
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "source_line": 10,
+      "source_text": "PR de implementação: #788, base obrigatória `develop`. Dependência de estabilização de CI para #760/#714, não substitui revisão independente da issue #762. Exigir CI e auditoria própria antes do merge.",
+      "flags": [
+        "negative",
+        "temporal",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-789",
+        "decision_source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+        "decision_locator": "auditoria própria antes do merge",
+        "target_issue": 789,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "PR de implementação: #788, base obrigatória `develop`. Dependência de estabilização de CI para #760/#714, não substitui revisão independente da issue #762. Exigir CI e",
+          "rationale": "PR 788 is based on develop; CI and Chrome are terminal green on exact material SHA. The issue remains open until an auditor separately approves and the branch protection permits the merge."
+        }
+      },
+      "rationale": "The implementation and CI are delivered; the required independent review is a subsequent trusted-session gate that cannot be self-attested by this implementing session."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-789",
+      "source_sha256": "0ccf978d833a65c7b299756d91e35aea8ec1bed968ca12032bc4d1517cf86222",
+      "candidate_count": 5,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "This change only stabilizes a Chrome test wait; it adds no read model, data contract, documentation policy or producer/consumer business field.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "not-applicable",
+    "applicability_reason": "This change only stabilizes a Chrome test wait; it adds no read model, data contract, documentation policy or producer/consumer business field.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "The affected test maintains the existing accessible reason contract; validated source and repository history contain no conflicting user-facing documentation.",
+    "old_contract_terms": [],
+    "new_contract_terms": [],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "git diff --name-only 99eced51cc2f9262bb9990f032ff786293f232bf..906178554d2cb8ee7d9e88c7eb014356add21950: exactly one Chrome test script; no docs or runtime code changed."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-789-001",
+      "REQ-789-002",
+      "REQ-789-003",
+      "REQ-789-004"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004"
+    ],
+    "evidence": [
+      "Issue #789 canonical checklist and direct review of the exact Git diff",
+      "Chrome run 42909142626, CI run 42909142491, and artifact 13807825750 on material 906178554d2cb8ee7d9e88c7eb014356add21950"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}
