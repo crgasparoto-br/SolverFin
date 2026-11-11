@@ -1,10 +1,9 @@
 import { mapInstallmentHistoryRow, readNestedId } from "./installments-history-mapper.js";
-export { canEditInstallmentAmount, resolveEditBlockedReason } from "./installments-history-mapper.js";
-import type {
-  EntityId,
-  InstallmentStatus,
-  TenantContext,
-} from "@solverfin/domain";
+export {
+  canEditInstallmentAmount,
+  resolveEditBlockedReason,
+} from "./installments-history-mapper.js";
+import type { EntityId, InstallmentStatus, TenantContext } from "@solverfin/domain";
 
 import { query, withSharedTransaction } from "../db.js";
 import {
