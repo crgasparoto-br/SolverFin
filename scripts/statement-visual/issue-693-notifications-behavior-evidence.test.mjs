@@ -18,12 +18,17 @@ function validReport() {
       noHorizontalOverflow: true,
     })),
     preference: { changedAndRestored: true, persistsAcrossReload: true },
+    navigation: { preservesProfileId: true, preservesAnchor: true },
   };
 }
 
 test("notifications behavior proof derives layout and preference assertions from both viewports", () => {
   const evidence = collectNotifications693Evidence(validReport());
-  assert.deepEqual(evidence.assertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
+  assert.deepEqual(evidence.assertions, [
+    "behavior:layout:desktop",
+    "behavior:layout:mobile",
+    "behavior:notification:navigation-context",
+  ]);
   assert.deepEqual(evidence.observations.widths, [390, 1366]);
   assert.equal(evidence.observations.preferencePersistence, true);
 });
@@ -38,6 +43,8 @@ test("notifications proof rejects missing mobile, wrong route and page errors", 
     (report) => Object.assign(report.viewports[1], { unreadCount: "1 não lidas" }),
     (report) => Object.assign(report.preference, { persistsAcrossReload: false }),
     (report) => Object.assign(report.preference, { changedAndRestored: false }),
+    (report) => Object.assign(report.navigation, { preservesProfileId: false }),
+    (report) => Object.assign(report.navigation, { preservesAnchor: false }),
   ]) {
     const report = validReport();
     modify(report);

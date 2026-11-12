@@ -39,14 +39,29 @@ export function collectNotifications693Evidence(report) {
     true,
     "Preference persistence across reload was not observed.",
   );
+  assert.equal(
+    report.navigation?.preservesProfileId,
+    true,
+    "Notification origin navigation lost the authorized profile selection.",
+  );
+  assert.equal(
+    report.navigation?.preservesAnchor,
+    true,
+    "Notification origin navigation lost the safe destination anchor.",
+  );
   return {
     files: [EVIDENCE_FILE],
-    assertions: ["behavior:layout:desktop", "behavior:layout:mobile"],
+    assertions: [
+      "behavior:layout:desktop",
+      "behavior:layout:mobile",
+      "behavior:notification:navigation-context",
+    ],
     observations: {
       widths: [...widths].sort((left, right) => left - right),
       emptyState: true,
       preferredChannels: 12,
       preferencePersistence: true,
+      navigationContext: report.navigation,
     },
   };
 }
