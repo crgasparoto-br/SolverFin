@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { collectReport718Evidence } from "./reports-718-behavior-evidence.mjs";
 import { collectDashboard724Evidence } from "./dashboard-724-behavior-evidence.mjs";
+import { collectNotifications693Evidence } from "./issue-693-notifications-behavior-evidence.mjs";
 import { writeSemanticProof } from "./semantic-proof.mjs";
 
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -64,6 +65,9 @@ async function collectEvidence() {
   if (sourceScenario === "account-remuneration") return collectRemunerationEvidence();
   if (sourceScenario === "account-remuneration-mobile") return collectRemunerationEvidence();
   if (sourceScenario === "financial-insights") return collectFinancialInsightsEvidence();
+  if (sourceScenario === "notifications-693") {
+    return collectNotifications693Evidence(await readEvidence("issue-693-notifications.json"));
+  }
   if (sourceScenario === "cross-currency-transfer") return collectCrossCurrencyTransferEvidence();
   if (sourceScenario === "transfer-source-destination") {
     return collectTransferSourceDestinationEvidence();
