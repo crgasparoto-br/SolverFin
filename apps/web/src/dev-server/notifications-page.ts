@@ -277,7 +277,7 @@ function notificationsPageStyles(): string {
 
 function formatMinorAmount(value: number, currency: string): string {
   const formatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency });
-  const minorDigits = formatter.resolvedOptions().maximumFractionDigits;
+  const minorDigits = formatter.resolvedOptions().maximumFractionDigits ?? 2;
   return formatter.format(value / 10 ** minorDigits);
 }
 
