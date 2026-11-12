@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+  "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+  "comparison_base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": ".audit/entregar-issue/issue-714/evidence/verify_714_material.py",
+      "lines_before": null,
+      "lines_after": 99
+    }
+  ],
+  "blocking_files": []
+}

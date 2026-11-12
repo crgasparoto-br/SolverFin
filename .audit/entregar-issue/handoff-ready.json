@@ -5,64 +5,82 @@
   "completion": {
     "issue_completion": "partial",
     "deferred_obligation_ids": [
-      "OBL-005"
+      "OBL-003",
+      "OBL-008",
+      "OBL-021",
+      "OBL-023",
+      "OBL-024",
+      "OBL-025",
+      "OBL-026"
     ],
     "remaining_issue_ids": [
-      789
+      714
     ],
     "parent_issue_must_remain_open": true
   },
-  "created_at": "2026-11-11T00:51:37.694439+00:00",
+  "created_at": "2026-11-12T02:14:00.957139+00:00",
   "identity": {
-    "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
-    "material_head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
-    "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
-    "merge_preview_sha": "833ebc8bd5a0f867d4609b78ccd71e6b324173f7",
-    "material_merge_preview_sha": "833ebc8bd5a0f867d4609b78ccd71e6b324173f7"
+    "head_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+    "material_head_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+    "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+    "merge_preview_sha": "7b05cfab558aebf2689b5d8fc714176e070b289a",
+    "material_merge_preview_sha": "7b05cfab558aebf2689b5d8fc714176e070b289a"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 789,
-    "pull_request_number": 788,
+    "issue_number": 714,
+    "pull_request_number": 760,
     "work_item_kind": "issue",
-    "work_item_number": 789,
-    "pull_request": 788,
+    "work_item_number": 714,
+    "pull_request": 760,
     "base_ref": "develop",
-    "head_ref": "fix/760-chrome-assistive-ready-20261110"
+    "head_ref": "docs/714-extrato-technical-closeout-20261104"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
-    "material_head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+    "work_item_start_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+    "material_head_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
     "issue_changed_paths": [
-      "scripts/statement-visual/issue-662-card-installment-purchase.mjs"
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/issue-714/code-growth.json",
+      ".audit/entregar-issue/issue-714/codebase-grounding.json",
+      ".audit/entregar-issue/issue-714/evidence-provenance.json",
+      ".audit/entregar-issue/issue-714/evidence/governance-material-controls.json",
+      ".audit/entregar-issue/issue-714/evidence/governance-material-controls.log",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-chrome-contextual-exact-sha.json",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-documentation-contract.log",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log",
+      ".audit/entregar-issue/issue-714/evidence/verify_714_material.py",
+      ".audit/entregar-issue/issue-714/inherited-controls.json",
+      ".audit/entregar-issue/issue-714/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-714/requirement-closure.json",
+      ".audit/entregar-issue/issue-714/risk-saturation.json",
+      ".audit/entregar-issue/issue-714/specification-snapshot.json",
+      ".audit/entregar-issue/issue-714/specification-sources/SRC-ISSUE-714.txt",
+      "docs/GOLDEN_STATEMENT.md",
+      "docs/adr/0018-golden-statement-consolidated-by-currency.md",
+      "docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md",
+      "scripts/statement-visual/issue-714-documentation-contract.test.mjs"
     ],
-    "issue_delta_sha256": "6c233013b7a987660add203b78a1d495e78fe7d03e15605ae1573b06cf655ff7"
+    "issue_delta_sha256": "b72f23159030337b55397c76d6344ad5e2355f74c9772ce9ab6546d1a4ab7ce3"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-789/code-growth.json",
-      ".audit/entregar-issue/issue-789/codebase-grounding.json",
-      ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
-      ".audit/entregar-issue/issue-789/evidence/ci-summary-789.json",
-      ".audit/entregar-issue/issue-789/evidence/contract-tests-789.log",
-      ".audit/entregar-issue/issue-789/evidence/coverage-789.log",
-      ".audit/entregar-issue/issue-789/evidence/scope-negative-control-789.log",
-      ".audit/entregar-issue/issue-789/evidence/scope-negative-control-789.py",
-      ".audit/entregar-issue/issue-789/evidence/selector-negative-control-789.log",
-      ".audit/entregar-issue/issue-789/evidence/selector-negative-control-789.py",
-      ".audit/entregar-issue/issue-789/evidence/stale-ci-negative-control-789.log",
-      ".audit/entregar-issue/issue-789/evidence/stale-ci-negative-control-789.py",
-      ".audit/entregar-issue/issue-789/evidence/timeout-negative-control-789.log",
-      ".audit/entregar-issue/issue-789/evidence/timeout-negative-control-789.mjs",
-      ".audit/entregar-issue/issue-789/inherited-controls.json",
-      ".audit/entregar-issue/issue-789/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-789/requirement-closure.json",
-      ".audit/entregar-issue/issue-789/risk-saturation.json",
-      ".audit/entregar-issue/issue-789/specification-snapshot.json",
-      ".audit/entregar-issue/issue-789/specification-sources/SRC-ISSUE-789.txt"
+      ".audit/entregar-issue/issue-714/code-growth.json",
+      ".audit/entregar-issue/issue-714/codebase-grounding.json",
+      ".audit/entregar-issue/issue-714/evidence-provenance.json",
+      ".audit/entregar-issue/issue-714/evidence/governance-material-controls.json",
+      ".audit/entregar-issue/issue-714/evidence/governance-material-controls.log",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-chrome-contextual-exact-sha.json",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-documentation-contract.log",
+      ".audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log",
+      ".audit/entregar-issue/issue-714/inherited-controls.json",
+      ".audit/entregar-issue/issue-714/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-714/requirement-closure.json",
+      ".audit/entregar-issue/issue-714/risk-saturation.json",
+      ".audit/entregar-issue/issue-714/specification-snapshot.json"
     ]
   },
   "contract_version": "2026-08-20.3",
@@ -95,8 +113,8 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "e056c05cc797e34887108cb2d7c1dba9bd52fa2b16a550db3cff821fdb9b0edb",
-      "logical_sha256": "e056c05cc797e34887108cb2d7c1dba9bd52fa2b16a550db3cff821fdb9b0edb",
+      "sha256": "288400758b2e1c1517d4faf796b9df93b44416efa9aefa3e407215d49978c508",
+      "logical_sha256": "288400758b2e1c1517d4faf796b9df93b44416efa9aefa3e407215d49978c508",
       "logical_size": 586,
       "artifact_transport": {
         "format": "plain-json",
@@ -105,9 +123,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "75c2f1372bb63122f3d6f67c5247544a03731a86d3939ca3311d8423439a804f",
-      "logical_sha256": "75c2f1372bb63122f3d6f67c5247544a03731a86d3939ca3311d8423439a804f",
-      "logical_size": 8307,
+      "sha256": "d818f05f20e334a52f6cc430fa912ff462b5e019431c5bb20ee8d493e673b252",
+      "logical_sha256": "d818f05f20e334a52f6cc430fa912ff462b5e019431c5bb20ee8d493e673b252",
+      "logical_size": 41792,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -115,9 +133,9 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "f7d975e5f6e1dddd970d531fa8ffaf2e5fae99a0a109be5da75e5517f2c3abc0",
-      "logical_sha256": "f7d975e5f6e1dddd970d531fa8ffaf2e5fae99a0a109be5da75e5517f2c3abc0",
-      "logical_size": 18758,
+      "sha256": "e635572db23b9d6e9ec14e93b8ce54d7a4a6c5cf013b93152f359056b0dd43b0",
+      "logical_sha256": "e635572db23b9d6e9ec14e93b8ce54d7a4a6c5cf013b93152f359056b0dd43b0",
+      "logical_size": 98096,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -125,9 +143,9 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "8620afed27a4db11a2c225d5d46870e930ba533d87f06ff2aa373f4a0d0642df",
-      "logical_sha256": "8620afed27a4db11a2c225d5d46870e930ba533d87f06ff2aa373f4a0d0642df",
-      "logical_size": 4125,
+      "sha256": "5ee994f4e90af59a306e8b6c2cc925cffd047f5d9aac83ee87b2d5b3e6a00a19",
+      "logical_sha256": "5ee994f4e90af59a306e8b6c2cc925cffd047f5d9aac83ee87b2d5b3e6a00a19",
+      "logical_size": 6093,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -135,9 +153,19 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "a820fc3a3c82ba59bfcba87018fe76b6e7b100b6c530d2916ad2e451e1356cdf",
-      "logical_sha256": "a820fc3a3c82ba59bfcba87018fe76b6e7b100b6c530d2916ad2e451e1356cdf",
-      "logical_size": 1035,
+      "sha256": "62850bb79d6bcfc30160358728632426e704eb70697111f69471a035d7c1693d",
+      "logical_sha256": "62850bb79d6bcfc30160358728632426e704eb70697111f69471a035d7c1693d",
+      "logical_size": 22255,
+      "artifact_transport": {
+        "format": "plain-json",
+        "version": 1
+      }
+    },
+    "evidence_provenance": {
+      "name": "evidence-provenance.json",
+      "sha256": "f397c2be5a991f621c29df52f788eab175fbf1f7dac38e5f706c007b386dd9da",
+      "logical_sha256": "f397c2be5a991f621c29df52f788eab175fbf1f7dac38e5f706c007b386dd9da",
+      "logical_size": 1455,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -145,9 +173,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "0c7946c0e918268340ab81bb94410dadc07a90ad431de6abce50bb11f1fadaeb",
-      "logical_sha256": "0c7946c0e918268340ab81bb94410dadc07a90ad431de6abce50bb11f1fadaeb",
-      "logical_size": 230,
+      "sha256": "1f7cfda3d065aadc7d36f338621777b3aca244357fac521e358ddec2d6b4a254",
+      "logical_sha256": "1f7cfda3d065aadc7d36f338621777b3aca244357fac521e358ddec2d6b4a254",
+      "logical_size": 4156,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -155,9 +183,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "02f861f4dc4cabcb1a703d0a7b08550a77e8d49cd76dbb47805086e8269cdcbd",
-      "logical_sha256": "02f861f4dc4cabcb1a703d0a7b08550a77e8d49cd76dbb47805086e8269cdcbd",
-      "logical_size": 723,
+      "sha256": "250fb03fec3b857c319ae1c8088dfb58b9a081f34069af89483243a6a5c4c172",
+      "logical_sha256": "250fb03fec3b857c319ae1c8088dfb58b9a081f34069af89483243a6a5c4c172",
+      "logical_size": 722,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -175,7 +203,7 @@
       "applicable": false,
       "status": "not-applicable",
       "checked": 0,
-      "subject_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
       "reason": "Applicable evidence artifacts contain no code source locations; no synthetic anchors generated."
     }
   },
