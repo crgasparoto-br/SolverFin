@@ -174,11 +174,77 @@ async function main(): Promise<void> {
   );
 
   const externalType = "financial.invoice.due.v1";
+  const externalFacts = { code: "invoice_due" as const, severity: "warning" as const };
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "in_app",
+    enabled: false,
+  });
+  const allDisabled = { ...fixture("all-disabled"), type: externalType, facts: externalFacts };
+  assert.deepEqual(await publishFinancialNotificationForContext(context, allDisabled), {
+    notification: null,
+    created: false,
+    suppressed: true,
+  });
   await setFinancialNotificationPreferenceForContext(context, {
     type: externalType,
     channel: "push",
     enabled: true,
   });
+  const pushOnly = { ...fixture("push-only"), type: externalType, facts: externalFacts };
+  assert.deepEqual(await publishFinancialNotificationForContext(context, pushOnly), {
+    notification: null,
+    created: true,
+    suppressed: false,
+  });
+  const pushOnlyRows = await query<{ id: string; inAppVisible: boolean }>(
+    'select "id","inAppVisible" from "FinancialNotification" where "financialProfileId"=$1 and "fingerprint"=$2',
+    [context.financialProfileId, pushOnly.fingerprint],
+  );
+  assert.equal(pushOnlyRows.length, 1);
+  assert.equal(pushOnlyRows[0]?.inAppVisible, false);
+  const pushOnlyId = pushOnlyRows[0]?.id;
+  assert.ok(pushOnlyId);
+  const pushOnlyChannels = await query<{ channel: string }>(
+    'select "channel" from "FinancialNotificationDelivery" where "notificationId"=$1 order by "channel"',
+    [pushOnlyId],
+  );
+  assert.deepEqual(pushOnlyChannels.map((row) => row.channel), ["push"]);
+  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 2);
+  assert.equal(await countUnreadFinancialNotificationsForContext(context), 2);
+  await assert.rejects(() => setFinancialNotificationReadStateForContext(context, pushOnlyId, true), {
+    statusCode: 404,
+  });
+  await assert.rejects(() => getFinancialNotificationNavigationForContext(context, pushOnlyId), {
+    statusCode: 404,
+  });
+  const hiddenReadResponse = await dispatch(
+    token,
+    "PATCH",
+    "/api/notifications/" + pushOnlyId + "/read?profileId=" + context.financialProfileId,
+    { read: true },
+  );
+  assert.equal(hiddenReadResponse.statusCode, 404);
+
+  // A preference change cannot retroactively reveal an external-only event or enqueue a retry.
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "in_app",
+    enabled: true,
+  });
+  assert.deepEqual(await publishFinancialNotificationForContext(context, pushOnly), {
+    notification: null,
+    created: false,
+    suppressed: false,
+  });
+  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 2);
+  assert.deepEqual(
+    (await query<{ channel: string }>(
+      'select "channel" from "FinancialNotificationDelivery" where "notificationId"=$1',
+      [pushOnlyId],
+    )).map((row) => row.channel),
+    ["push"],
+  );
   const external = await publishFinancialNotificationForContext(context, {
     ...fixture("push"),
     type: externalType,
@@ -187,6 +253,22 @@ async function main(): Promise<void> {
   assert.equal(external.created, true);
   const notificationId = external.notification?.id;
   assert.ok(notificationId);
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "in_app",
+    enabled: false,
+  });
+  assert.ok(
+    (await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).items.some(
+      (item) => item.id === notificationId,
+    ),
+    "disabling in-app must not delete previously visible history",
+  );
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "in_app",
+    enabled: true,
+  });
   const delivery = (
     await query<{ id: string }>(
       'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1 and "channel"=$2',

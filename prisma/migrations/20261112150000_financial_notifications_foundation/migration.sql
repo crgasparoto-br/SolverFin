@@ -12,6 +12,7 @@ CREATE TABLE "FinancialNotification" (
   "resourceKind" VARCHAR(32),
   "resourceId" UUID,
   "occurredAt" TIMESTAMPTZ(3) NOT NULL,
+  "inAppVisible" BOOLEAN NOT NULL DEFAULT true,
   "readAt" TIMESTAMPTZ(3),
   "createdAt" TIMESTAMPTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
   "updatedAt" TIMESTAMPTZ(3) NOT NULL,
@@ -41,10 +42,10 @@ CREATE UNIQUE INDEX "FinancialNotification_dedup_key" ON "FinancialNotification"
   "organizationId", "financialProfileId", "recipientUserId", "eventType", "fingerprint"
 );
 CREATE INDEX "FinancialNotification_feed_idx" ON "FinancialNotification" (
-  "organizationId", "financialProfileId", "recipientUserId", "occurredAt" DESC, "id" DESC
+  "organizationId", "financialProfileId", "recipientUserId", "inAppVisible", "occurredAt" DESC, "id" DESC
 );
 CREATE INDEX "FinancialNotification_read_idx" ON "FinancialNotification" (
-  "organizationId", "financialProfileId", "recipientUserId", "readAt"
+  "organizationId", "financialProfileId", "recipientUserId", "inAppVisible", "readAt"
 );
 
 CREATE TABLE "FinancialNotificationPreference" (

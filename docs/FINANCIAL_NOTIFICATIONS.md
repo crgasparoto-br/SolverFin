@@ -16,7 +16,8 @@ Tipos aceitos:
 
 O produtor fornece type, fingerprint no formato sha256- e 64 caracteres hexadecimais,
 occurredAt UTC ISO e facts com código fechado, severidade e campos tipados opcionais
-(moeda ISO, valor em unidades menores inteiras seguras e data efetiva). Não são aceitos
+(moeda ISO, valor em unidades menores inteiras seguras e data efetiva válida no calendário,
+inclusive ano bissexto). Não são aceitos
 textos livres do provider, identificadores de contas, números arbitrários ou propriedades extras.
 Referência de recurso opcional deve pertencer ao mesmo perfil financeiro.
 
@@ -33,7 +34,14 @@ ou data divergente é conflito. Publicações e alterações de preferência usa
 lock por destinatário e evento para evitar decisões baseadas em configuração obsoleta.
 
 Padrão sem preferência gravada: in-app habilitado, push/e-mail desabilitados.
-Desabilitar in-app suprime novas publicações nesta fase, sem apagar notificações antigas.
+As preferências são independentes por canal: desabilitar in-app impede novas exibições
+in-app, mas não suprime uma outbox de push/e-mail previamente habilitada.
+`inAppVisible` é fixado na criação para impedir a exposição de notificações destinadas
+apenas a canais externos mesmo após mudar a preferência; históricos in-app já entregues
+continuam disponíveis. Quando todos os canais estão desabilitados, o evento é suprimido
+sem gravar nova notificação. Uma repetição do mesmo fingerprint não cria nova entrega nem
+altera a decisão histórica de visibilidade. O retorno interno traz `notification=null`
+quando o evento foi criado apenas para canal externo.
 Push e e-mail mantêm preferências e a outbox, mas **não há adapter externo conectado,
 worker ativo ou envio real**; processar a outbox exige uma invocação interna e uma opção
 explícita que é falsa por padrão. Adapter futuro deve garantir a idempotência com a
@@ -70,7 +78,8 @@ Nenhum canal externo é chamado pelo servidor atual.
 ## Validação e rollout
 
 Aplicar migration pelo pipeline existente. A matriz de testes contempla dados repetidos
-e concorrentes, isolamento cross-profile e cross-user, preferências, marcação repetida,
+e concorrentes, isolamento cross-profile e cross-user, preferências independentes por
+canal, visibilidade histórica, data de calendário inválida, marcação repetida,
 crash/retry com fake adapter e idempotencyKey estável, ausência de envio quando desabilitado,
 erro de banco e renderização segura. A ativação real de push/e-mail, provedores,
 identificação de destino e consentimento revogável exigem issue própria e validação adicional.

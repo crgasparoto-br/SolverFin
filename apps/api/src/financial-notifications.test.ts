@@ -22,6 +22,11 @@ const valid: FinancialNotificationEvent = {
   },
 };
 assert.doesNotThrow(() => validateFinancialNotificationEvent(valid));
+for (const effectiveOn of ["2024-02-29", "2000-02-29", "2026-12-31"]) {
+  assert.doesNotThrow(() =>
+    validateFinancialNotificationEvent({ ...valid, facts: { ...valid.facts, effectiveOn } }),
+  );
+}
 assert.equal(parseNotificationEventType("financial.invoice.due.v1"), "financial.invoice.due.v1");
 assert.equal(parseNotificationChannel("in_app"), "in_app");
 
@@ -41,6 +46,10 @@ const invalid: Array<[string, unknown]> = [
     { ...valid, facts: { code: "budget_threshold", severity: "warning", amountMinor: 10 } },
   ],
   ["invalid-date", { ...valid, occurredAt: "2026-02-30T12:00:00.000Z" }],
+  ["invalid-effective-on-day", { ...valid, facts: { ...valid.facts, effectiveOn: "2026-02-31" } }],
+  ["invalid-effective-on-month", { ...valid, facts: { ...valid.facts, effectiveOn: "2026-13-01" } }],
+  ["invalid-effective-on-leap", { ...valid, facts: { ...valid.facts, effectiveOn: "2026-02-29" } }],
+  ["invalid-effective-on-century", { ...valid, facts: { ...valid.facts, effectiveOn: "1900-02-29" } }],
   [
     "unscoped-external-resource",
     { ...valid, resource: { kind: "invoice", id: "33333333-3333-4333-8333-333333333331" } },

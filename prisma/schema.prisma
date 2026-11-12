@@ -900,6 +900,7 @@ model FinancialNotification {
   resourceKind       String?   @db.VarChar(32)
   resourceId         String?   @db.Uuid
   occurredAt         DateTime @db.Timestamptz(3)
+  inAppVisible       Boolean  @default(true)
   readAt             DateTime? @db.Timestamptz(3)
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
@@ -910,8 +911,8 @@ model FinancialNotification {
 
   @@unique([id, organizationId, financialProfileId, recipientUserId], map: "FinancialNotification_scoped_id_key")
   @@unique([organizationId, financialProfileId, recipientUserId, eventType, fingerprint], map: "FinancialNotification_dedup_key")
-  @@index([organizationId, financialProfileId, recipientUserId, occurredAt, id], map: "FinancialNotification_feed_idx")
-  @@index([organizationId, financialProfileId, recipientUserId, readAt], map: "FinancialNotification_read_idx")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, occurredAt, id], map: "FinancialNotification_feed_idx")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, readAt], map: "FinancialNotification_read_idx")
 }
 
 /// A missing preference means in-app enabled and all external channels disabled.

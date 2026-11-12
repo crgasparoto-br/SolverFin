@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { TenantAuthorizationError, type TenantContext } from "@solverfin/domain";
 
 import { query, withSharedTransaction, type QueryExecutor } from "./db.js";
+import { isValidDateOnly } from "./installments-route-helpers.js";
 import { insertAuditLogEntry } from "./repositories/audit.js";
 
 export const FINANCIAL_NOTIFICATION_EVENT_TYPES = [
@@ -66,6 +67,7 @@ interface NotificationRow {
   occurredAt: Date;
   createdAt: Date;
   readAt: Date | null;
+  inAppVisible: boolean;
   resourceKind: string | null;
   resourceId: string | null;
 }
@@ -239,7 +241,20 @@ export async function publishFinancialNotificationForContext(
   return withSharedTransaction(async (executeQuery) => {
     await assertFinancialNotificationScope(context, executeQuery);
     await lockPreferenceOrdering(executeQuery, context, event.type);
-    if (!(await readEffectiveNotificationPreference(context, event.type, "in_app", executeQuery))) {
+    const inAppVisible = await readEffectiveNotificationPreference(
+      context,
+      event.type,
+      "in_app",
+      executeQuery,
+    );
+    const externalChannels: ExternalNotificationChannel[] = [];
+    for (const channel of ["push", "email"] as const) {
+      if (await readEffectiveNotificationPreference(context, event.type, channel, executeQuery)) {
+        externalChannels.push(channel);
+      }
+    }
+    // The in-app preference must never suppress an independently enabled external channel.
+    if (!inAppVisible && externalChannels.length === 0) {
       return { notification: null, created: false, suppressed: true };
     }
     if (event.resource) await assertResourceAllowed(context, event.resource, executeQuery);
@@ -255,16 +270,17 @@ export async function publishFinancialNotificationForContext(
       event.resource?.kind ?? null,
       event.resource?.id ?? null,
       event.occurredAt,
+      inAppVisible,
     ];
     const inserted = await executeQuery<NotificationRow>(
       [
         'insert into "FinancialNotification"',
         '("id","organizationId","financialProfileId","recipientUserId","eventType","fingerprint",',
-        '"facts","resourceKind","resourceId","occurredAt","updatedAt")',
-        "values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,now())",
+        '"facts","resourceKind","resourceId","occurredAt","inAppVisible","updatedAt")',
+        "values ($1,$2,$3,$4,$5,$6,$7::jsonb,$8,$9,$10,$11,now())",
         'on conflict ("organizationId","financialProfileId","recipientUserId","eventType","fingerprint")',
         "do nothing",
-        'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+        'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt","inAppVisible"',
       ].join(" "),
       parameters,
     );
@@ -273,7 +289,7 @@ export async function publishFinancialNotificationForContext(
       (
         await executeQuery<NotificationRow>(
           [
-            'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+            'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt","inAppVisible"',
             'from "FinancialNotification" where "organizationId"=$1 and "financialProfileId"=$2',
             'and "recipientUserId"=$3 and "eventType"=$4 and "fingerprint"=$5',
           ].join(" "),
@@ -305,24 +321,22 @@ export async function publishFinancialNotificationForContext(
       );
     }
     if (inserted.length !== 0) {
-      for (const channel of ["push", "email"] as const) {
-        if (await readEffectiveNotificationPreference(context, event.type, channel, executeQuery)) {
-          await executeQuery(
-            [
-              'insert into "FinancialNotificationDelivery"',
-              '("id","organizationId","financialProfileId","recipientUserId","notificationId","channel","updatedAt")',
-              'values ($1,$2,$3,$4,$5,$6,now()) on conflict ("notificationId","channel") do nothing',
-            ].join(" "),
-            [
-              randomUUID(),
-              context.organizationId,
-              context.financialProfileId,
-              context.userId,
-              row.id,
-              channel,
-            ],
-          );
-        }
+      for (const channel of externalChannels) {
+        await executeQuery(
+          [
+            'insert into "FinancialNotificationDelivery"',
+            '("id","organizationId","financialProfileId","recipientUserId","notificationId","channel","updatedAt")',
+            'values ($1,$2,$3,$4,$5,$6,now()) on conflict ("notificationId","channel") do nothing',
+          ].join(" "),
+          [
+            randomUUID(),
+            context.organizationId,
+            context.financialProfileId,
+            context.userId,
+            row.id,
+            channel,
+          ],
+        );
       }
       await insertAuditLogEntry(executeQuery, {
         organizationId: context.organizationId,
@@ -336,7 +350,7 @@ export async function publishFinancialNotificationForContext(
       });
     }
     return {
-      notification: projectNotification(row),
+      notification: row.inAppVisible ? projectNotification(row) : null,
       created: inserted.length > 0,
       suppressed: false,
     };
@@ -353,10 +367,11 @@ export async function listFinancialNotificationsForContext(
     const where = [
       'from "FinancialNotification"',
       'where "organizationId"=$1 and "financialProfileId"=$2 and "recipientUserId"=$3',
+      'and "inAppVisible"=true',
     ].join(" ");
     const rows = await executeQuery<NotificationRow>(
       [
-        'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+        'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt","inAppVisible"',
         where,
         'order by "occurredAt" desc, "id" desc limit $4 offset $5',
       ].join(" "),
@@ -388,7 +403,7 @@ export async function countUnreadFinancialNotificationsForContext(
     [
       'select count(*)::text as "count" from "FinancialNotification"',
       'where "organizationId"=$1 and "financialProfileId"=$2 and "recipientUserId"=$3',
-      'and "readAt" is null',
+      'and "inAppVisible"=true and "readAt" is null',
     ].join(" "),
     [context.organizationId, context.financialProfileId, context.userId],
   );
@@ -407,9 +422,9 @@ export async function setFinancialNotificationReadStateForContext(
     const params = [id, context.organizationId, context.financialProfileId, context.userId];
     const rows = await executeQuery<NotificationRow>(
       [
-        'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+        'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt","inAppVisible"',
         'from "FinancialNotification" where "id"=$1 and "organizationId"=$2',
-        'and "financialProfileId"=$3 and "recipientUserId"=$4 for update',
+        'and "financialProfileId"=$3 and "recipientUserId"=$4 and "inAppVisible"=true for update',
       ].join(" "),
       params,
     );
@@ -421,7 +436,8 @@ export async function setFinancialNotificationReadStateForContext(
         [
           'update "FinancialNotification" set "readAt" = $5, "updatedAt"=now()',
           'where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3 and "recipientUserId"=$4',
-          'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+          'and "inAppVisible"=true',
+          'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt","inAppVisible"',
         ].join(" "),
         [...params, read ? new Date().toISOString() : null],
       )
@@ -550,6 +566,7 @@ export async function getFinancialNotificationNavigationForContext(
       [
         'select "resourceKind","resourceId" from "FinancialNotification"',
         'where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3 and "recipientUserId"=$4',
+        'and "inAppVisible"=true',
       ].join(" "),
       [id, context.organizationId, context.financialProfileId, context.userId],
     );
@@ -615,7 +632,7 @@ function validateFacts(
   }
   if (
     value.effectiveOn !== undefined &&
-    (typeof value.effectiveOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.effectiveOn))
+    (typeof value.effectiveOn !== "string" || !isValidDateOnly(value.effectiveOn))
   ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
