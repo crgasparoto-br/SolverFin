@@ -54,57 +54,59 @@ export async function retryFinancialNotificationDeliveryForContext(
     throw new Error("NOTIFICATION_ADAPTER_CHANNEL_INVALID");
   }
   const now = options.now ?? new Date();
-  const claim = await withSharedTransaction(async (executeQuery): Promise<Claim | DeliveryResult> => {
-    await assertFinancialNotificationScope(context, executeQuery);
-    const rows = await executeQuery<DeliveryRow>(
-      [
-        'select d."id",d."channel",d."state",d."attempts",d."nextAttemptAt",d."lockedUntil",',
-        'n."eventType",n."facts" from "FinancialNotificationDelivery" d',
-        'join "FinancialNotification" n on n."id" = d."notificationId"',
-        'and n."organizationId" = d."organizationId"',
-        'and n."financialProfileId" = d."financialProfileId"',
-        'and n."recipientUserId" = d."recipientUserId"',
-        'where d."id" = $1 and d."organizationId" = $2',
-        'and d."financialProfileId" = $3 and d."recipientUserId" = $4',
-        "for update of d",
-      ].join(" "),
-      [deliveryId, context.organizationId, context.financialProfileId, context.userId],
-    );
-    const delivery = rows[0];
-    if (!delivery) return "not_due";
-    if (delivery.channel !== adapter.channel) return "not_due";
-    if (delivery.state === "delivered") return "delivered";
-    if (delivery.state === "disabled") return "disabled";
-    if (
-      delivery.nextAttemptAt > now ||
-      (delivery.state === "leased" && delivery.lockedUntil !== null && delivery.lockedUntil > now)
-    ) {
-      return "not_due";
-    }
-    const enabled = await readEffectiveNotificationPreference(
-      context,
-      delivery.eventType,
-      adapter.channel,
-      executeQuery,
-    );
-    if (!enabled) {
-      await executeQuery(
-        'update "FinancialNotificationDelivery" set "state"=$2,"updatedAt"=now() where "id"=$1',
-        [delivery.id, "disabled"],
+  const claim = await withSharedTransaction(
+    async (executeQuery): Promise<Claim | DeliveryResult> => {
+      await assertFinancialNotificationScope(context, executeQuery);
+      const rows = await executeQuery<DeliveryRow>(
+        [
+          'select d."id",d."channel",d."state",d."attempts",d."nextAttemptAt",d."lockedUntil",',
+          'n."eventType",n."facts" from "FinancialNotificationDelivery" d',
+          'join "FinancialNotification" n on n."id" = d."notificationId"',
+          'and n."organizationId" = d."organizationId"',
+          'and n."financialProfileId" = d."financialProfileId"',
+          'and n."recipientUserId" = d."recipientUserId"',
+          'where d."id" = $1 and d."organizationId" = $2',
+          'and d."financialProfileId" = $3 and d."recipientUserId" = $4',
+          "for update of d",
+        ].join(" "),
+        [deliveryId, context.organizationId, context.financialProfileId, context.userId],
       );
-      return "disabled";
-    }
-    const token = randomUUID();
-    await executeQuery(
-      [
-        'update "FinancialNotificationDelivery" set "state"=$2,"attempts"="attempts"+1,',
-        '"leaseToken"=$3,"lockedUntil"=$4,"lastErrorCode"=null,"updatedAt"=now()',
-        'where "id"=$1',
-      ].join(" "),
-      [delivery.id, "leased", token, new Date(now.getTime() + 60_000).toISOString()],
-    );
-    return { token, delivery };
-  });
+      const delivery = rows[0];
+      if (!delivery) return "not_due";
+      if (delivery.channel !== adapter.channel) return "not_due";
+      if (delivery.state === "delivered") return "delivered";
+      if (delivery.state === "disabled") return "disabled";
+      if (
+        delivery.nextAttemptAt > now ||
+        (delivery.state === "leased" && delivery.lockedUntil !== null && delivery.lockedUntil > now)
+      ) {
+        return "not_due";
+      }
+      const enabled = await readEffectiveNotificationPreference(
+        context,
+        delivery.eventType,
+        adapter.channel,
+        executeQuery,
+      );
+      if (!enabled) {
+        await executeQuery(
+          'update "FinancialNotificationDelivery" set "state"=$2,"updatedAt"=now() where "id"=$1',
+          [delivery.id, "disabled"],
+        );
+        return "disabled";
+      }
+      const token = randomUUID();
+      await executeQuery(
+        [
+          'update "FinancialNotificationDelivery" set "state"=$2,"attempts"="attempts"+1,',
+          '"leaseToken"=$3,"lockedUntil"=$4,"lastErrorCode"=null,"updatedAt"=now()',
+          'where "id"=$1',
+        ].join(" "),
+        [delivery.id, "leased", token, new Date(now.getTime() + 60_000).toISOString()],
+      );
+      return { token, delivery };
+    },
+  );
   if (typeof claim === "string") return claim;
 
   // Authorization and current preference must remain valid immediately before any adapter call.
@@ -156,10 +158,16 @@ async function finishAttempt(
         'returning "id"',
       ].join(" "),
       [
-        claim.delivery.id, context.organizationId, context.financialProfileId, context.userId,
-        result, nextAttemptAt, result === "retry" ? "DELIVERY_RECOVERABLE" : null,
+        claim.delivery.id,
+        context.organizationId,
+        context.financialProfileId,
+        context.userId,
+        result,
+        nextAttemptAt,
+        result === "retry" ? "DELIVERY_RECOVERABLE" : null,
         result === "delivered" ? now.toISOString() : null,
-        claim.token, "leased",
+        claim.token,
+        "leased",
       ],
     );
     // Another worker may have reclaimed an expired lease: never overwrite its result.

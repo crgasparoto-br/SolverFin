@@ -37,17 +37,22 @@ export async function handleFinancialNotificationsApiRequest(
     );
 
     if (request.method === "GET" && request.pathname === BASE) {
-      return json(200, await listFinancialNotificationsForContext(
-        context,
-        parseNotificationPageFilters(request.query),
-      ));
+      return json(
+        200,
+        await listFinancialNotificationsForContext(
+          context,
+          parseNotificationPageFilters(request.query),
+        ),
+      );
     }
     if (request.method === "GET" && request.pathname === BASE + "/unread-count") {
       return json(200, { unreadCount: await countUnreadFinancialNotificationsForContext(context) });
     }
     if (request.pathname === BASE + "/preferences") {
       if (request.method === "GET") {
-        return json(200, { preferences: await listFinancialNotificationPreferencesForContext(context) });
+        return json(200, {
+          preferences: await listFinancialNotificationPreferencesForContext(context),
+        });
       }
       if (request.method === "PUT") {
         const body = requireFields(request.body, ["type", "channel", "enabled"]);
