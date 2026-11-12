@@ -180,7 +180,7 @@ async function main(): Promise<void> {
     channel: "in_app",
     enabled: false,
   });
-  const allDisabled = { ...fixture("all-disabled"), type: externalType, facts: externalFacts };
+  const allDisabled: FinancialNotificationEvent = { ...fixture("all-disabled"), type: externalType, facts: externalFacts };
   assert.deepEqual(await publishFinancialNotificationForContext(context, allDisabled), {
     notification: null,
     created: false,
@@ -191,7 +191,7 @@ async function main(): Promise<void> {
     channel: "push",
     enabled: true,
   });
-  const pushOnly = { ...fixture("push-only"), type: externalType, facts: externalFacts };
+  const pushOnly: FinancialNotificationEvent = { ...fixture("push-only"), type: externalType, facts: externalFacts };
   assert.deepEqual(await publishFinancialNotificationForContext(context, pushOnly), {
     notification: null,
     created: true,
