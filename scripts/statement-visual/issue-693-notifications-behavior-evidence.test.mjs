@@ -21,15 +21,12 @@ function validReport() {
   };
 }
 
-test(
-  "notifications behavior proof derives layout and preference assertions from both viewports",
-  () => {
-    const evidence = collectNotifications693Evidence(validReport());
-    assert.deepEqual(evidence.assertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
-    assert.deepEqual(evidence.observations.widths, [390, 1366]);
-    assert.equal(evidence.observations.preferencePersistence, true);
-  },
-);
+test("notifications behavior proof derives layout and preference assertions from both viewports", () => {
+  const evidence = collectNotifications693Evidence(validReport());
+  assert.deepEqual(evidence.assertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
+  assert.deepEqual(evidence.observations.widths, [390, 1366]);
+  assert.equal(evidence.observations.preferencePersistence, true);
+});
 
 test("notifications proof rejects missing mobile, wrong route and page errors", () => {
   for (const modify of [
