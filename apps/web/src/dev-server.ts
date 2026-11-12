@@ -9,7 +9,7 @@ import { renderAccountRemunerationPage } from "./dev-server/account-remuneration
 import { renderAdminFinancialIndexesPage } from "./dev-server/admin-financial-indexes-page.js";
 import { renderAdminInstitutionsPage } from "./dev-server/admin-institutions-page.js";
 import { renderAccountsCardsPage } from "./dev-server/accounts-cards-page.js";
-import { apiGet, handleApiRequest } from "./dev-server/api.js";
+import { apiGet, handleApiRequest, withRequestedApiFinancialProfile } from "./dev-server/api.js";
 import { renderBudgetsPage } from "./dev-server/budgets-page.js";
 import { renderCardsPageV2 as renderCardsPage } from "./dev-server/cards-page-v2.js";
 import { renderCategoriesPage } from "./dev-server/categories-page.js";
@@ -193,7 +193,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
       return;
     }
     if (shouldUseLocalRecurrenceAdapter()) await materializeLocally("card", token, url);
-    sendHtml(response, 200, await renderCardsPage(token, url));
+    sendHtml(
+      response,
+      200,
+      await withRequestedApiFinancialProfile(url, () => renderCardsPage(token, url)),
+    );
     return;
   }
 
@@ -218,7 +222,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/orcamentos" && token) {
-    sendHtml(response, 200, await renderBudgetsPage(token, url));
+    sendHtml(
+      response,
+      200,
+      await withRequestedApiFinancialProfile(url, () => renderBudgetsPage(token, url)),
+    );
     return;
   }
 
@@ -228,7 +236,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/inbox" && token) {
-    sendHtml(response, 200, await renderInboxPage(token, url));
+    sendHtml(
+      response,
+      200,
+      await withRequestedApiFinancialProfile(url, () => renderInboxPage(token, url)),
+    );
     return;
   }
 

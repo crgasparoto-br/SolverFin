@@ -66,6 +66,9 @@ ou destinatário. A listagem é ordenada por occurredAt decrescente + id, com li
 A navegação revalida a referência no momento de uso; se inacessível, retorna
 available=false sem link. Ao abrir uma origem acessível, a interface preserva o
 `profileId` selecionado antes do fragmento da URL, sem aceitar destinos externos.
+As leituras SSR das rotas de destino Inbox, Orçamentos e Cartões propagam esse
+perfil às consultas autenticadas da API; a API revalida a autorização do usuário
+para o perfil solicitado, sem modificar a escolha persistida da sessão.
 Página /notificacoes fornece leitura, paginação e preferências sem eventos artificiais.
 
 ## Privacidade e auditoria
