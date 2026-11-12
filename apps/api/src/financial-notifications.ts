@@ -92,14 +92,20 @@ export class FinancialNotificationError extends Error {
 }
 
 export function parseNotificationEventType(value: unknown): FinancialNotificationEventType {
-  if (typeof value === "string" && FINANCIAL_NOTIFICATION_EVENT_TYPES.some((type) => type === value)) {
+  if (
+    typeof value === "string" &&
+    FINANCIAL_NOTIFICATION_EVENT_TYPES.some((type) => type === value)
+  ) {
     return value as FinancialNotificationEventType;
   }
   throw invalid("NOTIFICATION_EVENT_TYPE_INVALID");
 }
 
 export function parseNotificationChannel(value: unknown): FinancialNotificationChannel {
-  if (typeof value === "string" && FINANCIAL_NOTIFICATION_CHANNELS.some((channel) => channel === value)) {
+  if (
+    typeof value === "string" &&
+    FINANCIAL_NOTIFICATION_CHANNELS.some((channel) => channel === value)
+  ) {
     return value as FinancialNotificationChannel;
   }
   throw invalid("NOTIFICATION_CHANNEL_INVALID");
@@ -123,7 +129,10 @@ export function parseNotificationPageFilters(queryParams: URLSearchParams): {
 }
 
 export function validateFinancialNotificationEvent(input: FinancialNotificationEvent): void {
-  if (!isRecord(input) || !exactKeys(input, ["type", "fingerprint", "occurredAt", "facts", "resource"])) {
+  if (
+    !isRecord(input) ||
+    !exactKeys(input, ["type", "fingerprint", "occurredAt", "facts", "resource"])
+  ) {
     throw invalid("NOTIFICATION_EVENT_INVALID");
   }
   const type = parseNotificationEventType(input.type);
@@ -192,10 +201,9 @@ async function lockPreferenceOrdering(
   context: TenantContext,
   type: FinancialNotificationEventType,
 ): Promise<void> {
-  await executeQuery(
-    "select pg_advisory_xact_lock(hashtextextended($1, 0))",
-    [context.organizationId + ":" + context.financialProfileId + ":" + context.userId + ":" + type],
-  );
+  await executeQuery("select pg_advisory_xact_lock(hashtextextended($1, 0))", [
+    context.organizationId + ":" + context.financialProfileId + ":" + context.userId + ":" + type,
+  ]);
 }
 
 async function assertResourceAllowed(

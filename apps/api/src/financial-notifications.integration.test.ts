@@ -25,23 +25,27 @@ const FIXTURE_TYPE = "financial.insight.available.v1";
 const fixtures: TenantContext[] = [];
 let additionalUserId: string | undefined;
 
-void main().catch((error: unknown) => {
-  console.error(error);
-  process.exitCode = 1;
-}).finally(async () => {
-  for (const context of fixtures.reverse()) await cleanup(context);
-  if (additionalUserId) {
-    await query('delete from "User" where "id"=$1', [additionalUserId]);
-  }
-  await closePool();
-});
+void main()
+  .catch((error: unknown) => {
+    console.error(error);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    for (const context of fixtures.reverse()) await cleanup(context);
+    if (additionalUserId) {
+      await query('delete from "User" where "id"=$1', [additionalUserId]);
+    }
+    await closePool();
+  });
 
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "An integration database is required");
-  const organization = (await query<{ organizationId: string }>(
-    'select "organizationId" from "FinancialProfile" where "id"=$1',
-    [SEEDED_PROFILE_ID],
-  ))[0]?.organizationId;
+  const organization = (
+    await query<{ organizationId: string }>(
+      'select "organizationId" from "FinancialProfile" where "id"=$1',
+      [SEEDED_PROFILE_ID],
+    )
+  )[0]?.organizationId;
   assert.ok(organization);
   const context = await createProfile(organization, USER_ID);
   const other = await createProfile(organization, USER_ID);
@@ -56,7 +60,11 @@ async function main(): Promise<void> {
   const concurrent = await Promise.all(
     Array.from({ length: 6 }, () => publishFinancialNotificationForContext(context, event)),
   );
-  assert.equal(concurrent.filter((row) => row.created).length, 1, "concurrent publications are deduped");
+  assert.equal(
+    concurrent.filter((row) => row.created).length,
+    1,
+    "concurrent publications are deduped",
+  );
   const id = concurrent[0]?.notification?.id;
   assert.ok(id);
   assert.ok(concurrent.every((row) => row.notification?.id === id));
@@ -69,21 +77,29 @@ async function main(): Promise<void> {
   assert.equal(await countUnreadFinancialNotificationsForContext(context), 1);
 
   await assert.rejects(
-    () => publishFinancialNotificationForContext(context, {
-      ...event,
-      facts: { code: "insight_available", severity: "critical" },
-    }),
+    () =>
+      publishFinancialNotificationForContext(context, {
+        ...event,
+        facts: { code: "insight_available", severity: "critical" },
+      }),
     { code: "NOTIFICATION_FINGERPRINT_CONFLICT", statusCode: 409 },
   );
-  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 1);
+  assert.equal(
+    (await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total,
+    1,
+  );
   await assert.rejects(
-    () => publishFinancialNotificationForContext(context, {
-      ...fixture("missing-source"),
-      resource: { kind: "ai_suggestion", id: randomUUID() },
-    }),
+    () =>
+      publishFinancialNotificationForContext(context, {
+        ...fixture("missing-source"),
+        resource: { kind: "ai_suggestion", id: randomUUID() },
+      }),
     { statusCode: 404 },
   );
-  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 1);
+  assert.equal(
+    (await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total,
+    1,
+  );
 
   const read = await setFinancialNotificationReadStateForContext(context, id, true);
   assert.ok(read.readAt);
@@ -93,21 +109,23 @@ async function main(): Promise<void> {
   await setFinancialNotificationReadStateForContext(context, id, false);
   await setFinancialNotificationReadStateForContext(context, id, false);
   assert.equal(await countUnreadFinancialNotificationsForContext(context), 1);
-  assert.deepEqual(
-    await getFinancialNotificationNavigationForContext(context, id),
-    { available: false, href: null },
-  );
+  assert.deepEqual(await getFinancialNotificationNavigationForContext(context, id), {
+    available: false,
+    href: null,
+  });
 
-  assert.equal((await listFinancialNotificationsForContext(other, { limit: 20, offset: 0 })).total, 0);
+  assert.equal(
+    (await listFinancialNotificationsForContext(other, { limit: 20, offset: 0 })).total,
+    0,
+  );
   await assert.rejects(
     () => setFinancialNotificationReadStateForContext(other, id, true),
     { statusCode: 404 },
     "cross-profile mutations must fail closed",
   );
-  await assert.rejects(
-    () => getFinancialNotificationNavigationForContext(other, id),
-    { statusCode: 404 },
-  );
+  await assert.rejects(() => getFinancialNotificationNavigationForContext(other, id), {
+    statusCode: 404,
+  });
 
   additionalUserId = randomUUID();
   await query(
@@ -128,27 +146,39 @@ async function main(): Promise<void> {
     { statusCode: 404 },
   );
   await assert.rejects(
-    () => setFinancialNotificationPreferenceForContext(
-      foreignUser, { type: FIXTURE_TYPE, channel: "in_app", enabled: false },
-    ),
+    () =>
+      setFinancialNotificationPreferenceForContext(foreignUser, {
+        type: FIXTURE_TYPE,
+        channel: "in_app",
+        enabled: false,
+      }),
     { statusCode: 404 },
   );
 
-  const disabled = await setFinancialNotificationPreferenceForContext(
-    context, { type: FIXTURE_TYPE, channel: "in_app", enabled: false },
-  );
+  const disabled = await setFinancialNotificationPreferenceForContext(context, {
+    type: FIXTURE_TYPE,
+    channel: "in_app",
+    enabled: false,
+  });
   assert.equal(disabled.enabled, false);
   const suppressed = await publishFinancialNotificationForContext(context, fixture("disabled"));
   assert.deepEqual(suppressed, { notification: null, created: false, suppressed: true });
-  await setFinancialNotificationPreferenceForContext(
-    context, { type: FIXTURE_TYPE, channel: "in_app", enabled: true },
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: FIXTURE_TYPE,
+    channel: "in_app",
+    enabled: true,
+  });
+  assert.equal(
+    (await publishFinancialNotificationForContext(context, fixture("enabled"))).created,
+    true,
   );
-  assert.equal((await publishFinancialNotificationForContext(context, fixture("enabled"))).created, true);
 
   const externalType = "financial.invoice.due.v1";
-  await setFinancialNotificationPreferenceForContext(
-    context, { type: externalType, channel: "push", enabled: true },
-  );
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "push",
+    enabled: true,
+  });
   const external = await publishFinancialNotificationForContext(context, {
     ...fixture("push"),
     type: externalType,
@@ -157,10 +187,12 @@ async function main(): Promise<void> {
   assert.equal(external.created, true);
   const notificationId = external.notification?.id;
   assert.ok(notificationId);
-  const delivery = (await query<{ id: string }>(
-    'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1 and "channel"=$2',
-    [notificationId, "push"],
-  ))[0]?.id;
+  const delivery = (
+    await query<{ id: string }>(
+      'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1 and "channel"=$2',
+      [notificationId, "push"],
+    )
+  )[0]?.id;
   assert.ok(delivery);
   let calls = 0;
   const keys: string[] = [];
@@ -179,36 +211,34 @@ async function main(): Promise<void> {
   assert.equal(calls, 0, "external delivery must be disabled by default");
   const started = new Date("2035-01-01T00:00:00.000Z");
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, delivery, fakeAdapter, { externalDeliveryEnabled: true, now: started },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, delivery, fakeAdapter, {
+      externalDeliveryEnabled: true,
+      now: started,
+    }),
     "retry",
   );
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, delivery, fakeAdapter, { externalDeliveryEnabled: true, now: started },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, delivery, fakeAdapter, {
+      externalDeliveryEnabled: true,
+      now: started,
+    }),
     "not_due",
     "backoff is durable, not process memory",
   );
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, delivery, fakeAdapter, {
-        externalDeliveryEnabled: true,
-        now: new Date("2035-01-01T00:03:00.000Z"),
-      },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, delivery, fakeAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-01T00:03:00.000Z"),
+    }),
     "delivered",
   );
   assert.equal(calls, 2);
   assert.deepEqual(keys, [delivery, delivery], "retry uses stable provider idempotency key");
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, delivery, fakeAdapter, {
-        externalDeliveryEnabled: true,
-        now: new Date("2035-01-01T00:05:00.000Z"),
-      },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, delivery, fakeAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-01T00:05:00.000Z"),
+    }),
     "delivered",
   );
   assert.equal(calls, 2);
@@ -224,10 +254,12 @@ async function main(): Promise<void> {
     type: externalType,
     facts: { code: "invoice_due", severity: "warning" },
   });
-  const restartId = (await query<{ id: string }>(
-    'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1',
-    [restart.notification?.id],
-  ))[0]?.id;
+  const restartId = (
+    await query<{ id: string }>(
+      'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1',
+      [restart.notification?.id],
+    )
+  )[0]?.id;
   assert.ok(restartId);
   await query(
     [
@@ -239,14 +271,15 @@ async function main(): Promise<void> {
   let restartCalls = 0;
   const restartAdapter = {
     channel: "push" as const,
-    async deliver() { restartCalls += 1; },
+    async deliver() {
+      restartCalls += 1;
+    },
   };
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, restartId, restartAdapter, {
-        externalDeliveryEnabled: true, now: new Date("2035-01-02T00:00:00.000Z"),
-      },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, restartId, restartAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-02T00:00:00.000Z"),
+    }),
     "delivered",
     "expired lease is recoverable from durable state after restart",
   );
@@ -257,40 +290,53 @@ async function main(): Promise<void> {
     type: externalType,
     facts: { code: "invoice_due", severity: "info" },
   });
-  const revokedId = (await query<{ id: string }>(
-    'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1',
-    [revoked.notification?.id],
-  ))[0]?.id;
+  const revokedId = (
+    await query<{ id: string }>(
+      'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1',
+      [revoked.notification?.id],
+    )
+  )[0]?.id;
   assert.ok(revokedId);
-  await setFinancialNotificationPreferenceForContext(
-    context, { type: externalType, channel: "push", enabled: false },
-  );
+  await setFinancialNotificationPreferenceForContext(context, {
+    type: externalType,
+    channel: "push",
+    enabled: false,
+  });
   assert.equal(
-    await retryFinancialNotificationDeliveryForContext(
-      context, revokedId, restartAdapter, {
-        externalDeliveryEnabled: true, now: new Date("2035-01-03T00:00:00.000Z"),
-      },
-    ),
+    await retryFinancialNotificationDeliveryForContext(context, revokedId, restartAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-03T00:00:00.000Z"),
+    }),
     "disabled",
   );
   assert.equal(restartCalls, 1);
 
-  const apiList = await dispatch(token, "GET", "/api/notifications?profileId=" + context.financialProfileId);
+  const apiList = await dispatch(
+    token,
+    "GET",
+    "/api/notifications?profileId=" + context.financialProfileId,
+  );
   assert.equal(apiList.statusCode, 200);
   const wrongPage = await dispatch(token, "GET", "/api/notifications?limit=0");
   assert.equal(wrongPage.statusCode, 400);
   const malicious = await dispatch(
-    token, "PUT", "/api/notifications/preferences?profileId=" + context.financialProfileId,
+    token,
+    "PUT",
+    "/api/notifications/preferences?profileId=" + context.financialProfileId,
     { type: FIXTURE_TYPE, channel: "in_app", enabled: true, userId: other.userId },
   );
   assert.equal(malicious.statusCode, 400);
   const crossProfile = await dispatch(
-    token, "PATCH", "/api/notifications/" + id + "/read?profileId=" + other.financialProfileId,
+    token,
+    "PATCH",
+    "/api/notifications/" + id + "/read?profileId=" + other.financialProfileId,
     { read: true },
   );
   assert.equal(crossProfile.statusCode, 404);
   const unauthenticated = await dispatch(
-    "", "GET", "/api/notifications?profileId=" + context.financialProfileId,
+    "",
+    "GET",
+    "/api/notifications?profileId=" + context.financialProfileId,
   );
   assert.ok(unauthenticated.statusCode === 401 || unauthenticated.statusCode === 403);
   console.log("Issue 693: persistence, isolation, idempotency, outbox retry and HTTP boundary OK");
@@ -316,7 +362,10 @@ async function createProfile(organizationId: string, userId: string): Promise<Te
     [profileId, organizationId, userId, "Notifications " + profileId],
   );
   const context: TenantContext = {
-    userId, organizationId, financialProfileId: profileId, financialProfileKind: "personal",
+    userId,
+    organizationId,
+    financialProfileId: profileId,
+    financialProfileKind: "personal",
   };
   fixtures.push(context);
   return context;

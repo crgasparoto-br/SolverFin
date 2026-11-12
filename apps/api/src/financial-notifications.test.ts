@@ -32,11 +32,30 @@ const invalid: Array<[string, unknown]> = [
   ["unknown-type", { ...valid, type: "financial.transfer.sent.v1" }],
   ["invalid-currency", { ...valid, facts: { ...valid.facts, currency: "brl" } }],
   ["fractional-minor", { ...valid, facts: { ...valid.facts, amountMinor: 12.34 } }],
-  ["unsafe-integer", { ...valid, facts: { ...valid.facts, amountMinor: Number.MAX_SAFE_INTEGER + 1 } }],
-  ["amount-without-currency", { ...valid, facts: { code: "budget_threshold", severity: "warning", amountMinor: 10 } }],
+  [
+    "unsafe-integer",
+    { ...valid, facts: { ...valid.facts, amountMinor: Number.MAX_SAFE_INTEGER + 1 } },
+  ],
+  [
+    "amount-without-currency",
+    { ...valid, facts: { code: "budget_threshold", severity: "warning", amountMinor: 10 } },
+  ],
   ["invalid-date", { ...valid, occurredAt: "2026-02-30T12:00:00.000Z" }],
-  ["unscoped-external-resource", { ...valid, resource: { kind: "invoice", id: "33333333-3333-4333-8333-333333333331" } }],
-  ["free-form-source-field", { ...valid, resource: { kind: "budget", id: "33333333-3333-4333-8333-333333333331", privateToken: "secret" } }],
+  [
+    "unscoped-external-resource",
+    { ...valid, resource: { kind: "invoice", id: "33333333-3333-4333-8333-333333333331" } },
+  ],
+  [
+    "free-form-source-field",
+    {
+      ...valid,
+      resource: {
+        kind: "budget",
+        id: "33333333-3333-4333-8333-333333333331",
+        privateToken: "secret",
+      },
+    },
+  ],
   ["arbitrary-input-property", { ...valid, organizationId: "fake" }],
 ];
 for (const [label, value] of invalid) {
@@ -50,11 +69,18 @@ for (const [label, value] of invalid) {
 assert.throws(() => parseNotificationEventType("invoice.due"), { statusCode: 400 });
 assert.throws(() => parseNotificationChannel("sms"), { statusCode: 400 });
 assert.deepEqual(parseNotificationPageFilters(new URLSearchParams()), { limit: 20, offset: 0 });
-assert.deepEqual(
-  parseNotificationPageFilters(new URLSearchParams("limit=100&offset=10000")),
-  { limit: 100, offset: 10000 },
-);
-for (const query of ["limit=0", "limit=101", "offset=-1", "offset=1.5", "limit=NaN", "offset=10001"]) {
+assert.deepEqual(parseNotificationPageFilters(new URLSearchParams("limit=100&offset=10000")), {
+  limit: 100,
+  offset: 10000,
+});
+for (const query of [
+  "limit=0",
+  "limit=101",
+  "offset=-1",
+  "offset=1.5",
+  "limit=NaN",
+  "offset=10001",
+]) {
   assert.throws(
     () => parseNotificationPageFilters(new URLSearchParams(query)),
     { statusCode: 400 },
