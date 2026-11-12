@@ -1,0 +1,708 @@
+import {
+  ImportFileError,
+  StructuredImportError,
+  TenantAuthorizationError,
+  TenantError,
+  type CsvDelimiter,
+  type CsvImportMapping,
+  type ImportSourceKind,
+  type ImportStatus,
+  type TenantContext,
+  type XlsxImportMapping,
+} from "@solverfin/domain";
+
+import { AuthError } from "./auth.js";
+import { requireAuthenticatedRequest } from "./auth-service.js";
+import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
+import {
+  approveConsistentImportSuggestionForContext,
+  approveConsistentSelectedImportSuggestionsForContext,
+  createConsistentCsvImportBatchForContext,
+  createConsistentOfxImportBatchForContext,
+  getConsistentImportBatchDetailForContext,
+} from "./import-review-service.js";
+import {
+  ImportReviewError,
+  discardImportBatchForContext,
+  listImportBatchesForContext,
+  previewCsvImportForContext,
+  rejectImportSuggestionForContext,
+  updateImportSuggestionForContext,
+  type ImportSuggestionUpdatePayload,
+} from "./repositories/imports.js";
+import { previewOfxImportForContext } from "./repositories/ofx-imports.js";
+import {
+  createStructuredImportBatchForContext,
+  previewStructuredImportForContext,
+  type StructuredImportPayload,
+} from "./repositories/document-imports.js";
+import type { ApiRequest, ApiResponse } from "./router.js";
+import { resolveRequestTenantContext } from "./tenant-context.js";
+
+type ImportBatchHandler = (
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+) => Promise<ApiResponse>;
+
+interface ImportBatchRoute {
+  method: string;
+  pattern: RegExp;
+  paramNames: readonly string[];
+  handler: ImportBatchHandler;
+}
+
+const BASE_PATH = "/api/import-batches";
+const routes: ImportBatchRoute[] = [];
+
+route("GET", BASE_PATH, listImportBatchesHandler);
+route("POST", `${BASE_PATH}/csv/preview`, previewCsvImportBatchHandler);
+route("POST", `${BASE_PATH}/csv`, createCsvImportBatchHandler);
+route("POST", `${BASE_PATH}/ofx/preview`, previewOfxImportBatchHandler);
+route("POST", `${BASE_PATH}/ofx`, createOfxImportBatchHandler);
+route("POST", `${BASE_PATH}/xlsx/preview`, previewXlsxImportBatchHandler);
+route("POST", `${BASE_PATH}/xlsx`, createXlsxImportBatchHandler);
+route("POST", `${BASE_PATH}/pdf/preview`, previewPdfImportBatchHandler);
+route("POST", `${BASE_PATH}/pdf`, createPdfImportBatchHandler);
+route("GET", `${BASE_PATH}/:importBatchId`, getImportBatchHandler);
+route(
+  "PATCH",
+  `${BASE_PATH}/:importBatchId/suggestions/:suggestionId`,
+  updateImportSuggestionHandler,
+);
+route(
+  "POST",
+  `${BASE_PATH}/:importBatchId/suggestions/:suggestionId/approve`,
+  approveImportSuggestionHandler,
+);
+route(
+  "POST",
+  `${BASE_PATH}/:importBatchId/suggestions/:suggestionId/reject`,
+  rejectImportSuggestionHandler,
+);
+route("POST", `${BASE_PATH}/:importBatchId/approve-selected`, approveSelectedHandler);
+route("POST", `${BASE_PATH}/:importBatchId/discard`, discardImportBatchHandler);
+
+export async function handleImportBatchesApiRequest(
+  request: ApiRequest,
+): Promise<ApiResponse | undefined> {
+  if (!request.pathname.startsWith(BASE_PATH)) return undefined;
+
+  const correlationId = resolveCorrelationId(request.headers);
+  const match = findRoute(request.method, request.pathname);
+  if (!match) return undefined;
+
+  try {
+    const user = await requireAuthenticatedRequest(buildAuthHeaders(request.headers.authorization));
+    const context = await resolveRequestTenantContext(
+      user,
+      request.query.get("profileId") ?? undefined,
+    );
+    return await match.route.handler(request, context, match.params);
+  } catch (error) {
+    const response = buildApiErrorResponse({
+      error: mapDomainError(error),
+      correlationId,
+    });
+    return {
+      statusCode: response.statusCode,
+      headers: { "content-type": "application/json; charset=utf-8" },
+      body:
+        error instanceof ImportReviewError && error.details !== undefined
+          ? { ...response.body, details: error.details }
+          : response.body,
+    };
+  }
+}
+
+function route(method: string, path: string, handler: ImportBatchHandler): void {
+  const paramNames: string[] = [];
+  const patternSource = path
+    .split("/")
+    .map((segment) => {
+      if (segment.startsWith(":")) {
+        paramNames.push(segment.slice(1));
+        return "([^/]+)";
+      }
+      return segment;
+    })
+    .join("/");
+  routes.push({
+    method,
+    pattern: new RegExp(`^${patternSource}$`),
+    paramNames,
+    handler,
+  });
+}
+
+function findRoute(
+  method: string,
+  pathname: string,
+): { route: ImportBatchRoute; params: Record<string, string> } | undefined {
+  for (const candidate of routes) {
+    if (candidate.method !== method) continue;
+    const result = candidate.pattern.exec(pathname);
+    if (!result) continue;
+    const params: Record<string, string> = {};
+    candidate.paramNames.forEach((name, index) => {
+      const value = result[index + 1];
+      if (value !== undefined) params[name] = value;
+    });
+    return { route: candidate, params };
+  }
+  return undefined;
+}
+
+async function listImportBatchesHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const status = request.query.get("status") as ImportStatus | "all" | null;
+  const sourceKind = readImportSourceKind(request.query.get("sourceKind"));
+  const importBatches = await listImportBatchesForContext(context, {
+    ...(status ? { status } : {}),
+    ...(sourceKind ? { sourceKind } : {}),
+  });
+
+  return json(200, {
+    importBatches:
+      sourceKind === undefined
+        ? importBatches.filter(
+            (batch) =>
+              batch.sourceKind === "csv" ||
+              batch.sourceKind === "ofx" ||
+              batch.sourceKind === "xlsx" ||
+              batch.sourceKind === "pdf",
+          )
+        : importBatches,
+  });
+}
+
+async function previewCsvImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  return json(
+    200,
+    await previewCsvImportForContext(context, {
+      originalFileName: requireString(body, "originalFileName"),
+      content: requireString(body, "content"),
+      accountId: requireString(body, "accountId"),
+      consentAccepted: true,
+      ...(readCsvMapping(body.csvMapping) === undefined
+        ? {}
+        : { csvMapping: readCsvMapping(body.csvMapping) as CsvImportMapping }),
+      ...(readCsvDelimiter(body.csvDelimiter) === undefined
+        ? {}
+        : { csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter }),
+    }),
+  );
+}
+
+async function createCsvImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  const result = await createConsistentCsvImportBatchForContext(context, {
+    originalFileName: requireString(body, "originalFileName"),
+    content: requireString(body, "content"),
+    accountId: requireString(body, "accountId"),
+    consentAccepted: true,
+    ...(readCsvMapping(body.csvMapping) === undefined
+      ? {}
+      : { csvMapping: readCsvMapping(body.csvMapping) as CsvImportMapping }),
+    ...(readCsvDelimiter(body.csvDelimiter) === undefined
+      ? {}
+      : { csvDelimiter: readCsvDelimiter(body.csvDelimiter) as CsvDelimiter }),
+  });
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewOfxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  return json(
+    200,
+    await previewOfxImportForContext(context, {
+      originalFileName: requireString(body, "originalFileName"),
+      content: requireRawString(body, "content"),
+      accountId: requireString(body, "accountId"),
+      consentAccepted: true,
+    }),
+  );
+}
+
+async function createOfxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  assertConsent(body);
+  const result = await createConsistentOfxImportBatchForContext(context, {
+    originalFileName: requireString(body, "originalFileName"),
+    content: requireRawString(body, "content"),
+    accountId: requireString(body, "accountId"),
+    consentAccepted: true,
+  });
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewXlsxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "xlsx",
+      readStructuredImportPayload(body, "xlsx"),
+    ),
+  );
+}
+
+async function createXlsxImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "xlsx",
+    readStructuredImportPayload(body, "xlsx"),
+  );
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function previewPdfImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  return json(
+    200,
+    await previewStructuredImportForContext(
+      context,
+      "pdf",
+      readStructuredImportPayload(body, "pdf"),
+    ),
+  );
+}
+
+async function createPdfImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  const result = await createStructuredImportBatchForContext(
+    context,
+    "pdf",
+    readStructuredImportPayload(body, "pdf"),
+  );
+  return json(result.duplicateBatch ? 200 : 201, result);
+}
+
+async function getImportBatchHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  return json(
+    200,
+    await getConsistentImportBatchDetailForContext(context, requireParam(match, "importBatchId")),
+  );
+}
+
+async function updateImportSuggestionHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  return json(
+    200,
+    await updateImportSuggestionForContext(
+      context,
+      requireParam(match, "importBatchId"),
+      requireParam(match, "suggestionId"),
+      readSuggestionUpdate(body),
+    ),
+  );
+}
+
+async function approveImportSuggestionHandler(
+  _request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  return json(
+    200,
+    await approveConsistentImportSuggestionForContext(
+      context,
+      requireParam(match, "importBatchId"),
+      requireParam(match, "suggestionId"),
+    ),
+  );
+}
+
+async function rejectImportSuggestionHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = optionalObjectBody(request.body);
+  return json(
+    200,
+    await rejectImportSuggestionForContext(
+      context,
+      requireParam(match, "importBatchId"),
+      requireParam(match, "suggestionId"),
+      body.reason === undefined ? undefined : String(body.reason),
+    ),
+  );
+}
+
+async function approveSelectedHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = requireObjectBody(request.body);
+  if (!Array.isArray(body.suggestionIds)) {
+    throw new ImportReviewError(
+      "IMPORT_REVIEW_SELECTION_REQUIRED",
+      "Informe as linhas selecionadas para confirmar.",
+    );
+  }
+  return json(
+    200,
+    await approveConsistentSelectedImportSuggestionsForContext(
+      context,
+      requireParam(match, "importBatchId"),
+      body.suggestionIds.map((value) => String(value)),
+    ),
+  );
+}
+
+async function discardImportBatchHandler(
+  request: ApiRequest,
+  context: TenantContext,
+  match: Readonly<Record<string, string>>,
+): Promise<ApiResponse> {
+  const body = optionalObjectBody(request.body);
+  return json(
+    200,
+    await discardImportBatchForContext(
+      context,
+      requireParam(match, "importBatchId"),
+      body.reason === undefined ? undefined : String(body.reason),
+    ),
+  );
+}
+
+function assertConsent(body: Record<string, unknown>): void {
+  if (body.consentAccepted !== true) {
+    throw new ImportReviewError(
+      "IMPORT_CONSENT_REQUIRED",
+      "Confirme que o arquivo pode ser processado neste perfil financeiro.",
+    );
+  }
+}
+
+function readImportSourceKind(value: string | null): ImportSourceKind | undefined {
+  if (value === null || value.length === 0) return undefined;
+  if (value !== "csv" && value !== "ofx" && value !== "xlsx" && value !== "pdf") {
+    throw new ImportReviewError(
+      "IMPORT_SOURCE_KIND_INVALID",
+      "Origem deve ser csv, ofx, xlsx ou pdf.",
+    );
+  }
+  return value;
+}
+
+function readSuggestionUpdate(body: Record<string, unknown>): ImportSuggestionUpdatePayload {
+  const payload: ImportSuggestionUpdatePayload = {};
+  if (body.occurredOn !== undefined) payload.occurredOn = requireString(body, "occurredOn");
+  if (body.kind !== undefined) {
+    const kind = String(body.kind);
+    if (kind !== "income" && kind !== "expense" && kind !== "transfer") {
+      throw new ImportReviewError(
+        "IMPORT_KIND_INVALID",
+        "Tipo deve ser receita, despesa ou transferencia.",
+      );
+    }
+    payload.kind = kind;
+  }
+  if (body.amountMinor !== undefined) {
+    const value = Number(body.amountMinor);
+    if (!Number.isSafeInteger(value) || value <= 0) {
+      throw new ImportReviewError(
+        "IMPORT_AMOUNT_INVALID",
+        "Valor precisa ser um inteiro positivo em centavos.",
+      );
+    }
+    payload.amountMinor = value;
+  }
+  if (body.description !== undefined) payload.description = requireString(body, "description");
+  if (body.accountId !== undefined) payload.accountId = requireString(body, "accountId");
+  if (body.otherAccountId === null) payload.otherAccountId = null;
+  else if (body.otherAccountId !== undefined)
+    payload.otherAccountId = requireString(body, "otherAccountId");
+  if (body.categoryId === null) payload.categoryId = null;
+  else if (body.categoryId !== undefined) payload.categoryId = requireString(body, "categoryId");
+  if (body.cardInstrumentId === null) payload.cardInstrumentId = null;
+  else if (body.cardInstrumentId !== undefined)
+    payload.cardInstrumentId = requireString(body, "cardInstrumentId");
+  if (body.invoicePeriod !== undefined) {
+    const invoicePeriod = requireString(body, "invoicePeriod");
+    if (!/^\d{4}-\d{2}$/.test(invoicePeriod)) {
+      throw new ImportReviewError(
+        "IMPORT_INVOICE_PERIOD_INVALID",
+        "Periodo da fatura deve usar AAAA-MM.",
+      );
+    }
+    payload.invoicePeriod = invoicePeriod;
+  }
+  if (Object.keys(payload).length === 0) {
+    throw new ImportReviewError(
+      "IMPORT_UPDATE_REQUIRED",
+      "Informe ao menos um campo para corrigir a linha.",
+    );
+  }
+  return payload;
+}
+
+function readStructuredImportPayload(
+  body: Record<string, unknown>,
+  kind: "xlsx" | "pdf",
+): StructuredImportPayload {
+  assertConsent(body);
+  const documentClass = String(body.documentClass ?? "");
+  if (documentClass !== "bank_statement" && documentClass !== "credit_card_invoice") {
+    throw new ImportReviewError(
+      "IMPORT_DOCUMENT_CLASS_REQUIRED",
+      "Escolha se o documento e extrato bancario ou fatura de cartao.",
+    );
+  }
+  const xlsxMapping = kind === "xlsx" ? readXlsxMapping(body.xlsxMapping) : undefined;
+  return {
+    originalFileName: requireString(body, "originalFileName"),
+    contentBase64: requireRawString(body, "contentBase64"),
+    documentClass,
+    consentAccepted: true as const,
+    ...(typeof body.accountId === "string" && body.accountId.trim()
+      ? { accountId: body.accountId.trim() }
+      : {}),
+    ...(typeof body.cardId === "string" && body.cardId.trim()
+      ? { cardId: body.cardId.trim() }
+      : {}),
+    ...(typeof body.sheetName === "string" && body.sheetName.trim()
+      ? { sheetName: body.sheetName.trim() }
+      : {}),
+    ...(xlsxMapping === undefined ? {} : { xlsxMapping }),
+  };
+}
+
+function readXlsxMapping(value: unknown): XlsxImportMapping | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new ImportReviewError(
+      "IMPORT_XLSX_MAPPING_INVALID",
+      "Mapeamento XLSX precisa ser um objeto.",
+    );
+  }
+  const source = value as Record<string, unknown>;
+  const result: XlsxImportMapping = { version: 1 };
+  for (const key of [
+    "date",
+    "description",
+    "amount",
+    "currency",
+    "instrument",
+    "invoicePeriod",
+    "installmentAmount",
+    "installmentSequence",
+    "installmentTotal",
+  ] as const) {
+    const candidate = source[key];
+    if (candidate === undefined || candidate === null || String(candidate).trim() === "") continue;
+    result[key] = String(candidate).trim();
+  }
+  return result;
+}
+
+function readCsvMapping(value: unknown): CsvImportMapping | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    throw new ImportReviewError(
+      "IMPORT_CSV_MAPPING_INVALID",
+      "Mapeamento CSV precisa ser um objeto.",
+    );
+  }
+  const input = value as Record<string, unknown>;
+  const readOptionalString = (key: string): string | undefined => {
+    const candidate = input[key];
+    if (candidate === undefined || candidate === null || String(candidate).trim().length === 0) {
+      return undefined;
+    }
+    return String(candidate);
+  };
+  const date = readOptionalString("date");
+  const description = readOptionalString("description");
+  const amount = readOptionalString("amount");
+  const incomeAmount = readOptionalString("incomeAmount");
+  const expenseAmount = readOptionalString("expenseAmount");
+  const requestsV2 =
+    input.version === 2 ||
+    input.valueStrategy !== undefined ||
+    incomeAmount !== undefined ||
+    expenseAmount !== undefined;
+
+  if (requestsV2) {
+    const valueStrategy = String(input.valueStrategy ?? "");
+    if (valueStrategy !== "signed" && valueStrategy !== "split") {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Escolha se o arquivo usa um valor com sinal ou colunas separadas de entrada e saída.",
+      );
+    }
+    if (valueStrategy === "signed") {
+      if (incomeAmount !== undefined || expenseAmount !== undefined) {
+        throw new ImportReviewError(
+          "IMPORT_CSV_MAPPING_INVALID",
+          "Valor único não pode ser combinado com colunas de entrada e saída.",
+        );
+      }
+      return {
+        version: 2,
+        valueStrategy: "signed",
+        ...(date === undefined ? {} : { date }),
+        ...(description === undefined ? {} : { description }),
+        ...(amount === undefined ? {} : { amount }),
+      };
+    }
+    if (amount !== undefined) {
+      throw new ImportReviewError(
+        "IMPORT_CSV_MAPPING_INVALID",
+        "Colunas separadas de entrada e saída não podem ser combinadas com valor único.",
+      );
+    }
+    return {
+      version: 2,
+      valueStrategy: "split",
+      ...(date === undefined ? {} : { date }),
+      ...(description === undefined ? {} : { description }),
+      ...(incomeAmount === undefined ? {} : { incomeAmount }),
+      ...(expenseAmount === undefined ? {} : { expenseAmount }),
+    };
+  }
+
+  return {
+    version: 2,
+    valueStrategy: "signed",
+    ...(date === undefined ? {} : { date }),
+    ...(description === undefined ? {} : { description }),
+    ...(amount === undefined ? {} : { amount }),
+  };
+}
+
+function readCsvDelimiter(value: unknown): CsvDelimiter | undefined {
+  if (value === undefined) return undefined;
+  if (value !== "," && value !== ";") {
+    throw new ImportReviewError(
+      "IMPORT_CSV_DELIMITER_INVALID",
+      "Separador CSV deve ser virgula ou ponto e virgula.",
+    );
+  }
+  return value;
+}
+
+function optionalObjectBody(body: unknown): Record<string, unknown> {
+  return body === undefined ? {} : requireObjectBody(body);
+}
+
+function requireObjectBody(body: unknown): Record<string, unknown> {
+  if (typeof body !== "object" || body === null || Array.isArray(body)) {
+    throw new AuthError("AUTH_INVALID_CREDENTIALS", "Request body must be a JSON object.", 400);
+  }
+  return body as Record<string, unknown>;
+}
+
+function requireString(body: Record<string, unknown>, key: string): string {
+  const value = body[key];
+  if (typeof value !== "string" || value.trim().length === 0) {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  return value.trim();
+}
+
+function requireRawString(body: Record<string, unknown>, key: string): string {
+  const value = body[key];
+  if (typeof value !== "string") {
+    throw new ImportReviewError(
+      "IMPORT_FIELD_REQUIRED",
+      `Campo ${key} e obrigatorio para continuar.`,
+    );
+  }
+  return value;
+}
+
+function requireParam(match: Readonly<Record<string, string>>, name: string): string {
+  const value = match[name];
+  if (!value) throw new AuthError("AUTH_SESSION_REQUIRED", "Missing required path parameter.", 400);
+  return value;
+}
+
+function buildAuthHeaders(authorization: string | undefined): {
+  authorization?: string;
+} {
+  return authorization === undefined ? {} : { authorization };
+}
+
+function json(statusCode: number, body: unknown): ApiResponse {
+  return {
+    statusCode,
+    headers: { "content-type": "application/json; charset=utf-8" },
+    body,
+  };
+}
+
+function mapDomainError(error: unknown): unknown {
+  if (
+    error instanceof ImportFileError ||
+    error instanceof StructuredImportError ||
+    error instanceof ImportReviewError
+  ) {
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
+  }
+  if (error instanceof TenantError) {
+    return {
+      code: error.code,
+      statusCode: error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403,
+      message: error.message,
+    };
+  }
+  if (error instanceof TenantAuthorizationError) {
+    return {
+      code: error.code,
+      statusCode: error.statusCode,
+      message: error.message,
+    };
+  }
+  return error;
+}

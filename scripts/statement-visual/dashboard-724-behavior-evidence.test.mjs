@@ -1,0 +1,237 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import { collectDashboard724Evidence } from "./dashboard-724-behavior-evidence.mjs";
+
+function fixture(state) {
+  const multiple = state.startsWith("multi-currency");
+  return {
+    route: "/dashboard",
+    state,
+    provenance:
+      "real dashboard SSR renderer with controlled API responses; authenticated browser session",
+    failures: [],
+    viewports: [1366, 390, 320].map((width) => ({
+      width,
+      screenshot: `issue-724-dashboard-${state}-${width}.png`,
+      ...(state === "long-content"
+        ? { expandedScreenshot: `issue-724-dashboard-${state}-${width}-expanded.png` }
+        : {}),
+      measurements: {
+        viewportWidth: width,
+        documentUrl: "about:blank",
+        noHorizontalOverflow: true,
+        mainPresent: true,
+        navigationHeight: width <= 390 ? 60 : 768,
+        hasError: state === "error",
+        hasPartial: state === "partial" || state === "multi-currency-partial",
+        currencyCount: state === "error" ? 0 : multiple ? 2 : 1,
+        currencies: state === "error" ? [] : multiple ? ["BRL", "USD"] : ["BRL"],
+        primaryCount: state === "error" ? 0 : multiple ? 4 : 2,
+        hasNextActions: state !== "error",
+        actionVisibleInFirstViewport: true,
+        firstActionLabelVisibleInFirstViewport: true,
+        firstActionLinkVisibleInFirstViewport: true,
+        firstActionLinkHasDestination: true,
+        primaryValuesOnOneLine: true,
+        allPrimaryBeforeActions: true,
+        supportingAfterActions: state !== "error",
+        amountsSeparatedByCurrency: true,
+        longItemVisible: state === "long-content",
+      },
+      ...(state === "error"
+        ? { navigationStretchProbe: { stretchedHeight: 270, restoredHeight: 60 } }
+        : {
+            firstActionKeyboardFocused: true,
+            keyboard: { open: true, hash: "#dashboard-evidence-brl-available" },
+            intrusivePanel: { actionVisibleAfterIntrusion: false, actionVisibleAfterRemoval: true },
+          }),
+    })),
+  };
+}
+
+for (const state of [
+  "multi-currency",
+  "multi-currency-partial",
+  "partial",
+  "error",
+  "long-content",
+]) {
+  test(`Dashboard #724 ${state} produces evidence only after all three widths pass`, async () => {
+    const input = fixture(state);
+    const observed = [];
+    const proof = await collectDashboard724Evidence(
+      state,
+      async () => input,
+      async (name) => observed.push(name),
+    );
+    assert.deepEqual(proof.assertions, ["behavior:layout:desktop", "behavior:layout:mobile"]);
+    assert.deepEqual(proof.observations.widths, [320, 390, 1366]);
+    assert.equal(observed.length, state === "long-content" ? 6 : 3);
+  });
+}
+
+test("Dashboard #724 rejects mobile navigation stretching and a bypassed negative control", async () => {
+  const input = fixture("error");
+  const mobile = input.viewports.find((viewport) => viewport.width === 320);
+  mobile.measurements.navigationHeight = 270;
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
+    /Compact shell navigation stretches/,
+  );
+  mobile.measurements.navigationHeight = 60;
+  mobile.navigationStretchProbe.stretchedHeight = 60;
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
+    /Missing shell navigation stretch negative control/,
+  );
+  mobile.navigationStretchProbe.stretchedHeight = 270;
+  mobile.navigationStretchProbe.restoredHeight = 270;
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "error",
+      async () => input,
+      async () => {},
+    ),
+    /Shell navigation did not recover/,
+  );
+});
+
+test("Dashboard #724 rejects missing compact-mobile coverage", async () => {
+  const input = fixture("partial");
+  input.viewports.pop();
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "partial",
+      async () => input,
+      async () => {},
+    ),
+    /exact Desktop\/Mobile coverage/,
+  );
+});
+
+test("Dashboard #724 rejects an overwritten SSR and a missing Chrome screenshot", async () => {
+  const input = fixture("multi-currency");
+  input.viewports[1].measurements.documentUrl = "http://127.0.0.1:5173/dashboard";
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "multi-currency",
+      async () => input,
+      async () => {},
+    ),
+    /Live page replaced controlled SSR/,
+  );
+  input.viewports[1].measurements.documentUrl = "about:blank";
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "multi-currency",
+      async () => input,
+      async (name) => {
+        if (name.endsWith("-390.png")) throw new Error("Screenshot not found");
+      },
+    ),
+    /Screenshot not found/,
+  );
+});
+
+test("Dashboard #724 rejects a missing keyboard action", async () => {
+  const input = fixture("long-content");
+  input.viewports[1].keyboard.open = false;
+  await assert.rejects(
+    collectDashboard724Evidence(
+      "long-content",
+      async () => input,
+      async () => {},
+    ),
+    /Enter failed to open currency evidence/,
+  );
+});
+
+for (const state of ["multi-currency", "multi-currency-partial"]) {
+  test(`Dashboard #724 ${state} rejects a mobile first-fold regression`, async () => {
+    const input = fixture(state);
+    const mobile = input.viewports.find((viewport) => viewport.width === 320);
+    mobile.measurements.actionVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action title or link is below first fold/,
+    );
+    mobile.measurements.actionVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLinkVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action link is below first fold/,
+    );
+    mobile.measurements.firstActionLinkVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLabelVisibleInFirstViewport = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action label is below first fold/,
+    );
+    mobile.measurements.firstActionLabelVisibleInFirstViewport = true;
+    mobile.measurements.firstActionLinkHasDestination = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action has no actionable destination/,
+    );
+    mobile.measurements.firstActionLinkHasDestination = true;
+    mobile.intrusivePanel.actionVisibleAfterIntrusion = true;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /Intrusive panel escaped first-fold negative control/,
+    );
+    mobile.intrusivePanel.actionVisibleAfterIntrusion = false;
+    mobile.measurements.primaryValuesOnOneLine = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /Primary amount wraps on mobile/,
+    );
+  });
+}
+
+for (const state of ["multi-currency", "multi-currency-partial"]) {
+  test(`Dashboard #724 ${state} rejects an unfocusable first action`, async () => {
+    const input = fixture(state);
+    input.viewports.find((viewport) => viewport.width === 320).firstActionKeyboardFocused = false;
+    await assert.rejects(
+      collectDashboard724Evidence(
+        state,
+        async () => input,
+        async () => {},
+      ),
+      /First action link cannot receive focus/,
+    );
+  });
+}

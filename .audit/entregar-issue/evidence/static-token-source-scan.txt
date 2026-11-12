@@ -1,0 +1,5 @@
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+canonical_source=apps/web/src/design-system/tokens.ts
+consumer_chain=apps/web/src/design-system/styles.ts -> apps/web/src/dev-server/shared-styles.ts
+observed=shared shell legacy variables alias --sf-* values; token-derivation tests execute on exact head
+status=passed

@@ -1,0 +1,6 @@
+pr=638
+head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+base_sha=387b4f00e59004856781da187bd436bcba8b9352
+procedure=Replace the stale validation narrative that referenced material SHA 5a6a42c8 with the current material SHA and the 18-obligation remediation statement, without changing branch identity.
+observed=GitHub update_pull_request returned the PR open, mergeable, non-draft, with head still d1ead8f125d54efb16d726b4a05ac46806acd1f7 and the validation section updated to that material SHA.
+status=passed

@@ -1,0 +1,119 @@
+Parent epic: #591
+Depends on: #595, #601, #602, #603, #605
+Specification version: 2
+
+## Objetivo
+
+Migrar `/orcamentos` para a fundação visual compartilhada, tornando planejamento por categoria, período e moeda operacional e inequívoco sem antecipar os cálculos futuros de #619.
+
+## Fonte canônica funcional
+
+A migração deve preservar o contrato atual de `docs/API_BUDGETS_GOALS_ALERTS.md` e o contrato multi-moedas de #595.
+
+Antes de #619, a tela trabalha somente com os estados já disponíveis:
+
+- `plannedAmountMinor`;
+- `actualAmountMinor`;
+- `remainingAmountMinor`;
+- `usedPercent`;
+- `alertThresholdPercent`;
+- `status` (`no_activity`, `on_track`, `approaching`, `exceeded`, `unbudgeted`);
+- `currency` explícita;
+- período exato do orçamento.
+
+Categorias com gasto e sem orçamento continuam como `unbudgeted` segundo o contrato atual. Transações sem categoria continuam seguindo o comportamento atual do backend nesta migração; o bucket **Sem categoria** e os novos estados `committed/projected/available/overBudget` pertencem a #619 e não devem ser fabricados nesta issue.
+
+## Escopo
+
+- usar primitives/layout/view-model e `Money` da fundação #590;
+- explicitar período, categoria, moeda e status de cada item;
+- apresentar planejado, realizado, restante e percentual de uso conforme a API atual;
+- preservar itens `unbudgeted` sem convertê-los em orçamento de valor zero;
+- permitir drilldown para os lançamentos que compõem o realizado quando houver filtro canônico;
+- manter criação/edição contextual existente;
+- preparar espaço/composição visual para evolução posterior de #619 sem calcular estados ainda inexistentes;
+- preservar estados loading, vazio, erro e retry coerentes;
+- preservar responsividade, teclado/foco e conteúdo longo.
+
+## Relação com #619
+
+#613 é uma migração visual e pode ser implementada antes de #668/#616/#617. Ela não depende do domínio novo de #619.
+
+Enquanto #619 não estiver implementada:
+
+- `committed`, `projected`, `available` e `overBudget` não existem como dados da tela;
+- ausência desses campos não pode ser exibida como `0`;
+- `Sem categoria` não pode ser criado no frontend por inferência;
+- transferências não entram no realizado porque o contrato atual considera somente `expense` realizada da mesma categoria/moeda.
+
+Depois de #619, a mesma fundação visual deve conseguir receber os novos estados sem reintroduzir uma segunda composição da rota.
+
+## Invariantes estruturais
+
+### `must_reuse`
+- `docs/API_BUDGETS_GOALS_ALERTS.md` como fonte do comportamento financeiro atual;
+- primitives/layout/view-model/Money de #590;
+- contrato multi-moedas de #595.
+
+### `must_be_single_source`
+Valores, percentuais, status e moeda vêm do backend/domínio. O renderer não recalcula uso de orçamento a partir de transações brutas.
+
+### `must_not_behave`
+- não misturar moedas;
+- não fabricar `committed/projected/available/overBudget`;
+- não transformar ausência de dado em zero;
+- não transformar `unbudgeted` em `planned=0` para simular orçamento;
+- não criar bucket `Sem categoria` antes do contrato de #619;
+- não fazer conversão cambial.
+
+### `must_not_depend_on`
+- #619 para concluir a migração visual;
+- IA/provider;
+- pós-processamento textual de HTML.
+
+### `forbidden_implementation`
+Antecipar a fórmula de #619 no renderer para preencher cards futuros ou reconstruir `actual/remaining/usedPercent` no frontend.
+
+**Controle discriminante:** usar fixtures/API com um orçamento ativo, um item `unbudgeted`, duas moedas e ausência total dos campos futuros. A tela deve apresentar apenas o contrato atual, sem zeros sintéticos ou soma cruzada.
+
+## Critérios de aceite
+
+- [ ] Nenhum orçamento mistura moedas.
+- [ ] Período, categoria, moeda e status ficam identificáveis.
+- [ ] Planejado, realizado, restante e percentual vêm do contrato atual sem recálculo financeiro no renderer.
+- [ ] `unbudgeted` permanece distinto de orçamento ativo/excedido.
+- [ ] Campos futuros de #619 ausentes não aparecem como zero.
+- [ ] `Sem categoria` não é inventado pelo frontend antes de #619.
+- [ ] Drilldown de realizado usa filtro canônico quando disponível.
+- [ ] Estados loading/vazio/erro/retry são coerentes.
+- [ ] Desktop/mobile, teclado/foco e conteúdo longo são validados.
+- [ ] Não é introduzido novo pós-processamento textual de HTML.
+
+## Testes
+
+Cobrir orçamento sem atividade, em acompanhamento, aproximando limite, excedido, `unbudgeted`, períodos parciais, duas moedas, ausência de campos futuros, estado vazio/erro e viewports desktop/mobile.
+
+## Impacto na documentação
+
+Na implementação, atualizar a documentação da UI/inventário de interfaces e `docs/EVOLUTION_STRATEGY.md`/`docs/STATUS_MATRIX.md` quando a migração passar a implementada. Não alterar `API_BUDGETS_GOALS_ALERTS.md` para declarar estados de #619 antes da implementação daquele contrato.
+
+## Fora de escopo
+
+- cálculo de `committed/projected/available/overBudget` (#619);
+- bucket `Sem categoria` de #619;
+- conversão cambial;
+- mudança de regra financeira de orçamento.
+
+## Readiness
+
+**Pronta.** A migração visual está separada do domínio futuro e ancorada no contrato atual de Orçamentos.
+
+## Referências
+
+- #591
+- #595
+- #619
+- `docs/API_BUDGETS_GOALS_ALERTS.md`
+- `docs/EVOLUTION_STRATEGY.md`
+- ADR 0013
+- ADR 0014

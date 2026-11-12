@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "expected_subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 611,
+    "pull_request_number": 651,
+    "work_item_kind": "issue",
+    "work_item_number": 611,
+    "pull_request": 651,
+    "base_ref": "main",
+    "head_ref": "codex/611-reports-analysis-archetype"
+  },
+  "checked_paths": [
+    "/mnt/data/solverfin-611-handoff/preflight/current/handoff-ready.json",
+    "/mnt/data/solverfin-611-handoff/preflight/current/specification-snapshot.json"
+  ],
+  "base_origin": {
+    "checked": true,
+    "base_sha": null,
+    "present_identity_artifacts": [
+      "specification-snapshot.json"
+    ],
+    "inherited_paths": [
+      "specification-snapshot.json"
+    ],
+    "all_present_identity_artifacts_inherited": true,
+    "comparison_mode": "materialized-base"
+  },
+  "status": "inherited-base-artifact",
+  "reuse_allowed": false,
+  "requires_fresh_handoff": true,
+  "foreign_target_detected": true,
+  "inherited_from_base": true,
+  "observed_subject": null,
+  "reasons": [
+    "snapshot.issue differs: observed=610 expected=611",
+    "foreign identity artifacts are byte-identical to the exact base SHA; treat them as inherited history, never as output of the current delivery"
+  ]
+}

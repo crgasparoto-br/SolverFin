@@ -1,0 +1,8 @@
+POSITIVE: legacy v1 accepted by canonical verify_review under enabled implementation provenance: operator-attested-session-review
+NEGATIVE: real PR history is rejected by optional GitHub provenance: GitHub PR commits are not an authenticated linear material chain from base
+Actual PR commits: 27
+First commit parent: 534c492fc2d852ea1b3153eac346c8c0d4a8f29b
+Current trusted base: 96eca4f0046d07a29dba459a4a048e4bd47df2f4
+Actual merges in PR: [('e8638e669f5c', 2), ('fc93807c92bf', 2)]
+REPRODUCED BLOCKER: prepare aborts before choosing legacy v1 sessions: GitHub PR commits are not an authenticated linear material chain from base
+ROOT CAUSE: verify_session_review.py:170-173 unconditionally computes optional provenance; session_review.py:251-255 permits legacy v1 without provenance.

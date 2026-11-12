@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-688-AUD-688-001-HANDOFF-TARGET",
+      "status": "passed",
+      "escape_class": "current-target-handoff-not-produced",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-handoff-not-produced-012709f",
+        "audit_report_sha256": "b7ef48bb3eccee930b275e19697c8c3c3b92949f4012ca047c18c129b9967290",
+        "finding_ids": [
+          "AUD-688-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Treat a handoff certificate inherited unchanged from the base branch as if it certified a newly implemented work item on another branch.",
+      "literal_case": {
+        "procedure": "Compare the root handoff artifact at immutable base and material head, then rebuild the package for the current issue and pull request.",
+        "expected": "Inherited foreign-target bytes are rejected and a fresh current-target package is produced.",
+        "observed": "The current package remains bound to issue 687 / PR 688 after refreezing the latest material head.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "target-binding",
+          "dimension": "foreign-issue-certificate",
+          "status": "passed"
+        },
+        {
+          "surface": "target-binding",
+          "dimension": "inherited-base-certificate",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Fresh certificate subject and specification snapshot bind the current repository, issue and pull request."
+      },
+      "detection_change": {
+        "evidence": "Terminal binding rejects inherited or foreign-target handoff artifacts."
+      },
+      "required_risk_families": [
+        "delivery-target-binding"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "delivery-target-binding",
+          "surface": "handoff-certificate",
+          "dimension": "foreign-target-reuse"
+        }
+      ],
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
+    },
+    {
+      "escape_id": "ESC-688-A-001-POST-HANDOFF-DRIFT",
+      "status": "passed",
+      "escape_class": "post-handoff-material-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-post-handoff-material-drift-f709cfb",
+        "audit_report_sha256": "883ee9f289719cd5ccb569162fb3559ab80e4227332218ad53687457b6b2dbff",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Reuse a result-only handoff after later commits changed material application or test paths, while continuing to claim the older material head as certified.",
+      "literal_case": {
+        "procedure": "Compare the certified material head with the current PR head and classify every path changed after the published handoff.",
+        "expected": "Any post-handoff material path forces a new final gate, material freeze and fresh result-only child.",
+        "observed": "The current head was treated as new material after a regression test changed beyond the previous result-only handoff, and the package was rebuilt for the new material identity.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "handoff-liveness",
+          "dimension": "post-handoff-test-change",
+          "status": "passed"
+        },
+        {
+          "surface": "handoff-liveness",
+          "dimension": "post-handoff-source-change",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The material-dirty latch requires refreeze before a new handoff whenever any non-allowlisted path changes after freeze."
+      },
+      "detection_change": {
+        "evidence": "Terminal validation compares published handoff identity with the fresh remote head and rejects material drift."
+      },
+      "required_risk_families": [
+        "delivery-target-binding"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "delivery-target-binding",
+          "surface": "result-only-child",
+          "dimension": "post-handoff-material-drift"
+        }
+      ],
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
+    },
+    {
+      "escape_id": "ESC-688-A-001-IMPLICIT-NO-CURRENT-GAP",
+      "status": "passed",
+      "escape_class": "implicit-default-negative-control-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr688-implicit-no-current-gap-3351f22",
+        "audit_report_sha256": "087c62666c65acea1c9b298760d0caf2ec057d7986344f71616554def3941baa",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Make the explicit month branch correct while leaving the implicit no-month fallback able to select a future invoice; a test that supplies month=currentMonth would still pass.",
+      "literal_case": {
+        "procedure": "Render /cartoes?cardId=card-1 without month or invoiceId, with no current-month invoice and at least one future invoice.",
+        "expected": "The page remains on the current month with Sem fatura and Next points to the nearest future invoice.",
+        "observed": "The focused regression now exercises that exact implicit route and the exact-head CI passed on 5c6e4b9ed79d76cb3f3ac96158e506d789597490.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "cards-default-selection",
+          "dimension": "current-invoice-present-with-future-first-order",
+          "status": "passed"
+        },
+        {
+          "surface": "cards-selection-precedence",
+          "dimension": "explicit-month-and-invoiceId",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "The regression test was changed to omit month and invoiceId in the no-current-invoice scenario."
+      },
+      "detection_change": {
+        "evidence": "NC-NO-CURRENT-INVOICE now explicitly requires the implicit route, so an implementation that fixes only the explicit month branch fails the control."
+      },
+      "required_risk_families": [
+        "temporal-destination"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-destination",
+          "surface": "cards-default-selection",
+          "dimension": "implicit-no-current-invoice"
+        }
+      ],
+      "revalidated_head_sha": "5c6e4b9ed79d76cb3f3ac96158e506d789597490"
+    }
+  ]
+}

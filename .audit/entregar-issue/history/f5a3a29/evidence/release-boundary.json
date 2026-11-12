@@ -1,0 +1,9 @@
+{
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "delivery_readiness_only": true,
+  "independent_audit_approved": false,
+  "merge_permitted": false,
+  "release_permitted": false,
+  "issue_can_be_closed": false,
+  "reason": "Same-context remediation and homologation are internal evidence, not independent approval. A separate auditor must validate this certified material before release."
+}

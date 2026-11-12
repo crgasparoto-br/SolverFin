@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 774,
+  "created_at": "2026-11-06T21:34:49.564676+00:00",
+  "primary_source_id": "SRC-ISSUE-774",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-774",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-774.txt",
+      "sha256": "d5df249245ff75ed3e9665ca02126390d015410c8484844c9587b8ea6c7eb9b4",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 17
+    }
+  ]
+}

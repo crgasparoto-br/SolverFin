@@ -1,0 +1,36 @@
+Parent epic: #590
+Depends on: #601, #603
+
+## Objetivo
+
+Definir e executar o mecanismo seguro para retirar gradualmente enhancements que transformam HTML final por string/regex, sem perder comportamento ou cobertura SSR.
+
+## Escopo
+
+- inventariar pos-processadores por rota e responsabilidade;
+- classificar cada modulo como manter temporariamente, substituir por componente/layout/view-model ou remover;
+- definir ordem de composicao durante a transicao;
+- impedir novos pos-processadores textuais como padrao para features novas;
+- atualizar `ssr-style-contract` quando provedores runtime forem removidos;
+- criar controles de regressao para evitar dependencia residual invisivel.
+
+## Critérios de aceite
+
+- [ ] inventario possui dono/rota/responsabilidade de cada enhancement relevante;
+- [ ] existe criterio objetivo para considerar um pos-processador substituido;
+- [ ] remocao de um modulo nao reduz cobertura da rota;
+- [ ] SSR normal continua funcional sem modo especial novo desnecessario;
+- [ ] testes validam o comportamento final, nao apenas a transformacao textual intermediaria;
+- [ ] documentacao identifica o legado restante depois de cada migracao.
+
+## Fora de escopo
+
+- remover todos os enhancements em uma unica PR;
+- trocar runtime/framework.
+
+## Referências
+
+- #590
+- ADR 0014
+- `docs/APP_SHELL.md`
+- `docs/DESIGN_SYSTEM.md`

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+    "finding_ids": [
+      "A-001",
+      "A-002",
+      "A-003",
+      "A-004",
+      "A-005"
+    ],
+    "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The targeted corrections restore the already-specified invariants of explicit human review and exact-head evidence; prior tests missed a literal UI race and a legacy capture handler rather than demonstrating a systemic defect in the shared Skill. No change to reusable Skills is justified from this one delivery."
+  },
+  "skill_changes": []
+}

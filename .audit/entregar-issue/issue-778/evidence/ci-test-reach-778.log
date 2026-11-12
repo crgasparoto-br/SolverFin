@@ -1,0 +1,20 @@
+HEAD: 533349c368ab9eacc39f53b8fbbebf0fb5c1596f
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/transaction-bulk-actions.integration.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42851756087
+SCOPE: Authenticated CRITICAL log: 127 compiled API integration files passed. Mixed FX transfer BRL->USD + USD income + BRL expense scenario with rollback, idempotence and canonical-value checks executed within this reached test module. This is an index of real logs, not fabricated output.
+
+HEAD: 533349c368ab9eacc39f53b8fbbebf0fb5c1596f
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/transaction-bulk-selection-enhancement.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42851756087
+SCOPE: Authenticated CRITICAL test log.
+
+HEAD: 533349c368ab9eacc39f53b8fbbebf0fb5c1596f
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/transactions-page-v2.test.ts
+RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/42851756087
+SCOPE: Authenticated CRITICAL test log.

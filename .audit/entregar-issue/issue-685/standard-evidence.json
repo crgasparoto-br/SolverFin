@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "head_sha": "4f3728428ebab03ac91e857764b10b3586573065",
+  "requirements": [
+    {
+      "requirement_id": "REQ-001",
+      "positive_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.ts: summaryMetric now renders only <span>label</span><strong>valueHtml</strong>; renderInvoiceSummary passes Money output directly for Total da fatura, Conciliado, Não conciliado and Limite disponível."
+      ],
+      "primary_negative_control": {
+        "id": "NC-DUPLICATE-CURRENCY",
+        "status": "passed",
+        "procedure": "Render the USD invoice fixture and reject a currency suffix rendered as <small> outside the Money primitive.",
+        "expected": "No summary metric may contain </strong><small>USD</small></section>.",
+        "observed": "cards-page-v2.test.ts contains an explicit doesNotMatch assertion for the duplicate USD suffix, and Delivery V2 CI run 36717173922 completed success on the exact material head."
+      },
+      "regression_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.test.ts: invoice summary must not repeat the currency code outside the Money primitive."
+      ]
+    },
+    {
+      "requirement_id": "REQ-002",
+      "positive_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.ts continues to obtain currency from resolveInvoiceCurrency and render values through money(..., currency)/Money rather than a hard-coded BRL or USD suffix."
+      ],
+      "primary_negative_control": {
+        "id": "NC-MULTI-CURRENCY-NO-HARDCODE",
+        "status": "passed",
+        "procedure": "Use the existing USD fixture while inspecting the generic summaryMetric signature, which receives only label and rendered valueHtml.",
+        "expected": "The summary composition must not branch on BRL/USD or append a literal currency code.",
+        "observed": "The changed summaryMetric contains no currency argument or literal currency code; the USD regression passed on exact-head CI."
+      },
+      "regression_evidence": [
+        "Existing USD assertions for data-currency, payment account filtering, and Money rendering remain in cards-page-v2.test.ts and passed in Delivery V2 CI run 36717173922."
+      ]
+    },
+    {
+      "requirement_id": "REQ-003",
+      "positive_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.ts preserves totals.length > 0 ? money(limitAvailable, currency) : \"Indisponível\" for Limite disponível."
+      ],
+      "primary_negative_control": {
+        "id": "NC-UNAVAILABLE-NO-INVENTED-MONEY",
+        "status": "passed",
+        "procedure": "Inspect the unavailable branch of Limite disponível after removing the duplicated currency suffix.",
+        "expected": "The unavailable branch must render only Indisponível and must not append a currency or numeric value.",
+        "observed": "The branch still returns the literal Indisponível and summaryMetric no longer appends any <small> currency suffix."
+      },
+      "regression_evidence": [
+        "Statement visual validation run 36717173938 completed success on the exact material head."
+      ]
+    },
+    {
+      "requirement_id": "REQ-004",
+      "positive_evidence": [
+        "apps/web/src/dev-server/cards-page-v2.test.ts adds the targeted duplicate-currency regression and retains existing explicit-currency and invoice-hierarchy assertions."
+      ],
+      "primary_negative_control": {
+        "id": "NC-REGRESSION-PRESERVATION",
+        "status": "passed",
+        "procedure": "Run the existing web test suite on the exact material head with the new duplicate-currency assertion present.",
+        "expected": "The new regression and pre-existing currency/hierarchy assertions all pass together.",
+        "observed": "Delivery V2 CI run 36717173922 completed success on 4f3728428ebab03ac91e857764b10b3586573065."
+      },
+      "regression_evidence": [
+        "cards-page-v2.test.ts still asserts data-currency=\"USD\", standard/invoice currency labels, account currency filtering, installment hierarchy, and the new duplicate-currency rejection."
+      ]
+    },
+    {
+      "requirement_id": "REQ-005",
+      "positive_evidence": [
+        "The issue-local diff changes only HTML summary composition and one renderer test; no calculation, aggregation, API, domain, persistence, schema, or migration file changed."
+      ],
+      "primary_negative_control": {
+        "id": "NC-FINANCIAL-SCOPE",
+        "status": "passed",
+        "procedure": "Compare main..material head and inspect all changed paths.",
+        "expected": "Only apps/web/src/dev-server/cards-page-v2.ts and apps/web/src/dev-server/cards-page-v2.test.ts may change for this correction.",
+        "observed": "GitHub compare e00014d4a9bad379023ae541785a714b46478a28..4f3728428ebab03ac91e857764b10b3586573065 reports exactly those two files."
+      },
+      "regression_evidence": [
+        "Delivery V2 CI run 36717173922 and Statement visual validation run 36717173938 both completed success on the exact material head."
+      ]
+    },
+    {
+      "requirement_id": "REQ-006",
+      "positive_evidence": [
+        "The implementation change is confined to apps/web/src/dev-server/cards-page-v2.ts, the path explicitly named by the issue."
+      ],
+      "primary_negative_control": {
+        "id": "NC-DECLARED-PATH",
+        "status": "passed",
+        "procedure": "Check the issue-local changed-path inventory against the scoped implementation path.",
+        "expected": "The renderer change must occur in cards-page-v2.ts and not require unrelated production files.",
+        "observed": "The only production file in the issue-local diff is apps/web/src/dev-server/cards-page-v2.ts."
+      },
+      "regression_evidence": [
+        "GitHub compare reports one production renderer file plus its focused test only."
+      ]
+    }
+  ]
+}

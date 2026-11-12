@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-HANDOFF-TARGET-001",
+      "status": "passed",
+      "escape_class": "delivery-handoff-target-binding",
+      "plausible_wrong_implementation": "Reuse a handoff certificate inherited from the base branch even though its semantic subject belongs to a different delivery target.",
+      "source_audit": {
+        "rejection_id": "audit-rejection:c72b2214a09d91a9",
+        "finding_ids": [
+          "A-001"
+        ],
+        "audit_report_sha256": "cc7f49f70aa69ff54ce849f8347e781bd7a2219d51fbf941afadea03ccded68c"
+      },
+      "literal_case": {
+        "procedure": "Compare the current handoff identity with the canonical issue/PR target before publishing results.",
+        "expected": "Foreign inherited artifacts are rejected and replaced by a current-target certificate.",
+        "observed": "The current delivery rebuilds the handoff for the exact material head and binds it to the canonical issue and pull request instead of reusing inherited foreign bytes.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "base-inherited-certificate",
+          "procedure": "Compare immutable-base and candidate identity artifacts before reuse.",
+          "expected": "Byte-identical foreign target is classified as inherited-base-artifact.",
+          "observed": "Inherited foreign package was treated as historical state and excluded from evidence reuse.",
+          "status": "passed"
+        },
+        {
+          "surface": "missing-current-target-certificate",
+          "procedure": "Require a subject-bound certificate for the current issue/PR before audit handoff.",
+          "expected": "Missing current-target certificate forces a fresh package.",
+          "observed": "Fresh standard evidence, closure, remediation and certificate inputs were generated for the current target.",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "delivery_target_binding semantics are applied before reuse; the builder receives distinct canonical issue and PR numbers and a fresh specification snapshot."
+      },
+      "detection_change": {
+        "evidence": "validate_terminal_handoff is required after publication to verify subject binding, direct parent, allowlist, and stable current remote head."
+      },
+      "revalidated_head_sha": "04f2179a04f7a6a3be228d8c4a6c2cbed7f84db9"
+    }
+  ]
+}

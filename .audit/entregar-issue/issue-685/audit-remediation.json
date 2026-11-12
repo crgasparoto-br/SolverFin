@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "4f3728428ebab03ac91e857764b10b3586573065",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:solverfin-685-4f372842-handoff-not-produced",
+    "audited_head_sha": "4f3728428ebab03ac91e857764b10b3586573065",
+    "audit_report_sha256": "66a1c6bf8721457b45b553d8ef0a0f96ede97fa231a9d8d10b692dc9816f19fb"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "result-only-handoff-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/issue-685/specification-snapshot.json",
+        ".audit/entregar-issue/issue-685/requirement-closure.json",
+        ".audit/entregar-issue/issue-685/standard-evidence.json",
+        ".audit/entregar-issue/issue-685/audit-source-result.json",
+        ".audit/entregar-issue/issue-685/audit-remediation.json",
+        ".audit/entregar-issue/issue-685/audit-escape-closure.json",
+        ".audit/entregar-issue/issue-685/learning-closure.json"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation.txt"
+      ],
+      "validations": [
+        "GitHub compare confirms the material head is stable and changes only the two issue-scoped files.",
+        "Delivery V2 CI run 36717173922 completed success on the exact material head.",
+        "Statement visual validation run 36717173938 completed success on the exact material head.",
+        "Fresh handoff subject is SolverFin issue #685 on branch fix/685-cards-summary-currency."
+      ]
+    }
+  ]
+}

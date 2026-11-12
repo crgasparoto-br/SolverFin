@@ -1,0 +1,21 @@
+{
+  "name": "@solverfin/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Aplicacao web/PWA mobile-first do SolverFin.",
+  "scripts": {
+    "dev": "node ../../scripts/dev-web.mjs",
+    "prestart": "npm --prefix ../.. run db:deploy",
+    "start": "node dist/dev-server.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "rm -rf ../../.tmp-tests/web && tsc -p tsconfig.test.json && node ../../scripts/run-compiled-tests.mjs ../../.tmp-tests/web --include .test.js",
+    "validate:ssr-styles": "node ../../scripts/build-web.mjs",
+    "build": "node ../../scripts/build-web.mjs"
+  },
+  "dependencies": {
+    "@solverfin/shared": "*"
+  }
+}

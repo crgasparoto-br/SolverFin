@@ -1,0 +1,471 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "db820f12ccb4ff35303d3e7a3e03c6a79437545f",
+    "head_sha": "b8aa409529dcd5f18de38c7ec8cdccd0f252f7ff"
+  },
+  "verdict": "REPROVADA",
+  "coverage": "limited",
+  "discovery_closed": true,
+  "changed_path_reviews": [
+    {
+      "id": ".audit/entregar-issue/negative-control-evidence-724.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT",
+        "S-EVIDENCE"
+      ],
+      "evidence_path": "paths/01.patch",
+      "evidence_sha256": "2026acc27f8075d3cacf5c49dfc1afe498993f17bc96b1c61101215b992b90cb"
+    },
+    {
+      "id": ".audit/entregar-issue/standard-evidence.json",
+      "status": "covered",
+      "surface_ids": [
+        "S-CERT",
+        "S-EVIDENCE"
+      ],
+      "evidence_path": "paths/02.patch",
+      "evidence_sha256": "eac8d410139c097d9c27c85b143c165caa201d33cfb529fd8953688be466142a"
+    },
+    {
+      "id": "apps/web/src/dev-server/dashboard-page-currency.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/03.patch",
+      "evidence_sha256": "94642376e9e18e40908cf6be401e199b7a42c0b8696f5970eb569eab65263221"
+    },
+    {
+      "id": "apps/web/src/dev-server/dashboard-page.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/04.patch",
+      "evidence_sha256": "6926bfa16a00c67722086492c4d2bc8d415a0a90b78004d0f3d1e74f187f5cb6"
+    },
+    {
+      "id": "apps/web/src/dev-server/dashboard-page.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/05.patch",
+      "evidence_sha256": "75e540015cccf8e600907da6feb8286714ab683307eefca5cb47707d9fcdbb2d"
+    },
+    {
+      "id": "apps/web/src/dev-server/dashboard-styles.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/06.patch",
+      "evidence_sha256": "23148f3dc6179aaa78984d7b6cdc80aea770965e2c7a2db6a0be0356237e490c"
+    },
+    {
+      "id": "apps/web/src/dev-server/shared-styles.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/07.patch",
+      "evidence_sha256": "200b8ab13b9d4b87efd4e7e651b01f3c2f1932e1612d6cb45c020b90632f2327"
+    },
+    {
+      "id": "apps/web/src/dev-server/shell-pages.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-VISUAL",
+        "S-MONEY",
+        "S-FOCUS",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/08.patch",
+      "evidence_sha256": "7aff64e1aac8d2e6e4a159a395e9a18952347436c87996d9a9bfe802b1161293"
+    },
+    {
+      "id": "docs/DASHBOARD.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC"
+      ],
+      "evidence_path": "paths/09.patch",
+      "evidence_sha256": "f6d1fd3c86e77193395087a1792349d35fb9c5fb282a66922ba3bff7f5adbc54"
+    },
+    {
+      "id": "docs/VISUAL_VALIDATION.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-DOC"
+      ],
+      "evidence_path": "paths/10.patch",
+      "evidence_sha256": "e4caa136c411fe3f792c37d5286dcf9963514e49e80533d7fa72229eb467f65b"
+    },
+    {
+      "id": "scripts/statement-visual/coverage-contract.test.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/11.patch",
+      "evidence_sha256": "c42e5a483d8d86946cad9dfe0f6f53137161b2678f4c719b7c6dd1b1a2f54dfe"
+    },
+    {
+      "id": "scripts/statement-visual/dashboard-724-behavior-evidence.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/12.patch",
+      "evidence_sha256": "b29a59340e8c5482313f627dd02ab41f07c41570667fd8b09cf4c517b39c6a6a"
+    },
+    {
+      "id": "scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/13.patch",
+      "evidence_sha256": "007a870dc1531276a0a2f84aa9b3d2fff8ccbf9dd2b940ff37ced3638a675dda"
+    },
+    {
+      "id": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/14.patch",
+      "evidence_sha256": "476206d7b1ad675874b8952a37e8f5a53d017c5f88d576137ef073e3a84f8343"
+    },
+    {
+      "id": "scripts/statement-visual/issue-606-core-pages-execution.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/15.patch",
+      "evidence_sha256": "8a78faf23adb66c12bada4f162d83675344e02c00de2796b050178f252492b19"
+    },
+    {
+      "id": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/16.patch",
+      "evidence_sha256": "d8d2a19a47ccf75029f768e73553a77bf168badf0b021984ff923a789e9cdf8f"
+    },
+    {
+      "id": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/17.patch",
+      "evidence_sha256": "1fe8fbf3ca86288b91ee37f53bee5b60a79f2ff614f0bf1e2f4b895a65e1f936"
+    },
+    {
+      "id": "scripts/statement-visual/issue-606-remediation-contract.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/18.patch",
+      "evidence_sha256": "2879c384331b2045faf933fc1b84663235b98422c8873bbf6d7ec1a475d21ae7"
+    },
+    {
+      "id": "scripts/statement-visual/issue-724-dashboard-error.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/19.patch",
+      "evidence_sha256": "31cf74898e67157b02ea74e29df25894d0ca1f168d0513f4464a3e92dbc57e95"
+    },
+    {
+      "id": "scripts/statement-visual/issue-724-dashboard-long-content.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/20.patch",
+      "evidence_sha256": "39b184b3283a6cd37f36f5b0724f892deb1fe827fdd4b341cf4997eb5139e6a8"
+    },
+    {
+      "id": "scripts/statement-visual/issue-724-dashboard-multi-currency.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/21.patch",
+      "evidence_sha256": "3a0e1199222001075c542673087295ba2243494410c91f40510a68d032b9b08c"
+    },
+    {
+      "id": "scripts/statement-visual/issue-724-dashboard-partial.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/22.patch",
+      "evidence_sha256": "9b49532df1ac1c1f1e36a848e312dd6e5734ff0a008bcfd993003e04c01c4ef5"
+    },
+    {
+      "id": "scripts/statement-visual/issue-724-dashboard-scenarios.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-CHROME",
+        "S-NEGATIVE",
+        "S-SSR"
+      ],
+      "evidence_path": "paths/23.patch",
+      "evidence_sha256": "e1fd9aa30d0dfdccd2aa16ce48fad5e341153bc118d751e4938aa0513fac680f"
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R1",
+      "status": "covered",
+      "evidence_path": "sources/DASHBOARD.md",
+      "evidence_sha256": "332f2dcef108044f73669e9b92df8e95992d851b5fb65e2ca5d9f886c2955d49"
+    },
+    {
+      "id": "R2",
+      "status": "covered",
+      "evidence_path": "proofs/browser-comparison.json",
+      "evidence_sha256": "22ff9c3bea247afb44c70550c56eb0c854373ffcea5a708b7e70e7cd787b671a"
+    },
+    {
+      "id": "R3",
+      "status": "covered",
+      "evidence_path": "sources/dashboard-page.ts",
+      "evidence_sha256": "90c20fb9011b131824630c9f7ac66169dc8b7ad089653ae1e288eb60b1a1ec9b"
+    },
+    {
+      "id": "R4",
+      "status": "covered",
+      "evidence_path": "sources/dashboard-page.ts",
+      "evidence_sha256": "90c20fb9011b131824630c9f7ac66169dc8b7ad089653ae1e288eb60b1a1ec9b"
+    },
+    {
+      "id": "R5",
+      "status": "covered",
+      "evidence_path": "chrome/partial.json",
+      "evidence_sha256": "7fa85ada0f7c9423d91692b967cd3a08887a85b42cb0429412d11ca53edcff9b"
+    },
+    {
+      "id": "R6",
+      "status": "covered",
+      "evidence_path": "chrome/multi-currency.json",
+      "evidence_sha256": "b08cdd6cbd0b2e97e5854a95fdd4a306e3c16c8bcc7cfd5f72662afc88779933"
+    },
+    {
+      "id": "R7",
+      "status": "covered",
+      "evidence_path": "chrome/long-content.json",
+      "evidence_sha256": "06fa9f13ba13baa378c87f7af9d8deacb7b260bc615e771112af3c5ac4e3e54f"
+    },
+    {
+      "id": "R8",
+      "status": "covered",
+      "evidence_path": "sources/chrome-normal-gate.mjs",
+      "evidence_sha256": "aba7936645595bf72b6a42cc45e874afa86c209fb38a0c0326d5b39234630458"
+    },
+    {
+      "id": "R9",
+      "status": "covered",
+      "evidence_path": "proofs/remote-ci.json",
+      "evidence_sha256": "e30dbcd1cbe7a9f5a5dc6b14a07b2f33299ccea2c981dbcceb5bb14a844ebf1a"
+    },
+    {
+      "id": "R10",
+      "status": "covered",
+      "evidence_path": "proofs/cert-contract.json",
+      "evidence_sha256": "86128a27fda5645a655b217dfc1410ac8e27e9642f88c89a1121884a42eb2e69"
+    },
+    {
+      "id": "R11",
+      "status": "covered",
+      "evidence_path": "sources/immutable-git-diff.json",
+      "evidence_sha256": "7ec10dd24f3c46ef4c3f77180eb3646b2dfbb8535407eac109c4687cf2bda2de"
+    },
+    {
+      "id": "R12",
+      "status": "covered",
+      "evidence_path": "proofs/document-drift.txt",
+      "evidence_sha256": "4831c9b5a027c9b0739ae609fe1829c2bab549890f0e2d0341c4b6816564d02c"
+    },
+    {
+      "id": "R13",
+      "status": "covered",
+      "evidence_path": "chrome/multi-currency.json",
+      "evidence_sha256": "b08cdd6cbd0b2e97e5854a95fdd4a306e3c16c8bcc7cfd5f72662afc88779933"
+    },
+    {
+      "id": "R14",
+      "status": "covered",
+      "evidence_path": "sources/stale-negative-control-evidence.json",
+      "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-BASE",
+      "status": "covered",
+      "evidence_path": "sources/DASHBOARD.md",
+      "evidence_sha256": "332f2dcef108044f73669e9b92df8e95992d851b5fb65e2ca5d9f886c2955d49"
+    },
+    {
+      "id": "S-VISUAL",
+      "status": "covered",
+      "evidence_path": "proofs/browser-comparison.json",
+      "evidence_sha256": "22ff9c3bea247afb44c70550c56eb0c854373ffcea5a708b7e70e7cd787b671a"
+    },
+    {
+      "id": "S-MONEY",
+      "status": "covered",
+      "evidence_path": "sources/dashboard-page.ts",
+      "evidence_sha256": "90c20fb9011b131824630c9f7ac66169dc8b7ad089653ae1e288eb60b1a1ec9b"
+    },
+    {
+      "id": "S-ORDER",
+      "status": "covered",
+      "evidence_path": "sources/dashboard-page.ts",
+      "evidence_sha256": "90c20fb9011b131824630c9f7ac66169dc8b7ad089653ae1e288eb60b1a1ec9b"
+    },
+    {
+      "id": "S-SSR",
+      "status": "covered",
+      "evidence_path": "chrome/partial.json",
+      "evidence_sha256": "7fa85ada0f7c9423d91692b967cd3a08887a85b42cb0429412d11ca53edcff9b"
+    },
+    {
+      "id": "S-CHROME",
+      "status": "covered",
+      "evidence_path": "chrome/multi-currency.json",
+      "evidence_sha256": "b08cdd6cbd0b2e97e5854a95fdd4a306e3c16c8bcc7cfd5f72662afc88779933"
+    },
+    {
+      "id": "S-FOCUS",
+      "status": "covered",
+      "evidence_path": "chrome/long-content.json",
+      "evidence_sha256": "06fa9f13ba13baa378c87f7af9d8deacb7b260bc615e771112af3c5ac4e3e54f"
+    },
+    {
+      "id": "S-NEGATIVE",
+      "status": "covered",
+      "evidence_path": "sources/chrome-normal-gate.mjs",
+      "evidence_sha256": "aba7936645595bf72b6a42cc45e874afa86c209fb38a0c0326d5b39234630458"
+    },
+    {
+      "id": "S-CI",
+      "status": "covered",
+      "evidence_path": "proofs/remote-ci.json",
+      "evidence_sha256": "e30dbcd1cbe7a9f5a5dc6b14a07b2f33299ccea2c981dbcceb5bb14a844ebf1a"
+    },
+    {
+      "id": "S-CERT",
+      "status": "covered",
+      "evidence_path": "proofs/cert-contract.json",
+      "evidence_sha256": "86128a27fda5645a655b217dfc1410ac8e27e9642f88c89a1121884a42eb2e69"
+    },
+    {
+      "id": "S-SCOPE",
+      "status": "covered",
+      "evidence_path": "sources/immutable-git-diff.json",
+      "evidence_sha256": "7ec10dd24f3c46ef4c3f77180eb3646b2dfbb8535407eac109c4687cf2bda2de"
+    },
+    {
+      "id": "S-DOC",
+      "status": "covered",
+      "evidence_path": "proofs/document-drift.txt",
+      "evidence_sha256": "4831c9b5a027c9b0739ae609fe1829c2bab549890f0e2d0341c4b6816564d02c"
+    },
+    {
+      "id": "S-API-E2E",
+      "status": "not-executed",
+      "reason": "Browser scenarios run controlled SSR injected into about:blank. A separate authenticated multi-currency live-API replay is expensive and omitted after the two already proven blockers."
+    },
+    {
+      "id": "S-EVIDENCE",
+      "status": "covered",
+      "evidence_path": "sources/stale-negative-control-evidence.json",
+      "evidence_sha256": "925331e7680828492a3678a162bded955e779cf5f72a97c6cb083ced87f39c6e"
+    }
+  ],
+  "previous_findings": [],
+  "findings": [
+    {
+      "id": "A-74401",
+      "requirement_id": "R10",
+      "surface_id": "S-CERT",
+      "root_cause": "No issue #724 / PR #744 certified handoff published at the immutable material head; inherited foreign issue #747 certificate from develop.",
+      "disposition": "blocking",
+      "evidence_path": "proofs/cert-contract.json",
+      "evidence_sha256": "86128a27fda5645a655b217dfc1410ac8e27e9642f88c89a1121884a42eb2e69"
+    },
+    {
+      "id": "A-74402",
+      "requirement_id": "R2",
+      "surface_id": "S-VISUAL",
+      "root_cause": "Four primary KPI cards stacked before next action on compact mobile with multiple currencies; Chrome multi scenario never checks first-fold action visibility.",
+      "disposition": "blocking",
+      "evidence_path": "proofs/browser-comparison.json",
+      "evidence_sha256": "22ff9c3bea247afb44c70550c56eb0c854373ffcea5a708b7e70e7cd787b671a"
+    },
+    {
+      "id": "REC-744-01",
+      "requirement_id": "R12",
+      "surface_id": "S-DOC",
+      "root_cause": "Dashboard documentation claims browser scenarios pending even though exact SHA browser artifacts include them.",
+      "disposition": "optional-recommendation",
+      "evidence_path": "proofs/document-drift.txt",
+      "evidence_sha256": "4831c9b5a027c9b0739ae609fe1829c2bab549890f0e2d0341c4b6816564d02c"
+    }
+  ],
+  "blocking_ids": [
+    "A-74401",
+    "A-74402"
+  ]
+}

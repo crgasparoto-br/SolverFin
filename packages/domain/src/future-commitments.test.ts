@@ -1,0 +1,653 @@
+import assert from "node:assert/strict";
+
+import type { Card, Installment, Invoice, Recurrence, Transaction } from "./index.js";
+import type { PayableReceivable } from "./payables-receivables.js";
+import type { TenantContext } from "./tenant.js";
+import {
+  buildFutureCommitmentAgenda,
+  buildFutureRecurrenceContexts,
+  FutureCommitmentError,
+} from "./future-commitments.js";
+
+const NOW = "2037-10-01T12:00:00.000Z";
+const CONTEXT: TenantContext = {
+  organizationId: "org-a",
+  financialProfileId: "profile-a",
+  financialProfileKind: "personal",
+  userId: "user-a",
+};
+const OTHER_CONTEXT: TenantContext = {
+  organizationId: "org-b",
+  financialProfileId: "profile-b",
+  financialProfileKind: "business",
+  userId: "user-b",
+};
+
+preservesLegitimateEqualCommitments();
+keepsCrossCurrencyTransferAsSingleLogicalCommitment();
+filtersCrossCurrencyEffectsWithoutChangingIdentity();
+replacesRecurrenceProjectionWhenOccurrenceMaterializes();
+keepsInvoiceAsCardCashCommitment();
+keepsInvoiceAheadOfEquivalentLegacyPayable();
+keepsDistinctLegacyPayableWhenInvoiceAccountDiffers();
+usesLegacyPayableOnlyAsFallback();
+updatesAndVoidsCrossCurrencyCommitmentAtomically();
+rejectsIncompleteCrossCurrencyLeg();
+isolatesTenantAndProfile();
+resolvesProjectedAndMaterializedNextRecurrence();
+resolvesCardRecurrenceInsideCanonicalInvoice();
+doesNotInventNextOccurrenceForEndedOrCancelledSeries();
+resolvesSupportedRecurrenceFrequenciesForContext();
+keepsOnlyMaterializedFutureOccurrenceWhilePaused();
+isolatesFutureRecurrenceContextAcrossTenant();
+
+function preservesLegitimateEqualCommitments(): void {
+  const left = transaction("transaction-left", "expense", 12_000, "2037-10-10");
+  const right = transaction("transaction-right", "expense", 12_000, "2037-10-10");
+
+  const agenda = build([left, right]);
+
+  assert.deepEqual(
+    agenda.commitments.map((commitment) => commitment.id),
+    ["transaction:transaction-left", "transaction:transaction-right"],
+  );
+}
+
+function keepsCrossCurrencyTransferAsSingleLogicalCommitment(): void {
+  const transfer = crossCurrencyTransfer("transfer-brl-usd", "2037-10-12", 53_832, 10_000);
+  const agenda = build([transfer]);
+  const [commitment] = agenda.commitments;
+
+  assert.ok(commitment);
+  assert.equal(commitment.id, "transaction:transfer-brl-usd");
+  assert.equal(commitment.monetaryEffects.length, 2);
+  assert.deepEqual(
+    commitment.monetaryEffects.map((effect) => ({
+      amountMinor: effect.amountMinor,
+      currency: effect.currency,
+      accountId: effect.accountId,
+    })),
+    [
+      { amountMinor: -53_832, currency: "BRL", accountId: "account-brl" },
+      { amountMinor: 10_000, currency: "USD", accountId: "account-usd" },
+    ],
+  );
+}
+
+function filtersCrossCurrencyEffectsWithoutChangingIdentity(): void {
+  const transfer = crossCurrencyTransfer("transfer-filter", "2037-10-12", 53_832, 10_000);
+  const brl = build([transfer], { currency: "brl" });
+  const usd = build([transfer], { currency: "USD" });
+
+  assert.equal(brl.commitments[0]?.id, "transaction:transfer-filter");
+  assert.deepEqual(
+    brl.commitments[0]?.monetaryEffects.map((effect) => effect.currency),
+    ["BRL"],
+  );
+  assert.equal(usd.commitments[0]?.id, "transaction:transfer-filter");
+  assert.deepEqual(
+    usd.commitments[0]?.monetaryEffects.map((effect) => effect.currency),
+    ["USD"],
+  );
+}
+
+function replacesRecurrenceProjectionWhenOccurrenceMaterializes(): void {
+  const recurrence = recurrenceFixture("recurrence-rent", "2037-10-15");
+  const projected = build([], { recurrences: [recurrence] });
+
+  assert.deepEqual(
+    projected.commitments.map((item) => item.id),
+    ["recurrence:recurrence-rent:2037-10-15"],
+  );
+
+  const materialized = {
+    ...transaction("rent-october", "expense", 20_000, "2037-10-15"),
+    source: "recurrence",
+    recurrenceId: recurrence.id,
+    installmentId: "installment-rent-october",
+  } satisfies Transaction;
+  const installment = installmentFixture("installment-rent-october", recurrence.id, "2037-10-15");
+  const agenda = build([materialized], {
+    recurrences: [recurrence],
+    installments: [installment],
+  });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["transaction:rent-october"],
+  );
+  assert.equal(agenda.commitments[0]?.replacementKey, "recurrence:recurrence-rent:2037-10-15");
+}
+
+function keepsInvoiceAsCardCashCommitment(): void {
+  const card = cardFixture("card-main");
+  const invoice = invoiceFixture("invoice-october", card.id, 45_000, "2037-10-20");
+  const purchase = {
+    ...transaction("purchase-under-invoice", "expense", 45_000, "2037-10-05"),
+    cardId: card.id,
+    invoiceId: invoice.id,
+  } satisfies Transaction;
+
+  const agenda = build([purchase], { cards: [card], invoices: [invoice] });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-october"],
+  );
+  assert.deepEqual(agenda.commitments[0]?.monetaryEffects, [
+    {
+      id: "invoice:invoice-october:payment",
+      role: "invoice_payment",
+      amountMinor: -45_000,
+      currency: "BRL",
+      cardId: "card-main",
+      accountId: "account-brl",
+    },
+  ]);
+}
+
+function keepsInvoiceAheadOfEquivalentLegacyPayable(): void {
+  const card = cardFixture("card-legacy-duplicate");
+  const invoice = invoiceFixture("invoice-legacy-duplicate", card.id, 25_000, "2037-10-18");
+  const legacy = payableFixture("legacy-invoice-duplicate", "payable", 25_000, "2037-10-18");
+
+  const agenda = build([], {
+    cards: [card],
+    invoices: [invoice],
+    payablesReceivables: [legacy],
+  });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-legacy-duplicate"],
+  );
+}
+
+function keepsDistinctLegacyPayableWhenInvoiceAccountDiffers(): void {
+  const card = cardFixture("card-distinct-legacy");
+  const invoice = invoiceFixture("invoice-distinct-legacy", card.id, 25_000, "2037-10-18");
+  const legacy = {
+    ...payableFixture("legacy-distinct-account", "payable", 25_000, "2037-10-18"),
+    accountId: "account-other",
+  } satisfies PayableReceivable;
+
+  const agenda = build([], {
+    cards: [card],
+    invoices: [invoice],
+    payablesReceivables: [legacy],
+  });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["invoice:invoice-distinct-legacy", "payable-receivable:legacy-distinct-account"],
+  );
+}
+
+function usesLegacyPayableOnlyAsFallback(): void {
+  const equivalent = transaction("energy-transaction", "expense", 25_000, "2037-10-18");
+  const duplicate = payableFixture("legacy-energy", "payable", 25_000, "2037-10-18");
+  const fallback = {
+    ...payableFixture("legacy-water", "payable", 9_000, "2037-10-18"),
+    description: "Water",
+  } satisfies PayableReceivable;
+
+  const agenda = build([equivalent], { payablesReceivables: [duplicate, fallback] });
+
+  assert.deepEqual(
+    agenda.commitments.map((item) => item.id),
+    ["payable-receivable:legacy-water", "transaction:energy-transaction"],
+  );
+}
+
+function updatesAndVoidsCrossCurrencyCommitmentAtomically(): void {
+  const original = crossCurrencyTransfer("transfer-lifecycle", "2037-10-22", 53_832, 10_000);
+  const edited = {
+    ...original,
+    amountMinor: 60_000,
+    destinationAmountMinor: 12_000,
+    plannedOn: "2037-10-23",
+    updatedAt: "2037-10-02T12:00:00.000Z",
+  } satisfies Transaction;
+  const editedAgenda = build([edited]);
+  const [editedCommitment] = editedAgenda.commitments;
+
+  assert.equal(editedCommitment?.plannedOn, "2037-10-23");
+  assert.deepEqual(
+    editedCommitment?.monetaryEffects.map((effect) => effect.amountMinor),
+    [-60_000, 12_000],
+  );
+
+  const voided = {
+    ...edited,
+    status: "voided",
+    voidedAt: "2037-10-03T12:00:00.000Z",
+  } satisfies Transaction;
+  assert.deepEqual(build([voided]).commitments, []);
+}
+
+function rejectsIncompleteCrossCurrencyLeg(): void {
+  const incomplete = {
+    ...transaction("transfer-incomplete", "transfer", 53_832, "2037-10-24"),
+    destinationAccountId: "account-usd",
+    destinationCurrency: "USD",
+  } satisfies Transaction;
+
+  assert.throws(
+    () => build([incomplete]),
+    (error: unknown) =>
+      error instanceof FutureCommitmentError &&
+      error.code === "FUTURE_COMMITMENT_TRANSFER_INCOMPLETE",
+  );
+}
+
+function isolatesTenantAndProfile(): void {
+  const own = transaction("own", "income", 5_000, "2037-10-25");
+  const foreign = {
+    ...transaction("foreign", "income", 99_000, "2037-10-25"),
+    organizationId: OTHER_CONTEXT.organizationId,
+    financialProfileId: OTHER_CONTEXT.financialProfileId,
+  } satisfies Transaction;
+
+  assert.deepEqual(
+    build([own, foreign]).commitments.map((item) => item.id),
+    ["transaction:own"],
+  );
+}
+
+function resolvesProjectedAndMaterializedNextRecurrence(): void {
+  const recurrence = recurrenceFixture("recurrence-context", "2037-10-15");
+  const projected = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    recurrences: [recurrence],
+  });
+
+  assert.deepEqual(projected[0]?.nextOccurrence, {
+    recurrenceId: recurrence.id,
+    commitmentId: "recurrence:recurrence-context:2037-10-15",
+    plannedOn: "2037-10-15",
+    amountMinor: -20_000,
+    currency: "BRL",
+    state: "projected",
+    originKind: "account",
+    accountId: "account-brl",
+  });
+
+  const materializedTransaction = {
+    ...transaction("context-materialized", "expense", 20_000, "2037-10-15"),
+    source: "recurrence",
+    recurrenceId: recurrence.id,
+    installmentId: "context-installment",
+  } satisfies Transaction;
+  const materialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [materializedTransaction],
+    recurrences: [recurrence],
+    installments: [installmentFixture("context-installment", recurrence.id, "2037-10-15")],
+  });
+
+  assert.equal(materialized[0]?.nextOccurrence?.state, "materialized");
+  assert.equal(materialized[0]?.nextOccurrence?.commitmentId, "transaction:context-materialized");
+  assert.equal(materialized[0]?.nextOccurrence?.plannedOn, "2037-10-15");
+}
+
+function resolvesCardRecurrenceInsideCanonicalInvoice(): void {
+  const card = cardFixture("card-recurring-context");
+  const invoice = invoiceFixture("invoice-recurring-context", card.id, 90_000, "2037-10-20");
+  const accountRecurrence = recurrenceFixture("card-recurrence-context", "2037-10-05");
+  const { accountId: _accountId, ...recurrenceBase } = accountRecurrence;
+  const recurrence = {
+    ...recurrenceBase,
+    cardId: card.id,
+    amountMinor: 15_000,
+  } satisfies Recurrence;
+  const purchase = {
+    ...transaction("card-recurring-purchase", "expense", 15_000, "2037-10-05"),
+    cardId: card.id,
+    invoiceId: invoice.id,
+    recurrenceId: recurrence.id,
+    installmentId: "card-recurring-installment",
+  } satisfies Transaction;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [purchase],
+    invoices: [invoice],
+    recurrences: [recurrence],
+  });
+
+  assert.deepEqual(contexts[0]?.nextOccurrence, {
+    recurrenceId: recurrence.id,
+    commitmentId: "invoice:invoice-recurring-context",
+    plannedOn: "2037-10-20",
+    amountMinor: -15_000,
+    currency: "BRL",
+    state: "materialized",
+    originKind: "card",
+    cardId: card.id,
+    invoiceId: invoice.id,
+    transactionId: purchase.id,
+    installmentId: "card-recurring-installment",
+  });
+  const currentPurchase = {
+    ...purchase,
+    id: "card-current-purchase",
+    plannedOn: "2037-09-28",
+    occurredOn: "2037-09-28",
+  } satisfies Transaction;
+  const currentOnly = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [recurrence.id],
+    transactions: [currentPurchase],
+    invoices: [invoice],
+    recurrences: [recurrence],
+  });
+  assert.equal(currentOnly[0]?.nextOccurrence, undefined);
+}
+
+function doesNotInventNextOccurrenceForEndedOrCancelledSeries(): void {
+  const ended = {
+    ...recurrenceFixture("ended-recurrence", "2037-09-01"),
+    endOn: "2037-09-30",
+  } satisfies Recurrence;
+  const cancelled = {
+    ...recurrenceFixture("cancelled-recurrence", "2037-10-15"),
+    status: "cancelled",
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [ended.id, cancelled.id],
+    recurrences: [ended, cancelled],
+  });
+
+  assert.equal(contexts[0]?.nextOccurrence, undefined);
+  assert.equal(contexts[1]?.nextOccurrence, undefined);
+}
+
+function resolvesSupportedRecurrenceFrequenciesForContext(): void {
+  const daily = {
+    ...recurrenceFixture("recurrence-daily", "2037-10-02"),
+    frequency: "daily",
+  } satisfies Recurrence;
+  const weekly = {
+    ...recurrenceFixture("recurrence-weekly", "2037-10-08"),
+    frequency: "weekly",
+  } satisfies Recurrence;
+  const monthly = {
+    ...recurrenceFixture("recurrence-monthly", "2037-09-01"),
+    frequency: "monthly",
+  } satisfies Recurrence;
+  const yearly = {
+    ...recurrenceFixture("recurrence-yearly", "2036-10-02"),
+    frequency: "yearly",
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [daily.id, weekly.id, monthly.id, yearly.id],
+    recurrences: [daily, weekly, monthly, yearly],
+  });
+  const byId = new Map(contexts.map((context) => [context.recurrenceId, context]));
+
+  assert.equal(
+    byId.get(daily.id)?.nextOccurrence?.plannedOn,
+    "2037-10-02",
+    "daily recurrence must use the canonical calendar",
+  );
+  assert.equal(
+    byId.get(weekly.id)?.nextOccurrence?.plannedOn,
+    "2037-10-08",
+    "weekly recurrence must use the canonical calendar",
+  );
+  assert.equal(
+    byId.get(monthly.id)?.nextOccurrence?.plannedOn,
+    "2037-11-01",
+    "monthly recurrence must skip the as-of occurrence and return the next future date",
+  );
+  assert.equal(
+    byId.get(yearly.id)?.nextOccurrence?.plannedOn,
+    "2037-10-02",
+    "yearly recurrence must use the canonical calendar",
+  );
+}
+
+function keepsOnlyMaterializedFutureOccurrenceWhilePaused(): void {
+  const paused = {
+    ...recurrenceFixture("recurrence-paused", "2037-10-15"),
+    status: "paused",
+  } satisfies Recurrence;
+  const materialized = {
+    ...transaction("paused-materialized", "expense", 20_000, "2037-10-15"),
+    source: "recurrence",
+    recurrenceId: paused.id,
+    installmentId: "paused-installment",
+  } satisfies Transaction;
+
+  const withMaterialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [paused.id],
+    transactions: [materialized],
+    recurrences: [paused],
+    installments: [installmentFixture("paused-installment", paused.id, "2037-10-15")],
+  });
+  assert.equal(withMaterialized[0]?.nextOccurrence?.state, "materialized");
+  assert.equal(withMaterialized[0]?.nextOccurrence?.plannedOn, "2037-10-15");
+
+  const withoutMaterialized = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [paused.id],
+    recurrences: [paused],
+  });
+  assert.equal(
+    withoutMaterialized[0]?.nextOccurrence,
+    undefined,
+    "paused recurrence must not invent a new projection",
+  );
+}
+
+function isolatesFutureRecurrenceContextAcrossTenant(): void {
+  const own = recurrenceFixture("recurrence-tenant-scope", "2037-10-15");
+  const foreignTransaction = {
+    ...transaction("foreign-recurrence-occurrence", "expense", 99_000, "2037-10-05"),
+    organizationId: OTHER_CONTEXT.organizationId,
+    financialProfileId: OTHER_CONTEXT.financialProfileId,
+    recurrenceId: own.id,
+  } satisfies Transaction;
+  const foreignRecurrence = {
+    ...recurrenceFixture("foreign-recurrence", "2037-10-03"),
+    organizationId: OTHER_CONTEXT.organizationId,
+    financialProfileId: OTHER_CONTEXT.financialProfileId,
+  } satisfies Recurrence;
+
+  const contexts = buildFutureRecurrenceContexts({
+    context: CONTEXT,
+    asOf: "2037-10-01",
+    recurrenceIds: [own.id, foreignRecurrence.id],
+    transactions: [foreignTransaction],
+    recurrences: [own, foreignRecurrence],
+  });
+
+  assert.deepEqual(
+    contexts.map((context) => context.recurrenceId),
+    [own.id],
+    "foreign recurrence definitions must not be exposed",
+  );
+  assert.equal(
+    contexts[0]?.nextOccurrence?.commitmentId,
+    "recurrence:recurrence-tenant-scope:2037-10-15",
+    "foreign materialized rows must not influence the active tenant projection",
+  );
+}
+
+function build(
+  transactions: readonly Transaction[],
+  extras: {
+    currency?: string;
+    invoices?: readonly Invoice[];
+    cards?: readonly Card[];
+    recurrences?: readonly Recurrence[];
+    installments?: readonly Installment[];
+    payablesReceivables?: readonly PayableReceivable[];
+  } = {},
+) {
+  return buildFutureCommitmentAgenda({
+    context: CONTEXT,
+    from: "2037-10-01",
+    to: "2037-10-31",
+    transactions,
+    ...(extras.currency ? { currency: extras.currency } : {}),
+    ...(extras.invoices ? { invoices: extras.invoices } : {}),
+    ...(extras.cards ? { cards: extras.cards } : {}),
+    ...(extras.recurrences ? { recurrences: extras.recurrences } : {}),
+    ...(extras.installments ? { installments: extras.installments } : {}),
+    ...(extras.payablesReceivables ? { payablesReceivables: extras.payablesReceivables } : {}),
+  });
+}
+
+function transaction(
+  id: string,
+  kind: Transaction["kind"],
+  amountMinor: number,
+  plannedOn: string,
+): Transaction {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    kind,
+    status: "planned",
+    source: "manual",
+    amountMinor,
+    currency: "BRL",
+    occurredOn: plannedOn,
+    plannedOn,
+    description: id,
+    accountId: "account-brl",
+    categoryId: "category-main",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+function crossCurrencyTransfer(
+  id: string,
+  plannedOn: string,
+  amountMinor: number,
+  destinationAmountMinor: number,
+): Transaction {
+  return {
+    ...transaction(id, "transfer", amountMinor, plannedOn),
+    destinationAccountId: "account-usd",
+    destinationAmountMinor,
+    destinationCurrency: "USD",
+  };
+}
+
+function recurrenceFixture(id: string, startOn: string): Recurrence {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    status: "active",
+    kind: "expense",
+    frequency: "monthly",
+    interval: 1,
+    startOn,
+    amountMinor: 20_000,
+    currency: "BRL",
+    description: "Rent",
+    accountId: "account-brl",
+    categoryId: "category-main",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+function installmentFixture(id: string, recurrenceId: string, dueOn: string): Installment {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    recurrenceId,
+    status: "planned",
+    sequenceNumber: 1,
+    totalInstallments: 1,
+    dueOn,
+    amountMinor: 20_000,
+    currency: "BRL",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+function cardFixture(id: string): Card {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    name: "Card",
+    status: "active",
+    closingDay: 10,
+    dueDay: 20,
+    currency: "BRL",
+    paymentAccountId: "account-brl",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+function invoiceFixture(
+  id: string,
+  cardId: string,
+  totalAmountMinor: number,
+  dueOn: string,
+): Invoice {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    cardId,
+    status: "open",
+    periodStartOn: "2037-09-11",
+    periodEndOn: "2037-10-10",
+    dueOn,
+    totalAmountMinor,
+    currency: "BRL",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}
+
+function payableFixture(
+  id: string,
+  kind: PayableReceivable["kind"],
+  amountMinor: number,
+  dueOn: string,
+): PayableReceivable {
+  return {
+    id,
+    organizationId: CONTEXT.organizationId,
+    financialProfileId: CONTEXT.financialProfileId,
+    kind,
+    status: "pending",
+    amountMinor,
+    currency: "BRL",
+    dueOn,
+    description: id,
+    accountId: "account-brl",
+    categoryId: "category-main",
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+}

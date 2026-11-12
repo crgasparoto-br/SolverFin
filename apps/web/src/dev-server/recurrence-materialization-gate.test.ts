@@ -1,0 +1,34 @@
+import assert from "node:assert/strict";
+
+import {
+  renderRecurrenceMaterializationGate,
+  requiresRecurrenceMaterialization,
+} from "./recurrence-materialization.js";
+
+const initial = new URL(
+  "https://app.example.invalid/lancamentos?accountId=account-1&month=2026-12",
+);
+assert.equal(requiresRecurrenceMaterialization(initial), true);
+assert.equal(
+  requiresRecurrenceMaterialization(initial, {
+    SOLVERFIN_SSR_STYLE_CONTRACT_VALIDATION: "1",
+  }),
+  false,
+);
+
+const html = renderRecurrenceMaterializationGate("account", initial);
+assert.match(html, /Atualizando lançamentos recorrentes/);
+assert.match(html, /method: "POST"/);
+assert.match(html, /credentials: "same-origin"/);
+assert.match(html, /\/api\/recurrence-materialization\?surface=account/);
+assert.match(html, /materialized=1/);
+assert.match(html, /Não foi possível atualizar as recorrências/);
+assert.match(html, /Tentar novamente/);
+assert.match(html, /Continuar sem atualização/);
+assert.match(html, /if \(!response\.ok\)/);
+assert.doesNotMatch(html, /Authorization|Bearer/);
+
+const completed = new URL(
+  "https://app.example.invalid/lancamentos?accountId=account-1&month=2026-12&materialized=1",
+);
+assert.equal(requiresRecurrenceMaterialization(completed), false);

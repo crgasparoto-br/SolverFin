@@ -1,0 +1,14 @@
+Material SHA: 07fb199284a7f0bab38148f33d85331aa18403d0
+Source: https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6189467904
+Source body sha256: c33705c178269726c35ba37fdf030599537f5dbbcb56e0c921fa456fdbf3486f
+**REPROVADA — auditoria da Issue #714 no HEAD `3340dc96be0493a45a492fa53f93a42693b27135` da PR #713 (base `develop`).**
+
+**F-714-03 — P2 / bloqueante: modal de novo, editar e clonar em 320×740 apresenta recorte do botão Cancelar.** A inspeção independente das imagens do artefato `statement-visual-evidence-3340dc96be0493a45a492fa53f93a42693b27135` (ID `11947666551`, [Statement visual validation #38677811901](https://github.com/crgasparoto-br/SolverFin/actions/runs/38677811901)) identificou o botão `Cancelar` deslocado/cortado pelo limite esquerdo do diálogo em `statement-contextual-new-320x740.png`, `statement-contextual-edit-320x740.png` e `statement-contextual-clone-320x740.png`.
+
+**Escape do gate:** `statement-contextual-surfaces.json` indica `status=passed` e `footerActionRowDelta=0`, mas `scripts/statement-visual/statement-contextual-surfaces.mjs` só testa alinhamento vertical de Cancelar/Salvar; não exige que as caixas e textos de **ambos** os botões estejam integralmente contidos na área útil do diálogo. `inside` e `horizontalOverflow` do diálogo não substituem a verificação dos botões.
+
+**Correção solicitada:** ajustar distribuição, dimensões e espaçamentos responsivos de `.statement-save-actions` para 320 px, preservando botões lado a lado, totalmente visíveis/legíveis/acionáveis e alvos de toque adequados; adicionar controle Chrome que valide limites esquerdo/direito de cada botão dentro do painel e mutação negativa capaz de detectar recorte, com restauração; gerar novas capturas em 320×740, 390×844 e desktop para os 3 modos. Alterada a implementação, recertificar novo material/head exact-SHA segundo `crgasparoto-br/skill` e solicitar nova auditoria.
+
+**Já confirmados:** `docs/GOLDEN_STATEMENT.md` reflete aceite visual anterior, modal centralizado e transferências por modo; novo certificado `.audit/entregar-issue/handoff-ready.json` está `ready` para #702/PR713 (material `38a498be...`); commit `3340dc96...` é filho direto do material, alterando só 19 paths `.audit/entregar-issue/`; Repository CI [#38677811867](https://github.com/crgasparoto-br/SolverFin/actions/runs/38677811867) e visual [#38677811901](https://github.com/crgasparoto-br/SolverFin/actions/runs/38677811901) concluídos com sucesso nesse HEAD. CI verde não neutraliza o achado da captura.
+
+**Governança:** PR ainda aberta, sem merge; registro pós-merge na `develop` só poderá ocorrer após integração regular; #715–#719 não fazem parte do fechamento técnico da #714. Não reabrir o aceite visual de produto já concedido. A conexão GitHub do autor não consegue lançar `REQUEST_CHANGES` sobre a própria PR (422), portanto este comentário **não deve ser contado como aprovação/reprovação formal por outro revisor GitHub**.

@@ -1,0 +1,485 @@
+# Extrato: Golden Screen aprovada visualmente
+
+Este documento especifica a Golden Screen do Extrato (`/lancamentos`) da
+epica #702 e a referencia de acabamento consolidada pela issue #714.
+A PR #703 e o marco historico inicial, nao a referencia material vigente.
+Esta especificacao complementa `DESIGN_SYSTEM.md`, `SCREEN_ARCHETYPES.md`
+e `VISUAL_VALIDATION.md`.
+
+**Aceite visual de produto:** concedido pelo usuario em 14/10/2026, registrado
+na #702; referencia visual do material `366e02072ee39116cfc50a7bc602273902e516fc`
+da PR #713. A decisao de manter os modais de novo, editar e clonar centralizados
+e posterior ao mockup e prevalece sobre sua geometria original.
+
+**Marcos de implementacao integrados na `develop`:**
+
+- PR #713, merge `b50ee44238dd9e63129ebc87a3ee31c0965b19f8`, material
+  `07fb199284a7f0bab38148f33d85331aa18403d0`: referencia funcional
+  original, documentacao e modais centralizados.
+- PR #721, merge `8a56d2f3bdb59d5b0d7abeceee63601c1dfbffe5`, material
+  `fab03d51737a5ecd434aad5e86aa468efe4563db`: contencao responsiva,
+  alvos Cancelar/Salvar de pelo menos 44 px e controles Chrome adversariais.
+
+**Governanca:** aceite visual, implementacao integrada, CI/Chrome,
+certificacao exact-SHA e parecer tecnico independente sao marcos distintos.
+As evidencias e a decisao de fechamento tecnico da #714 pertencem ao registro
+da propria issue; merge ou CI verde nao constituem aprovacao independente.
+A #714 nao implementa automaticamente as subissues #715–#719, cuja
+propagacao e validacao tecnica devem ser verificadas individualmente na #702.
+
+## Paleta canonica obrigatoria (Golden Screen)
+
+A paleta de cores da Golden Screen do Extrato e o **padrao global** de todas as telas
+SolverFin, incluindo Cartoes, Contas, Relatorios, Categorias e dialogos. Os valores
+sao definidos em `apps/web/src/design-system/tokens.ts` e publicados pelo
+design system compartilhado; nenhuma tela deve manter cores semanticas paralelas.
+
+- **Entradas/receitas/creditos:** texto `#047857`, superficie `#ECFDF5`.
+- **Saidas/despesas/debitos/valores negativos:** texto `#B91C1C`, superficie `#FEF2F2`.
+- **Transferencias/estados neutros:** texto `#475569`, superficie `#F1F5F9`.
+- Acoes primarias preservam a identidade azul-petroleo; cores de estados
+  financeiros nao devem ser usadas como cores indiscriminadas de botoes.
+- Usar tokens CSS `--sf-color-success`, `--sf-color-danger`,
+  `--sf-color-muted-text` e respectivas superficies, sem valores hexadecimais
+  repetidos em componentes ou por rota.
+- Modos claro/escuro precisam preservar semantica e contraste; estado financeiro
+  nao pode depender apenas da cor (icone, sinal e rotulo acessivel).
+- A revisao de qualquer tela ou PR deve comparar cores com a Golden Screen e
+  bloquear divergencias injustificadas. Ajustes futuros de paleta acontecem nos
+  tokens compartilhados, nao por pagina.
+
+## Composicao
+
+- Contexto da conta e resumo financeiro precedem a consulta e a lista.
+- O resumo e horizontal no desktop; nao existe coluna lateral competindo com a lista.
+- Saldo atual e os quatro indicadores preservam os valores do view-model existente:
+  Saldo inicial usa `openingMinor`, Entradas usa `incomeMinor`, Saidas usa
+  `expenseMinor` em magnitude positiva e Saldo final usa `effectiveBalanceMinor`.
+  **Conta individual:** Entradas inclui receitas e transferencias recebidas; Saidas
+  inclui despesas e transferencias enviadas, sempre na moeda nativa da conta
+  (`destinationAmountMinor` para a perna recebida quando houver cambio).
+  **Todas as contas (`accountId=all`):** agregar somente contas da moeda filtrada;
+  transferencias internas entre contas dessa mesma moeda permanecem na listagem,
+  mas nao inflam Entradas/Saidas, enquanto transferencias cambiais entram nos cards
+  pela perna da moeda selecionada, sem conversao implicita. Isso nao reclassifica
+  transferencia como receita/despesa no cadastro ou na API. Lancamentos previstos
+  preservam a distincao entre saldo projetado e efetivo; anulados ficam excluidos.
+  A ADR 0018 governa essas diferencas por modo.
+- A lista utiliza a largura disponivel. Descricao e valor dominam a primeira linha;
+  categoria, tipo e saldo por movimento permanecem secundarios, sem remover informacao.
+- Categoria, Tipo, Status e Conciliacao ficam diretamente disponiveis na barra
+  compacta desktop. No mobile, os filtros sao progressivos e filtros ativos abrem
+  o painel inicialmente; Aplicar/Limpar permanecem disponiveis quando ele esta fechado.
+  Em 320px, **Dia do mes** fica no mesmo painel progressivo, sem desaparecer: o
+  campo continua operavel com o painel aberto, e retorna a barra principal ao
+  ampliar a viewport. O atalho **Mes atual** continua como icone de 44px,
+  com nome acessivel e comando inalterado, no canto livre superior do
+  cabecalho em 320px. Assim o navegador de meses preserva a largura integral
+  e o ano nao e cortado. A secao Movimentacoes permanece na primeira viewport.
+  Ordenacao e progressiva, com o estado ativo sempre visivel. Sem JavaScript, o
+  formulario GET completo permanece disponivel. Conta e periodo pertencem ao
+  contexto financeiro, preservando o vinculo nativo com o formulario de consulta.
+- Cadastro (novo lancamento), clonagem e edicao usam o mesmo dialog nativo, sempre
+  centralizado horizontal e verticalmente na viewport, sem ancoragem na borda direita
+  como drawer ou painel lateral. O formulario mantem duas colunas no desktop e uma
+  no mobile; o dialog respeita margens seguras e rola internamente quando necessario.
+  Sem JavaScript, o select nativo de tipo permanece visivel e acessivel. Com a melhoria
+  progressiva ativa, Despesa/Receita/Transferencia usam um radiogroup com setas, Home/End,
+  estado selecionado e bloqueios sincronizados. O select original continua como campo
+  canonico do payload; transferencia, recorrencia e persistencia usam seus handlers.
+  Validacao nativa invalida torna o select visivel novamente, sem campo focavel oculto.
+- **Rodape atual apos a #747 / PR #749:** os dialogos novo e clonar oferecem
+  Cancelar, Salvar e continuar e Salvar lancamento como tres acoes distintas.
+  Editar oferece somente Cancelar e Salvar lancamento. Em 1366 px e 390 px,
+  Cancelar e Salvar e continuar compartilham a primeira linha, enquanto a
+  confirmacao primaria fica abaixo em novo/clonar; em 320 px, as acoes
+  podem ser empilhadas em ordem, sem recorte, cada uma com alvo de pelo menos
+  44 px. Essa atualizacao posterior substitui apenas a geometria antiga de
+  dois botoes da ADR 0018; centralizacao, foco, conteudo e regras financeiras
+  permanecem obrigatorios. Consulte tambem `docs/ENTRY_FILL_RULES.md`.
+- Logos continuam resolvidos pelo catalogo institucional compartilhado.
+
+## Componentes de escolha e confirmacao
+
+A Golden Screen inclui os estados interativos dos botoes e nao somente
+suas posicoes. Opcoes alternativas de escopo, categoria, situacao e outras
+escolhas em dialog devem usar controles neutros compartilhados, sem botao
+primario preselecionado. As opcoes possuem fundo branco, borda sutil e
+texto azul-petroleo legivel; hover e foco adotam os tokens neutros
+compartilhados, sem transformar um botao em superficie azul-escura.
+Apenas a confirmacao final de uma acao usa a variante primaria.
+
+Ao criar novos dialogos e menus, auditar a precedencia de
+`button:hover:not(:disabled)` do shell frente aos seletores locais.
+Conferir fundo, texto, borda, foco visivel e contraste para mouse e teclado
+em desktop e mobile. Evitar classes locais de botao que reimplementem
+cores e estados com menor especificidade do que a regra global. Consulte
+`docs/DESIGN_SYSTEM.md` para o contrato obrigatorio.
+
+O mockup orienta acabamento, densidade e hierarquia, nao altera regras financeiras.
+A propagacao para outras rotas permanece na epica #702, posterior a aprovacao
+independente da referencia.
+
+## Evidencia e reprovacao
+
+`transaction-group-layout.mjs`, ja integrado ao workflow visual, executa tambem
+`golden-statement.mjs` sobre o aplicativo autenticado e suas fixtures ficticias.
+`golden-statement.json` registra o SHA do checkout, cenarios, medidas e capturas.
+
+O teste verifica desktop, mobile (390 e 320 px), conteudo longo, estado vazio,
+ordenacao ativa, teclado e abertura do formulario de transferencia. Injecoes
+reversiveis simulam a volta da coluna lateral e a perda de destaque do valor:
+o contrato precisa rejeitar ambas e aprovar novamente depois da restauracao.
+As verificacoes anteriores do agrupamento permanecem obrigatorias.
+
+`statement-contextual-surfaces.mjs`, chamado pelo mesmo cenario de agrupamento,
+registra `statement-contextual-surfaces.json` com SHA, rota, viewport, geometria,
+foco, controles negativos e capturas de novo lancamento, edicao, detalhes do grupo,
+mais acoes e conciliacao em 1366x768, 390x844 e 320x740. Cada superficie rejeita
+uma ancoragem fora da viewport e passa novamente apos restauracao. A conciliacao
+percorre `posted -> reconciled -> posted` pelos controles reais, com releitura do
+estado renderizado apos persistencia. Os detalhes sao do grupo canonico; o produto
+nao possui drawer separado de detalhes de um lancamento individual nem dialogo de
+conciliacao por associacao. O registro dessas diferencas nao autoriza criar fluxos
+decorativos. As capturas devem ser comparadas com as cinco superficies do mockup
+antes de afirmar paridade visual; medidas verdes nao fazem essa comparacao.
+
+`statement-alternative-states.mjs` registra `statement-alternative-states.json`
+e capturas nos mesmos tres viewports para vazio por busca sem correspondencia e
+erro de sessao rejeitada pela API real. O vazio preserva a conta e o resumo;
+o erro nao expoe linhas financeiras e mantem a acao de recuperacao. Controles
+negativos ocultam cada mensagem e exigem deteccao e restauracao. O cookie da
+sessao demo e restaurado em memoria e nunca entra nas evidencias. As arvores de
+acessibilidade das cinco superficies contextuais tambem ficam nos artefatos
+`statement-contextual-<estado>-<viewport>-ax.json`, ligados ao mesmo SHA.
+
+Essas medidas nao aprovam sozinhas o acabamento. A revisao deve inspecionar as
+capturas do SHA candidato e comparar hierarquia, densidade, peso das acoes,
+legibilidade, iconografia e dialogs com a referencia. Registrar cada achado
+A-001 a A-006 individualmente; nao substituir esse fechamento por CI verde.
+Uma fixture isolada de componente nao prova a integracao com o aplicativo.
+
+### Contencao e sobreposicao
+
+O layout nao deve criar rolagem horizontal desnecessaria. O campo legado
+`hasLocalHorizontalScroll` agora registra uma prova de rolagem local com conteudo
+largo temporario, removido ao final. `hasHorizontalOverflow` preserva a observacao
+do conteudo real; `localScrollProbe` registra deslocamento e largura da pagina.
+Uma tabela sem `overflow-x: auto|scroll`, incapaz de rolar ou que alargue a pagina
+reprova. A posicao de rolagem e os filhos originais devem ser preservados.
+
+No CDI, a categoria pode estar em uma segunda linha. Colisao exige intersecao
+nos dois eixos, nao apenas que o texto termine a direita da categoria. O teste
+Chrome verifica o conteudo recolhido e expandido em quatro larguras de desktop,
+provoca uma colisao real por posicionamento temporario e exige deteccao e
+restauracao. Os controles de overflow e legibilidade permanecem obrigatorios.
+
+### Densidade na primeira tela
+
+No cenario desktop 1366 x 768, a primeira movimentacao deve aparecer inteira
+sem rolagem inicial. O resumo e os controles nao podem consumir todo o viewport.
+`GS-NC-DENSITY` injeta espaco excessivo no resumo e exige que o contrato reprove;
+a restauracao deve passar. No mobile, a regra e deliberadamente mais estreita:
+a regiao **Movimentacoes** deve comecar ainda na primeira viewport em 390 x 844 e
+320 x 740, sem exigir que a primeira movimentacao inteira fique visivel sem rolagem.
+Isso rejeita o chrome vertical excessivo sem esconder conta, moeda, periodo ou busca.
+Campos e valores permanecem acessiveis; o formulario mobile preserva alvos de
+44 px e a acao de salvar usa um rodape aderente ao dialog.
+
+Em larguras de ate 360 px, os quatro indicadores mantem rotulo e valor
+completos em grade compacta 2 x 2, sem icones decorativos, e o periodo separa
+a navegacao mensal da acao Mes atual. Valores longos podem quebrar linha dentro
+do proprio card, sem sobrepor outros valores. A busca e
+as acoes Aplicar/Limpar continuam visiveis; a ordenacao nativa permanece no
+grupo expansivel Filtros e ordenacao. No dialog, Despesa e Receita dividem a
+primeira linha, Transferencia ocupa a segunda, e Cancelar/Salvar usam a largura
+disponivel. O teste verifica cada palavra dos botoes por `Range` e injeta uma
+largura insuficiente para provar a deteccao de palavras partidas.
+
+## Remediacao visual da revisao GS703
+
+A revisao `audit-rejection:solverfin-703-2b6e3f1-golden-screen` apontou defeitos
+na composicao final, incluindo estilos legados executados depois do renderer.
+O fechamento deve cobrir a aplicacao autenticada, e nao apenas a fonte do renderer.
+
+### GS703-001: agrupamento legivel
+
+O formulario final usa duas colunas para campos curtos no desktop e uma no mobile.
+Valor efetivo, descricao e conta ocupam largura ampla. A camada de enhancement
+reutiliza a moeda do SSR em vez de acrescentar uma segunda representacao.
+Valor efetivo e um output de leitura que pode reflowar; os handlers continuam
+atualizando o mesmo valor, sem mudar calculos, payloads ou regras financeiras.
+A lista de membros mantem area minima legivel e acoes acessiveis.
+
+### GS703-002: geometria observada, nao media
+
+`form-geometry.mjs` observa todos os campos visiveis, inclusive um campo tardio
+no DOM. Colunas sao contadas por linha real, sem a divisao quantidade/linhas.
+Rotulos sao medidos por retangulos de texto e valores financeiros por conteudo
+interno, independentemente do overflow do painel. Os controles Chrome injetam
+colunas excedentes, campo tardio, moeda duplicada, corte de valor e escape de rotulo;
+cada regressao deve reprovar e a restauracao precisa passar.
+
+### GS703-003 e GS703-R01: mobile e cabecalho
+
+`statement-golden-refinements.ts` agrupa categoria/tipo e data/saldo preservando
+os nodes e seus handlers. O resumo de situacao e progressivo no desktop e no mobile,
+permanece acessivel por teclado e preserva a escolha da pessoa durante o resize.
+Conta, moeda, periodo, descricao e valores nao sao removidos.
+A acao primaria vem primeiro na ordem de teclado, com as demais acoes subordinadas.
+O titulo do dialog utiliza toda a largura do cabecalho; a reserva do botao Fechar
+fica apenas na linha superior, sem estreitar o titulo longo.
+
+`statement-refinements.mjs` roda no mesmo Chrome autenticado e publica
+`statement-refinements.json`, com SHA, medidas, controles e capturas do topo,
+das movimentacoes e do titulo em 320 px. A comparacao da densidade mobile usa
+as medidas e a inspecao da composicao; nao cria uma exigencia universal de
+primeira movimentacao visivel sem rolagem em todo celular.
+
+### GS703-R02: fechamento individual do candidato historico (antes do aceite de 14/10)
+
+A-001 deve ligar a composicao geral as capturas desktop/mobile do mesmo SHA.
+A-002 deve ligar descricao/valor e metadados as capturas das movimentacoes e
+as medidas de prioridade tipografica. A-003 deve ligar contexto/resumo horizontal
+as medidas de largura e densidade. A-004 deve ligar os filtros e o resumo
+progressivo aos controles de teclado e preservacao de estado. A-005 deve ligar
+estados, agrupamento, dialogs e regressao injetada aos respectivos relatorios.
+A-006 deve registrar a observacao visual de cada um desses itens, separadamente
+do fechamento tecnico do handoff. GS703-001 a GS703-003 e GS703-R01/R02 tambem
+precisam de fechamento individual na remediacao.
+
+**Historico da validacao anterior ao aceite de 14/10/2026:** o indice de evidencias
+nao equivalia a homologacao e CI/handoff READY nao alteravam automaticamente o
+estado interno `data-golden-screen-state="candidate"`. Essa cautela nao revoga o
+aceite visual expresso registrado na #702, mas o estado visual aprovado tambem nao
+comprova o gate tecnico independente, o handoff valido ou o merge da PR #713.
+
+## Aplicacao do mockup do Extrato
+
+A referencia anexada orienta a composicao, nao fornece dados nem novos contratos
+financeiros. A implementacao mantem os tokens e o catalogo institucional do produto.
+Conta e saldo atual compartilham o mesmo cabecalho no desktop; no mobile, a conta
+precede o saldo. Os quatro indicadores permanecem compactos abaixo desse cabecalho.
+O titulo da colecao passa a ser Movimentacoes, sem repetir o nome completo da conta.
+
+Com JavaScript, Novo lancamento e a acao primaria, conforme o mockup. Ela abre o formulario
+canonico com despesa inicialmente selecionada; a pessoa pode escolher receita ou
+transferencia no radiogroup. Transferir e Nova receita permanecem como atalhos em
+Mais acoes, usando os mesmos botoes, listeners e formularios existentes.
+A melhoria altera o rotulo do botao original sem substitui-lo. O fallback SSR
+conserva o rotulo Nova despesa e o select de tipo, como compatibilidade temporaria.
+O menu abre por teclado, fecha com Escape ou clique externo e devolve foco ao
+acionador quando o dialog aberto por uma dessas acoes e fechado. Sem JavaScript,
+os controles originais permanecem disponiveis. A situacao do periodo inicia
+recolhida em ambos os layouts; expandir revela os contadores e valores originais.
+
+O mockup nao altera a regra financeira por modo: transferencias entram nos cards
+individuais e transferencias cambiais entram nos cards de `Todas` na moeda escolhida;
+apenas transferencias internas da mesma moeda nao inflam o consolidado (ADR 0018).
+A imagem nao autoriza reclassificar transferencias como receita/despesa,
+inventar saldo inicial/final, fundir as datas financeiras ou tornar
+categoria obrigatoria. Atalhos de sete dias, conciliacao por associacao e mover
+para outra conta dependem de contratos funcionais proprios; nao sao adicionados
+como controles decorativos ou como reinterpretacao de operacoes existentes.
+
+`mockup-composition-contract.mjs` valida cabecalho horizontal, ordem mobile,
+largura util e acoes progressivas. Ele e chamado por `statement-refinements.mjs`,
+sem um segundo navegador ou novo workflow. O controle GS-MOCKUP-NC-HEADER rejeita
+empilhamento indevido no desktop; GS-MOCKUP-ACTIONS-KEYBOARD abre a transferencia
+pelo menu real e observa fechamento e retorno do foco. Os controles anteriores
+de agrupamento, moeda, titulo, overflow e metadados continuam obrigatorios.
+
+### Controles do formulario e aceite do mockup
+
+`statement-mockup-controls.ts` melhora o mesmo formulario apos o DOM estar pronto.
+Nao clona inputs financeiros nem acrescenta campos ao payload. Descricao precede
+categoria; categoria e descricao usam largura completa. Cancelar e secundario e
+fecha o dialog nativo. A consulta e agrupada com superficie discreta e os tokens
+compartilhados; o shell global e as regras financeiras nao sao redesenhados.
+
+A validacao Chrome de transferencia opera o radiogroup pelo teclado e confirma
+valor do select canonico, foco e destino visivel. O controle de campo tardio usa
+uma linha realmente composta de dois campos, injeta um terceiro no fim do DOM e
+exige tres colunas sem colisao incidental. Depois restaura atributos e rolagem.
+A aprovacao exige nova evidencia da aplicacao autenticada no SHA publicado. Uma
+previa isolada ou patch local nao fecha GS703-001 a GS703-003 nem homologa a tela.
+
+## Paridade visual com o mockup do Extrato
+
+A Golden Screen visualmente aprovada do Extrato usa o mockup como referência estrutural,
+preservando as regras financeiras existentes. A composição deve manter: navegação
+e cabeçalho compactos, contexto de conta e saldo em bloco horizontal, quatro
+indicadores do período (saldo inicial, entradas, saídas e saldo final), filtros
+compactos, lista com descrição/valor dominantes e dialog centralizado para
+cadastro, clonagem e edição de lançamentos, com opções avançadas progressivas.
+
+Por decisão posterior ao mockup, a geometria de painel lateral ilustrada para
+novo lançamento não é normativa: `POST` (novo e clonar) e `PATCH` (editar) devem
+abrir centralizados. Não transformar o diálogo de criação em drawer à direita.
+Preservar foco, Escape, tecla de retorno ao acionador, alvos de toque e rolagem
+interna do formulário, inclusive em 1366x768, 390x844 e 320x740.
+
+A paridade não autoriza tornar categoria obrigatória, fundir datas financeiras
+ou alterar payloads. Diferenças necessárias por contrato funcional devem ser
+explícitas e visualmente subordinadas.
+
+## Visão consolidada na mesma Golden Screen (decisão de 2026-10-14)
+
+A opção **Todas as contas** em `/lancamentos?accountId=all&currency=BRL&month=AAAA-MM` preserva o mesmo layout da conta individual, identifica a conta sob a descrição e soma saldos **somente de contas da moeda selecionada**. Na conta individual, transferências recebidas compõem Entradas e enviadas compõem Saídas (na moeda da conta). No modo consolidado, as transferências internas da mesma moeda não compõem os cards, mas as **transferências cambiais permanecem** como entradas/saídas na moeda filtrada, sem alterar a projeção do saldo. As previstas não entram no saldo efetivo, e o menu Ações permite editar, clonar, conciliar/desconciliar e excluir lançamentos existentes com a conta de origem real identificada (além de Ver na conta). Novo lançamento sem conta selecionada não pode ser salvo. O filtro de moeda é obrigatório nesse modo. Para regras, controles negativos e razão da decisão, consulte [ADR 0018](./adr/0018-golden-statement-consolidated-by-currency.md).
+
+## Ultima conta selecionada entre sessoes
+
+No Extrato (`/lancamentos`), ao escolher uma conta individual ou `Todas as contas`,
+a ultima selecao e lembrada no mesmo navegador, inclusive depois de encerrar a sessao
+e autenticar-se novamente. O identificador e salvo em `localStorage`, no escopo
+da combinacao **usuario autenticado + perfil financeiro ativo** (sem token, credencial,
+saldo ou informacao de lancamentos). Um usuario ou perfil diferente nunca reutiliza
+a selecao do anterior.
+
+Um link com `accountId` explicito prevalece sobre a preferencia local e passa a
+ser a nova selecao quando pertencer as contas disponiveis no perfil. Na entrada
+sem `accountId`, restaurar apenas uma conta disponivel no seletor ou a opcao
+`all`. Se a conta foi arquivada/removida, limpar a preferencia invalida e manter
+o fallback da tela. Um filtro `currency` explicito nao deve ser substituido por
+conta de outra moeda. Preservar mes, filtros e parametros ja informados na URL.
+Falhas da API de identidade/perfil ou indisponibilidade do armazenamento local
+nao impedem usar os filtros e formulario GET do Extrato.
+
+A preferencia e **local ao navegador/dispositivo**; sincronizacao entre dispositivos
+nao esta neste requisito. Logout invalida somente credenciais/sessao, sem apagar
+essa escolha.
+
+## Atalhos de período — Hoje e intervalos relativos (17/10/2026)
+
+Na Golden Screen do Extrato, **Hoje** consulta o dia civil de São Paulo (`America/Sao_Paulo`), independentemente do relógio UTC da VPS, e atualiza conjuntamente `month` e `day`. Os atalhos de 7/30 dias definem limites reais `from`/`to` e exibem o período efetivo; atalhos não podem manter um dia ou intervalo antigo nem perder `profileId`, `accountId`, moeda, pesquisa ou demais filtros.
+
+A consulta de transações do Extrato deve filtrar pelo **dia efetivamente exibido** (`effectiveOn ?? plannedOn ?? occurredOn`, cutoff `statementTo`) e não somente por `occurredOn`; o servidor mantém os filtros de ocorrência existentes para outros consumidores. O saldo inicial depende das transações anteriores ao começo do intervalo e os saldos da tabela devem respeitar a mesma data canônica. O formulário GET não deve duplicar o campo `day`: o campo é renderizado pelo servidor dentro do formulário original, com ou sem JavaScript; o script apenas atualiza limites, limpa o dia e aplica o filtro.
+
+## Extrato por dia e densidade da tabela — PR #720 (17/10/2026)
+
+O seletor **Dia do mês** faz parte do HTML do filtro, inclusive quando o JavaScript não carrega.
+Seu `min` e `max` são o primeiro e o último dia do mês selecionado, permitindo filtrar
+exatamente um dia, sem consultar datas de outro mês. O botão **Mês completo** remove apenas
+o dia, preservando conta, perfil, moeda e os demais filtros. Mudar de mês limpa um dia
+anterior. O período, totais e saldos usam as mesmas datas efetivas exibidas na tabela.
+
+Com ordenação por data (ascendente ou descendente), as movimentações aparecem em **grupos
+diários abertos por padrão**. Cada cabeçalho mostra data, quantidade, entradas e saídas
+do dia; clique, Enter ou Espaço sobre o cabeçalho recolhe/expande somente aquele dia,
+sem remover filtros ou alterar cálculo financeiro. Transferências contam com o sinal
+da conta exibida. Em ordenações globais por valor ou descrição, as linhas permanecem
+sem agrupamento para não alterar o resultado da ordenação escolhida.
+
+No desktop, o Extrato usa uma única linha para cada movimento, com **Valor** e
+**Saldo** em colunas distintas, alinhadas à direita. O título **Saldo** aparece apenas
+no cabeçalho dessa coluna, nunca repetido antes do valor de cada linha. A categoria já comunica
+o tipo com sua cor e ícone; o texto duplicado de Tipo não deve ocupar uma nova linha.
+A grade respeita a Golden Screen, mantendo ícone de situação interativo, ações,
+checkbox e acessibilidade; em telas estreitas, há reflow sem truncar valores.
+O agrupamento visual não modifica a natureza dos grupos financeiros persistidos.
+
+### Contrato visual obrigatório para novos filtros (PR #720)
+
+Toda alteração em telas deve passar pela Skill `design-interface` do repositório
+`crgasparoto-br/skill` (branch `develop`), consultando também os tokens e a Golden
+Screen vigente **antes** de editar CSS/HTML. Não é suficiente renderizar o componente:
+as dimensões e o alinhamento precisam ser conferidos no Chrome no mesmo SHA.
+
+Campos curtos, como **Dia do mês**, não podem herdar spans de buscas ou tabelas.
+No desktop (largura a partir de 1340px), o filtro fica na mesma linha de Busca,
+Tipo, Status, Conciliação, Categoria e Aplicar, com largura máxima de `11.5rem`
+(~184px), enquanto Busca mantém espaço flexível; os atalhos ocupam linha anterior.
+De 1101px a 1339px, a grade faz reflow sem aumentar o seletor de dia; em tablet
+o dia permanece compacto e em celulares pode ocupar a largura disponível.
+O controle nativo de calendário e a ação de limpar dia devem permanecer utilizáveis.
+
+A aceitação exige observação real de proporções, alturas, foco, contraste e ausência
+de overflow em 1366x768, 1665x900 e nos breakpoints mobile. Toda alteração de
+padrão deve atualizar os testes e evidências da Golden Screen, não apenas o CSS.
+
+## Situacao da ocorrencia recorrente no Extrato — PR #720
+
+O menu acessivel do icone de situacao deve habilitar `Marcar como conciliado`
+para ocorrencia recorrente materializada em estado **Previsto** ou **Efetivado**,
+independentemente do indicador visual de recorrencia; um item conciliado oferece
+`Desconciliar`. A operacao afeta somente a ocorrencia selecionada e usa o mesmo
+menu neutro ja aprovado pela Golden Screen. Os bloqueios de compras no cartao,
+grupos financeiros e remuneracoes continuam validos. Nenhum botao novo ou modal
+concorrente deve ser criado apenas para reconciliar itens recorrentes.
+
+## Conciliação universal dos movimentos elegíveis — PR #720 (17/10/2026)
+
+O ícone interativo da coluna Situação oferece conciliar/desconciliar uma ocorrência individual
+para os estados `planned`, `posted` e `reconciled`, mesmo sem `effectiveOn`,
+incluindo parcelas finitas, ocorrências recorrentes e lançamentos avulsos.
+O envio permanece exclusivamente `PATCH /api/transactions/:id` com `{ status }`;
+não altera parcelas irmãs, regras de recorrência, datas planejadas ou valores.
+Na transição de `planned` para `reconciled`, a data efetiva segue a regra
+existente do domínio para efetivação do lançamento.
+A proteção do domínio para parcelas continua vigente para **quaisquer outras alterações**.
+Compras de cartão/fatura, grupos financeiros, remuneração automática,
+sugestões ainda não confirmadas e lançamentos excluídos mantêm seus fluxos próprios.
+
+O menu de Situação exibe, no resumo, apenas o ícone sem texto redundante de estado,
+reutilizando exatamente o tom/ícone da coluna. O nome acessível
+`Situação atual: …`, o `title` e o `data-tooltip` preservam a interpretação
+sem depender exclusivamente de cor; controles mantêm foco e ações neutras
+da Golden Screen.
+
+## Menu de Situação somente por ícones — PR #720 (17/10/2026)
+
+Na coluna Situação, o popover compacto mostra **apenas ícones**, inclusive
+situação atual, conciliar, desconciliar, ação bloqueada e feedback de
+processamento/sucesso/erro. O ícone de estado conserva o mesmo formato e tom
+da linha do extrato; as ações usam a variante neutra com alvo mínimo de
+44 × 44 px e estados de hover/foco com contraste legível, sem fundo escuro.
+
+Cada ação expõe o significado por `aria-label`, `title` e `data-tooltip`;
+restrições financeiras continuam explicadas em tooltip acessível.
+Feedback de erro conserva a mensagem para leitor de tela e em tooltip,
+sem voltar a criar um botão textual. Textos dos atributos acessíveis e
+tooltips **não** são rótulos visíveis permanentes.
+
+**Padronização dos diâmetros (PR #720):** no popover, o indicador atual,
+o botão de conciliar/desconciliar e o estado bloqueado utilizam o mesmo
+círculo visual de **26 px** com SVG de **15 px**. O alvo da ação continua
+com **44 × 44 px**, mas sem uma segunda borda circular de 44 px.
+O foco permanece visível e os estados hover/focus usam tokens neutros.
+A verificação visual compara o diâmetro e o glyph dos dois ícones em
+desktop e mobile.
+A submissão continua sendo somente `PATCH /api/transactions/:id`
+com `{ status }`, afetando uma única ocorrência.
+
+### Contratos de regressao vigentes apos PR #720
+
+A coluna **Situacao** tem icone com descricao acessivel e tooltip; o acionador de teclado e o `summary`, nao o `span` ilustrativo. Agrupadores diarios preservam a sequencia financeira sem tornar `article` irmao direto de outro `article`. Em desktop largo, **Valor** e **Saldo** sao colunas independentes e alinhadas a direita, com **Valor** maior; em mobile, o saldo continua na linha secundaria. Os testes nao devem recuperar texto oculto do status nem exigir saldo abaixo do valor no layout desktop.
+
+## Seleção múltipla: barra compacta por ícones — issue #768
+
+A barra de seleção no Extrato reúne **cinco ações exclusivamente por ícones**,
+sem legendas permanentes: Marcar como conciliado (check), Desmarcar conciliado
+(círculo sem conciliação), Unificar lançamentos (camadas), Limpar seleção (X)
+e Excluir selecionados (lixeira). Todos os botões compartilham um único
+renderer de controle com **um SVG de 15 px**, indicador circular de **26 px** e
+alvo nativo de **44 × 44 px**. Os ícones de conciliação reutilizam exatamente os
+glyphs da coluna Situação. A exclusão possui distinção visual de perigo e mantém
+a confirmação obrigatória.
+
+A barra apresenta contagem e total ao lado dos cinco ícones no desktop; no
+mobile, os controles ficam agrupados em uma linha com reflow sem overflow.
+Os botões existentes de Unificar e Limpar são reaproveitados no mesmo
+agrupamento para preservar eventos, restrições e fluxo de teclado.
+
+Cada ação expõe nome acessível via `aria-label` e tooltip via `title` e
+`data-tooltip`. Botões desabilitados mantêm tooltip com a razão do bloqueio,
+inclusive o caso de parcelas canônicas impedidas de unificação, e a ajuda
+acessível informa os motivos. Hover, foco e estados desabilitados respeitam
+os tokens e a Golden Screen. Nenhuma regra financeira, autorização,
+operação do endpoint ou exclusão de dados foi alterada.
+
+A validação Chrome cobre os cinco controles em desktop e mobile, ausência
+de texto visível, estado de bloqueio, confirmação de exclusão e a ativação
+de Limpar por teclado, além dos cenários de conciliação em massa. Grupos com
+remuneração automática expõem o bloqueio por um sinal calculado no servidor:
+ambos os ícones de conciliação ficam indisponíveis com tooltip explicativo,
+sem impedir Limpar, Unificar conforme elegibilidade ou Excluir.

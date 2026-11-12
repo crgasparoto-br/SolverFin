@@ -1,0 +1,14 @@
+SolverFin issue #615 / PR #671 exact-head evidence index.
+Material head: 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512
+Base SHA: f061e60bfc2d6043f0346c8d04afea7bc390d916
+Merge preview observed by PR metadata: 41767c89b5ef688c28ce8cfc9937da07716ba22a
+Delivery V2 CI run 35551454448 completed success on material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512.
+CRITICAL validation job 106186972192 passed exact-head checkout, format check, lint, typecheck, Prisma generate/deploy/seed, root tests, API integration, consistency diagnostic and build.
+Statement visual validation run 35551454360 completed success on material head 02c9d97b1c38e6a3944555c6ef5a66c9e2faf512.
+Chrome visual job 106186842262 passed the registered categories-interface scenario plus the Issue #615 admin institutions, financial indexes and legacy remuneration scenarios; 63 registered coverage executions passed.
+The categories renderer now constructs its search corpus from category name plus rendered hierarchy path and tracks direct self matches separately from contextual parent visibility.
+The categories-interface Chrome scenario selects a nested category, searches using only an ancestor/path term, requires the target child to remain visible, and requires the announced count to equal direct matching items rather than contextual parents.
+The legacy categories enhancement remains disconnected from the post-processor pipeline, so replacement coverage is exercised on the direct renderer instead of reactivating the deprecated adapter.
+Inherited controls for target binding, exact format gate and visual overflow were replayed on the current material head through the same successful CI and Chrome runs.
+The current candidate preserves the six-route terminal matrix, master-only admin audience, read-only assistant and hidden legacy remuneration renderer.
+Historical handoff material da21af37ceaed5a3c59608277f148a5ce7e04faa and published child 72795e5dac810d24a02d79c654b460e31d84fcfe are stale after the category-search remediation; this package refreezes the current exact green material head.

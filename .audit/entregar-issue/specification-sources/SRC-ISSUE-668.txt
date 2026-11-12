@@ -1,0 +1,257 @@
+Specification version: 2
+
+## Objetivo
+
+Permitir transferências entre contas do mesmo perfil financeiro com moedas diferentes, preservando de forma inequívoca o valor nativo debitado da conta de origem e o valor nativo creditado na conta de destino, sem transformar a operação em receita/despesa e sem introduzir conversão cambial implícita.
+
+Caso normativo: **R$ 538,32 em uma conta BRL -> US$ 100,00 em uma conta USD**.
+
+## Contexto e fontes canônicas
+
+Hoje `/lancamentos` e `Transaction` representam transferência com um único `amountMinor`/`currency`; a fronteira canônica exige que origem e destino tenham a mesma moeda. `docs/API_TRANSACTIONS.md` documenta essa invariância e `docs/TRANSACTIONS.md` documenta o Extrato.
+
+A #596 e `docs/CURRENCY_CONVERSION.md` definiram princípios de valor nativo e evidência cambial sem ativar provider externo, conversão produtiva ou persistência de cotação. Esta issue estende a integridade multi-moedas, mas **não introduz provider de câmbio**.
+
+Dependências concluídas relevantes: #595, #596, #597 e #609.
+
+## Contrato funcional
+
+### Mesma moeda
+
+O comportamento atual permanece compatível:
+
+- uma única transferência lógica;
+- `amountMinor`/`currency` representam o valor/moeda da origem;
+- destino recebe o mesmo valor na mesma moeda;
+- nenhuma receita/despesa econômica é criada.
+
+### Moedas diferentes
+
+Quando `Account.currency` da origem difere da moeda da conta destino:
+
+- `amountMinor` e `currency` **continuam representando o leg de origem**, preservando compatibilidade com o contrato atual;
+- a operação exige um `destinationAmountMinor` positivo;
+- a leitura pública da transferência deve expor também `destinationCurrency`, correspondente à moeda nativa da conta destino;
+- `destinationCurrency` é determinada pelo servidor a partir da conta destino; não é uma moeda livre escolhida pelo cliente;
+- os dois valores pertencem à mesma identidade lógica de transferência.
+
+Exemplo normativo:
+
+```text
+accountId = C6 / BRL
+amountMinor = 53832
+currency = BRL
+
+destinationAccountId = C6 - Dólar / USD
+destinationAmountMinor = 10000
+destinationCurrency = USD
+```
+
+Efeito financeiro:
+
+```text
+C6 / BRL       -> -538,32 BRL
+C6 - Dólar/USD -> +100,00 USD
+```
+
+Para transferência na mesma moeda, `destinationAmountMinor` pode ser omitido na criação e o servidor usa o mesmo valor da origem. Se o read model expuser o campo, ele deve ser igual a `amountMinor`, e `destinationCurrency` deve ser igual a `currency`.
+
+## Taxa efetiva
+
+Os dois valores nativos são a única fonte financeira de verdade.
+
+Nesta entrega:
+
+- a taxa efetiva **não é entrada editável nem terceira fonte persistente de valor**;
+- a UI a apresenta somente como valor derivado/read-only;
+- a direção canônica segue #596: `destinationAmount / sourceAmount`, em unidades da moeda destino por unidade da moeda origem;
+- a UI pode apresentar também a taxa inversa, desde que o rótulo deixe a direção inequívoca;
+- nenhum dos dois valores nativos pode ser reconstruído a partir de uma taxa arredondada;
+- derivação/arredondamento da apresentação deve ser determinístico e não usar floating point como fonte dos valores monetários.
+
+Exemplo:
+
+```text
+100,00 USD / 538,32 BRL ~= 0,18576 USD por BRL
+inversa de apresentação: 1 USD ~= 5,3832 BRL
+```
+
+Persistir cotação de provider, `referenceAt`, `expiresAt` ou fonte externa permanece fora de escopo.
+
+## UI de `/lancamentos`
+
+Ao criar ou editar uma transferência:
+
+1. A conta origem continua vindo do contexto do Extrato na criação; a edição preserva o comportamento atual de conta real vinculada.
+2. Conta destino exibe nome e moeda.
+3. Mesma moeda mantém o formulário simples com um único valor financeiro editável.
+4. Moedas diferentes exibem obrigatoriamente **Valor origem**, **Valor destino** e **Taxa efetiva** derivada/read-only.
+5. As moedas dos dois campos são somente leitura e vêm das respectivas contas.
+6. Alterar a conta destino entre mesma moeda e moeda diferente deve limpar/invalidar somente o estado cambial incompatível; nunca reutilizar silenciosamente um valor destino de outra moeda.
+7. Em cross-currency, os dois valores devem ser positivos.
+8. Em edição, carregar os dois valores nativos persistidos; não fazer round-trip via taxa.
+9. Mensagens de erro devem explicar qual valor/conta precisa ser corrigido sem expor dados de outro tenant/perfil.
+
+## Estados e datas
+
+- `planned`, `posted`, `reconciled` e `voided` seguem #597 e `docs/TRANSACTION_DATES.md`.
+- `planned` preserva os dois valores previstos e não produz efeito de caixa antes da efetivação.
+- ao efetivar/concilidar, cada conta recebe somente o efeito de seu próprio leg/moeda;
+- ao anular, nenhum movimento permanece ativo; `effectiveOn` histórico continua obedecendo o contrato temporal existente.
+
+## Recorrência e parcelamento
+
+Transferência cross-currency recorrente ou parcelada fica fora desta entrega, pois falta contrato para definir valor/taxa futura.
+
+Enquanto isso:
+
+- cross-currency aceita somente ocorrência única;
+- a UI deve bloquear `repeatMode=fixed|installment` nesse caso com mensagem clara;
+- a API deve rejeitar tentativa direta equivalente, não apenas esconder a opção na UI;
+- transferências na mesma moeda preservam os comportamentos já suportados.
+
+## Importação e conciliação automática
+
+Fica fora de escopo inferir automaticamente que dois lançamentos importados em moedas diferentes formam uma transferência cambial. Nenhum importador pode fabricar `destinationAmountMinor` por taxa implícita.
+
+## Persistência e compatibilidade
+
+A implementação deve introduzir representação persistente capaz de preservar os dois valores nativos sem quebrar transferências históricas na mesma moeda.
+
+A escolha física do schema pode seguir a arquitetura mais coerente do repositório, mas deve cumprir:
+
+- `amountMinor`/`currency` continuam com semântica de origem no contrato público;
+- o valor destino é persistido de forma exata e recuperável sem taxa;
+- a migration preserva valores e identidade das transferências existentes;
+- o bloqueio atual de moeda no banco não pode ser apenas removido: deve ser substituído por invariantes que validem cada leg contra a moeda da respectiva conta;
+- escrita SQL/infrastructure não pode introduzir relação monetária incompatível que a API recusaria.
+
+Esta issue não amplia o contrato geral de casas decimais/minor units do SolverFin. Não criar scaling ad hoc por moeda dentro desta feature; eventual limitação geral do contrato monetário deve ser tratada separadamente.
+
+## Auditoria
+
+Preservar o padrão canônico de auditoria redigida de `docs/API_TRANSACTIONS.md`:
+
+- a transação persistida/read model é a fonte para os dois valores nativos;
+- auditoria registra natureza e campos alterados sem gravar payload financeiro bruto, descrição completa ou valores sensíveis em log/audit raw;
+- a revisão não deve transformar a auditoria em segunda cópia dos valores financeiros.
+
+## Invariantes estruturais
+
+### `must_behave`
+- BRL -> USD debita somente o valor BRL da origem e credita somente o valor USD do destino.
+- Os dois valores sobrevivem a create/read/update sem reconstrução por taxa.
+- Lifecycle `planned` -> efetivo/void preserva atomicidade dos dois legs.
+
+### `must_be_single_source`
+- Existe uma única identidade lógica da transferência.
+- Valores nativos persistidos são a fonte financeira de verdade.
+- Taxa exibida é derivada e read-only nesta entrega.
+
+### `must_not_behave`
+- Não reinterpretar o mesmo `amountMinor` em duas moedas.
+- Não simular a operação como despesa + receita.
+- Não somar BRL e USD para produzir efeito líquido agregado.
+- Não inferir moeda/taxa por fallback de formatter.
+- Não criar dois lançamentos independentes sem identidade compartilhada.
+- Não aceitar conta destino de outro tenant/perfil.
+
+### `must_reuse`
+- tenant/profile e validação de contas ativas existentes;
+- semântica temporal de #597;
+- separação por moeda de #595/ADR 0013;
+- princípios de valor nativo/auditabilidade de #596;
+- composição do Extrato estabelecida por #609.
+
+### `must_not_depend_on`
+- provider externo de câmbio;
+- taxa automática;
+- frontend como autoridade financeira.
+
+### `forbidden_implementation`
+- apenas remover `TRANSACTION_CURRENCY_MISMATCH` mantendo um único valor;
+- corrigir só a UI;
+- criar duas receitas/despesas;
+- usar taxa 1 ou fallback BRL;
+- recalcular um valor nativo a partir de taxa arredondada;
+- proteger recorrência cross-currency apenas na UI sem validação de backend.
+
+**Controle discriminante:** um teste de integração deve criar 538,32 BRL -> 100,00 USD, reler a operação, consultar os dois extratos e provar valores/moedas distintos sob a mesma identidade. Uma implementação de um único `amountMinor`, duas transações independentes ou dois eventos econômicos falhará nesse controle.
+
+## Integração com saldos, extrato e agregados
+
+- extrato da origem mostra débito no valor/moeda da origem e identifica destino;
+- extrato do destino mostra crédito no valor/moeda destino e identifica origem;
+- ambas as visualizações apontam para a mesma transferência;
+- relatórios econômicos e orçamento continuam excluindo transferências;
+- agregados por moeda refletem cada efeito em seu bloco nativo;
+- nenhum consumidor calcula líquido entre moedas distintas sem conversão explícita.
+
+## Compatibilidade com Fase 4A
+
+#668 deve preceder #616 e #617. A agenda canônica deve receber uma transferência `planned` como um evento lógico com dois efeitos monetários; a projeção aplica cada efeito somente à série da sua moeda. #618 deriva dessas séries. #619 continua excluindo transferência do consumo econômico.
+
+## Cenários de teste
+
+- 538,32 BRL -> 100,00 USD;
+- USD -> BRL;
+- BRL -> BRL sem regressão;
+- conta origem = destino;
+- destino arquivado;
+- outro tenant/perfil;
+- valor origem/destino zero ou negativo;
+- create/read/update preservando os dois valores;
+- troca de destino/moeda sem resíduo de valor anterior;
+- `planned` -> `posted`/`reconciled`;
+- `voided`;
+- extratos origem/destino;
+- resumo multi-moedas sem soma cruzada;
+- exclusão de relatórios/orçamentos;
+- tentativa de recorrência/parcelamento cross-currency rejeitada na UI e API;
+- migration de transferências históricas same-currency.
+
+## Critérios de aceite
+
+- [ ] É possível registrar 538,32 BRL -> 100,00 USD entre contas válidas do mesmo perfil.
+- [ ] `amountMinor/currency` preservam a semântica da origem e a leitura expõe explicitamente `destinationAmountMinor/destinationCurrency`.
+- [ ] Origem recebe -538,32 BRL e destino +100,00 USD.
+- [ ] A operação possui uma única identidade lógica.
+- [ ] Taxa efetiva é derivada/read-only e não reescreve valores nativos.
+- [ ] Edição preserva os dois valores nativos sem round-trip por taxa.
+- [ ] Transferência same-currency continua compatível.
+- [ ] `planned`, `posted`, `reconciled` e `voided` respeitam o contrato temporal.
+- [ ] Cada extrato mostra o valor correto em sua própria moeda.
+- [ ] Agregados permanecem particionados por moeda.
+- [ ] Transferência não entra em receita/despesa/orçamento econômico.
+- [ ] Recorrência/parcelamento cross-currency é rejeitada também no backend.
+- [ ] Nenhum provider externo é necessário.
+- [ ] Migration preserva transferências existentes.
+- [ ] Auditoria continua redigida e não duplica payload financeiro bruto.
+- [ ] Testes unitários, integração, E2E financeiro e gate visual cobrem os cenários de maior risco.
+
+## Impacto na documentação
+
+Na implementação, atualizar no mínimo:
+
+- `docs/API_TRANSACTIONS.md`;
+- `docs/TRANSACTIONS.md`;
+- `docs/CURRENCY_CONVERSION.md` somente para distinguir transferência com dois valores nativos de consolidação por cotação;
+- `docs/DOMAIN_MODEL.md`;
+- documentação de resumo/agregação afetada;
+- invariantes da #598;
+- `docs/EVOLUTION_STRATEGY.md` e `docs/STATUS_MATRIX.md` quando a capacidade passar a implementada.
+
+Se a decisão física de schema criar precedente arquitetural novo, registrar/atualizar ADR apropriada; não criar ADR apenas para repetir o contrato desta issue.
+
+## Fora de escopo
+
+- provider/cotação automática;
+- persistência de histórico de cotação externa;
+- inferência automática de transferência cross-currency a partir de importações independentes;
+- recorrência/parcelamento cross-currency;
+- consolidado convertido de patrimônio/relatórios;
+- alteração geral do contrato de minor units por moeda.
+
+## Readiness
+
+**Pronta.** O contrato público, compatibilidade, lifecycle, auditoria, fallback e controles de regressão estão definidos. A escolha física do schema permanece deliberadamente aberta à arquitetura do repositório, sem alterar o comportamento exigido.

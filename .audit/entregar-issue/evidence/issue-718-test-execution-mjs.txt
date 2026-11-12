@@ -1,0 +1,4 @@
+Issue #718 A718-05 - material 2d90c077aa6e25644c648b8e44d72e4516edcc71
+node --test scripts/statement-visual/reports-718-behavior-evidence.test.mjs scripts/statement-visual/report-page-viewport.test.mjs
+19 tests passed, 0 failed, local exact source checkout.
+CI 39879361620: completed/success. Chrome 39879361649: completed/success; artifact 12470087005; failures=[].

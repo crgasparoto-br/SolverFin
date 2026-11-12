@@ -1,0 +1,1121 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "ESC-749-A-005-TARGETED",
+      "status": "passed",
+      "escape_class": "legacy-variant-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+        "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
+        "finding_ids": [
+          "A-005"
+        ]
+      },
+      "plausible_wrong_implementation": "The inherited controller rewrites the first submit button instead of only the primary submit, producing duplicate visible and accessible labels.",
+      "literal_case": {
+        "procedure": "Exercise exact-head test for A-005 on a changed group-member submit controls and reject the original bad outcome.",
+        "expected": "The remediated implementation must reject the previous A-005 failure mode.",
+        "observed": "Exact-head CI 40696535294 and scoped code tests cover A-005; browser case run 40696534811 is required where visual.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "group-member submit controls",
+          "dimension": "statement-320",
+          "status": "passed"
+        },
+        {
+          "surface": "group-member submit controls",
+          "dimension": "statement-1366",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Explicit primary-submit selector and a group-only visibility guard"
+      },
+      "detection_change": {
+        "evidence": "Automated label oracle and duplicate-name negative mutation in Chrome"
+      },
+      "required_risk_families": [
+        "semantic-effect"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "responsive-action-availability",
+          "dimension": "duplicate-action-label"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "responsive-action-availability",
+          "dimension": "duplicate-label-390"
+        }
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "ESC-749-A-006-TARGETED",
+      "status": "passed",
+      "escape_class": "control-propagation-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+        "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
+        "finding_ids": [
+          "A-006"
+        ]
+      },
+      "plausible_wrong_implementation": "The source uses the editable rule display name as the sole protection and allows renaming and activating manual rules in a single generic PATCH.",
+      "literal_case": {
+        "procedure": "Exercise exact-head test for A-006 on a changed manual-fill origin and reject the original bad outcome.",
+        "expected": "The remediated implementation must reject the previous A-006 failure mode.",
+        "observed": "Exact-head CI 40696535294 and scoped code tests cover A-006; browser case run 40696534811 is required where visual.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "manual-fill origin",
+          "dimension": "rename-then-activate",
+          "status": "passed"
+        },
+        {
+          "surface": "manual-fill origin",
+          "dimension": "direct-sql-purpose-bypass",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Persist an immutable purpose and enforce inactive manual-origin rules at API, domain and DB"
+      },
+      "detection_change": {
+        "evidence": "Integration tests for concurrent name/status, spoofed purpose, database trigger and check constraint"
+      },
+      "required_risk_families": [
+        "semantic-effect"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "inactive-rule-execution",
+          "dimension": "rename-active-patch"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "inactive-rule-execution",
+          "dimension": "purpose-sql-immutability"
+        }
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "ESC-749-A-007-TARGETED",
+      "status": "passed",
+      "escape_class": "documentation-claim-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:c69918e5-8117-40a6-98b8-86fcca3b2dbd",
+        "audit_report_sha256": "c826fff04d599ee17dd6ec05b25c0ee21e218829518693ce6a67c3396f57f949",
+        "finding_ids": [
+          "A-007"
+        ]
+      },
+      "plausible_wrong_implementation": "Retire an active Statement mobile footer-clipping control by copying evidence claiming this issue changes only Cards.",
+      "literal_case": {
+        "procedure": "Exercise exact-head test for A-007 on a changed inherited-footer-lineage and reject the original bad outcome.",
+        "expected": "The remediated implementation must reject the previous A-007 failure mode.",
+        "observed": "Exact-head CI 40696535294 and scoped code tests cover A-007; browser case run 40696534811 is required where visual.",
+        "status": "passed"
+      },
+      "sibling_cases": [
+        {
+          "surface": "inherited-footer-lineage",
+          "dimension": "clipped-320",
+          "status": "passed"
+        },
+        {
+          "surface": "inherited-footer-lineage",
+          "dimension": "clipped-1366",
+          "status": "passed"
+        }
+      ],
+      "prevention_change": {
+        "evidence": "Keep inherited Statement footer control active for issue 747"
+      },
+      "detection_change": {
+        "evidence": "Reevaluate inherited control in Chrome on the same material SHA and reject deliberately clipped footer"
+      },
+      "required_risk_families": [
+        "semantic-effect"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "semantic-effect",
+          "surface": "responsive-action-layout",
+          "dimension": "footer-clipping-mutated"
+        },
+        {
+          "risk_family": "semantic-effect",
+          "surface": "responsive-action-layout",
+          "dimension": "footer-clipped-390"
+        }
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-001",
+      "escape_class": "foreign-handoff-target-binding",
+      "source_audit": {
+        "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+        "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
+        "finding_id": "A-001",
+        "audit_report_sha256": "82ae1e40046bc3439802b526acfbe09520e4690f1e9ab5c77b25a647c7cab78d"
+      },
+      "plausible_wrong_implementation": "Treat an inherited audit package for a previous delivery as if it certified the current issue and pull request.",
+      "literal_case": {
+        "procedure": "Compare root handoff bytes and subject on base versus current material head.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Stale and foreign-target handoff must fail: existing material 659 and current candidate 227 differ; official preflight rejected old certificate exit 2.",
+        "status": "passed",
+        "evidence": "evidence/current-stale-handoff-negative.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "foreign-subject",
+          "surface": "handoff-subject",
+          "dimension": "foreign-target",
+          "status": "passed",
+          "evidence": "evidence/handoff-remediation-675.txt"
+        },
+        {
+          "id": "missing-current-package",
+          "surface": "handoff-presence",
+          "dimension": "current-target-absence",
+          "status": "passed",
+          "evidence": "evidence/handoff-remediation-675.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-subject",
+          "dimension": "foreign-target"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-presence",
+          "dimension": "current-target-absence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "existing delivery target binding control",
+        "evidence": "Current target package is rebuilt instead of reusing inherited bytes.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff target binding",
+        "control_id": "HANDOFF-TARGET-001",
+        "evidence": "Fresh package subject is issue 618 / PR 675.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "inherited-base-artifact",
+        "foreign-target",
+        "handoff-not-produced"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-002",
+      "escape_class": "missing-source-synthetic-zero",
+      "source_audit": {
+        "head_sha": "24202286118db8f1886cd45c3774a8a9545bd24a",
+        "rejection_id": "audit-rejection:618-unavailable-semantics-2420228",
+        "finding_id": "A-002",
+        "audit_report_sha256": "7b65d8e2a60d3a5254f77490767a04a1b38de56582d3d4727782cd0f6952d229"
+      },
+      "plausible_wrong_implementation": "Treat an absent mandatory source value as a known numeric zero because a downstream builder can synthesize a structurally complete object.",
+      "literal_case": {
+        "procedure": "Request a 30-day projection for EUR without an active EUR account and inspect freeToSpend.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "30-day EUR without an active EUR account returns unavailable, never synthesized free-to-spend zero; relevant API and unit tests are in completed/success Repository CI 40696535294.",
+        "status": "passed",
+        "evidence": "apps/api/src/cash-flow-projection.integration.test.ts:167-176"
+      },
+      "sibling_cases": [
+        {
+          "id": "known-zero-remains-available",
+          "surface": "public-api",
+          "dimension": "known-zero-vs-missing",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "commitment-only-currency-without-active-account",
+          "surface": "public-api",
+          "dimension": "unfiltered-commitment-only-provenance",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        },
+        {
+          "id": "missing-source-omits-numerics",
+          "surface": "free-to-spend-contract",
+          "dimension": "synthetic-zero-prevention",
+          "status": "passed",
+          "evidence": "apps/api/src/cash-flow-projection.integration.test.ts"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "opening-balance-provenance"
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "free-to-spend-contract",
+          "dimension": "unavailable-omits-synthetic-numerics"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/api/src/repositories/cash-flow-projection.ts",
+        "evidence": "Availability now uses the presence of an opening-balance source instead of treating a synthesized zero projection as sufficient provenance.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "API integration regression",
+        "control_id": "FREE-TO-SPEND-AVAIL-001",
+        "evidence": "Integration coverage exercises both known zero and missing-source currencies through the public API.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "unavailable",
+        "fallback zero",
+        "missing source",
+        "synthetic zero"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "public-boundary"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale",
+      "escape_class": "post-freeze-material-drift",
+      "source_audit": {
+        "head_sha": "2218544609e3ac0cfb01c92f64f7d989117d0ebc",
+        "rejection_id": "audit-rejection:9157ba8a-e353-4ba9-ba49-2b82ee22d219",
+        "finding_id": "A-001",
+        "audit_report_sha256": "763cf410dcef39cc715033c971393bb084b04f378e54ea535397eaf464123dbb"
+      },
+      "plausible_wrong_implementation": "Reuse a previously valid handoff after a later material commit without refreezing and rebinding exact-head evidence.",
+      "literal_case": {
+        "procedure": "Compare the certified material SHA with the current PR head and exact-head workflow runs after a post-handoff material commit.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Official certificate preflight rejected old handoff against exact current material M with post-write-refreeze required (exit 2), preventing stale release.",
+        "status": "passed",
+        "evidence": "evidence/current-stale-handoff-negative.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "post-handoff-code-drift",
+          "surface": "material-code",
+          "dimension": "post-freeze-write",
+          "status": "passed",
+          "evidence": "Current material commit changes statement-golden-refinements.ts and is covered by exact-head CI."
+        },
+        {
+          "id": "post-handoff-test-or-doc-drift",
+          "surface": "material-evidence",
+          "dimension": "stale-certificate-detection",
+          "status": "passed",
+          "evidence": "Recovery policy requires post-write-refreeze for any material path, including test/documentation paths."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-identity",
+          "dimension": "material-head-freshness"
+        },
+        {
+          "risk_family": "execution-state",
+          "surface": "post-write-barrier",
+          "dimension": "post-freeze-material-drift"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "existing post-write-refreeze latch",
+        "evidence": "Recovery remains post-write-refreeze until exact-head green gates are bound to the current material head.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "independent handoff certificate preflight",
+        "control_id": "HANDOFF-FRESHNESS-001",
+        "evidence": "The stale handoff was rejected before broad audit and is rebuilt against the current head.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "handoff-stale",
+        "post-write-refreeze",
+        "material drift"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "execution-state"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale-2",
+      "escape_class": "post-freeze-material-drift",
+      "source_audit": {
+        "head_sha": "8449d408b4aa8a2c30d82c720733976add541435",
+        "rejection_id": "audit-rejection:c1ed9e9c-b515-4018-88be-057821695742",
+        "finding_id": "A-001",
+        "audit_report_sha256": "74cb17aea087be8c97e20d360edc138bec4849ef97b0f012281ab6b8848bb0e9"
+      },
+      "plausible_wrong_implementation": "Reuse a stale handoff after later material commits.",
+      "literal_case": {
+        "procedure": "Compare certified material SHA with current PR head and refreeze before certification.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Same deterministic fail-closed preflight of stale handoff and exact new CI/Chrome before refreeze.",
+        "status": "passed",
+        "evidence": "evidence/current-stale-handoff-negative.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "post-freeze-code",
+          "surface": "material-code",
+          "dimension": "post-freeze-write",
+          "status": "passed",
+          "evidence": "current material receives fresh CI"
+        },
+        {
+          "id": "post-freeze-doc-test",
+          "surface": "material-evidence",
+          "dimension": "stale-certificate-detection",
+          "status": "passed",
+          "evidence": "material drift keeps refreeze active"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-identity",
+          "dimension": "material-head-freshness"
+        },
+        {
+          "risk_family": "execution-state",
+          "surface": "post-write-barrier",
+          "dimension": "post-freeze-material-drift"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "post-write-refreeze latch",
+        "evidence": "recovery did not downgrade to handoff-only; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff freshness",
+        "control_id": "HANDOFF-FRESHNESS-001",
+        "evidence": "certificate rebuilt on current material; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "handoff-stale",
+        "post-write-refreeze"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "execution-state"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-002-702-exact-head-ci",
+      "escape_class": "exact-head-ci-discovery-gap",
+      "source_audit": {
+        "head_sha": "8449d408b4aa8a2c30d82c720733976add541435",
+        "rejection_id": "audit-rejection:c1ed9e9c-b515-4018-88be-057821695742",
+        "finding_id": "A-002",
+        "audit_report_sha256": "74cb17aea087be8c97e20d360edc138bec4849ef97b0f012281ab6b8848bb0e9"
+      },
+      "plausible_wrong_implementation": "Treat empty combined status as proof that GitHub Actions runs are missing.",
+      "literal_case": {
+        "procedure": "Query workflow runs by exact head and inspect jobs.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "GitHub Repository CI 40696535294 and visual run 40696534811 completed/success for exact material HEAD 2274927; raw Chrome artifact id 12820740707.",
+        "status": "passed",
+        "evidence": "evidence/issue-747-control-review.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "status-vs-actions",
+          "surface": "ci-observation",
+          "dimension": "status-api-vs-actions-api",
+          "status": "passed",
+          "evidence": "combined status empty while Actions runs exist"
+        },
+        {
+          "id": "artifact-binding",
+          "surface": "visual-evidence",
+          "dimension": "artifact-subject-sha",
+          "status": "passed",
+          "evidence": "artifact 11449552840 bound to 8449d408b4aa8a2c30d82c720733976add541435"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "execution-state",
+          "surface": "ci-observation",
+          "dimension": "authoritative-exact-head-runs"
+        },
+        {
+          "risk_family": "visual-validation",
+          "surface": "visual-artifact",
+          "dimension": "exact-head-binding"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "remote CI exact-head contract",
+        "evidence": "Actions run collection is authoritative; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "exact-head workflow evidence",
+        "control_id": "CI-EXACT-HEAD-001",
+        "evidence": "runs 37542386184/37542386142; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "missing CI",
+        "exact-head",
+        "workflow runs"
+      ],
+      "required_risk_families": [
+        "execution-state",
+        "visual-validation"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-001-702-handoff-stale-3",
+      "escape_class": "post-freeze-material-drift",
+      "source_audit": {
+        "head_sha": "ab4f253b2563923d5b8d5d6e2784bf487b3eeda9",
+        "rejection_id": "audit-rejection:2b17854d-b11b-4434-9dd1-5915b35ef461",
+        "finding_id": "A-001",
+        "audit_report_sha256": "0d6a533da446bbbd3dae4dce822b871dfe93386a27c8eb9647120f522125bc19"
+      },
+      "plausible_wrong_implementation": "Reuse an older handoff after later material commits and present stale exact-head evidence as current.",
+      "literal_case": {
+        "procedure": "Compare the certified material SHA with the current PR head after all remediation writes and rebuild the package only after exact-head gates are green.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Original old certificate rejected by authoritative local official preflight, and new material CI/Chrome exact-head both terminal green before publication.",
+        "status": "passed",
+        "evidence": "evidence/current-stale-handoff-negative.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "material-code-drift",
+          "surface": "material-code",
+          "dimension": "post-freeze-write",
+          "status": "passed",
+          "evidence": "Fresh exact-head CI covers the current material."
+        },
+        {
+          "id": "result-only-binding",
+          "surface": "handoff-identity",
+          "dimension": "direct-parent-binding",
+          "status": "passed",
+          "evidence": "Fresh handoff is published as a result-only direct child."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "handoff-identity",
+          "dimension": "material-head-freshness"
+        },
+        {
+          "risk_family": "execution-state",
+          "surface": "post-write-barrier",
+          "dimension": "post-freeze-material-drift"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "post-write-refreeze latch",
+        "evidence": "Handoff generation remained blocked until final material CI was green.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff freshness",
+        "control_id": "HANDOFF-FRESHNESS-001",
+        "evidence": "Certificate is rebuilt against the final material head.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "handoff-stale",
+        "post-write-refreeze",
+        "material drift"
+      ],
+      "required_risk_families": [
+        "structural-contract",
+        "execution-state"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "A-002-702-mobile-density",
+      "escape_class": "mobile-density-regression",
+      "source_audit": {
+        "head_sha": "ab4f253b2563923d5b8d5d6e2784bf487b3eeda9",
+        "rejection_id": "audit-rejection:2b17854d-b11b-4434-9dd1-5915b35ef461",
+        "finding_id": "A-002",
+        "audit_report_sha256": "0d6a533da446bbbd3dae4dce822b871dfe93386a27c8eb9647120f522125bc19"
+      },
+      "plausible_wrong_implementation": "Allow the mobile statement summary chrome to push Movimentacoes below the density budget while all non-density scenarios still pass.",
+      "literal_case": {
+        "procedure": "Run the registered Chrome visual scenarios at the exact material head, including the grouped responsive transaction layout.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Raw golden-statement.json from Chrome exact-head 2274927 includes GS-NC-DENSITY injection rejected then restored and GS-MOBILE-DENSITY-BUDGET pass at 390 and 320.",
+        "status": "passed",
+        "evidence": "evidence/issue-747-historical-lineage.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "mobile-summary-density",
+          "surface": "statement-mobile",
+          "dimension": "summary-chrome-height",
+          "status": "passed",
+          "evidence": "visual run 37714067226"
+        },
+        {
+          "id": "grouped-mobile-layout",
+          "surface": "transaction-group-layout",
+          "dimension": "list-start-budget",
+          "status": "passed",
+          "evidence": "visual run 37714067226"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "visual-validation",
+          "surface": "statement-mobile",
+          "dimension": "density-budget"
+        },
+        {
+          "risk_family": "responsive-layout",
+          "surface": "transaction-group-layout",
+          "dimension": "list-start-budget"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "statement-golden-refinements.ts",
+        "evidence": "Mobile summary vertical padding is tightened while preserving horizontal spacing and interaction targets.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "Statement visual validation",
+        "control_id": "GS-NC-DENSITY",
+        "evidence": "Exact-head visual run 37714067226 passes without changing the threshold.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "mobile density",
+        "Movimentacoes",
+        "density budget"
+      ],
+      "required_risk_families": [
+        "visual-validation",
+        "responsive-layout"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "F-714-01-702-713",
+      "escape_class": "foreign-inherited-handoff-certificate",
+      "source_audit": {
+        "head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+        "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
+        "audit_report_sha256": "a19c1a845cce32d1455f762a86b22f9b5e41eccbb21a754cf526a1aa8049aa9f",
+        "finding_id": "F-714-01"
+      },
+      "plausible_wrong_implementation": "Re-anchor issue #706/PR707 certificate by editing SHA fields without replacing its specification/evidence hashes or creating a valid direct child.",
+      "literal_case": {
+        "procedure": "Run official terminal handoff validator with inherited certificate and subject issue #702/PR713 on material 38a498b; require fail-closed.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Official preflight correctly rejected stale certified handoff for current PR 749, rather than misbinding certificate to other issue or earlier SHA.",
+        "status": "passed",
+        "evidence": "evidence/current-stale-handoff-negative.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "F-714-01-alpha",
+          "surface": "issue714-referenceliveness",
+          "dimension": "contradiction-or-foreign-target",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        },
+        {
+          "id": "F-714-01-beta",
+          "surface": "issue714-referenceliveness",
+          "dimension": "stale-current-claim",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "issue714-referenceliveness",
+          "dimension": "contradiction-or-foreign-target"
+        },
+        {
+          "risk_family": "tenant-isolation",
+          "surface": "issue714-tenantisolation",
+          "dimension": "contradiction-or-foreign-target"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue/build_handoff_certificate.py",
+        "evidence": "Reconstruct all current issue scoped proof, subject #702/PR713, then publish only a direct child of material 38a498b; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "validate_terminal_handoff.py",
+        "control_id": "NEG-714-03-001",
+        "evidence": "Old foreign certificate rejected by real official terminal guard; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "stale handoff",
+        "inherited-base-artifact",
+        "foreign issue",
+        "result-only child"
+      ],
+      "required_risk_families": [
+        "reference-liveness",
+        "tenant-isolation"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "F-714-02-702-713",
+      "escape_class": "canonical-documentation-drift",
+      "source_audit": {
+        "head_sha": "366e02072ee39116cfc50a7bc602273902e516fc",
+        "rejection_id": "audit-rejection:2b189d14-9686-48d4-b156-d488a4fff13c",
+        "audit_report_sha256": "a19c1a845cce32d1455f762a86b22f9b5e41eccbb21a754cf526a1aa8049aa9f",
+        "finding_id": "F-714-02"
+      },
+      "plausible_wrong_implementation": "Keep the old candidate heading and categorical exclusion of transfers from the individual entry/exit cards after product approved the screen.",
+      "literal_case": {
+        "procedure": "Evaluate current canonical document for approval, account-specific transfer inclusion, FX in selected-currency aggregate; mutate claim and require failure.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Current canonical doc line 306 explicitly asserts individual inbound/outbound inclusion and same-currency consolidated exclusion with FX inclusion. Two adversarial in-memory mutation probes of those propositions were rejected on current material.",
+        "status": "passed",
+        "evidence": "evidence/issue-747-historical-lineage.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "F-714-02-alpha",
+          "surface": "canonical-claims",
+          "dimension": "contradiction-or-foreign-target",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        },
+        {
+          "id": "F-714-02-beta",
+          "surface": "canonical-claims",
+          "dimension": "stale-current-claim",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "contradiction-or-foreign-target"
+        },
+        {
+          "risk_family": "documentation",
+          "surface": "canonical-claims",
+          "dimension": "stale-current-claim"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "docs/GOLDEN_STATEMENT.md",
+        "evidence": "Published commit 38a498b reconciles approved visual status and per-mode treatment of transfers in canonical docs.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "check_controls.py",
+        "control_id": "NEG-714-01-001",
+        "evidence": "Mutation-based negative checks pass and CI plus visual automation are green; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "Golden Screen candidato",
+        "transferencias",
+        "entrada",
+        "saldo",
+        "documentacao canonica"
+      ],
+      "required_risk_families": [
+        "documentation"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "F-714-03-FOOTER-CLIPPED",
+      "escape_class": "visual-gate-false-positive",
+      "source_audit": {
+        "head_sha": "3340dc96be0493a45a492fa53f93a42693b27135",
+        "rejection_id": "audit-rejection:issuecomment-6189467904",
+        "audit_report_sha256": "c33705c178269726c35ba37fdf030599537f5dbbcb56e0c921fa456fdbf3486f",
+        "finding_id": "F-714-03"
+      },
+      "plausible_wrong_implementation": "A Chrome gate checks footer buttons share a row but misses horizontally clipped Cancel at 320px.",
+      "literal_case": {
+        "procedure": "Repeat fresh 320x740/390x844/desktop new/edit/clone assertions and mutate Cancel translateX(-120px) after measuring bounds and text overflow.",
+        "expected": "Reject previous escape with exact-head CI, semantic checks, and negative control where applicable.",
+        "observed": "Exact-head Chrome 2274927 at 320x740, 390x844 and 1366x768 rejects and restores clipped-Cancel mutation, preserves all 3 visible distinct action labels, no horizontal overflow.",
+        "status": "passed",
+        "evidence": "evidence/issue-747-viewport-evidence.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "F-714-03-new-mobile",
+          "surface": "dialog-footer",
+          "dimension": "mobile-320-button-box-clipping",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        },
+        {
+          "id": "F-714-03-edit-mobile",
+          "surface": "dialog-footer",
+          "dimension": "mobile-390-compact-text-containment",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        },
+        {
+          "id": "F-714-03-clone-mobile",
+          "surface": "dialog-footer",
+          "dimension": "desktop-footer-recovery",
+          "status": "passed",
+          "evidence": "evidence-714-controls.txt"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "visual-validation",
+          "surface": "statement-mobile",
+          "dimension": "footer-horizontal-clipping"
+        },
+        {
+          "risk_family": "visual-validation",
+          "surface": "visual-artifact",
+          "dimension": "gate-false-positive"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/web/src/dev-server/statement-golden-refinements.ts",
+        "evidence": "CSS hides decorative footer action icons at <=360px while preserving Cancel and Save labels on a single row.; validated current-head 2274927 source and CI where relevant."
+      },
+      "detection_change": {
+        "skill_or_gate": "scripts/statement-visual/statement-contextual-surfaces.mjs + statement-contextual-assertions.mjs",
+        "control_id": "NEG-714-05-FOOTER",
+        "evidence": "Nine negative controls for new/edit/clone and three viewports; actual clipping is injected and must reject.; new exact-head 2274927 control report: evidence/issue-747-historical-lineage.json."
+      },
+      "trigger_terms": [
+        "Cancelar",
+        "Salvar",
+        "footer",
+        "320px",
+        "horizontal clipping"
+      ],
+      "required_risk_families": [
+        "visual-validation"
+      ],
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "status": "passed",
+      "latest_regression_evidence": {
+        "head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "repository_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125637",
+        "chrome_ci": "https://github.com/crgasparoto-br/SolverFin/actions/runs/40882125668",
+        "validation_scope": "Full regression suite of product and 75 Chrome visual modules on new material SHA; prior literal observed claims are kept as historic, not repeated individual manual simulations."
+      },
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "ESC-751-A-002-HANDOFF",
+      "escape_class": "inherited-foreign-handoff",
+      "status": "passed",
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:solverfin-751-7b756949-20261029-001",
+        "audited_head_sha": "7b7569493277a19b41eb1494b4abad9f90470342",
+        "finding_id": "A-002",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "b71fc44fdbba0a1e360aeaf20d095e668b1fd184689f6575fc9c6f2444fb5dce"
+      },
+      "plausible_wrong_implementation": "Treat inherited issue #724 certificate as valid issue #725 merely because its path and status are ready.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Execute official delivery_target_binding.py --repository-path product --base-sha 9265025a21c39528131f3319943d0125c5cf9538 --issue-number 725 --pull-request 751",
+        "observed": "Official classifier returned status=inherited-base-artifact, reuse_allowed=false, observed subject issue #724 PR #744. A new issue #725 certificate is required; original foreign evidence not reused.",
+        "evidence": "evidence/issue-725-inherited-binding.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "A-002-foreign-target",
+          "surface": "certificate-subject",
+          "dimension": "misbound issue/PR even if contents change",
+          "status": "passed",
+          "evidence": "Official Skill original tests in test_delivery_target_binding.py cover foreign-target classification; binding output rejects current mismatch."
+        },
+        {
+          "id": "A-002-partial-target",
+          "surface": "specification-snapshot",
+          "dimension": "snapshot issue mismatches certificate issue",
+          "status": "passed",
+          "evidence": "Official Skill original tests in test_delivery_target_binding.py cover partial-current-target rejection; new snapshot uses issue #725."
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Fresh issue #725 snapshot/closure and exact material SHA certificate built by official Skill; old inherited blob cannot satisfy subject or artifacts."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Official delivery_target_binding.py, validate_handoff_certificate.py and terminal result-only lineage guard used before and after publication."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "certificate-target",
+          "dimension": "inherited-foreign-subject"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specification-snapshot",
+          "dimension": "mismatched-issue-or-head"
+        }
+      ],
+      "revalidation": {
+        "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+        "evidence": "GitHub Actions full Repository CI #41128555509 and Chrome #41128555517 passed on material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9. Historical source observations remain historical; current modified budgets presentation, dialogs, controls and tests were revalidated in exact-material pipeline. No independent approval is asserted.",
+        "scope": "Historical negative-control lineage preserved, fresh material scope checks under case NC-725-POST-WRITE-REFREEZE."
+      }
+    },
+    {
+      "escape_id": "ESC-751-A-002-POST-WRITE-REFREEZE",
+      "escape_class": "post-freeze-material-drift",
+      "status": "passed",
+      "revalidated_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:9a084674-d4ae-457a-8495-16f51b308391",
+        "audited_head_sha": "cec1ef84bd04fb6c7df2a8bed06bb857af8b3683",
+        "finding_id": "A-002",
+        "finding_ids": [
+          "A-002"
+        ],
+        "audit_report_sha256": "9e808558136fff789f4da61419df273292312deb120a17ea54f39e488c57c98d"
+      },
+      "plausible_wrong_implementation": "Reuse old ready result-only certificate for material SHA 7b756949 after changing visual code, tests and documentation to cec1ef84.",
+      "literal_case": {
+        "status": "passed",
+        "procedure": "Run official validate_handoff_certificate.py against old material certificate using current HEAD/base/merge preview and require exact-target identity.",
+        "observed": "Old cec1 certificate rejected by exact-head validator on new material 6fe1 (exit 2); direct-parent post-write refreeze and current certificate required.",
+        "evidence": "evidence/issue-725-stale-certificate-negative.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "A-002-git-parent",
+          "surface": "result-only-parent",
+          "dimension": "old material parent instead of current",
+          "status": "passed",
+          "evidence": "Official validator rejected parent mismatch in negative witness."
+        },
+        {
+          "id": "A-002-mixed-deferred",
+          "surface": "deferred-phase-identity",
+          "dimension": "post-handoff approval cannot hide missing CI/Chrome pre-handoff",
+          "status": "passed",
+          "evidence": "Official validator rejected incomplete OBL-012 decision, now split with pre_handoff_coverage of exact material gates."
+        }
+      ],
+      "prevention_change": {
+        "status": "passed",
+        "evidence": "Rebuild closure, tests, visual evidence, code-growth and certificate for current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9 only after exact material CI and Chrome success."
+      },
+      "detection_change": {
+        "status": "passed",
+        "evidence": "Exact-head official validator rejects stale certificate; result-only child must directly parent current material 6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9."
+      },
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "certificate-material-head",
+          "dimension": "post-write-stale-sha"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "result-only-parent",
+          "dimension": "wrong-material-parent"
+        }
+      ]
+    }
+  ],
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 725,
+    "pull_request_number": 751,
+    "material_head_sha": "6fe1ce90d5aeb5de9ab611f37cddf8d2b93bcca9"
+  }
+}

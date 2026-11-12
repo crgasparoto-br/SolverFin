@@ -1,0 +1,426 @@
+export interface AccountRecord {
+  id: string;
+  name: string;
+  kind: string;
+  status: string;
+  openingBalanceMinor: number;
+  institutionKey?: string;
+  currency?: string;
+}
+
+export interface TransactionRecord {
+  id: string;
+  description: string;
+  kind: string;
+  status: string;
+  source?: string;
+  amountMinor: number;
+  currency?: string;
+  destinationAmountMinor?: number;
+  destinationCurrency?: string;
+  occurredOn: string;
+  plannedOn: string;
+  effectiveOn?: string;
+  accountId?: string;
+  destinationAccountId?: string;
+  note?: string | null;
+  categoryId?: string;
+  cardId?: string;
+  invoiceId?: string;
+  recurrenceId?: string;
+  installmentId?: string;
+  transactionGroupId?: string;
+  group?: TransactionGroupRecord;
+  accountRemuneration?: {
+    indexKind: "cdi";
+    competenceOn: string;
+    processedOn: string;
+    balanceBaseMinor: number;
+    dailyRatePercent: number;
+    remunerationPercent: number;
+    appliedDailyRatePercent: number;
+    originalAmountMinor: number;
+    manuallyAdjusted: boolean;
+    adjustedAt?: string;
+  };
+}
+
+export interface TransactionGroupRecord {
+  id: string;
+  accountId: string;
+  description: string;
+  displayOn: string;
+  kind: "income" | "expense";
+  status: string;
+  currency: string;
+  totalAmountMinor: number;
+  reconcileProtected?: boolean;
+  members: Array<TransactionRecord & { reconcileProtected?: boolean }>;
+}
+
+export function projectTransactionGroups(
+  transactions: TransactionRecord[],
+  groups: TransactionGroupRecord[],
+): TransactionRecord[] {
+  const visibleGroups = groups.filter((group) => group.members.length >= 2);
+  const groupedMemberIds = new Set(
+    visibleGroups.flatMap((group) => group.members.map((member) => member.id)),
+  );
+  return [
+    ...transactions.filter((transaction) => !groupedMemberIds.has(transaction.id)),
+    ...visibleGroups.map(
+      (group): TransactionRecord => ({
+        id: `group:${group.id}`,
+        accountId: group.accountId,
+        description: group.description,
+        kind: group.kind,
+        status: group.status,
+        source: "group_projection",
+        amountMinor: group.totalAmountMinor,
+        occurredOn: group.displayOn,
+        plannedOn: group.displayOn,
+        ...(group.status === "planned" ? {} : { effectiveOn: group.displayOn }),
+        group,
+      }),
+    ),
+  ];
+}
+
+export type StatementKindFilter = "income" | "expense";
+export type StatementEvidenceFilter = "posted" | "planned";
+
+export interface StatementFilters {
+  accountId?: string;
+  currency?: string;
+  kind?: StatementKindFilter;
+  evidence?: StatementEvidenceFilter;
+  month: string;
+  day?: string;
+  startsOn: string;
+  endsOn: string;
+}
+
+export interface StatementRow {
+  transaction: TransactionRecord;
+  amountMinor: number;
+  balanceAfterMinor: number;
+  /** Canonical ascending running-balance order, preserved when presentation sorts rows. */
+  balanceOrder?: number;
+}
+
+export interface StatementSummary {
+  openingMinor: number;
+  incomeMinor: number;
+  expenseMinor: number;
+  plannedBalanceMinor: number;
+  effectiveBalanceMinor: number;
+  reconciledMinor: number;
+  unreconciledMinor: number;
+  pendingMinor: number;
+  pendingCount: number;
+  reconciledCount: number;
+  unreconciledCount: number;
+}
+
+export function resolveFilters(
+  url: URL | undefined,
+  accounts: AccountRecord[],
+  currentMonth = getCurrentMonth(),
+): StatementFilters {
+  const month = resolveSelectedMonth(url, currentMonth);
+  const day = resolveSelectedDay(url, month);
+  const range = resolveSelectedRange(url);
+  // An explicit day is more specific than a stale relative range in a GET filter.
+  const period = day ? dayToPeriod(day) : (range ?? monthToPeriod(month));
+  const currency = normalizeCurrency(url?.searchParams.get("currency"));
+  const kind = normalizeKindFilter(url?.searchParams.get("kind"));
+  const evidence = normalizeEvidenceFilter(url?.searchParams.get("evidence"));
+  const activeAccounts = accounts.filter((account) => account.status === "active");
+  const scopedAccounts = currency
+    ? accounts.filter((account) => accountCurrency(account) === currency)
+    : accounts;
+  const scopedActiveAccounts = scopedAccounts.filter((account) => account.status === "active");
+  const requestedAccountId = url?.searchParams.get("accountId");
+  let accountId: string | undefined;
+
+  if (currency) {
+    accountId =
+      scopedAccounts.find((account) => account.id === requestedAccountId)?.id ??
+      scopedActiveAccounts[0]?.id;
+  } else {
+    accountId =
+      accounts.find((account) => account.id === requestedAccountId)?.id ?? activeAccounts[0]?.id;
+  }
+
+  return {
+    ...(accountId ? { accountId } : {}),
+    ...(currency ? { currency } : {}),
+    ...(kind ? { kind } : {}),
+    ...(evidence ? { evidence } : {}),
+    month,
+    ...(day ? { day } : {}),
+    startsOn: period.startsOn,
+    endsOn: period.endsOn,
+  };
+}
+
+export function monthToPeriod(month: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+  const year = Number(month.slice(0, 4));
+  const monthIndex = Number(month.slice(5, 7)) - 1;
+  const startsOn = new Date(Date.UTC(year, monthIndex, 1));
+  const endsOn = new Date(Date.UTC(year, monthIndex + 1, 0));
+
+  return {
+    startsOn: startsOn.toISOString().slice(0, 10),
+    endsOn: endsOn.toISOString().slice(0, 10),
+  };
+}
+
+export function dayToPeriod(day: string): Pick<StatementFilters, "startsOn" | "endsOn"> {
+  return { startsOn: day, endsOn: day };
+}
+
+export function buildTransactionQuery(filters: StatementFilters): string {
+  const query = new URLSearchParams({
+    status: "all",
+    accountId: filters.accountId ?? "",
+  });
+  // Drilldowns have their own date semantics. Normal statements use the date
+  // displayed to the user, never the occurrence date as an implicit cutoff.
+  const cutoffKey =
+    filters.evidence === "posted"
+      ? "occurredTo"
+      : filters.evidence === "planned"
+        ? "plannedTo"
+        : "statementTo";
+  query.set(cutoffKey, filters.endsOn);
+  return query.toString();
+}
+
+export function isAccountStatementTransaction(transaction: TransactionRecord): boolean {
+  return (
+    transaction.accountId !== undefined ||
+    (transaction.cardId === undefined && transaction.invoiceId === undefined)
+  );
+}
+
+export function filterStatementPeriodTransactions(
+  transactions: TransactionRecord[],
+  filters: StatementFilters,
+): TransactionRecord[] {
+  return transactions.filter((transaction) => {
+    const date = evidenceDate(transaction, filters.evidence);
+    if (date < filters.startsOn || date > filters.endsOn) return false;
+    if (filters.kind && transaction.kind !== filters.kind) return false;
+
+    if (filters.evidence === "posted") {
+      if (transaction.status !== "posted" && transaction.status !== "reconciled") {
+        return false;
+      }
+      // The unqualified posted drilldown explains monthly net variation, which is income minus expense.
+      if (!filters.kind && transaction.kind !== "income" && transaction.kind !== "expense") {
+        return false;
+      }
+      // Invoice payment transactions are deliberately excluded from the Dashboard month totals.
+      if (transaction.invoiceId !== undefined) return false;
+    }
+
+    if (filters.evidence === "planned") {
+      if (transaction.status !== "planned" && transaction.status !== "suggested") {
+        return false;
+      }
+      if (transaction.effectiveOn !== undefined) return false;
+    }
+
+    return true;
+  });
+}
+
+function evidenceDate(
+  transaction: TransactionRecord,
+  evidence: StatementEvidenceFilter | undefined,
+): string {
+  if (evidence === "posted") return transaction.occurredOn;
+  if (evidence === "planned") return transaction.plannedOn;
+  return statementDate(transaction);
+}
+
+export function calculateOpeningBalance(
+  transactions: TransactionRecord[],
+  selectedAccount: AccountRecord | undefined,
+  startsOn: string,
+): number {
+  let balance = selectedAccount?.openingBalanceMinor ?? 0;
+
+  for (const transaction of transactions
+    .filter((candidate) => candidate.status !== "voided")
+    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))) {
+    if (statementDate(transaction) >= startsOn) continue;
+    if (transaction.effectiveOn === undefined) continue;
+
+    balance += signedAmount(transaction, selectedAccount?.id);
+  }
+
+  return balance;
+}
+
+export function buildRows(
+  transactions: TransactionRecord[],
+  selectedAccount: AccountRecord | undefined,
+  openingMinor: number,
+): StatementRow[] {
+  let balance = openingMinor;
+
+  return transactions
+    .filter((transaction) => transaction.status !== "voided")
+    .sort((left, right) => statementDate(left).localeCompare(statementDate(right)))
+    .map((transaction) => {
+      const amountMinor = signedAmount(transaction, selectedAccount?.id);
+      balance += amountMinor;
+
+      return {
+        transaction,
+        amountMinor,
+        balanceAfterMinor: balance,
+      };
+    });
+}
+
+export function summarize(rows: StatementRow[], openingMinor: number): StatementSummary {
+  return rows.reduce<StatementSummary>(
+    (summary, row) => {
+      const absolute = Math.abs(row.amountMinor);
+
+      // Individual-account cards show real inflows/outflows, including each
+      // transfer leg in that account's own currency. The signed row amount
+      // already resolves source versus destination and cross-currency values.
+      if (row.amountMinor > 0) summary.incomeMinor += row.amountMinor;
+      if (row.amountMinor < 0) summary.expenseMinor -= row.amountMinor;
+      summary.plannedBalanceMinor += row.amountMinor;
+
+      if (row.transaction.effectiveOn === undefined) {
+        summary.pendingMinor += absolute;
+        summary.pendingCount += 1;
+        return summary;
+      }
+
+      summary.effectiveBalanceMinor += row.amountMinor;
+      if (row.transaction.status === "reconciled") {
+        summary.reconciledMinor += absolute;
+        summary.reconciledCount += 1;
+      } else {
+        summary.unreconciledMinor += absolute;
+        summary.unreconciledCount += 1;
+      }
+
+      return summary;
+    },
+    {
+      openingMinor,
+      incomeMinor: 0,
+      expenseMinor: 0,
+      plannedBalanceMinor: openingMinor,
+      effectiveBalanceMinor: openingMinor,
+      reconciledMinor: 0,
+      unreconciledMinor: 0,
+      pendingMinor: 0,
+      pendingCount: 0,
+      reconciledCount: 0,
+      unreconciledCount: 0,
+    },
+  );
+}
+
+export function signedAmount(
+  transaction: TransactionRecord,
+  selectedAccountId: string | undefined,
+): number {
+  if (transaction.kind === "income") return transaction.amountMinor;
+  if (transaction.kind === "expense") return -transaction.amountMinor;
+  if (transaction.kind === "transfer" && transaction.destinationAccountId === selectedAccountId) {
+    return transaction.destinationAmountMinor ?? transaction.amountMinor;
+  }
+  if (transaction.kind === "transfer" && transaction.accountId === selectedAccountId) {
+    return -transaction.amountMinor;
+  }
+  return 0;
+}
+
+export function statementDate(transaction: TransactionRecord): string {
+  return transaction.effectiveOn ?? transaction.plannedOn ?? transaction.occurredOn;
+}
+
+function resolveSelectedMonth(url: URL | undefined, currentMonth: string): string {
+  const queryMonth = url?.searchParams.get("month");
+  if (isValidMonth(queryMonth)) return queryMonth;
+
+  const startsOn = url?.searchParams.get("startsOn");
+  const legacyMonth = startsOn?.slice(0, 7);
+  if (isValidMonth(legacyMonth)) return legacyMonth;
+
+  return currentMonth;
+}
+
+function resolveSelectedDay(url: URL | undefined, month: string): string | undefined {
+  const queryDay = url?.searchParams.get("day");
+  if (!isValidDateOnly(queryDay)) return undefined;
+  if (!queryDay.startsWith(`${month}-`)) return undefined;
+
+  return queryDay;
+}
+
+/** An explicit closed range wins over the month and single-day selectors. */
+function resolveSelectedRange(
+  url: URL | undefined,
+): Pick<StatementFilters, "startsOn" | "endsOn"> | undefined {
+  const from = url?.searchParams.get("from");
+  const to = url?.searchParams.get("to");
+  if (!isValidDateOnly(from) || !isValidDateOnly(to)) return undefined;
+  if (from > to) return undefined;
+
+  return { startsOn: from, endsOn: to };
+}
+
+function accountCurrency(account: AccountRecord): string {
+  return (account.currency ?? "BRL").toUpperCase();
+}
+
+function normalizeCurrency(value: string | null | undefined): string | undefined {
+  const normalized = value?.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(normalized ?? "") ? normalized : undefined;
+}
+
+function normalizeKindFilter(value: string | null | undefined): StatementKindFilter | undefined {
+  return value === "income" || value === "expense" ? value : undefined;
+}
+
+function normalizeEvidenceFilter(
+  value: string | null | undefined,
+): StatementEvidenceFilter | undefined {
+  return value === "posted" || value === "planned" ? value : undefined;
+}
+
+function getCurrentMonth(): string {
+  return new Date().toISOString().slice(0, 7);
+}
+
+function isValidMonth(value: string | null | undefined): value is string {
+  if (!/^\d{4}-\d{2}$/.test(value ?? "")) return false;
+
+  const month = Number(value?.slice(5, 7));
+  return month >= 1 && month <= 12;
+}
+
+function isValidDateOnly(value: string | null | undefined): value is string {
+  const normalized = value ?? "";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) return false;
+
+  const year = Number(normalized.slice(0, 4));
+  const month = Number(normalized.slice(5, 7));
+  const day = Number(normalized.slice(8, 10));
+  const date = new Date(Date.UTC(year, month - 1, day));
+
+  return (
+    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  );
+}

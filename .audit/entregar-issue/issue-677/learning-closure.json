@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:pr678-reference-liveness-20260926",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "66301927a34de61d354440ccff247d2603153501f1f7a9ce88f7310691ec7afc"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The existing reference-liveness gate already requires revalidation of persisted references before later effects; the gap was local to this materialization path and is now covered by an exact-head repository regression."
+  },
+  "skill_changes": []
+}

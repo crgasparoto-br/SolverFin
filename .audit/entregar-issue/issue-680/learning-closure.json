@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:c72b2214a09d91a9",
+    "finding_ids": [
+      "A-001"
+    ],
+    "audit_report_sha256": "cc7f49f70aa69ff54ce849f8347e781bd7a2219d51fbf941afadea03ccded68c"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The rejection was caused by target-specific handoff publication/readiness, while the existing delivery controls already define foreign-target detection and terminal subject binding; no new global rule is required."
+  },
+  "skill_changes": []
+}

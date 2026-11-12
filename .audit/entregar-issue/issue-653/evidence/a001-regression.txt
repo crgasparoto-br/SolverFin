@@ -1,0 +1,9 @@
+subject_sha=9d909e26c3d21b768d4f71337e94eddac8b9087e
+repository=crgasparoto-br/SolverFin
+issue=653
+pr=656
+control=secondary PATCH temporal payload parity
+observed=At the material head, the statement presentation behavior regression exercises planned to posted and planned to reconciled transitions with an old occurredOn and blank effectiveOn; the submitted PATCH omits the effectiveOn property. A separately supplied effectiveOn is preserved. A raw technical API error is not rendered and the pt-BR fallback is shown.
+evidence=apps/web/src/dev-server/statement-presentation.test.ts
+ci_run=34219974170 completed/success
+visual_run=34219974144 completed/success

@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "cc1d2b9ba804adbfd34aa7f52577391f6dc987e2",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:05070fb8-14d4-4b4a-8f13-5f6f2514e8d7",
+    "audited_head_sha": "f5a976b610de50191b3b6218150c82d6f10c4e50",
+    "audit_report_sha256": "85e9b6665741535724fb9ec4a4bf72c0604cfa76e60d1ad62bd2f96c5c499bd9"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "result-only-handoff-rebuild",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json"
+      ],
+      "evidence": [
+        "evidence/handoff-remediation.txt"
+      ],
+      "validations": [
+        "The issue-local scope is recomputed from the immutable compare c31a1097c2e9a474be8ec64b5a702a07d672bead..cc1d2b9ba804adbfd34aa7f52577391f6dc987e2.",
+        "The rebuilt certificate contains exactly the 27 normalized paths returned by that compare and issue_delta_sha256 6677794457940894b5725fbd37c95f10661ecfcf97b6b0b217f5fe5e84f263c7.",
+        "No product code, test, documentation or package.json content is changed by this remediation; the material head and its successful CI evidence are preserved."
+      ]
+    }
+  ]
+}

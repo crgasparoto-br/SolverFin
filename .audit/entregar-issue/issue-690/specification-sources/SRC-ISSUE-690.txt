@@ -1,0 +1,42 @@
+GitHub Issue #690 — [Fase 4B1] Importar PDF/XLSX de extratos bancários e faturas de cartão
+Repository: crgasparoto-br/SolverFin
+Canonical locator: https://github.com/crgasparoto-br/SolverFin/issues/690
+
+Objective
+Add XLSX and PDF import for bank statements and credit-card invoices without parallel financial pipelines. Every supported format/layout converges to canonical preview, review, deduplication/reconciliation, approval, audit and isolation contracts.
+
+Canonical sources
+- docs/IMPORTS.md
+- docs/AI_REVIEW_QUEUE.md
+- docs/AI_SUGGESTION_PAYLOADS.md
+- docs/CARDS.md
+- docs/PRODUCT.md
+- docs/EVOLUTION_STRATEGY.md
+
+Canonical invariants
+1. PDF/XLSX reuse the canonical batch, preview and review pipeline; no bank/card-specific review queue/table.
+2. A parser cannot create, reconcile, pay, approve or delete a transaction/purchase by itself.
+3. After normalization/review, the structured payload is the single source of financial effect; raw PDF/XLSX is not reparsed at approval.
+4. Main-path success cannot depend on an AI provider.
+5. Document class controls destination: bank statement -> account movement; card invoice -> canonical card purchase/invoice while preserving cardId, instrument and invoice period.
+6. Raw file and unnecessary cells/fragments must not appear in logs, audit or errors.
+7. XLSX active content is never executed; parsing and decompression have explicit tested limits.
+8. Invoice payment, totals/summaries and purchases cannot cause double accounting.
+
+Acceptance obligations
+- Explicitly distinguish bank statement from credit-card invoice.
+- Maintain an extensible PDF parser catalog by institution/emitter + document class + layout/version.
+- Add layouts without creating another financial pipeline.
+- Bank statement uses canonical account-movement domain.
+- Card invoice uses canonical card purchase/invoice domain and preserves card/instrument/period.
+- Extend shared review payload if necessary; no parallel queue.
+- Unknown or ambiguous PDF fails closed without financial suggestion/effect.
+- Preview occurs before financial effect.
+- Raw file is not persisted or exposed in logs/audit.
+- Invoice payment/summary/total do not become purchases or double-account.
+- Deduplication, reconciliation, categorization and approval keep using canonical services.
+- Tests cover fictitious statement and invoice parsers; unknown/changed/ambiguous layouts; currency/profile; ambiguous instrument; idempotency; no double accounting.
+- Update docs/IMPORTS.md, docs/CARDS.md and affected suggestion/review contracts.
+
+Post-audit recovery context
+The independent audit found material writes after the previous handoff freeze. Recovery is post-write-refreeze on exact material head e7e8381d1602b526fc6b666e4419da88afac6e28; no product-code change is introduced by this recovery package.

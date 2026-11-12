@@ -1,0 +1,12 @@
+## Objetivo
+Ao abrir `/cartoes` sem parâmetros de competência, posicionar a tela no mês corrente, e não em uma fatura aberta futura.
+
+## Problema observado
+Em 30/09/2026, a tela está abrindo em setembro/2027. Faturas futuras materializadas por parcelas também permanecem com status `open`, e a seleção padrão atual escolhe a primeira fatura aberta após ordenar as faturas da mais futura para a mais antiga.
+
+## Critérios de aceite
+- Abrir `/cartoes` sem `month` ou `invoiceId` deve iniciar na competência corrente.
+- Se existir fatura da competência corrente, ela deve ser selecionada independentemente de existirem faturas abertas futuras.
+- Se não existir fatura corrente, a tela deve permanecer no mês corrente com estado `Sem fatura` e permitir navegar para a primeira competência futura.
+- `month` e `invoiceId` explícitos continuam tendo precedência.
+- Adicionar regressão cobrindo uma fatura aberta distante no futuro.

@@ -1,0 +1,186 @@
+{
+  "schema_version": 1,
+  "head_sha": "f281ecf4fb1ac35987e305882c3d1f6c67354937",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "REQ-001-NEG-1",
+        "REQ-004-NEG-1",
+        "REQ-007-NEG-1",
+        "REQ-017-NEG-1",
+        "REQ-021-NEG-1",
+        "REQ-024-NEG-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-contract-reference",
+          "reason": "This reference-liveness obligation can regress at the budget renderer and view-model boundary.",
+          "control_ids": [
+            "REQ-001-NEG-1",
+            "REQ-004-NEG-1",
+            "REQ-007-NEG-1",
+            "REQ-017-NEG-1",
+            "REQ-021-NEG-1",
+            "REQ-024-NEG-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "REQ-002-NEG-1",
+        "REQ-004-NEG-2",
+        "REQ-006-NEG-1",
+        "REQ-018-NEG-1",
+        "REQ-023-NEG-1",
+        "REQ-027-NEG-1",
+        "REQ-028-NEG-1",
+        "REQ-032-NEG-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "contract-phase-boundary",
+          "reason": "This temporal-consistency obligation can regress at the budget renderer and view-model boundary.",
+          "control_ids": [
+            "REQ-002-NEG-1",
+            "REQ-004-NEG-2",
+            "REQ-006-NEG-1",
+            "REQ-018-NEG-1",
+            "REQ-023-NEG-1",
+            "REQ-027-NEG-1",
+            "REQ-028-NEG-1",
+            "REQ-032-NEG-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "REQ-006-NEG-2",
+        "REQ-023-NEG-2"
+      ],
+      "dimensions": [
+        {
+          "surface": "period-destination",
+          "reason": "This temporal-destination obligation can regress at the budget renderer and view-model boundary.",
+          "control_ids": [
+            "REQ-006-NEG-2",
+            "REQ-023-NEG-2"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "REQ-012-NEG-1",
+        "REQ-029-NEG-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "This idempotency obligation can regress at the budget renderer and view-model boundary.",
+          "control_ids": [
+            "REQ-012-NEG-1",
+            "REQ-029-NEG-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "REQ-032-NEG-1"
+      ],
+      "dimensions": [
+        {
+          "surface": "documentation-claims",
+          "reason": "This documentation obligation can regress at the budget renderer and view-model boundary.",
+          "control_ids": [
+            "REQ-032-NEG-1"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

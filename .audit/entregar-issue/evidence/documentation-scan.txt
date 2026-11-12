@@ -1,0 +1,6 @@
+Documentation consistency review for issue #601
+Material head: d8cd7762db7c4c8ac3cacd7dea36ff156b117618
+
+Reviewed canonical repository guidance available for this delivery: AGENTS.md, README.md, docs/ARCHITECTURE.md, docs/EVOLUTION_STRATEGY.md, docs/BRAND.md, docs/DESIGN_SYSTEM.md, docs/APP_SHELL.md, ADR 0014 and .github/copilot-instructions.md.
+
+Existing docs/DESIGN_SYSTEM.md already states the target transition from conceptual component recipes to executable reusable primitives. The new docs/UI_PRIMITIVES.md documents the concrete APIs and keeps that direction intact. No contradiction requiring retirement or rewrite of the existing design-system document was identified.

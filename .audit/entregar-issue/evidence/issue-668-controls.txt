@@ -1,0 +1,36 @@
+SolverFin Issue #668 / PR #672 exact-head evidence snapshot
+material_head_sha=c1fd571c661c64abcb90db1b99fa3f3c7ce95749
+base_sha=7213dfc454acebbc2de00658e22071d6b0a37a5c
+merge_preview_sha=d9d43e9d3e809ce7c6dac6c01d388951c25b678b
+branch=feat/668-cross-currency-transfers
+
+Remote exact-head CI evidence:
+- Delivery V2 CI run 35787170235 completed success on c1fd571c661c64abcb90db1b99fa3f3c7ce95749.
+- CRITICAL validation job 106946925558 completed success.
+- Verify exact head completed success.
+- node .delivery-v2/verify.mjs completed success.
+- node --test scripts/delivery-v2-ci-classifier.test.mjs completed success.
+- npm run env:check completed success.
+- npm run prisma:validate completed success.
+- npm run db:seed:check completed success.
+- npm run format:check completed success.
+- npm run lint completed success.
+- npm run typecheck completed success.
+- npm run prisma:generate completed success.
+- npm run db:deploy completed success.
+- npm run db:seed completed success.
+- npm run test completed success.
+- npm run test:integration --workspace @solverfin/api completed success.
+- npm run diagnose:import-statement-consistency -- --expect-zero completed success.
+- npm run build completed success.
+- Statement visual validation run 35787170294 completed success on the same exact head.
+- Chrome visual validation job 106946862853 completed success.
+- Registered cross-currency-transfer scenario reached and passed in Chrome on the exact head.
+
+Candidate-specific controls remain in the material candidate:
+- apps/api/src/account-currency-invariant.integration.test.ts covers account-side destination-currency invariants through integration execution.
+- prisma/migrations/20260921150000_support_cross_currency_transfer_native_values/migration.sql enforces leg-aware account currency validation.
+- scripts/statement-visual/issue-668-cross-currency-transfer.mjs covers distinct BRL/USD native values, derived-rate presentation, destination currency change, stale destination amount invalidation, and responsive modal behavior.
+- apps/web/src/dev-server/transactions-page-v2.ts contains the cross-currency transfer UI behavior exercised by the Chrome gate.
+
+This evidence snapshot is result-only metadata for the exact material head. No product code is changed by the terminal handoff publication.

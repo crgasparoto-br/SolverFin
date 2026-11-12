@@ -1,0 +1,30 @@
+{
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:616-673-handoff-stale-191327c",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 616,
+  "pull_request_number": 673,
+  "head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+  "identity": {
+    "head_sha": "191327cc260aab8b500716e74ae61d7f0227fe43",
+    "base_sha": "7213dfc454acebbc2de00658e22071d6b0a37a5c"
+  },
+  "reason": "handoff-stale",
+  "recovery_scope": "post-write-refreeze",
+  "requires_refreeze": true,
+  "findings": [
+    {
+      "id": "A-673-01",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "severity": "blocking",
+      "title": "Handoff stale após mudanças materiais",
+      "evidence": "The published certificate remained bound to 33a73416233b9ad4150d5e0c82bda648f40bb1c5 while PR #673 had material head 191327cc260aab8b500716e74ae61d7f0227fe43 with three later commits touching material paths.",
+      "required_resolution": "Refreeze the exact current material head and rebuild a direct result-only handoff child."
+    }
+  ],
+  "recommendations": []
+}

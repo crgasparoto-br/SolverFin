@@ -1,0 +1,59 @@
+import { enhanceTransactionBulkSelection } from "./transaction-bulk-selection-enhancement.js";
+import { enhanceTransactionBulkSelectionLayout } from "./transaction-bulk-selection-layout-enhancement.js";
+import { enhanceTransactionGroupMemberFormGuard } from "./transaction-group-member-form-guard.js";
+import { enhanceTransactionGroupModal } from "./transaction-group-modal-enhancement.js";
+import { enhanceTransactionGroupModalLayout } from "./transaction-group-modal-layout-enhancement.js";
+import { enhanceTransactionGroupPendingFixes } from "./transaction-group-pending-fixes.js";
+
+const DISCLOSURE_STYLE_MARKER = "data-account-remuneration-disclosure-affordance";
+const DISCLOSURE_SUMMARY = `<summary tabindex="0" aria-label="Ver memória do cálculo" title="Ver memória do cálculo"><span class="account-remuneration-disclosure-full">Ver memória do cálculo</span><span class="account-remuneration-disclosure-compact" aria-hidden="true">Memória</span></summary>`;
+
+export function enhanceAccountRemunerationDisclosure(html: string): string {
+  const groupEnhancedHtml = enhanceTransactionBulkSelectionLayout(
+    enhanceTransactionBulkSelection(
+      enhanceTransactionGroupPendingFixes(
+        enhanceTransactionGroupModalLayout(
+          enhanceTransactionGroupMemberFormGuard(enhanceTransactionGroupModal(html)),
+        ),
+      ),
+    ),
+  );
+  if (!groupEnhancedHtml.includes('details class="account-remuneration-audit"')) {
+    return groupEnhancedHtml;
+  }
+  if (groupEnhancedHtml.includes(DISCLOSURE_STYLE_MARKER)) return groupEnhancedHtml;
+
+  const styles = `
+      <style ${DISCLOSURE_STYLE_MARKER}>
+        .statement-row.account-remuneration-row .col-description{min-width:0}
+        .statement-row.account-remuneration-row .description{column-gap:2px;grid-template-columns:max-content minmax(0,1fr);min-width:0}
+        .statement-row.account-remuneration-row .description>strong{font-size:.75rem;line-height:1.2;min-width:0;white-space:nowrap}
+        .account-remuneration-summary{max-width:100%;min-width:0;overflow-wrap:normal;word-break:normal}
+        .account-remuneration-audit{max-width:100%;min-width:0}
+        .account-remuneration-audit summary{gap:2px;font-size:.75rem;letter-spacing:-.01em;max-width:100%;min-height:24px;min-width:0;padding:1px 0;white-space:nowrap}
+        .account-remuneration-disclosure-compact{display:none}
+        .account-remuneration-audit summary::before{content:"▸";display:inline-block;font-size:.8125rem;line-height:1;transform:rotate(0deg);transform-origin:center;transition:transform 120ms ease-out}
+        .account-remuneration-audit[open] summary::before{transform:rotate(90deg)}
+        .account-remuneration-audit summary:focus-visible{border-radius:4px;outline:2px solid var(--primary);outline-offset:2px}
+        @media(max-width:1600px){.account-remuneration-disclosure-full{display:none}.account-remuneration-disclosure-compact{display:inline}}
+      </style>`;
+  const enhancedHtml = groupEnhancedHtml.replaceAll(
+    "<summary>Ver memória do cálculo</summary>",
+    DISCLOSURE_SUMMARY,
+  );
+
+  const script = `
+      <script data-account-remuneration-disclosure-controller>
+        document.querySelectorAll("details.account-remuneration-audit").forEach((disclosure) => {
+          disclosure.addEventListener("toggle", () => {
+            if (disclosure.open) return;
+            const actions = disclosure
+              .closest(".statement-row.statement-body")
+              ?.querySelector("details.actions");
+            if (actions) actions.open = false;
+          });
+        });
+      </script>`;
+
+  return enhancedHtml.replace("</head>", `${styles}</head>`).replace("</body>", `${script}</body>`);
+}

@@ -1,0 +1,2 @@
+subject_sha=9d909e26c3d21b768d4f71337e94eddac8b9087e
+The canonical transaction-date contract remains docs/TRANSACTION_DATES.md. Direct manual realized creation may derive effectiveOn from occurredOn. A later planned/suggested to posted/reconciled transition without explicit effectiveOn uses the transition UTC civil date. The secondary PATCH handler now omits blank effectiveOn instead of sending explicit null.

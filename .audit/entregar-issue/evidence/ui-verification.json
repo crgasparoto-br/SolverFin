@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "status": "passed",
+  "mode": "internal-verification",
+  "material_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+  "route": "/relatorios?view=installments&month=2026-09",
+  "browser_run_id": 33786783102,
+  "browser": "Chrome 151",
+  "artifact_digest": "sha256:8579730e2b398139b44ca3412aeb43432e7e8e9f8b31fc140c8fe37076716e97",
+  "scenarios": [
+    {
+      "viewport": "1366x768",
+      "state": "ready",
+      "observed": "Summary metrics precede visualization groups; month/card/category groupings are readable; semantic detail table remains horizontally scrollable without page overflow."
+    },
+    {
+      "viewport": "390x844",
+      "state": "ready",
+      "observed": "Filters, summary and analysis groups stack into one column; detail remains available through controlled table scrolling and the page fits the viewport."
+    }
+  ],
+  "accessibility": "Keyboard-focusable table scroller, visible focus styles and semantic table headers remain present; drilldown links use native anchors with accessible action text.",
+  "findings": []
+}

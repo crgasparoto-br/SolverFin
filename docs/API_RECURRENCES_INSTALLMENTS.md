@@ -1,0 +1,289 @@
+# API de recorrencias e parcelamentos
+
+## Objetivo
+
+Este contrato descreve a API inicial para contas recorrentes, assinaturas e compras parceladas do SolverFin. Como o framework HTTP ainda nao foi escolhido por ADR, a regra executavel fica no servico de dominio `packages/domain/src/recurrences.ts`.
+
+A futura API HTTP deve chamar esse contrato para gerar previsoes sem duplicar, pausar ou cancelar recorrencias e manter tenant/contexto consistente.
+
+## Leitura do proximo compromisso (#620)
+
+A regra continua sendo administrada pelos endpoints de recorrencia, mas a leitura do seu proximo
+impacto financeiro pertence a fronteira canonica de compromissos futuros:
+`GET /api/future-commitments/recurrences?ids=...`. O consumidor nao deve derivar a proxima data
+somando dias/meses no frontend nem concatenar novamente `Recurrence`, `Installment`,
+`Transaction` e `Invoice`.
+
+Para conta, a resposta pode ser uma ocorrencia `projected` ou `materialized`; materializacao
+prevalece na mesma data. Para cartao, somente ocorrencia materializada associada a fatura futura e
+exposta: nao ha projecao local de fatura ou compra. Cancelamento/conclusao da serie resulta em
+ausencia de `nextOccurrence`; pausa impede nova projecao, preservando compromisso ja materializado.
+
+## Modelo
+
+Recorrencia representa uma regra de geracao futura com:
+
+- `id`;
+- `organizationId`;
+- `financialProfileId`;
+- `status`;
+- `kind` (`income`, `expense` ou `transfer`);
+- `frequency`;
+- `startOn`;
+- `endOn` opcional;
+- `amountMinor`;
+- `currency`;
+- `description`;
+- `accountId` opcional;
+- `destinationAccountId` opcional, somente para `kind=transfer`;
+- `cardId` opcional;
+- `categoryId` opcional.
+
+Uma recorrencia pertence a exatamente um destino: `accountId` (lancamento fixo de conta) ou `cardId` (compra fixa/assinatura no cartao), nunca os dois nem nenhum. `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_TARGET_REQUIRED` quando faltam os dois e `RECURRENCE_TARGET_CONFLICT` quando ambos sao informados.
+
+Recorrencia vinculada a `cardId` tem `kind` sempre forcado para `expense` (compra de cartao nunca e receita). Recorrencia vinculada a `accountId` exige `kind` explicito no payload — sem ele, `createRecurrence`/`updateRecurrence` rejeitam com `RECURRENCE_KIND_REQUIRED`. Quando uma `categoryId` e informada, a categoria precisa ter o mesmo `kind` da recorrencia, senao a operacao rejeita com `RECURRENCE_CATEGORY_KIND_MISMATCH`.
+
+### Transferencia fixa (#677)
+
+Recorrencia de conta com `kind=transfer` representa uma transferencia repetida entre duas contas do mesmo tenant/perfil: `accountId` e a conta de origem e `destinationAccountId` a conta de destino. Regras:
+
+- `destinationAccountId` e obrigatorio para `transfer` (`RECURRENCE_DESTINATION_ACCOUNT_REQUIRED`) e proibido para `income`/`expense` (`RECURRENCE_DESTINATION_ACCOUNT_INVALID`);
+- origem e destino precisam ser diferentes (`RECURRENCE_TRANSFER_SAME_ACCOUNT`), ativos (`RECURRENCE_ACCOUNT_ARCHIVED`) e do tenant ativo (`404 TENANT_RESOURCE_NOT_FOUND`);
+- origem, destino e `currency` da recorrencia precisam ter a mesma moeda (`RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED`). Transferencia entre moedas diferentes continua com ocorrencia unica conforme `API_TRANSACTIONS.md`, sem valor ou taxa futura inventados;
+- editar a regra preserva a origem ao trocar o destino; mudar o `kind` para `income`/`expense` remove `destinationAccountId`;
+- `GET /api/recurrences?accountId=` lista a transferencia fixa tanto no extrato da origem quanto no do destino, e o catch-up dessa consulta materializa os vencimentos pendentes a partir de qualquer uma das contas.
+
+O PostgreSQL reforca o contrato para produtores que escrevem a regra diretamente: `Recurrence_transfer_accounts_check` exige destino presente e diferente da origem somente em `TRANSFER`, e o trigger `RecurrenceTransferCurrencyInvariant` rejeita destino ou `currency` em moeda diferente da conta de origem. Regras legadas `TRANSFER` sem destino recuperavel nao sao alteradas pela migracao; a restricao vale para toda nova escrita.
+
+Parcela representa uma previsao gerada ou uma compra parcelada com:
+
+- `id`;
+- `organizationId`;
+- `financialProfileId`;
+- `status`;
+- `sequenceNumber`;
+- `totalInstallments`;
+- `dueOn`;
+- `amountMinor`;
+- `currency`;
+- `recurrenceId` opcional;
+- `cardId` opcional.
+
+## Frequencias e status
+
+Frequencias aceitas:
+
+```text
+daily
+weekly
+monthly
+yearly
+```
+
+Status de recorrencia:
+
+```text
+active
+paused
+cancelled
+completed
+```
+
+Status de parcela:
+
+```text
+planned
+posted
+reconciled
+cancelled
+```
+
+## Tenant
+
+Toda operacao deve receber um `TenantContext` resolvido no servidor.
+
+O cliente nao deve escolher `organizationId` ou `financialProfileId` para criar recorrencias. O servidor aplica o contexto ativo com `applyTenantScope`.
+
+Leitura, edicao, pausa ou cancelamento de recorrencia de outro tenant devem retornar:
+
+```text
+404 TENANT_RESOURCE_NOT_FOUND
+```
+
+Listagens filtram silenciosamente apenas itens do tenant ativo.
+
+## Endpoints HTTP pretendidos
+
+Quando a API HTTP existir, os endpoints devem seguir este comportamento:
+
+```http
+GET /recurrences
+GET /recurrences/:recurrenceId
+POST /recurrences
+PATCH /recurrences/:recurrenceId
+POST /recurrences/:recurrenceId/pause
+POST /recurrences/:recurrenceId/resume
+POST /recurrences/:recurrenceId/cancel
+POST /recurrences/:recurrenceId/generate-installments
+POST /installment-schedules
+POST /installments/cancel-future
+```
+
+### POST /recurrences
+
+Payload:
+
+```json
+{
+  "frequency": "monthly",
+  "startOn": "2026-06-10",
+  "endOn": "2026-12-10",
+  "amountMinor": 4990,
+  "description": "Assinatura ficticia",
+  "kind": "expense",
+  "accountId": "account-demo",
+  "categoryId": "category-demo"
+}
+```
+
+Padroes:
+
+- `status`: `active`;
+- `currency`: moeda da conta, ou `BRL` quando a moeda nao for informada em contratos auxiliares.
+
+### Geracao sem duplicidade
+
+`generateRecurrenceInstallments` gera apenas parcelas planejadas que ainda nao existem para a combinacao `recurrenceId + sequenceNumber`. A partir de cada parcela, tambem monta a `Transaction` correspondente (`kind` da recorrencia, `status: planned`, `source: recurrence`, `recurrenceId`/`installmentId` preenchidos) — gerar parcelas materializa lancamentos reais, visiveis no extrato/fatura, e nao so um registro de controle. Em transferencia fixa, cada ocorrencia e uma unica `Transaction` `transfer` com `accountId`, `destinationAccountId`, `destinationAmountMinor = amountMinor`, `destinationCurrency = currency` e `transferGroupId` proprio; nao ha duas transacoes independentes nem reinterpretacao como receita/despesa.
+
+Reexecutar a geracao com a mesma janela nao deve duplicar parcelas ja existentes.
+
+Por padrao, recorrencias sem `endOn` geram no maximo 36 ocorrencias por chamada. O chamador pode informar `maxOccurrences` menor ou maior quando houver uma politica operacional explicita.
+
+A API HTTP chama essa geracao em dois momentos automaticos, sem exigir acao do usuario:
+
+- ao criar a recorrencia (`POST /api/recurrences`), materializando imediatamente qualquer vencimento `dueOn <= hoje` (cobre inclusive `startOn` retroativo);
+- a cada `GET /api/recurrences` filtrado por `accountId` ou `cardId` (exatamente o que as telas de Extrato e Cartoes chamam), fazendo catch-up de vencimentos pendentes ate hoje antes de listar.
+
+Para recorrencias vinculadas a `cardId`, a materializacao reusa o fluxo de compra de cartao (`registerCardPurchaseForContext`) para que cada ocorrencia resolva a `Invoice` certa, da mesma forma que qualquer outra compra no cartao. Como esse fluxo nao conhece recorrencias, o repository faz um `update` de acompanhamento logo depois para preencher `recurrenceId`/`installmentId` na `Transaction` resultante — a web depende desses dois campos para mostrar o indicador de recorrencia e as acoes de pausar/retomar/cancelar/editar direto na linha do lancamento.
+
+### Datas inexistentes no mes
+
+Recorrencia mensal iniciada em um dia inexistente em meses posteriores deve usar o ultimo dia valido do mes.
+
+Exemplo:
+
+```text
+2026-01-31 -> 2026-02-28 -> 2026-03-31
+```
+
+### Edicao
+
+Edicao da recorrencia altera a regra para novas geracoes e parcelas futuras ainda nao baixadas.
+
+Parcelas ja `posted` ou `reconciled` nao devem ser alteradas automaticamente por edicao da regra. Ajustes historicos devem ser operacoes explicitas em issues futuras.
+
+### Pausa e cancelamento
+
+- `paused`: interrompe novas geracoes enquanto pausada.
+- `cancelled`: encerra a regra e tambem impede novas geracoes.
+- `cancelFutureInstallments`: cancela apenas parcelas futuras com status `planned`; parcelas `posted` ou `reconciled` permanecem inalteradas.
+
+### Compras parceladas
+
+`generateInstallmentSchedule` cria uma sequencia mensal fixa para compras parceladas.
+
+Payload conceitual:
+
+```json
+{
+  "firstDueOn": "2026-06-30",
+  "totalInstallments": 3,
+  "amountMinor": 3333,
+  "currency": "BRL",
+  "cardId": "card-demo"
+}
+```
+
+Cada parcela recebe `sequenceNumber` de 1 ate `totalInstallments`.
+
+## Erros de validacao
+
+Erros controlados do contrato de dominio:
+
+```text
+400 RECURRENCE_FREQUENCY_REQUIRED
+400 RECURRENCE_FREQUENCY_INVALID
+400 RECURRENCE_STATUS_INVALID
+400 RECURRENCE_KIND_REQUIRED
+400 RECURRENCE_KIND_INVALID
+400 RECURRENCE_AMOUNT_INVALID
+400 RECURRENCE_DATE_REQUIRED
+400 RECURRENCE_END_BEFORE_START
+400 RECURRENCE_DESCRIPTION_REQUIRED
+400 RECURRENCE_ACCOUNT_REQUIRED
+400 RECURRENCE_ACCOUNT_INVALID
+400 RECURRENCE_ACCOUNT_ARCHIVED
+400 RECURRENCE_DESTINATION_ACCOUNT_REQUIRED
+400 RECURRENCE_DESTINATION_ACCOUNT_INVALID
+400 RECURRENCE_TRANSFER_SAME_ACCOUNT
+400 RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED
+400 RECURRENCE_TARGET_REQUIRED
+400 RECURRENCE_TARGET_CONFLICT
+400 RECURRENCE_CARD_INVALID
+400 RECURRENCE_CARD_NOT_ACTIVE
+400 RECURRENCE_CATEGORY_INVALID
+400 RECURRENCE_CATEGORY_ARCHIVED
+400 RECURRENCE_CATEGORY_KIND_MISMATCH
+400 RECURRENCE_GENERATION_WINDOW_INVALID
+400 INSTALLMENT_TOTAL_INVALID
+400 INSTALLMENT_SEQUENCE_INVALID
+400 INSTALLMENT_STATUS_INVALID
+404 TENANT_RESOURCE_NOT_FOUND
+403 TENANT_PAYLOAD_SCOPE_FORBIDDEN
+```
+
+## Auditoria
+
+Criacao, edicao, pausa, retomada e cancelamento retornam `AuditLogEntryDraft` redigido para a entidade `recurrence`.
+
+O contrato nao grava payload financeiro completo em logs; apenas marca campos como adicionados, alterados ou removidos.
+
+## Testes
+
+O pacote `@solverfin/domain` cobre:
+
+- criacao de recorrencia;
+- conta arquivada;
+- geracao mensal sem duplicar;
+- data mensal inexistente;
+- pausa e cancelamento;
+- edicao de regra futura;
+- compra parcelada fixa;
+- cancelamento apenas de parcelas futuras planejadas;
+- isolamento por tenant;
+- transferencia fixa: duas pontas preservadas, materializacao sem duplicidade, origem = destino, destino ausente, cross-currency, pausa/retomada/cancelamento e listagem pelas duas contas.
+
+A API cobre a transferencia fixa em `apps/api/src/transfer-recurrence.integration.test.ts` contra PostgreSQL real, incluindo edicao ampliada, rejeicao cross-currency sem efeito residual e as restricoes diretas no banco.
+
+Todos os exemplos usam dados ficticios.
+
+## Edição de ocorrência atual e próximas
+
+A edição ampliada é sempre relativa à ocorrência selecionada. Quando houver uma parcela vinculada, a posição é determinada por sequenceNumber; o critério por data é usado apenas para dados legados sem parcela vinculada.
+
+### Lançamentos de conta
+
+PATCH /api/transactions/:transactionId aceita applyToFuturePlanned: true. Para transferência fixa, o tipo `transfer` é aceito e o destino precisa permanecer diferente da origem e na mesma moeda (`RECURRENCE_TRANSFER_CURRENCY_UNSUPPORTED`). A operação atualiza, em uma única transação de banco:
+
+- o lançamento selecionado e sua parcela;
+- a regra da recorrência, incluindo o recálculo de startOn pela posição da ocorrência;
+- somente lançamentos posteriores ainda planejados;
+- a auditoria da ocorrência e da recorrência.
+
+### Compras de cartão
+
+PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId aceita editScope: current_and_future. A operação é atômica e atualiza a compra selecionada, sua parcela, o total da fatura atual, a recorrência, as compras posteriores elegíveis, suas parcelas e os totais das faturas afetadas.
+
+A resposta ampliada contém transactionUpdated, recurrence, updatedCount, skippedCount e skipped. Os motivos estáveis de itens ignorados incluem installment_locked, transaction_missing, transaction_locked, invoice_missing, invoice_locked e invoice_period_mismatch.
+
+Falhas na ocorrência selecionada, validação, categoria, instrumento, período de fatura ou persistência provocam rollback integral. Ocorrências futuras bloqueadas são preservadas e retornadas no resumo de itens ignorados.

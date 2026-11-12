@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 617,
+  "created_at": "2026-09-24T09:47:45.691889+00:00",
+  "primary_source_id": "SRC-ISSUE-617",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-617",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-617.txt",
+      "locator": "/tmp/solverfin-617-handoff/issue-617.txt",
+      "sha256": "be2f0c07e8d9a3b28cb0afad6a36a232bb8f7ccbb4462a442968c8c36ae94429",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 127
+    }
+  ]
+}

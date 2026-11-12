@@ -1,0 +1,9 @@
+HEAD: 19db954c9771ca3e45b821470eb9d4b54eaf27fd
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/cards-page-v2.test.ts
+SOURCE: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104
+JOB: https://github.com/crgasparoto-br/SolverFin/actions/runs/40333637104/job/121610101983
+RUNNER_LOG_MATCH: 2026-10-26T13:51:27.9570968Z [test] dev-server/cards-page-v2.test.js
+OBSERVATION: Exact-SHA GitHub Actions CRITICAL validation completed successfully. The compiled test filename was reached; this is a curated verifier record based on the GitHub job log, not a raw runner log.
+SUITE_RESULT: 161 compiled web test files passed; 51 additional compiled test files passed; 123 compiled integration test files passed.

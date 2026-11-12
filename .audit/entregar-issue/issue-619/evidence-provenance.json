@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "10dc5230eaca80c23cbe2f29ab062beaebef4854",
+  "base_sha": "26d2539ab3252f8b549011ab9bf41d79be44dc08",
+  "evidence": [
+    {
+      "evidence_id": "EV-619-EXACT",
+      "kind": "quantitative",
+      "path": ".audit/entregar-issue/issue-619/evidence/issue-619-controls.txt",
+      "sha256": "14be84584b4af4a8ad691926f6c92991e343d6644b2f6d45ab0f81fe554677a8",
+      "subject_sha": "10dc5230eaca80c23cbe2f29ab062beaebef4854",
+      "base_sha": "26d2539ab3252f8b549011ab9bf41d79be44dc08",
+      "freshness_policy": "exact-material-head",
+      "producer": "entregar-issue controller from exact-head CI runs 36191538438 and 36191538441",
+      "status": "passed"
+    }
+  ]
+}

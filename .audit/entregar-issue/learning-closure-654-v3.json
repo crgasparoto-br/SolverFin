@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
+    "finding_ids": [
+      "A-003"
+    ],
+    "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The governing delivery contract already requires post-write refreeze after material drift and a direct result-only child tied to the exact material head; this remediation applies that existing rule to the current candidate rather than adding a new global rule."
+  }
+}

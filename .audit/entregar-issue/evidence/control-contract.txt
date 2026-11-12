@@ -1,0 +1,1 @@
+Exact-head controls remain bound to c5fb6bb1f65ac189d5a256fd97cfb3b567f291d3; canonical formatter, visual, lineage, evidence-hash and handoff-completeness controls are active.

@@ -1,0 +1,132 @@
+<!-- specification_version: 1 -->
+
+## Objetivo
+
+Corrigir a tela `/contas-cartoes` para que os filtros aplicados pelo usuário sejam preservados ao selecionar uma conta/cartão, recarregar a página ou sair da rota e retornar durante a navegação, evitando que a lista volte aos filtros padrão sem uma ação explícita do usuário.
+
+## Contexto
+
+A rota usa o arquétipo A3 master-detail e atualmente possui os filtros cumulativos **Buscar**, **Tipo**, **Moeda** e **Status**.
+
+O estado desses filtros é mantido apenas no runtime da página. Ao clicar em uma conta ou cartão, a seleção navega para `?resource=account:<id>` ou `?resource=card:<id>`, causando nova renderização da rota. Como os controles são recriados com os valores padrão, os filtros aplicados anteriormente são perdidos.
+
+Exemplo observado:
+
+1. acessar `/contas-cartoes`;
+2. aplicar um ou mais filtros;
+3. clicar em uma conta/cartão visível no resultado;
+4. a rota passa a incluir `?resource=...`;
+5. os filtros voltam aos valores padrão.
+
+O mesmo problema não deve ocorrer ao sair da tela e retornar durante a navegação normal da aplicação.
+
+Fonte canônica de UI: `docs/ACCOUNTS_CARDS_UI.md`.
+
+## Escopo
+
+- Persistir o estado dos quatro filtros da coleção master:
+  - **Buscar**;
+  - **Tipo**;
+  - **Moeda**;
+  - **Status**.
+- Restaurar os filtros quando a rota `/contas-cartoes` for renderizada novamente no mesmo contexto de navegação do usuário.
+- Preservar os filtros ao selecionar uma conta/cartão por `?resource=...`.
+- Preservar os filtros após reload da rota.
+- Preservar os filtros ao navegar para outra tela do SolverFin e depois retornar a `/contas-cartoes`.
+- Manter a combinação cumulativa já existente entre busca, tipo, moeda e status.
+- Manter as regras atuais de seleção A3 e de estado neutro do detalhe.
+
+## Requisitos funcionais
+
+1. Alterar `resource` não pode limpar busca, tipo, moeda ou status.
+2. Ao clicar em uma conta/cartão atualmente visível, a nova renderização deve manter exatamente os filtros que produziram aquela lista.
+3. Ao recarregar `/contas-cartoes`, os filtros aplicados devem ser restaurados e a coleção deve ser filtrada imediatamente com os mesmos valores.
+4. Ao navegar para outra rota do SolverFin e retornar a `/contas-cartoes`, os últimos filtros aplicados devem ser restaurados.
+5. Alterar um filtro continua não podendo limpar os demais.
+6. Limpar explicitamente um filtro deve persistir seu valor neutro; o valor anterior não pode reaparecer em uma navegação posterior.
+7. Limpar todos os filtros deve persistir o estado neutro completo.
+8. A persistência deve tratar somente o estado dos filtros. A seleção do detalhe continua sendo governada pelo `resource` da rota e pelas regras A3 existentes.
+9. Se o recurso indicado por `resource` continuar elegível depois da restauração dos filtros, seleção e detalhe permanecem visíveis normalmente.
+10. Se o `resource` restaurado/navegado não for elegível para os filtros ativos, preservar a regra atual: não selecionar silenciosamente outro recurso e apresentar o detalhe neutro `Selecione um recurso`.
+11. Valores persistidos que deixarem de ser válidos para a coleção/controles atuais devem degradar para o valor neutro correspondente, sem quebrar a tela.
+12. A solução deve continuar funcionando em desktop e mobile e preservar operação por teclado/foco dos controles existentes.
+
+## Invariantes estruturais
+
+### `must_behave`
+- O estado de filtro aplicado deve sobreviver à navegação causada pela seleção `?resource=...`.
+- O estado deve ser reaplicado antes de o usuário precisar interagir novamente com os controles.
+- Sair da rota e retornar não deve resetar filtros sem ação explícita.
+
+### `must_not_behave`
+- Clicar em uma conta/cartão não pode equivaler a `limpar filtros`.
+- Um reload não pode apagar filtros válidos.
+- Limpar explicitamente um filtro não pode fazer o valor antigo reaparecer depois.
+- A restauração não pode selecionar automaticamente outro recurso quando o `resource` atual estiver fora do resultado filtrado.
+
+### `must_reuse`
+- Reutilizar `applyFilters()` e os controles atuais de `/contas-cartoes` como fronteira de aplicação dos filtros; não criar uma segunda lógica de filtragem concorrente.
+- Preservar o arquétipo A3 e a resolução atual da coleção master.
+
+### `must_be_single_source`
+- Deve existir uma única representação efetiva do estado corrente de busca/tipo/moeda/status usada tanto para restaurar os controles quanto para executar a filtragem; evitar estado persistido e estado visual divergirem silenciosamente.
+
+### `forbidden_implementation`
+- Apenas anexar `resource` ao link atual e ignorar os filtros persistidos.
+- Criar uma segunda função de filtragem específica para a restauração.
+- Reintroduzir abas ou o pipeline legado de pós-processamento HTML.
+- Persistir automaticamente a seleção de outro recurso quando o recurso atual for excluído pelos filtros.
+
+## Implementações erradas plausíveis e controles discriminantes
+
+1. **Preserva filtros apenas enquanto a página não recarrega.** O fluxo de alteração dos selects funciona, mas clicar no master ainda perde o estado. **Controle:** aplicar `Tipo = Contas` + `Moeda = BRL`, clicar em uma conta e verificar os mesmos valores após a navegação `?resource=account:...`.
+2. **Preserva somente os selects, mas perde a busca.** **Controle:** usar termo de busca + tipo + moeda + status simultaneamente e validar restauração integral.
+3. **Restaura os controles sem reaplicar a lista.** Os selects mostram valores antigos, mas recursos incompatíveis ficam visíveis. **Controle:** após reload, a coleção visível deve corresponder imediatamente aos valores restaurados.
+4. **Limpar filtro não atualiza a persistência.** O filtro anterior reaparece ao voltar à tela. **Controle:** limpar individualmente e depois navegar para fora/voltar.
+5. **Restauração força uma seleção diferente.** O detalhe parece funcional, mas viola a regra A3. **Controle:** usar `resource` incompatível com o filtro restaurado e confirmar estado neutro sem auto-seleção.
+
+## Critérios de aceite
+
+- [ ] Aplicar busca + tipo + moeda + status, clicar em uma conta/cartão visível e manter todos os filtros após a navegação `?resource=...`.
+- [ ] Recarregar a página mantém os filtros válidos e reaplica imediatamente a coleção filtrada.
+- [ ] Navegar para outra tela e voltar a `/contas-cartoes` restaura os últimos filtros aplicados.
+- [ ] A busca textual também é persistida, não apenas os selects.
+- [ ] Limpar um filtro persiste o valor neutro sem alterar os demais.
+- [ ] Limpar todos os filtros impede que valores antigos reapareçam depois.
+- [ ] Recurso selecionado e ainda elegível permanece selecionado.
+- [ ] Recurso fora do resultado filtrado não provoca auto-seleção de outro item; o detalhe retorna ao estado neutro.
+- [ ] Valor persistido inválido/obsoleto não quebra a tela e usa fallback neutro.
+- [ ] Não há regressão na combinação cumulativa dos filtros.
+- [ ] Não há regressão no A3 master-detail, responsividade, teclado/foco ou estado sem resultados.
+- [ ] A rota continua sem dependência de `applyLegacyHtmlPostProcessorPipeline()` e dos adapters aposentados.
+- [ ] Testes automatizados e gate visual da rota cobrem persistência, restauração e limpeza dos filtros.
+
+## Considerações de testes
+
+- filtro único e combinação dos quatro filtros;
+- busca textual persistida;
+- seleção de conta e cartão via `resource`;
+- reload com filtros ativos;
+- sair da rota e retornar;
+- limpeza individual e limpeza total;
+- `resource` elegível e não elegível após restauração;
+- moeda existente, `Moeda indisponível` e valor persistido que não existe mais;
+- desktop e viewport mobile representativo;
+- regressão do teste/gate visual existente de `/contas-cartoes`.
+
+## Impacto na documentação
+
+Atualizar `docs/ACCOUNTS_CARDS_UI.md` para registrar que os filtros da coleção master são persistentes durante a navegação e restaurados ao retornar à rota, mantendo `resource` exclusivamente como estado de seleção do detalhe e preservando a regra de não selecionar automaticamente outro recurso.
+
+## Fora de escopo
+
+- Persistir a conta/cartão selecionado independentemente do parâmetro `resource`.
+- Alterar regras de moeda, conta de pagamento, cartões ou instrumentos.
+- Alterar o modelo de dados financeiro.
+- Criar novas opções de filtro.
+- Reintroduzir abas para Contas/Cartões.
+- Fazer merge automático.
+
+## Prontidão
+
+**Pronta.** O comportamento esperado, os limites de escopo e os controles de regressão estão definidos sem exigir nova decisão funcional.

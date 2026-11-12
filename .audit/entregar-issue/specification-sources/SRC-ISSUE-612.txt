@@ -1,0 +1,38 @@
+Parent epic: #591
+Depends on: #595, #601, #602, #603, #604, #605
+
+## Objetivo
+
+Migrar `/contas-cartoes` para o arquétipo master-detail, tornando mais clara a relação entre contas, cartões, instrumentos e ações de manutenção sem perder o contexto da listagem.
+
+## Escopo
+
+- usar primitives/layout/view-model da Fase 3B;
+- organizar contas e cartões como recursos mestres com detalhe contextual;
+- manter instituição, agência/conta, moeda, tipo e estado visíveis de forma hierárquica;
+- preservar instrumentos internos de cartão e ações de manutenção;
+- preferir dialog/drawer para criação e edição quando o fluxo couber no contexto;
+- retirar abas, padronizações e enhancements que forem substituídos pela nova composição;
+- preservar acessibilidade e responsividade.
+
+## Critérios de aceite
+
+- [ ] conta/cartão selecionado possui contexto e moeda inequívocos;
+- [ ] ações primárias e secundárias são consistentes entre recursos;
+- [ ] instrumentos de cartão são apresentados dentro do recurso mestre adequado;
+- [ ] criação/edição não exige navegação desnecessária quando puder ocorrer em modal/drawer;
+- [ ] estados vazio/erro/loading e conteúdo longo são cobertos;
+- [ ] enhancements substituídos são removidos/depreciados com cobertura equivalente;
+- [ ] fluxo real é coberto no gate visual.
+
+## Fora de escopo
+
+- alterar o modelo de instrumentos de cartão;
+- criar integração bancária.
+
+## Referências
+
+- #591
+- `docs/EVOLUTION_STRATEGY.md`
+- `docs/DESIGN_SYSTEM.md`
+- ADR 0014

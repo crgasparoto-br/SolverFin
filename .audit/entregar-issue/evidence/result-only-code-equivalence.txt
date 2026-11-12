@@ -1,0 +1,5 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+parent_sha=028aad97276a885b0e0001691407bde289118543
+compare_status=ahead_by=1;behind_by=0;total_commits=1
+changed_path_class=.audit/entregar-issue only
+observed=The parent-to-material commit is the prior terminal handoff and contains audit-result paths only. Product code and design documentation at d1ead8f are therefore byte-identical to the previously frozen product tree at 028aad9 while the exact material head also has green CI and visual workflows.

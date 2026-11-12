@@ -1,0 +1,235 @@
+{
+  "schema_version": 1,
+  "head_sha": "10dc5230eaca80c23cbe2f29ab062beaebef4854",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-001-01",
+        "NEG-REQ-002-01",
+        "NEG-REQ-005-01",
+        "NEG-REQ-006-01",
+        "NEG-REQ-008-01",
+        "NEG-REQ-012-PARTIAL-WINDOW",
+        "NEG-REQ-019-01",
+        "NEG-REQ-020-01",
+        "NEG-REQ-025-01",
+        "NEG-REQ-028-01",
+        "NEG-REQ-030-01",
+        "NEG-REQ-032-01",
+        "NEG-REQ-034-01",
+        "NEG-REQ-035-01",
+        "NEG-REQ-037-01",
+        "NEG-REQ-039-01",
+        "NEG-REQ-012-PARTIAL-WINDOW-CLASSIFICATION"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-budget-contract",
+          "reason": "Canonical issue #619 requirement REQ-039 exercises temporal-consistency at canonical-budget-contract.",
+          "control_ids": [
+            "NEG-REQ-001-01",
+            "NEG-REQ-002-01",
+            "NEG-REQ-005-01",
+            "NEG-REQ-006-01",
+            "NEG-REQ-019-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-025-01",
+            "NEG-REQ-028-01",
+            "NEG-REQ-030-01",
+            "NEG-REQ-032-01",
+            "NEG-REQ-034-01",
+            "NEG-REQ-035-01",
+            "NEG-REQ-037-01",
+            "NEG-REQ-039-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "economic-competence",
+          "reason": "Canonical issue #619 requirement REQ-008 exercises temporal-consistency at economic-competence.",
+          "control_ids": [
+            "NEG-REQ-008-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "partial-budget-coverage",
+          "reason": "Partial budget windows require item-level date coverage so uncovered realized and committed consumption remains unbudgeted.",
+          "control_ids": [
+            "NEG-REQ-012-PARTIAL-WINDOW"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "unbudgeted-classification",
+          "reason": "Uncovered realized and committed items must remain observable as unbudgeted when no exact partial budget window covers their economic date.",
+          "control_ids": [
+            "NEG-REQ-012-PARTIAL-WINDOW-CLASSIFICATION"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-001-02",
+        "NEG-REQ-002-02",
+        "NEG-REQ-005-02",
+        "NEG-REQ-006-02",
+        "NEG-REQ-008-02",
+        "NEG-REQ-020-02",
+        "NEG-REQ-028-02",
+        "NEG-REQ-037-02",
+        "NEG-REQ-039-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "period-migration",
+          "reason": "Canonical issue #619 requirement REQ-039 requires adversarial coverage for temporal-destination.",
+          "control_ids": [
+            "NEG-REQ-001-02",
+            "NEG-REQ-002-02",
+            "NEG-REQ-005-02",
+            "NEG-REQ-006-02",
+            "NEG-REQ-008-02",
+            "NEG-REQ-020-02",
+            "NEG-REQ-028-02",
+            "NEG-REQ-037-02",
+            "NEG-REQ-039-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-004-01",
+        "NEG-REQ-007-01",
+        "NEG-REQ-013-01",
+        "NEG-REQ-015-01",
+        "NEG-REQ-021-01",
+        "NEG-REQ-029-01",
+        "NEG-REQ-041-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-budget-contract",
+          "reason": "Canonical issue #619 requirement REQ-021 exercises structural-contract at canonical-budget-contract.",
+          "control_ids": [
+            "NEG-REQ-004-01",
+            "NEG-REQ-007-01",
+            "NEG-REQ-013-01",
+            "NEG-REQ-021-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Canonical issue #619 requirement REQ-041 exercises structural-contract at relational-semantic-integrity.",
+          "control_ids": [
+            "NEG-REQ-015-01",
+            "NEG-REQ-029-01",
+            "NEG-REQ-041-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-045-DOC"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Issue #619 explicitly requires canonical budget documentation to be updated consistently.",
+          "control_ids": [
+            "NEG-REQ-045-DOC"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

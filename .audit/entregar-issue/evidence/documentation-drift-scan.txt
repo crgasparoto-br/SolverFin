@@ -1,0 +1,7 @@
+material_head_sha=028aad97276a885b0e0001691407bde289118543
+documentation_delta=DESIGN_SYSTEM and APP_SHELL name tokens.ts as canonical executable source, styles.ts as publication layer, and shared-styles.ts as consumer/compatibility alias publisher.
+verified_current_docs=docs/DESIGN_SYSTEM.md; docs/APP_SHELL.md on material head 028aad97276a885b0e0001691407bde289118543
+outside_diff_sources_reviewed=PRODUCT.md; EVOLUTION_STRATEGY.md; ARCHITECTURE.md; BRAND.md; ADR 0014; .github/copilot-instructions.md
+reuse_basis=the prior repository-wide contradiction scan remains applicable because the post-scan material delta contains no documentation path; current changed documentation files were re-read on the exact material head.
+observed=no competing current normative ownership claim found; ADR 0014 already establishes incremental component/token direction, so no new ADR is needed.
+status=passed

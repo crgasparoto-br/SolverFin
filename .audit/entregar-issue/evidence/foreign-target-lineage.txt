@@ -1,0 +1,6 @@
+material_head_sha=d1ead8f125d54efb16d726b4a05ac46806acd1f7
+historical_subject=issue 599 / PR 636
+current_subject=issue 600 / PR 638
+classification=foreign-target historical audit controls remain explicitly retired and are not used as evidence for the current design-token contract
+procedure=Preserve the historical IDs and audit source while keeping those controls in retired_controls with not-applicable disposition for this target.
+status=passed

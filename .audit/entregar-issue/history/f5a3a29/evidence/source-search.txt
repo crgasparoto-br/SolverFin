@@ -1,0 +1,11 @@
+apps/api/src/pdf-text-extraction.test.ts:9:  extractPdfWordLayout,
+apps/api/src/pdf-text-extraction.test.ts:92:      () => extractPdfWordLayout(Buffer.from("%PDF-1.4"), mock),
+apps/api/src/pdf-text-extraction.test.ts:112:    const pages = extractPdfWordLayout(Buffer.from("%PDF-1.4"), mock);
+apps/api/src/pdf-text-extraction.ts:130:export function extractPdfWordLayout(
+apps/api/src/repositories/document-imports.ts:23:import { extractPdfWordLayout } from "../pdf-text-extraction.js";
+apps/api/src/repositories/document-imports.ts:62:function parsePdfWithTextLayer(
+apps/api/src/repositories/document-imports.ts:79:  const extractedPages = extractPdfWordLayout(bytes);
+apps/api/src/repositories/document-imports.ts:101:      : parsePdfWithTextLayer(bytes, payload.contentBase64, payload.documentClass);
+packages/domain/src/document-imports.ts:3:import { MERCADO_PAGO_STATEMENT_PARSER, type PdfExtractedPage } from "./mercado-pago-pdf.js";
+packages/domain/src/document-imports.ts:253:  MERCADO_PAGO_STATEMENT_PARSER,
+packages/domain/src/mercado-pago-pdf.ts:30:export const MERCADO_PAGO_STATEMENT_PARSER: PdfParserDescriptor = {

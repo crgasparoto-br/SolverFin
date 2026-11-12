@@ -1,0 +1,5 @@
+subject_sha=9d909e26c3d21b768d4f71337e94eddac8b9087e
+repository=crgasparoto-br/SolverFin
+pr=656
+CI run 34219974170 number 4881 completed/success.
+Statement visual validation run 34219974144 number 3376 completed/success.

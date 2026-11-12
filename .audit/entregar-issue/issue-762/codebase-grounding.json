@@ -1,0 +1,53 @@
+{
+  "schema_version": 2,
+  "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+  "base_sha": "7269fbaf91a587fedf3016abf375fa1b750628c9",
+  "creations": [],
+  "references": [],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "tests/test_session_review_verifier.py",
+      "operation": "modified",
+      "scenario": "Garante percent-encoding no filtro check_name com preservacao do watermark e falha fechada em SHA estrangeiro/JSON invalido.",
+      "requirement": "REQ-762-005 (revisao por sessao exata, anti-stale e watermark)",
+      "search": {
+        "queries": [
+          "git diff --name-status 7269fbaf91a587fedf3016abf375fa1b750628c9..241849d93dbbf8a7db4e8338acecaceea8a365c5 -- tests/",
+          "git grep -n review_watermark 7269fbaf91a587fedf3016abf375fa1b750628c9 -- tests/"
+        ],
+        "scope": "A suite existente test_session_review_verifier.py ja cobre review_watermark, numero de check runs, SHA e JSON; ampliar no mesmo teste preserva descoberta pytest.",
+        "runner": "python -m pytest -q",
+        "candidates": [
+          {
+            "path": "tests/test_session_review_verifier.py",
+            "case": "test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection",
+            "oracle": "A URL nao pode conter espaco nem parenteses e query decodificada deve recuperar CHECK_NAME, alem da leitura do watermark.",
+            "comparison": "Extend-existing foi escolhido sobre novo arquivo ou fixture; mantem regressao proxima do consumidor real e mata mutante de query sem encode."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "A correcao afeta uma funcao existente; o arquivo de teste ja possui fixtures e mocks de API GitHub necessarios, evitando codigo/teste duplicado.",
+      "disposition": "keep",
+      "coverage_before": [
+        "REQ-762-005: rejeicao SHA estrangeiro e parse estrito no watermark"
+      ],
+      "coverage_after": [
+        "REQ-762-005: URL percent-encoded e read-back do watermark",
+        "REQ-762-005: SHA estrangeiro e JSON invalido rejeitados"
+      ],
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_session_review_verifier.py tests/test_session_review.py tests/test_session_review_packet.py tests/test_session_review_certificate.py tests/test_session_review_trusted_producers.py",
+        "exit_code": 0,
+        "subject_sha": "241849d93dbbf8a7db4e8338acecaceea8a365c5",
+        "reached_tests": [
+          "tests/test_session_review_verifier.py::test_review_watermark_url_encodes_exact_check_name_and_preserves_rejection"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-762/evidence/pr777-test-reach.log",
+        "evidence_sha256": "51b044259798006252a86aaec704292b23bfbc11eecc60d5896422034306ac42"
+      }
+    }
+  ]
+}

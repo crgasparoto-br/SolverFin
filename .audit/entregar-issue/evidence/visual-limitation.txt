@@ -1,0 +1,4 @@
+Visual-evidence limitation
+A representative HTML preview was materialized from the same primitive/style sources and a headless Chromium screenshot was attempted. Chromium could not establish a usable headless session in this runtime because of DBus/zygote startup failures; one retry with reduced process flags also failed. No screenshot was accepted as evidence.
+
+The material candidate does not migrate a production route in #601; actual route adoption remains a later migration concern. Reduced viewport, reflow, long-content wrapping, focus styling and overflow are instead covered by exact-source CSS assertions in the focused test suite.

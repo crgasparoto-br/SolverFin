@@ -1,0 +1,152 @@
+Parent epic: #592
+Depends on: #593, #597, #668
+Specification version: 3
+
+## Objetivo
+
+Definir e implementar uma fonte canônica para compromissos financeiros futuros, evitando dupla contagem entre lançamentos planejados, recorrências, parcelas, faturas e compatibilidade legada de contas a pagar/receber.
+
+A agenda deve compreender a representação de #668: uma transferência `planned` entre moedas diferentes continua sendo **um único compromisso lógico**, com dois efeitos monetários vinculados.
+
+## Fontes canônicas e precedência
+
+Preservar `docs/PAYABLES_RECEIVABLES_TRANSITION.md`, `docs/RECURRENCES_INSTALLMENTS_WEB.md`, #597 e a representação financeira de #668.
+
+1. **Compromisso de conta:** `Transaction` planejada é a instância financeira canônica.
+2. **Transferência cross-currency:** a transferência canônica de #668 é um único evento com débito nativo na origem e crédito nativo no destino.
+3. **Cartão:** `Invoice` é a obrigação canônica de pagamento/caixa; compras da própria fatura não são somadas novamente como outra obrigação de caixa.
+4. **Recorrência/parcela:** são regra/proveniência. Ocorrência materializada prevalece sobre projeção da regra.
+5. **Ocorrência recorrente ainda não materializada:** pode contribuir como projeção derivada somente se possuir identidade estável substituível quando a ocorrência real surgir.
+6. **`PayableReceivable`:** legado de compatibilidade; `Transaction`/`Invoice` equivalente sempre prevalece.
+
+## Contrato da agenda
+
+A consulta canônica deve separar **identidade do compromisso** de **efeitos monetários**.
+
+Para eventos mono-moeda, um compromisso pode ter um único efeito. Para uma transferência `planned` de 538,32 BRL -> 100,00 USD, a resposta conceitual deve equivaler a:
+
+```text
+commitment: uma única identidade/origem
+plannedOn: mesma data do evento
+monetaryEffects:
+  - account/origin: -538,32 BRL
+  - account/destination: +100,00 USD
+```
+
+O nome físico dos campos pode seguir os contratos do repositório, mas os seguintes comportamentos são obrigatórios:
+
+- uma transferência cross-currency aparece **uma vez como compromisso lógico**, não como duas obrigações top-level independentes;
+- os efeitos carregam moeda, valor/sinal e vínculo suficiente para drilldown;
+- filtro por moeda pode projetar apenas o efeito da moeda pedida, mas deve preservar a mesma identidade/origem do compromisso;
+- filtro por período usa a data canônica de #597;
+- consumidores não precisam reconstruir o segundo leg a partir de taxa ou conta relacionada.
+
+## Escopo
+
+- mapear as representações atuais de obrigação futura;
+- implementar identidade determinística para deduplicação/substituição;
+- materializar a precedência acima;
+- consumir a transferência cross-currency canônica de #668;
+- disponibilizar consulta determinística para Dashboard, #617 e #619;
+- separar consulta por moeda e período conforme ADR 0013;
+- preservar origem/proveniência e tenant/perfil;
+- impedir que materialização, conciliação, edição ou cancelamento deixem projeção antiga ativa;
+- documentar transição do legado sem reintroduzir tela própria de contas a pagar/receber.
+
+## Lifecycle de transferência cross-currency
+
+Os dois efeitos monetários de uma transferência cross-currency são atomicamente vinculados ao mesmo compromisso:
+
+- `planned`: ambos aparecem como efeitos futuros;
+- efetivação/materialização: ambos deixam a agenda futura no mesmo ciclo;
+- edição de data/conta/valor: a consulta seguinte reflete os dois efeitos atualizados, sem leg antigo órfão;
+- `voided`: nenhum dos dois efeitos permanece futuro;
+- não existe cancelamento/materialização parcial de um único leg.
+
+## Invariantes estruturais
+
+### `must_be_single_source`
+Para um evento financeiro, somente a fonte de maior precedência participa da agenda. A identidade do compromisso e seus efeitos monetários são produzidos pelo backend canônico, não reconstruídos por consumidores.
+
+### `must_behave`
+- transferência cross-currency planejada preserva uma identidade lógica única e exatamente um efeito em cada moeda envolvida;
+- materialização/void/edição atualizam o evento como unidade lógica;
+- dois compromissos legítimos com mesmo valor/data permanecem distintos quando sua identidade de origem difere.
+
+### `precedence_invariants`
+- materialização prevalece sobre projeção de recorrência/parcela;
+- `Transaction`/`Invoice` equivalente prevalece sobre `PayableReceivable`;
+- `Invoice` prevalece sobre compras da própria fatura para compromisso de caixa;
+- representação de #668 prevalece sobre tentativa de reconstruir transferência cambial a partir de duas linhas independentes.
+
+### `must_not_behave`
+- não deixar projeção e ocorrência materializada simultâneas;
+- não separar os legs cross-currency em compromissos sem vínculo;
+- não somar efeitos de moedas diferentes;
+- não representar 538,32 BRL -> 100,00 USD como um único valor rotulado em uma moeda.
+
+### `must_not_depend_on`
+- provider/IA;
+- cotação cambial automática;
+- deduplicação heurística apenas por valor/data;
+- reconstrução financeira no frontend.
+
+### `forbidden_implementation`
+Concatenar `Transaction`, `Invoice`, `Recurrence`, `Installment` e `PayableReceivable` e deduplicar por valor/data. Também é proibido achatar uma transferência cross-currency em duas obrigações top-level sem identidade compartilhada.
+
+**Controle discriminante:** usar no mesmo teste dois compromissos legítimos de mesmo valor/data, um evento recorrente projetado que depois é materializado e uma transferência 538,32 BRL -> 100,00 USD. O resultado deve preservar os dois legítimos, substituir a projeção materializada e manter a transferência como uma identidade com dois efeitos.
+
+## Critérios de aceite
+
+- [ ] Um mesmo compromisso aparece uma única vez na agenda canônica.
+- [ ] `Transaction` planejada é canônica para compromisso de conta.
+- [ ] Transferência `planned` 538,32 BRL -> 100,00 USD aparece como uma identidade lógica com dois efeitos monetários vinculados.
+- [ ] Consulta por BRL inclui o efeito BRL; consulta por USD inclui o efeito USD; ambas preservam a mesma identidade/origem.
+- [ ] A resposta canônica não exige que consumidor reconstrua o segundo leg por taxa/lookup paralelo.
+- [ ] Efetivar, editar ou anular transferência não deixa efeito futuro órfão.
+- [ ] `Invoice` representa a obrigação de caixa do cartão sem somar as compras novamente.
+- [ ] Recorrência/parcela não duplica ocorrência já materializada.
+- [ ] `PayableReceivable` equivalente não adiciona valor ao total.
+- [ ] Dois compromissos legítimos com mesmo valor/data permanecem distintos.
+- [ ] Consulta é separável por moeda e período sem soma cruzada.
+- [ ] Tenant/perfil e proveniência são preservados.
+
+## Testes
+
+Cobrir no mínimo:
+
+- materialização e retry sem duplicidade;
+- edição/cancelamento de compromisso futuro;
+- recorrência projetada substituída por ocorrência materializada;
+- `PayableReceivable` equivalente versus não equivalente;
+- `Invoice` com compras subjacentes;
+- dois eventos legítimos de mesmo valor/data;
+- transferência cross-currency e filtros independentes por BRL/USD;
+- tentativa de lifecycle parcial de um leg;
+- isolamento por tenant/perfil.
+
+## Impacto na documentação
+
+Na implementação, atualizar o contrato vivo da agenda/compromissos, `docs/PAYABLES_RECEIVABLES_TRANSITION.md`, documentação de recorrências quando afetada e `docs/EVOLUTION_STRATEGY.md`/`docs/STATUS_MATRIX.md` quando a capacidade passar a implementada.
+
+## Fora de escopo
+
+- nova tela de contas a pagar/receber;
+- projeção 30/60/90 completa (#617);
+- remoção física de `PayableReceivable`;
+- recorrência cross-currency, fora de #668 até contrato próprio;
+- cotação/provider externo.
+
+## Readiness
+
+**Pronta após #668.** A identidade, precedência, cardinalidade lógica e comportamento dos efeitos monetários estão definidos sem exigir uma forma física específica de schema.
+
+## Referências
+
+- #592
+- #593
+- #597
+- #668
+- `docs/PAYABLES_RECEIVABLES_TRANSITION.md`
+- `docs/RECURRENCES_INSTALLMENTS_WEB.md`
+- ADR 0013

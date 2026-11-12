@@ -1,0 +1,2 @@
+Exact material: d4a83c41d3995a0ad01bc46b19677d1013cc795e
+The latest A-001 escape is closed by behavior assertions backed by primary Chrome evidence. /cartoes, /lancamentos and /relatorios cannot claim desktop-mobile or legacy-responsibility coverage from metadata alone; missing behavior/mobile capability makes the semantic proof fail.

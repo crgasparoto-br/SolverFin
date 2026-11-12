@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 691,
+  "source": "SRC-ISSUE-691.txt",
+  "source_sha256": "f29002b5b5639e97c6bd08a735331826adc3a200976e9f4653612a3e639b1464",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-691",
+      "path": "specification-sources/SRC-ISSUE-691.txt",
+      "textual": true,
+      "sha256": "f29002b5b5639e97c6bd08a735331826adc3a200976e9f4653612a3e639b1464"
+    }
+  ]
+}

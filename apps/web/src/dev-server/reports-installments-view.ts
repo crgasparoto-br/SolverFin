@@ -1,0 +1,499 @@
+import { formatDateOnly } from "@solverfin/shared";
+
+import { renderMoney } from "../design-system/money.js";
+import { renderAlert, renderButton, renderText } from "../design-system/primitives.js";
+import { apiGet } from "./api.js";
+import {
+  renderReportAnalysisBlock,
+  type AnalysisSummaryItem,
+} from "./reports-analysis-archetype.js";
+import {
+  buildInstallmentAnalysisViewModel,
+  type InstallmentAggregateViewModel,
+  type InstallmentCurrencyViewModel,
+} from "./reports-analysis-view-model.js";
+import {
+  escapeReportHtml as escapeHtml,
+  parseReportCurrencyFilter,
+  renderReportExportActions,
+  renderReportCurrencyOptions,
+  selectReportCurrencyBlocks,
+  renderReportHeading as renderHeading,
+  renderReportState as renderState,
+  renderReportsShell as renderShell,
+  renderReportViewNavigation as renderViewNavigation,
+} from "./reports-route-page-shared.js";
+
+import {
+  currentMonth,
+  formatInstallmentStatus,
+  formatInvoiceStatus,
+  formatMonthYear,
+  monthEnd,
+  nonEmpty,
+  normalizeMonth,
+  normalizeStatus,
+  todayDateOnly,
+} from "./reports-installments-format.js";
+
+interface InstallmentFilters {
+  month: string;
+  dueFrom: string;
+  dueTo: string;
+  status: string;
+  cardId?: string;
+  categoryId?: string;
+  profileId?: string;
+  currency?: string;
+}
+
+interface CardRecord {
+  id: string;
+  name: string;
+}
+
+interface CategoryRecord {
+  id: string;
+  name: string;
+}
+
+export interface InstallmentRecord {
+  id: string;
+  status: string;
+  sequenceNumber: number;
+  totalInstallments: number;
+  dueOn: string;
+  amountMinor: number;
+  currency: string;
+  transaction?: { id: string; description: string; status: string };
+  recurrence?: { id: string; description: string; status: string };
+  invoice?: {
+    id: string;
+    status: string;
+    periodStartOn: string;
+    periodEndOn: string;
+  };
+  card?: { id: string; name: string; status: string };
+  category?: { id: string; name: string; kind: string; status: string };
+}
+
+type InstallmentDrilldownKind = "card" | "category";
+
+export async function renderInstallmentsView(token: string, url: URL): Promise<string> {
+  const filters = readInstallmentFilters(url);
+  try {
+    const requestedCurrency = parseReportCurrencyFilter(url.searchParams.get("currency"));
+    if (requestedCurrency) filters.currency = requestedCurrency;
+  } catch (error) {
+    return renderShell(
+      renderHeading(
+        "Parcelas consolidadas",
+        "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.",
+      ) +
+        renderViewNavigation("installments", filters.profileId) +
+        renderInstallmentFilterForm(filters, [], []) +
+        renderState(
+          "filter-error",
+          "Revise os filtros",
+          error instanceof Error ? error.message : "Moeda inválida.",
+        ),
+    );
+  }
+  const cardsParams = new URLSearchParams({ status: "all" });
+  const categoriesParams = new URLSearchParams({ kind: "expense" });
+  if (filters.profileId) {
+    cardsParams.set("profileId", filters.profileId);
+    categoriesParams.set("profileId", filters.profileId);
+  }
+  const [installmentsResult, cardsResult, categoriesResult] = await Promise.all([
+    apiGet<{ installments: InstallmentRecord[] }>(token, buildInstallmentsPath(filters)),
+    apiGet<{ cards: CardRecord[] }>(token, `/api/cards?${cardsParams.toString()}`),
+    apiGet<{ categories: CategoryRecord[] }>(
+      token,
+      `/api/categories?${categoriesParams.toString()}`,
+    ),
+  ]);
+  const cards = cardsResult.ok ? cardsResult.data.cards : [];
+  const categories = categoriesResult.ok ? categoriesResult.data.categories : [];
+  const header =
+    renderHeading(
+      "Parcelas consolidadas",
+      "Acompanhe o comprometimento mensal sem alterar lançamentos, faturas ou recorrências.",
+    ) + renderViewNavigation("installments", filters.profileId);
+  const form = renderInstallmentFilterForm(filters, cards, categories);
+
+  if (!installmentsResult.ok || !cardsResult.ok || !categoriesResult.ok) {
+    const error = !installmentsResult.ok
+      ? installmentsResult.error
+      : !cardsResult.ok
+        ? cardsResult.error
+        : !categoriesResult.ok
+          ? categoriesResult.error
+          : "Não foi possível carregar as fontes do relatório.";
+    return renderShell(
+      header +
+        form +
+        renderState(
+          "api-error",
+          "Não foi possível carregar o relatório de parcelas",
+          error,
+          `${url.pathname}${url.search}`,
+        ),
+    );
+  }
+
+  const installments = installmentsSorted(installmentsResult.data.installments);
+  const currencyBlocks = buildInstallmentAnalysisViewModel(
+    installments,
+    todayDateOnly(),
+    formatMonthYear,
+  );
+  const selection = selectReportCurrencyBlocks(currencyBlocks, filters.currency);
+  return renderShell(
+    header +
+      renderInstallmentFilterForm(
+        filters,
+        cards,
+        categories,
+        selection.currency,
+        currencyBlocks.map((block) => block.currency),
+      ) +
+      renderReportExportActions(
+        "installments",
+        new URLSearchParams({
+          month: filters.month,
+          status: filters.status,
+          currency: selection.currency,
+          ...(filters.profileId ? { profileId: filters.profileId } : {}),
+          ...(filters.cardId ? { cardId: filters.cardId } : {}),
+          ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+        }),
+      ) +
+      renderInstallments(selection.visible, installments.length, filters),
+  );
+}
+
+export function readInstallmentFilters(url: URL): InstallmentFilters {
+  const month = normalizeMonth(url.searchParams.get("month")) ?? currentMonth();
+  const filters: InstallmentFilters = {
+    month,
+    dueFrom: `${month}-01`,
+    dueTo: monthEnd(month),
+    status: normalizeStatus(url.searchParams.get("status")),
+  };
+  const cardId = nonEmpty(url.searchParams.get("cardId"));
+  const categoryId = nonEmpty(url.searchParams.get("categoryId"));
+  const profileId = nonEmpty(url.searchParams.get("profileId"));
+  if (cardId) filters.cardId = cardId;
+  if (categoryId) filters.categoryId = categoryId;
+  if (profileId) filters.profileId = profileId;
+  return filters;
+}
+
+export function buildInstallmentsPath(filters: InstallmentFilters): string {
+  return `/api/installments?${new URLSearchParams({
+    status: filters.status,
+    dueFrom: filters.dueFrom,
+    dueTo: filters.dueTo,
+    ...(filters.cardId ? { cardId: filters.cardId } : {}),
+    ...(filters.categoryId ? { categoryId: filters.categoryId } : {}),
+    ...(filters.profileId ? { profileId: filters.profileId } : {}),
+  }).toString()}`;
+}
+
+function renderInstallmentFilterForm(
+  filters: InstallmentFilters,
+  cards: CardRecord[],
+  categories: CategoryRecord[],
+  selectedCurrency = filters.currency ?? "all",
+  availableCurrencies: readonly string[] = [],
+): string {
+  return `<section class="panel report-filter-panel" aria-label="Filtros do relatório de parcelas"><form class="report-filters installment-filters" method="get" action="/relatorios">
+    <input type="hidden" name="view" value="installments" />${filters.profileId ? `<input type="hidden" name="profileId" value="${escapeHtml(filters.profileId)}" />` : ""}
+    <label>Mês<input type="month" name="month" value="${escapeHtml(filters.month)}" /></label>
+    <label>Status<select name="status">${renderStatusOptions(filters.status)}</select></label>
+    <label>Cartão<select name="cardId"><option value="">Todos os cartões</option>${cards
+      .slice()
+      .sort(byName)
+      .map(
+        (card) =>
+          `<option value="${escapeHtml(card.id)}"${filters.cardId === card.id ? " selected" : ""}>${escapeHtml(card.name)}</option>`,
+      )
+      .join("")}</select></label>
+    <label>Categoria<select name="categoryId"><option value="">Todas as categorias</option>${categories
+      .slice()
+      .sort(byName)
+      .map(
+        (category) =>
+          `<option value="${escapeHtml(category.id)}"${filters.categoryId === category.id ? " selected" : ""}>${escapeHtml(category.name)}</option>`,
+      )
+      .join("")}</select></label>
+    <label for="installment-currency">Moeda<select id="installment-currency" name="currency">${renderReportCurrencyOptions(selectedCurrency, availableCurrencies)}</select></label>
+    ${renderButton({ label: "Atualizar relatório", type: "submit", className: "report-apply-button" })}
+  </form></section>`;
+}
+
+function renderInstallments(
+  visibleBlocks: InstallmentCurrencyViewModel<InstallmentRecord>[],
+  installmentCount: number,
+  filters: InstallmentFilters,
+): string {
+  if (installmentCount === 0) {
+    return renderState(
+      "empty",
+      `Nenhuma parcela em ${formatMonthYear(filters.month)}`,
+      "Ajuste mês, cartão, categoria ou status para revisar outro recorte.",
+    );
+  }
+
+  if (visibleBlocks.length === 0) {
+    return renderState(
+      "empty",
+      `Nenhuma parcela em ${filters.currency ?? "esta moeda"} no recorte`,
+      "Selecione outra moeda ou Todas as moedas e atualize o relatório.",
+    );
+  }
+  return `<div data-report-state="ready" class="currency-report-list">${visibleBlocks
+    .map((block, index) => renderInstallmentCurrencyBlock(block, filters, index))
+    .join(
+      "",
+    )}<p class="sr-only">Período consultado: ${escapeHtml(formatMonthYear(filters.month))}</p></div>`;
+}
+
+function renderInstallmentCurrencyBlock(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+  filters: InstallmentFilters,
+  index: number,
+): string {
+  const summary = block.summary;
+  const summaryItems: AnalysisSummaryItem[] = [
+    installmentSummaryItem(
+      "Abertas/planejadas",
+      summary.plannedOpenCount,
+      summary.plannedOpenMinor,
+      block.currency,
+    ),
+    installmentSummaryItem(
+      "Postadas/fechadas",
+      summary.postedClosedCount,
+      summary.postedClosedMinor,
+      block.currency,
+    ),
+    installmentSummaryItem(
+      "Vencidas",
+      summary.overdueCount,
+      summary.overdueMinor,
+      block.currency,
+      summary.overdueCount > 0 ? "attention" : "neutral",
+    ),
+    installmentSummaryItem("Futuras", summary.futureCount, summary.futureMinor, block.currency),
+    {
+      ...installmentSummaryItem(
+        "Total mensal",
+        summary.activeCount,
+        summary.totalMinor,
+        block.currency,
+        "information",
+      ),
+      emphasis: true,
+    },
+  ];
+
+  return renderReportAnalysisBlock({
+    id: `installment-analysis-${index}-${safeId(block.currency)}`,
+    currency: block.currency,
+    periodCount: 1,
+    summaryItems,
+    summaryWrapperClassName: "summary-grid installment-summary-grid",
+    summaryItemClassName: "metric-card installment-summary-metric",
+    visualizationTitle: `Distribuição de ${formatMonthYear(filters.month)}`,
+    visualizationHtml: renderInstallmentDistribution(block, filters),
+    highlightsHtml: renderInstallmentHighlights(block),
+    detailTitle: "Parcelas consideradas",
+    detailHtml: renderInstallmentDetail(block),
+  });
+}
+
+function installmentSummaryItem(
+  label: string,
+  count: number,
+  amountMinor: number,
+  currency: string,
+  tone: AnalysisSummaryItem["tone"] = "neutral",
+): AnalysisSummaryItem {
+  return {
+    label,
+    primaryHtml: renderText(count),
+    secondaryHtml: renderMoney({ amountMinor, currency }),
+    tone,
+  };
+}
+
+function renderInstallmentDistribution(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+  filters: InstallmentFilters,
+): string {
+  return `<div class="installment-distribution" aria-label="Agrupamentos de parcelas em ${escapeHtml(block.currency)}">
+      <section class="installment-month-strip" aria-label="Comprometimento por mês">
+        <div class="section-heading"><h2>Comprometimento por mês</h2></div>
+        ${renderAggregateRows(block.groups.months, "month", block.currency)}
+      </section>
+      <div class="installment-distribution-grid">
+        <section class="report-results" aria-label="Distribuição por categoria">
+          <div class="section-heading"><h2>Por categoria</h2><span>${block.groups.categories.length} grupos</span></div>
+          ${renderAggregateRows(block.groups.categories, "category", block.currency, filters)}
+        </section>
+        <section class="report-results" aria-label="Distribuição por cartão">
+          <div class="section-heading"><h2>Por cartão</h2><span>${block.groups.cards.length} grupos</span></div>
+          ${renderAggregateRows(block.groups.cards, "card", block.currency, filters)}
+        </section>
+      </div>
+    </div>`;
+}
+
+function renderInstallmentHighlights(
+  block: InstallmentCurrencyViewModel<InstallmentRecord>,
+): string {
+  const topCategory = block.groups.categories[0];
+  const highlight = topCategory
+    ? `<article class="report-highlight"><span>Maior comprometimento por categoria</span><strong>${escapeHtml(topCategory.label)}</strong>${renderMoney({ amountMinor: topCategory.amountMinor, currency: block.currency })}</article>`
+    : "";
+  const alert =
+    block.summary.overdueCount > 0
+      ? renderAlert({
+          tone: "attention",
+          title: `${block.summary.overdueCount} parcela${block.summary.overdueCount === 1 ? "" : "s"} vencida${block.summary.overdueCount === 1 ? "" : "s"}`,
+          description: "Revise as parcelas vencidas no detalhe antes de alterar o planejamento.",
+        })
+      : renderAlert({
+          tone: "positive",
+          title: "Nenhuma parcela vencida neste recorte",
+          description:
+            "O detalhe abaixo mantém as parcelas futuras, postadas e canceladas identificáveis.",
+        });
+  return `<div class="report-highlights-grid">${highlight}${alert}</div>`;
+}
+
+function renderInstallmentDetail(block: InstallmentCurrencyViewModel<InstallmentRecord>): string {
+  const countLabel = `${block.items.length} registro${block.items.length === 1 ? "" : "s"}`;
+  const rows = block.items
+    .map(
+      (item) => `<tr class="installment-table-row">
+        <td><time datetime="${escapeHtml(item.dueOn)}">${escapeHtml(formatDateOnly(item.dueOn))}</time></td>
+        <td>${item.sequenceNumber}/${item.totalInstallments}</td>
+        <td>${renderText(item.transaction?.description ?? item.recurrence?.description ?? "Parcela")}</td>
+        <td>${renderText(item.card?.name ?? "Sem cartão")}</td>
+        <td>${renderText(item.category?.name ?? "Sem categoria")}</td>
+        <td>${renderText(installmentStatusLabel(item))}</td>
+        <td>${renderMoney({ amountMinor: item.amountMinor, currency: block.currency })}</td>
+      </tr>`,
+    )
+    .join("");
+
+  return `<div class="section-heading report-detail-count"><span>${countLabel}</span></div>
+    <div class="installment-table" tabindex="0" aria-label="Parcelas do relatório em ${escapeHtml(block.currency)}">
+      <table class="sf-table installment-detail-table">
+        <caption class="sr-only">Parcelas do relatório em ${escapeHtml(block.currency)}</caption>
+        <colgroup><col class="installment-col-due" /><col class="installment-col-number" /><col class="installment-col-origin" /><col class="installment-col-card" /><col class="installment-col-category" /><col class="installment-col-status" /><col class="installment-col-amount" /></colgroup>
+        <thead><tr><th scope="col">Vencimento</th><th scope="col">Parcela</th><th scope="col">Origem</th><th scope="col">Cartão</th><th scope="col">Categoria</th><th scope="col">Status</th><th scope="col">Valor</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+}
+
+function renderAggregateRows(
+  rows: readonly InstallmentAggregateViewModel[],
+  kind: string,
+  currency: string,
+  filters?: InstallmentFilters,
+): string {
+  if (rows.length === 0) {
+    return renderCompactEmptyState(
+      "Sem dados para agrupar.",
+      "As parcelas do filtro selecionado aparecerão aqui.",
+    );
+  }
+  const maxAmount = Math.max(1, ...rows.map((row) => Math.abs(row.amountMinor)));
+  return `<div class="aggregate-list" data-aggregate-kind="${escapeHtml(kind)}">${rows
+    .map((row) => {
+      const scale =
+        row.amountMinor === 0
+          ? 0
+          : Math.max(4, Math.round((Math.abs(row.amountMinor) / maxAmount) * 100));
+      const drilldownKind = kind === "card" || kind === "category" ? kind : undefined;
+      const label =
+        filters && drilldownKind && row.filterId
+          ? renderAggregateDrilldown(row, drilldownKind, filters)
+          : `<strong>${escapeHtml(row.label)}</strong>`;
+      return `<article class="aggregate-row"><div class="aggregate-copy">${label}<span>${row.count} parcela${row.count === 1 ? "" : "s"}</span><span class="aggregate-bar" aria-hidden="true"><span style="--aggregate-size:${scale}%"></span></span></div><strong>${renderMoney({ amountMinor: row.amountMinor, currency })}</strong></article>`;
+    })
+    .join("")}</div>`;
+}
+
+function renderAggregateDrilldown(
+  row: InstallmentAggregateViewModel,
+  kind: InstallmentDrilldownKind,
+  filters: InstallmentFilters,
+): string {
+  if (!row.filterId) return `<strong>${escapeHtml(row.label)}</strong>`;
+  const href = buildInstallmentDrilldownHref(filters, kind, row.filterId);
+  const accessibleAction =
+    kind === "card" ? "abrir recorte deste cartão" : "abrir recorte desta categoria";
+  return `<a class="aggregate-drilldown sf-focus-ring" data-report-drilldown="${kind}" href="${escapeHtml(href)}"><strong>${escapeHtml(row.label)}</strong><span class="sr-only"> — ${accessibleAction}</span></a>`;
+}
+
+function buildInstallmentDrilldownHref(
+  filters: InstallmentFilters,
+  kind: InstallmentDrilldownKind,
+  filterId: string,
+): string {
+  const params = new URLSearchParams({
+    view: "installments",
+    month: filters.month,
+    status: filters.status,
+  });
+  if (filters.profileId) params.set("profileId", filters.profileId);
+  if (filters.currency) params.set("currency", filters.currency);
+  if (filters.cardId) params.set("cardId", filters.cardId);
+  if (filters.categoryId) params.set("categoryId", filters.categoryId);
+  params.set(kind === "card" ? "cardId" : "categoryId", filterId);
+  return `/relatorios?${params.toString()}`;
+}
+
+function renderCompactEmptyState(title: string, description: string): string {
+  return `<div class="empty-state"><strong>${escapeHtml(title)}</strong><p class="muted">${escapeHtml(description)}</p></div>`;
+}
+
+function installmentStatusLabel(item: InstallmentRecord): string {
+  const invoice = item.invoice?.status
+    ? ` · Fatura ${formatInvoiceStatus(item.invoice.status)}`
+    : "";
+  return formatInstallmentStatus(item.status) + invoice;
+}
+
+function renderStatusOptions(selected: string): string {
+  return [
+    ["all", "Todos"],
+    ["planned", "Planejadas"],
+    ["posted", "Postadas"],
+    ["reconciled", "Conciliadas"],
+    ["cancelled", "Canceladas"],
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${value}"${selected === value ? " selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function installmentsSorted(items: InstallmentRecord[]): InstallmentRecord[] {
+  return items.slice().sort((left, right) => left.dueOn.localeCompare(right.dueOn));
+}
+
+function byName(left: { name: string }, right: { name: string }): number {
+  return left.name.localeCompare(right.name, "pt-BR");
+}
+
+function safeId(value: string): string {
+  return value.replace(/[^a-zA-Z0-9_-]/g, "-");
+}

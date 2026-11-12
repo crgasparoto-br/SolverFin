@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+  "base_sha": "26d2539ab3252f8b549011ab9bf41d79be44dc08",
+  "evidence": [
+    {
+      "evidence_id": "EVID-677-EXACT-HEAD",
+      "kind": "quantitative",
+      "status": "passed",
+      "path": "evidence/issue-677-exact-head.txt",
+      "sha256": "5bf7cc1058638ff65c8f07aa91449ee1662e4a915a9554511b91f476e89777a5",
+      "freshness_policy": "exact-material-head",
+      "subject_sha": "a27be3b3ccb7be91405c12fc4faef8835db96ac6",
+      "producer": "GitHub Actions exact-head CI plus targeted PostgreSQL reference-liveness regression"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Material head: b7456f2f5020f13598572747cff49b105b71b36d
+Observed frozen implementation evidence from PR 657:
+- prisma/schema.prisma adds nullable Card.currency CHAR(3).
+- migration 20260907143000_add_card_default_currency adds Card.currency, backfills only from unambiguous historical sources and constrains non-null values to three uppercase letters.
+- credit-card-accounts-router.ts passes body.currency independently on create and update.
+- repositories/card-instruments.ts normalizes currency, persists it as its own Card column, maps it back from storage, and does not derive runtime Card.currency from paymentAccount.currency.
+- view-model.test.ts uses deliberately divergent linked values (payment account USD, card BRL) and observes BRL on the card; a card with no currency linked to a BRL account remains without currency.
+Remote execution: CI run 34272331233 completed success on the same material head, including Prisma validation, migrations, tests and API integration tests.

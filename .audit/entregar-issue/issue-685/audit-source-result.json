@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "status": "rejected",
+  "rejection_id": "audit-rejection:solverfin-685-4f372842-handoff-not-produced",
+  "head_sha": "4f3728428ebab03ac91e857764b10b3586573065",
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 685,
+    "pull_request_number": null,
+    "head_sha": "4f3728428ebab03ac91e857764b10b3586573065",
+    "base_sha": "e00014d4a9bad379023ae541785a714b46478a28"
+  },
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "severity": "blocking",
+      "remediation_mode": "targeted-remediation",
+      "category": "delivery-not-ready",
+      "summary": "The current branch inherited a byte-identical handoff certificate for issue 680 and had not produced a certificate bound to issue 685."
+    }
+  ],
+  "recommendations": []
+}

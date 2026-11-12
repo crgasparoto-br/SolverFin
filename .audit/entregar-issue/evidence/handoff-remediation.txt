@@ -1,0 +1,6 @@
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
+Target: crgasparoto-br/SolverFin issue #659 / PR #661
+A-001 remains closed: foreign/inherited certificates cannot satisfy current-target readiness, so this package is rebuilt for the current target.
+A-002 remains closed on the material head: db:repair:default-categories:user invokes prepare-local-env.mjs before seed-default-categories-for-user.mjs.
+A-003 is closed as result-only remediation: immutable compare c31a1097c2e9a474be8ec64b5a702a07d672bead..cc1d2b9ba804adbfd34aa7f52577391f6dc987e2 returns 27 normalized paths; handoff-ready.json now records exactly those 27 paths and issue_delta_sha256 6677794457940894b5725fbd37c95f10661ecfcf97b6b0b217f5fe5e84f263c7.
+No product code, tests, documentation or package.json content changes in this remediation; exact-head CI, API integration and Chrome visual evidence for the material head are reused unchanged.

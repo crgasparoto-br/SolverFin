@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "rejection_id": "audit-rejection:pr656-2757bd7-a001",
+  "head_sha": "2757bd7d0a33ba6abec601126a5723fa9509dee2",
+  "findings": [
+    {
+      "id": "A-001",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "summary": "Secondary captured PATCH handler serialized blank effectiveOn as explicit null and bypassed canonical status-transition date semantics."
+    }
+  ],
+  "recommendations": []
+}

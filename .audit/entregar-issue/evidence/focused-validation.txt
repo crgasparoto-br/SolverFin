@@ -1,0 +1,81 @@
+$ tsc --noEmit -p tsconfig.prod.json
+
+$ rm -rf dist-test && tsc -p tsconfig.test.json && node --test dist-test/primitives.test.js
+TAP version 13
+# Subtest: executable UI primitives
+    # Subtest: escapes visible text and attributes while keeping native button semantics
+    ok 1 - escapes visible text and attributes while keeping native button semantics
+      ---
+      duration_ms: 0.794218
+      type: 'test'
+      ...
+    # Subtest: models loading, empty, recoverable error, unavailable and permission states explicitly
+    ok 2 - models loading, empty, recoverable error, unavailable and permission states explicitly
+      ---
+      duration_ms: 0.3639
+      type: 'test'
+      ...
+    # Subtest: renders dialog and drawer contracts with a shared modal focus lifecycle
+    ok 3 - renders dialog and drawer contracts with a shared modal focus lifecycle
+      ---
+      duration_ms: 0.293526
+      type: 'test'
+      ...
+    # Subtest: keeps navigation tabs keyboard-native instead of claiming a custom tab role
+    ok 4 - keeps navigation tabs keyboard-native instead of claiming a custom tab role
+      ---
+      duration_ms: 0.166937
+      type: 'test'
+      ...
+    # Subtest: allows two distinct route compositions to reuse the same structural primitives
+    ok 5 - allows two distinct route compositions to reuse the same structural primitives
+      ---
+      duration_ms: 0.373765
+      type: 'test'
+      ...
+    # Subtest: renders cards, alerts, feedback and layout composition without financial rules
+    ok 6 - renders cards, alerts, feedback and layout composition without financial rules
+      ---
+      duration_ms: 0.253947
+      type: 'test'
+      ...
+    # Subtest: keeps SSR output deterministic for the same input
+    ok 7 - keeps SSR output deterministic for the same input
+      ---
+      duration_ms: 0.134119
+      type: 'test'
+      ...
+    # Subtest: rejects empty structural collections instead of emitting ambiguous markup
+    ok 8 - rejects empty structural collections instead of emitting ambiguous markup
+      ---
+      duration_ms: 0.379373
+      type: 'test'
+      ...
+    # Subtest: publishes responsive, focus, overflow and component styles from the shared design system
+    ok 9 - publishes responsive, focus, overflow and component styles from the shared design system
+      ---
+      duration_ms: 0.410469
+      type: 'test'
+      ...
+    1..9
+ok 1 - executable UI primitives
+  ---
+  duration_ms: 4.759499
+  type: 'suite'
+  ...
+1..1
+# tests 9
+# suites 1
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 50.637853
+
+$ git hash-object material files
+5e4b9dd5266ffa921775d3dbab30018726b0b385
+8efcd40bdcae828f723a4dae610441bd136ab4d0
+c722508c301e09478ffc8ee5ad38690fb7fa9294
+869519be9b1b3d0fd6615611281fcb74d20970bc
+eedbfa91189d8cb626565544fef3d2c821e5c100

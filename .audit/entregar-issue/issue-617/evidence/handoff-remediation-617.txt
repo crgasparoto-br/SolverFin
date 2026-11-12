@@ -1,0 +1,14 @@
+Issue 617 / PR 674 targeted audit remediation
+rejection_id=audit-rejection:617-result-only-drift-c7aad3d1
+previous_certified_material_head_sha=3ff7a8b5e5b8180a486cdb3d85d836c5a654292e
+refrozen_material_head_sha=c7aad3d1cb57fcae4bb2fe7cfd3bbcc6924be4a1
+delivery_v2_ci_run=35997128024
+critical_validation_job=107624871228
+visual_validation_run=35997128037
+chrome_visual_job=107624605345
+
+Closure:
+- The current PR head is refrozen as material after the post-handoff test change.
+- Both required exact-head workflows are terminal success.
+- Readiness evidence is rebound to this exact material SHA.
+- The replacement handoff is restricted to one result-only child of this material SHA.

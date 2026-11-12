@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "status": "closed",
+  "candidate_head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded",
+  "remediation_mode": "targeted-remediation",
+  "source": {
+    "rejection_id": "audit-rejection:aab741ac-4c6b-4b33-aea5-058ba7182ebb",
+    "audit_report_sha256": "c88607fd254817e496be7f71c0259fb07ab4852d79b4f9f6ebc561cad3184072",
+    "audited_head_sha": "ecdadf4c3f04ab85dd54d2779a0de337781d1ded"
+  },
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A719-01",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/standard-evidence.json",
+        ".audit/entregar-issue/audit-escape-closure-719.json"
+      ],
+      "evidence": [
+        "Inherited base and material candidate certificates share Git blob d9ed295d50e980637f35d8ee1626d5781b11c6f5 and refer to 718/729; independent target binding returned inherited-base-artifact, reuse_allowed=false.",
+        "A candidate-specific evidence profile with 16 closed obligations and 8 independent negative controls for the 14-route inventory is prepared; certified result-only-child is required for final closure."
+      ],
+      "validations": [
+        "Repository CI #39889196325 exact SHA completed/success, STANDARD validation; Delivery audit workspace #39889196684 exact SHA completed/success.",
+        "Official validate_specification_coverage, validate_standard_evidence, validate_handoff_readiness all READY; official target binding rejects inherited and foreign/partial sibling cases."
+      ]
+    }
+  ]
+}

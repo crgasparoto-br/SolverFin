@@ -1,0 +1,339 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "subject_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+  "status": "passed",
+  "escapes": [
+    {
+      "escape_id": "audit-rejection:pr657-fb52d2a-654",
+      "escape_class": "canonical-currency-and-selection-drift",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr657-fb52d2a-654",
+        "finding_ids": [
+          "A-001",
+          "A-002",
+          "A-003",
+          "A-004"
+        ]
+      },
+      "plausible_wrong_implementation": "Keep a previously valid evidence packet after the branch receives a material write, allowing green happy-path checks to coexist with a certificate bound to an ancestral SHA.",
+      "literal_case": {
+        "procedure": "Compare the previous certified material SHA with the current immutable PR head, then require a full post-write refreeze and direct result-only publication.",
+        "observed": "The exact current material head c10f9f42b13fb7e63c892d314a25654a8d676565 is the subject of the rebuilt evidence packet and terminal child-parent contract.",
+        "status": "passed",
+        "evidence": "evidence/material-head-gates.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "audit-rejection:pr657-fb52d2a-654-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot",
+          "status": "passed",
+          "evidence": "The canonical issue snapshot and complete material-head identity are rebound before handoff publication."
+        },
+        {
+          "id": "audit-rejection:pr657-fb52d2a-654-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence",
+          "status": "passed",
+          "evidence": "Exact-head CI, focused filter assertions and Chrome visual scenarios distinguish stale evidence from the refrozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery floor keeps requires_refreeze=true whenever material commits appear after a certified handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff validation",
+        "control_id": "REFREEZE-IDENTITY-001",
+        "evidence": "The terminal guard requires published parent == material head and rejects any non-allowlisted result-only path or later remote head movement."
+      },
+      "trigger_terms": [
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001",
+      "escape_class": "delivery-evidence-contract-bypass",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:853486ba-25c6-45a2-ac48-cd93b9ee5b32",
+        "finding_ids": [
+          "A-005",
+          "A-006",
+          "A-007"
+        ]
+      },
+      "plausible_wrong_implementation": "Keep a previously valid evidence packet after the branch receives a material write, allowing green happy-path checks to coexist with a certificate bound to an ancestral SHA.",
+      "literal_case": {
+        "procedure": "Compare the previous certified material SHA with the current immutable PR head, then require a full post-write refreeze and direct result-only publication.",
+        "observed": "The exact current material head c10f9f42b13fb7e63c892d314a25654a8d676565 is the subject of the rebuilt evidence packet and terminal child-parent contract.",
+        "status": "passed",
+        "evidence": "evidence/material-head-gates.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot",
+          "status": "passed",
+          "evidence": "The canonical issue snapshot and complete material-head identity are rebound before handoff publication."
+        },
+        {
+          "id": "ESC-EVIDENCE-CONTRACT-INTEGRITY-001-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence",
+          "status": "passed",
+          "evidence": "Exact-head CI, focused filter assertions and Chrome visual scenarios distinguish stale evidence from the refrozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery floor keeps requires_refreeze=true whenever material commits appear after a certified handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff validation",
+        "control_id": "REFREEZE-IDENTITY-001",
+        "evidence": "The terminal guard requires published parent == material head and rejects any non-allowlisted result-only path or later remote head movement."
+      },
+      "trigger_terms": [
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-POST-WRITE-REFREEZE-657",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr657-b7456f2-handoff-stale",
+        "finding_ids": [
+          "A-001"
+        ]
+      },
+      "plausible_wrong_implementation": "Keep a previously valid evidence packet after the branch receives a material write, allowing green happy-path checks to coexist with a certificate bound to an ancestral SHA.",
+      "literal_case": {
+        "procedure": "Compare the previous certified material SHA with the current immutable PR head, then require a full post-write refreeze and direct result-only publication.",
+        "observed": "The exact current material head c10f9f42b13fb7e63c892d314a25654a8d676565 is the subject of the rebuilt evidence packet and terminal child-parent contract.",
+        "status": "passed",
+        "evidence": "evidence/material-head-gates.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-POST-WRITE-REFREEZE-657-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot",
+          "status": "passed",
+          "evidence": "The canonical issue snapshot and complete material-head identity are rebound before handoff publication."
+        },
+        {
+          "id": "ESC-POST-WRITE-REFREEZE-657-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence",
+          "status": "passed",
+          "evidence": "Exact-head CI, focused filter assertions and Chrome visual scenarios distinguish stale evidence from the refrozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery floor keeps requires_refreeze=true whenever material commits appear after a certified handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff validation",
+        "control_id": "REFREEZE-IDENTITY-001",
+        "evidence": "The terminal guard requires published parent == material head and rejects any non-allowlisted result-only path or later remote head movement."
+      },
+      "trigger_terms": [
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-ISSUE-LOCAL-SCOPE-657",
+      "escape_class": "delivery-evidence-scope-binding",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:a46232c8-88b9-4e12-a71c-6a824d41eb55",
+        "finding_ids": [
+          "A-002"
+        ]
+      },
+      "plausible_wrong_implementation": "Keep a previously valid evidence packet after the branch receives a material write, allowing green happy-path checks to coexist with a certificate bound to an ancestral SHA.",
+      "literal_case": {
+        "procedure": "Compare the previous certified material SHA with the current immutable PR head, then require a full post-write refreeze and direct result-only publication.",
+        "observed": "The exact current material head c10f9f42b13fb7e63c892d314a25654a8d676565 is the subject of the rebuilt evidence packet and terminal child-parent contract.",
+        "status": "passed",
+        "evidence": "evidence/material-head-gates.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-ISSUE-LOCAL-SCOPE-657-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot",
+          "status": "passed",
+          "evidence": "The canonical issue snapshot and complete material-head identity are rebound before handoff publication."
+        },
+        {
+          "id": "ESC-ISSUE-LOCAL-SCOPE-657-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence",
+          "status": "passed",
+          "evidence": "Exact-head CI, focused filter assertions and Chrome visual scenarios distinguish stale evidence from the refrozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery floor keeps requires_refreeze=true whenever material commits appear after a certified handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff validation",
+        "control_id": "REFREEZE-IDENTITY-001",
+        "evidence": "The terminal guard requires published parent == material head and rejects any non-allowlisted result-only path or later remote head movement."
+      },
+      "trigger_terms": [
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "status": "passed"
+    },
+    {
+      "escape_id": "ESC-POST-WRITE-REFREEZE-657-20260909",
+      "escape_class": "execution-state-gap",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:9b2cd0ce-a415-47e1-bf1a-52fc88c6b3a0",
+        "finding_ids": [
+          "A-003"
+        ],
+        "audit_report_sha256": "43825be4a99623c11a8581a813a42c433e5811d2f81f267e9ec5cb0f321d20bc"
+      },
+      "plausible_wrong_implementation": "Keep a previously valid evidence packet after the branch receives a material write, allowing green happy-path checks to coexist with a certificate bound to an ancestral SHA.",
+      "literal_case": {
+        "procedure": "Compare the previous certified material SHA with the current immutable PR head, then require a full post-write refreeze and direct result-only publication.",
+        "observed": "The exact current material head c10f9f42b13fb7e63c892d314a25654a8d676565 is the subject of the rebuilt evidence packet and terminal child-parent contract.",
+        "status": "passed",
+        "evidence": "evidence/material-head-gates.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "ESC-POST-WRITE-REFREEZE-657-20260909-S1",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot",
+          "status": "passed",
+          "evidence": "The canonical issue snapshot and complete material-head identity are rebound before handoff publication."
+        },
+        {
+          "id": "ESC-POST-WRITE-REFREEZE-657-20260909-S2",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence",
+          "status": "passed",
+          "evidence": "Exact-head CI, focused filter assertions and Chrome visual scenarios distinguish stale evidence from the refrozen candidate."
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "structural-contract",
+          "surface": "canonical-source-consistency",
+          "dimension": "full-source-snapshot"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "specified-test-matrix",
+          "dimension": "discriminating-negative-evidence"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue post-write-refreeze recovery",
+        "evidence": "The recovery floor keeps requires_refreeze=true whenever material commits appear after a certified handoff."
+      },
+      "detection_change": {
+        "skill_or_gate": "terminal handoff validation",
+        "control_id": "REFREEZE-IDENTITY-001",
+        "evidence": "The terminal guard requires published parent == material head and rejects any non-allowlisted result-only path or later remote head movement."
+      },
+      "trigger_terms": [
+        "post-freeze material write",
+        "stale certificate",
+        "result-only child parent drift"
+      ],
+      "required_risk_families": [
+        "structural-contract"
+      ],
+      "revalidated_head_sha": "c10f9f42b13fb7e63c892d314a25654a8d676565",
+      "status": "passed"
+    }
+  ]
+}

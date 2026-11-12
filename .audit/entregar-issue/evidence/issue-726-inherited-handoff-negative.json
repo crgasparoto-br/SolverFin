@@ -1,0 +1,18 @@
+{
+  "command": "python /mnt/data/audit726/skill-repo/auditar-issue/scripts/check_delivery_preflight.py --certificate /mnt/data/audit726/exact-head/.audit/entregar-issue/handoff-ready.json --base-certificate /mnt/data/audit726/exact-head/.audit/entregar-issue/handoff-ready.json --artifacts-dir /mnt/data/audit726/exact-head/.audit/entregar-issue --source-repository-root /mnt/data/audit726/exact-head --head-sha 3e3d926bc9f0787a0029b470ef478b4c26ee56b2 --base-sha 36cbfb7ee0a8aea2412073d113644bf2e1e683e5 --repository crgasparoto-br/SolverFin --issue-number 726 --work-item-kind issue --work-item-number 726 --pull-request-number 754 --base-ref develop --head-ref feat/726-golden-inbox-review-hierarchy --contract-version 2026-08-20.3",
+  "returncode": 2,
+  "stdout": "BLOCK: inherited-base-artifact: handoff-ready.json is unchanged from the immutable base and belongs to another delivery; the current target handoff was not produced\nREASON: handoff-not-produced\nRECOVERY: handoff-only\n",
+  "stderr": "",
+  "material_head_sha": "3e3d926bc9f0787a0029b470ef478b4c26ee56b2",
+  "base_sha": "36cbfb7ee0a8aea2412073d113644bf2e1e683e5",
+  "candidate_subject": {
+    "issue": 726,
+    "pull_request": 754
+  },
+  "wrong_subject": {
+    "issue": 725,
+    "pull_request": 751
+  },
+  "negative_only": true,
+  "expected": "Candidate must reject base-inherited foreign-target handoff"
+}

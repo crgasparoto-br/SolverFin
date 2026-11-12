@@ -1,0 +1,13 @@
+Repository: crgasparoto-br/SolverFin
+Pull request: 661
+Issue: 659
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
+CI workflow run: 34616164006 / run 4954 / completed success
+Validate monorepo job: 103318512959 / completed success
+Observed passed steps: Check environment example, Validate Prisma schema, Check demo seed script, Check formatting, Lint, Typecheck, Apply migrations, Seed demo data, Test, Build.
+Integration API + PostgreSQL job: 103318512642 / completed success
+Observed integration steps: Build packages, Apply migrations, Seed demo data, Run API integration tests, Verify import statement consistency.
+Statement visual workflow run: 34616164055 / run 3435 / completed success
+Chrome visual validation job: 103318512436 / completed success
+Visual artifact digest: sha256:24407131bb72c2bd00eae2a84862d56d4c598514aaa53a36a78c907ca6880ed4
+All listed executions are bound by GitHub Actions metadata to the exact material head above.

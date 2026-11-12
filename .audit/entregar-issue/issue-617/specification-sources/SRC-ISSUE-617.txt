@@ -1,0 +1,127 @@
+Parent epic: #592
+Depends on: #595, #597, #616, #668
+Specification version: 3
+
+## Objetivo
+
+Implementar projeção determinística de caixa para horizontes de 30, 60 e 90 dias, sempre separada por moeda enquanto não houver conversão cambial explícita.
+
+A projeção deve compreender a representação cross-currency introduzida por #668 e normalizada na agenda por #616: uma única transferência lógica pode produzir simultaneamente um débito em uma moeda e um crédito em outra, sem que essas moedas sejam somadas ou convertidas entre si.
+
+## Contrato temporal fechado
+
+- A projeção recebe uma `referenceDate` explícita no cálculo.
+- O **saldo inicial** representa a posição financeira **ao final da `referenceDate`**, após todos os movimentos que já produziram efeito de caixa nessa data conforme #594/#597.
+- O horizonte futuro começa no **dia calendário imediatamente seguinte** à `referenceDate`.
+- `horizonDays=30` cobre exatamente os 30 dias seguintes; por exemplo, `referenceDate=2026-08-16` cobre `2026-08-17` a `2026-09-15`, inclusive.
+- A mesma regra vale para 60 e 90 dias.
+- Horizontes usam **dias corridos**, não meses nem dias úteis.
+- Cada ponto diário representa o **saldo projetado ao final daquele dia**.
+- A série pública é **diária e contínua**: dias sem movimentos continuam presentes e repetem o saldo projetado do dia anterior.
+- Dashboard, Relatórios e outros consumidores não devem reconstruir uma série diária a partir de eventos esparsos.
+
+## Escopo
+
+- partir de saldo/posição inicial financeiramente correta de #594;
+- incorporar compromissos futuros canônicos de #616;
+- considerar receitas/despesas previstas, parcelas e faturas conforme contratos vigentes;
+- considerar transferências `planned` cross-currency de #668 como dois efeitos monetários vinculados vindos da mesma identidade lógica;
+- produzir séries diárias por moeda para horizontes de 30, 60 e 90 dias;
+- disponibilizar endpoint/view-model adequado para Dashboard e Relatórios;
+- expor composição/evidência suficiente para explicar os movimentos que alteram cada ponto, sem exigir recálculo no frontend;
+- tratar alterações, cancelamentos, materializações e reconciliações por novo cálculo determinístico, sem manter projeção obsoleta como fonte de verdade;
+- manter cálculo no backend/domínio e transportar moeda explicitamente conforme #595;
+- reutilizar o contrato temporal de #597 e o timezone/date-only atual do repositório enquanto não houver issue específica de timezone por perfil.
+
+## Regras de cálculo
+
+1. Resolver `referenceDate` uma única vez no boundary do cálculo. Em chamadas que permitirem omissão pelo usuário, o servidor pode fornecer a data corrente, mas o domínio recebe o valor já resolvido.
+2. Calcular `openingBalance` por moeda ao final da `referenceDate`.
+3. Consultar os compromissos futuros canônicos de #616 somente no intervalo `referenceDate + 1` até `referenceDate + horizonDays`, inclusive.
+4. Agrupar movimentos do mesmo dia por moeda antes de atualizar o saldo diário.
+5. Para cada dia, `closingBalance = previousClosingBalance + netMovementOfDay`.
+6. Um evento já refletido em `openingBalance` não pode aparecer novamente como evento futuro.
+7. BRL, USD, EUR ou qualquer outra moeda produzem séries independentes; não existe saldo projetado consolidado sem conversão explícita.
+8. Para uma transferência cross-currency planejada, aplicar o leg de origem somente à série da moeda de origem e o leg de destino somente à série da moeda de destino, preservando a mesma identidade/evidência do evento.
+
+## Exemplo normativo cross-currency
+
+Dado:
+
+```text
+referenceDate = 2026-09-15
+plannedOn = 2026-09-20
+transferência = 538,32 BRL -> 100,00 USD
+```
+
+A projeção deve produzir em 2026-09-20:
+
+```text
+série BRL: netMovementOfDay inclui -538,32 BRL
+série USD: netMovementOfDay inclui +100,00 USD
+```
+
+A projeção **não** deve:
+
+- somar `-538,32 + 100,00` como se fossem a mesma unidade;
+- converter uma ponta usando taxa implícita;
+- apresentar a transferência como despesa BRL + receita USD;
+- duplicar a identidade do compromisso apenas porque há dois legs monetários.
+
+## Invariantes estruturais
+
+- **must_reuse:** saldo/posição de #594, agenda canônica de #616, representação cross-currency de #668 e semântica temporal de #597.
+- **must_be_single_source:** a série diária retornada pelo backend é a fonte canônica da projeção; consumidores não recalculam saldos ou preenchem calendário com regras próprias.
+- **must_behave:** uma transferência cross-currency altera independentemente as séries das duas moedas, mantendo uma única origem/evidência lógica.
+- **must_not_behave:** a `referenceDate` não entra novamente como primeiro dia futuro; um movimento refletido no saldo inicial não pode ser contado na série; moedas distintas não compartilham saldo ou série sem conversão; os dois legs de uma transferência cross-currency não podem virar receita/despesa nem serem somados entre si.
+- **must_not_depend_on:** projeção não depende de IA/provider externo, relógio não controlado, cotação cambial automática ou reconstrução no frontend.
+- **precedence_invariants:** posição realizada até o fim da `referenceDate` compõe `openingBalance`; somente eventos posteriores entram na série futura; para transferência cross-currency, a identidade canônica de #616/#668 prevalece sobre qualquer reconstrução local por duas linhas indepentes.
+- **forbidden_implementation:** usar `new Date()` espalhado pelo domínio/renderer, incluir `referenceDate` tanto no saldo inicial quanto na série, retornar apenas eventos e deixar o frontend reconstruir os dias, ou tratar os dois legs de uma transferência cross-currency como dois eventos econômicos independentes. Esses controles devem ser provados com série completa e múltiplas moedas.
+
+## Critérios de aceite
+
+- [ ] `referenceDate` é resolvida uma única vez e o cálculo é reproduzível com a mesma entrada/dados;
+- [ ] `openingBalance` representa a posição ao final da data-base;
+- [ ] horizonte de 30 dias começa no dia seguinte e contém exatamente 30 pontos diários; idem para 60/90;
+- [ ] dias sem movimento continuam presentes e repetem o saldo anterior;
+- [ ] cada ponto representa saldo ao final do respectivo dia;
+- [ ] BRL e USD geram projeções independentes no mesmo perfil;
+- [ ] nenhum horizonte soma moedas distintas;
+- [ ] compromissos aparecem uma única vez;
+- [ ] uma transferência `planned` de 538,32 BRL -> 100,00 USD reduz a série BRL em 538,32 e aumenta a série USD em 100,00 na data correta, sob a mesma evidência lógica;
+- [ ] materializar/voidar/editar essa transferência não deixa um leg futuro órfão nem duplica o evento;
+- [ ] movimento ocorrido na própria `referenceDate` não é contado novamente na projeção;
+- [ ] usuário/consumidor consegue navegar da projeção para os itens que explicam mudanças relevantes;
+- [ ] Dashboard e Relatórios consomem a mesma série canônica sem recálculo financeiro no frontend;
+- [ ] testes cobrem 30/60/90 dias, dias sem evento, virada de mês/ano, movimento na data-base, compromisso cancelado/materializado/efetivado, múltiplas moedas e transferência cross-currency;
+- [ ] testes controlam explicitamente a data de referência, sem depender do relógio real.
+
+## Readiness
+
+**Pronta após #668 e #616.** Âncora, inclusividade, saldo inicial, granularidade pública e fronteira entre posição atual e futuro estão definidos; a dependência cross-currency agora também está explícita.
+
+## Impacto na documentação
+
+Na implementação, atualizar os contratos vivos de projeção/financeiro aplicáveis e `docs/EVOLUTION_STRATEGY.md`/`docs/STATUS_MATRIX.md` quando a capacidade passar de planejada para implementada. Se for criado novo endpoint público, documentar seu payload, intervalos, semântica de `referenceDate` e representação de evidências multi-moedas.
+
+## Fora de escopo
+
+- previsão estatística por IA;
+- cotação cambial automática/provider externo;
+- dias úteis/calendário bancário;
+- timezone configurável por perfil;
+- cache incremental como fonte canônica da projeção;
+- recorrência cross-currency enquanto permanecer fora do contrato de #668.
+
+## Referências
+
+- #592
+- #594
+- #595
+- #597
+- #616
+- #668
+- ADR 0013
+- `docs/EVOLUTION_STRATEGY.md`
+- `docs/TRANSACTIONS.md`
+- `packages/shared/src/formatting.ts`

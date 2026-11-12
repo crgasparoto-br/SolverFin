@@ -1,0 +1,97 @@
+HEAD: 68f9c697d409cc11b326bf06fba19da8fa109379
+BASE: f0b82f29230e64faca7f4cd49b4bfadd8793d0b3
+COMMAND: python -m pytest -q tests/test_session_review_packet.py tests/test_session_review_trusted_producers.py
+EXIT_CODE: 0
+REACHED: tests/test_session_review_trusted_producers.py
+REACHED: tests/test_session_review_packet.py
+
+AUTHENTICATED SOURCE: run 42627744660 Git bundle, SHA HEAD 68f9c697d409cc11b326bf06fba19da8fa109379
+RUNNER OUTPUT (pytest -q on exact authenticated HEAD):
+.............................................................            [100%]
+61 passed in 0.22s
+
+TEST CASE LIST (pytest -vv on exact authenticated HEAD):
+============================= test session starts ==============================
+platform linux -- Python 3.13.5, pytest-9.0.2, pluggy-1.6.0 -- /opt/pyvenv/bin/python
+cachedir: .pytest_cache
+metadata: {'Python': '3.13.5', 'Platform': 'Linux-6.18.57-x86_64-with-glibc2.41', 'Packages': {'pytest': '9.0.2', 'pluggy': '1.6.0'}, 'Plugins': {'anyio': '4.13.0', 'ddtrace': '4.4.0', 'Faker': '40.1.2', 'asyncio': '1.3.0', 'cov': '7.0.0', 'json-report': '1.5.0', 'metadata': '3.1.1'}, 'PLATFORM': 'linux/amd64', 'CI': 'true'}
+rootdir: /mnt/data/pr776_delivery/remote-material
+plugins: anyio-4.13.0, ddtrace-4.4.0, Faker-40.1.2, asyncio-1.3.0, cov-7.0.0, json-report-1.5.0, metadata-3.1.1
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 61 items
+
+tests/test_session_review_packet.py::test_git_blob_verification_rejects_modified_data PASSED [  1%]
+tests/test_session_review_packet.py::test_preview_requires_base_then_head_parents PASSED [  3%]
+tests/test_session_review_packet.py::test_disabled_policy_does_not_claim_approval PASSED [  4%]
+tests/test_session_review_packet.py::test_result_only_child_cannot_mutate_application PASSED [  6%]
+tests/test_session_review_packet.py::test_event_comment_cannot_be_spoofed PASSED [  8%]
+tests/test_session_review_packet.py::test_file_inventory_rejects_path_traversal_and_oversize PASSED [  9%]
+tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[develop] PASSED [ 11%]
+tests/test_session_review_packet.py::test_neutral_packet_rederives_issue_and_checks_identity[main] PASSED [ 13%]
+tests/test_session_review_packet.py::test_issue_reference_accepts_canonical_pr_760_prose PASSED [ 14%]
+tests/test_session_review_packet.py::test_handoff_rejects_base_ref_that_differs_from_authenticated_pr PASSED [ 16%]
+tests/test_session_review_packet.py::test_critical_certificate_rejects_aliases_and_fake_versionless_json PASSED [ 18%]
+tests/test_session_review_packet.py::test_critical_certificate_rejects_cross_target_and_uncovered_requirements PASSED [ 19%]
+tests/test_session_review_packet.py::test_gzip_inflation_is_bounded_and_invalid_data_rejected PASSED [ 21%]
+tests/test_session_review_packet.py::test_critical_inventory_accepts_seven_real_stage_a_artifacts_and_known_extensions PASSED [ 22%]
+tests/test_session_review_trusted_producers.py::test_provenance_positive_and_exact_identity PASSED [ 24%]
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[failure] PASSED [ 26%]
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[cancelled] PASSED [ 27%]
+tests/test_session_review_trusted_producers.py::test_newer_failed_or_pending_producer_revokes_old_green[pending] PASSED [ 29%]
+tests/test_session_review_trusted_producers.py::test_modified_candidate_producer_fails_before_green_status PASSED [ 31%]
+tests/test_session_review_trusted_producers.py::test_forged_artifact_digest_and_foreign_zip_path_rejected PASSED [ 32%]
+tests/test_session_review_trusted_producers.py::test_evidence_latest_failed_or_running_never_reuses_older_green PASSED [ 34%]
+tests/test_session_review_trusted_producers.py::test_trusted_producer_runs_official_validator_or_fails_closed PASSED [ 36%]
+tests/test_session_review_trusted_producers.py::test_junit_aggregates_cannot_hide_invalid_failures_or_test_counts PASSED [ 37%]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[failure] PASSED [ 39%]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[error] PASSED [ 40%]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[skipped] PASSED [ 42%]
+tests/test_session_review_trusted_producers.py::test_namespaced_junit_fails_closed_in_parser_producer_and_consumer[wrapper] PASSED [ 44%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuites><testcase classname="suite" name="case"/></testsuites>] PASSED [ 45%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests="1"><properties><testcase classname="suite" name="case"/></properties></testsuite>] PASSED [ 47%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests="1"><testcase classname="suite" name="case"><properties><failure/></properties></testcase></testsuite>] PASSED [ 49%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests="1"><testcase classname="suite" name="case"><system-out><error/></system-out></testcase></testsuite>] PASSED [ 50%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests="1"><testcase classname="suite" name="case"><properties><property name="x"><skipped/></property></properties></testcase></testsuite>] PASSED [ 52%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_fails_closed_in_parser_producer_and_zip_consumer[<testsuite tests="1"><testcase classname="suite" name="case"><untrusted/></testcase></testsuite>] PASSED [ 54%]
+tests/test_session_review_trusted_producers.py::test_junit_hierarchy_allows_metadata_and_nested_suites PASSED [ 55%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-disabled="1"] PASSED [ 57%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="1"] PASSED [ 59%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-disabled="2"] PASSED [ 60%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-disabled="1"] PASSED [ 62%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuites-status="failed"] PASSED [ 63%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testsuite-status="skipped"] PASSED [ 65%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="failed"] PASSED [ 67%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="skipped"] PASSED [ 68%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="error"] PASSED [ 70%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="notrun"] PASSED [ 72%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="ignored"] PASSED [ 73%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="unknown"] PASSED [ 75%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status=""] PASSED [ 77%]
+tests/test_session_review_trusted_producers.py::test_junit_disabled_or_status_fails_closed_in_all_paths[testcase-status="PASSED"] PASSED [ 78%]
+tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[None] PASSED [ 80%]
+tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[passed] PASSED [ 81%]
+tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[success] PASSED [ 83%]
+tests/test_session_review_trusted_producers.py::test_junit_successful_statuses_and_zero_disabled_remain_valid[run] PASSED [ 85%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected "forged-success">]>-utf-8] PASSED [ 86%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ENTITY injected "forged-success">]>-utf-16] PASSED [ 88%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM "https://untrusted.invalid/dtd">-utf-8] PASSED [ 90%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites SYSTEM "https://untrusted.invalid/dtd">-utf-16] PASSED [ 91%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-8] PASSED [ 93%]
+tests/test_session_review_trusted_producers.py::test_junit_dtd_rejected_in_parser_producer_and_zip_consumer[<!DOCTYPE testsuites [<!ELEMENT testsuites ANY>]>-utf-16] PASSED [ 95%]
+tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-8] PASSED [ 96%]
+tests/test_session_review_trusted_producers.py::test_junit_valid_predefined_entities_remain_accepted[utf-16] PASSED [ 98%]
+tests/test_session_review_trusted_producers.py::test_trusted_github_api_allows_exact_sha_compare_but_never_traversal PASSED [100%]
+
+============================== 61 passed in 0.21s ==============================
+
+RUNNER OUTPUT (23 unittest cases):
+COMMAND: python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -q
+EXIT_CODE: 0
+----------------------------------------------------------------------
+Ran 23 tests in 0.067s
+
+OK
+
+Repository CI #42627744684 completed/success for HEAD 68f9c697d409cc11b326bf06fba19da8fa109379
+Delivery audit workspace #42627744660 completed/success for HEAD 68f9c697d409cc11b326bf06fba19da8fa109379
+CODE-GROWTH-001 READY, compileall PASS, git diff --check PASS

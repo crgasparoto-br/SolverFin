@@ -1,0 +1,14 @@
+Canonical target identity remediation — exact material head
+subject_sha=bfdc368a8c485e764a7367b8cb24bd0654f2794b
+route=/relatorios?view=installments
+control=CANONICAL-TARGET-IDENTITY-001
+
+Procedure:
+1. Use two card records with identical visible labels and deliberately distinct cardId values, and two category records with identical labels and distinct categoryId values.
+2. Traverse the presentation mapping/view-model boundary and verify aggregates retain canonical IDs rather than grouping only by label.
+3. Render canonical same-route drilldown anchors and verify exact target ID plus compatible month/status/profile/sibling filters.
+4. Follow card-b through the report renderer/API boundary and observe cardId=card-b, never the homonymous card-a.
+5. Include a row without canonical ID and prove no navigation is fabricated.
+
+Observed: reports-drilldown-issue-611.test.ts covers homonymous IDs, exact target selection, preserved filters and synthetic-row non-navigation. CI run 33786783206 passed the repository test gate on this exact SHA.
+Sibling cases: card-homonym, category-homonym, missing-identity row.

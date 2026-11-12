@@ -1,0 +1,12 @@
+[compound-assignment-detector-disabled] exit=1
+flow-regression self-test did not reject compound assignment
+flow-regression self-test did not reject compound assignment through property
+[renderer-alias-propagation-disabled] exit=1
+flow-regression self-test did not reject renderer alias
+flow-regression self-test did not reject renderer alias chain
+[assignment-destructuring-disabled] exit=1
+flow-regression self-test did not reject object destructuring assignment
+flow-regression self-test did not reject array destructuring assignment
+[baseline]
+exit=0
+SolverFin HTML-flow regression self-tests OK.

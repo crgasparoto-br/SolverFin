@@ -1,0 +1,6 @@
+Issue 685 targeted handoff remediation.
+Material head: 4f3728428ebab03ac91e857764b10b3586573065
+Base: e00014d4a9bad379023ae541785a714b46478a28
+The inherited root handoff blob from main belonged to issue 680 and is not reused as current-target evidence.
+A fresh issue-685 package is built for the stable material head.
+Exact-head CI: Delivery V2 CI run 36717173922 success; Statement visual validation run 36717173938 success.

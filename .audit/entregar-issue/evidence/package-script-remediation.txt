@@ -1,0 +1,6 @@
+Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
+Audited finding: A-002 capability-operation-drift
+Corrected package.json command: db:repair:default-categories:user = npm run build:packages && node scripts/prepare-local-env.mjs && node scripts/seed-default-categories-for-user.mjs
+The remediation restores the local environment bootstrap that existed before the unrelated issue #659 visual-gate edit.
+Corrective commit cc1d2b9ba804adbfd34aa7f52577391f6dc987e2 changes exactly one package.json line relative to the stale handoff parent and does not alter the accounts/cards runtime, tests, or UI documentation.
+Exact-head CI run 34616164006, API integration job 103318512642, and Chrome visual run 34616164055 all completed successfully after the correction.

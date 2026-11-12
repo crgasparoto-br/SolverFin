@@ -1,0 +1,17 @@
+HEAD: 2274927adaf4ee7679a4b3e322d727a3145f03c7
+RUN: GitHub Actions Repository CI 40696535294 / CRITICAL validation 122845120994
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/entry-fill-rules.test.ts
+REACHED: apps/web/src/dev-server/transaction-group-member-form-guard.test.ts
+REACHED: packages/domain/src/free-to-spend.test.ts
+RESULT: passed exact-head, log contains matching [test] markers.
+
+HEAD: 2274927adaf4ee7679a4b3e322d727a3145f03c7
+RUN: GitHub Actions Repository CI 40696535294 / CRITICAL validation 122845120994
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/cash-flow-projection.integration.test.ts
+REACHED: apps/api/src/manual-entry-fill-rules.integration.test.ts
+REACHED: apps/api/src/transaction-creation-idempotency.integration.test.ts
+RESULT: passed exact-head, log contains matching [test] markers.

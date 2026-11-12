@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "source_artifact": "statement-visual-evidence-533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
+  "source_artifact_id": 13780613744,
+  "source_artifact_digest": "sha256:1a62afbf8fbe240b437bc3ab2f3b1a20588ef6575a1cd3344e0ca71a2c91c659",
+  "source_file": "issue-530-bulk-selection.json",
+  "workflow_run_id": 42851755919,
+  "material_head_sha": "533349c368ab9eacc39f53b8fbbebf0fb5c1596f",
+  "source_evidence_sha256": "a68c7bb02297760a5b33eaaa28ef71374f9763bb09859a71a0ce1153adbb9580",
+  "transfers": {
+    "selection": {
+      "visible": true,
+      "count": "2",
+      "reconcileDisabled": false,
+      "unreconcileDisabled": true,
+      "groupDisabled": true,
+      "groupTooltip": "Unificar lançamentos: Transferências não podem ser unificadas.",
+      "help": "Unificar lançamentos indisponível: transferências não podem ser agrupadas. Desmarcar conciliado indisponível: nenhum lançamento selecionado está conciliado."
+    },
+    "mobile": {
+      "barHeight": 202,
+      "barWidth": 358,
+      "barTop": 626,
+      "barBottom": 828,
+      "barScrollWidth": 356,
+      "barClientWidth": 356,
+      "parentHeight": 13048,
+      "parentWidth": 351,
+      "computedDisplay": "grid",
+      "computedPosition": "fixed",
+      "computedBottom": "16px",
+      "computedHeight": "202.188px",
+      "computedWidth": "358px",
+      "computedGridTemplateColumns": "328px",
+      "visibleInViewport": true,
+      "bodyOverflow": false
+    },
+    "afterReconcile": [
+      "reconciled",
+      "reconciled"
+    ],
+    "destinationSelection": {
+      "count": "2",
+      "unreconcileDisabled": false
+    },
+    "afterUnreconcile": [
+      "posted",
+      "posted"
+    ]
+  }
+}

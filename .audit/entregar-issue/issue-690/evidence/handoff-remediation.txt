@@ -1,0 +1,11 @@
+independent-audit remediation
+source_rejection=audit-rejection:9b05e91d-1ef1-4f19-a7ea-41c7f19f3eab
+source_finding=A-003
+material_head=95214c354cb34fb7fa7aced3cdf3c3e2b4478850
+recovery_scope=post-write-refreeze
+product_code_changed=false
+documentation_changed=true
+Delivery V2 CI 37025425244=completed/success
+CRITICAL validation 110899058474=completed/success
+Statement visual 37025425871=completed/success
+DOC-SEMANTIC-DRIFT-001=passed; two canonical documentation surfaces reconciled; six canonical sources scanned; unresolved_contradictions=[]

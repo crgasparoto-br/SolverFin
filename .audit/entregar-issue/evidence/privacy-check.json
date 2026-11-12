@@ -1,0 +1,9 @@
+{
+  "subject_sha": "c696281f6dcbc802098d05786266c26ace9e7765",
+  "scope": "all 8 material changed files; original-operation-ID leakage scan",
+  "real_operation_ids_checked": 38,
+  "real_operation_id_matches": 0,
+  "negative_in_memory_leakage_probe_detected": true,
+  "raw_pdf_in_changed_paths": false,
+  "published_evidence_policy": "counts, booleans, hashes and synthetic fixtures only; final result-only package scanned separately before publication"
+}

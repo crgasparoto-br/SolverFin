@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+  "source_audits": [],
+  "controls": [
+    {
+      "id": "INH-789-662-ARIA-POSITION",
+      "status": "passed",
+      "head_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+      "subject_sha": "906178554d2cb8ee7d9e88c7eb014356add21950",
+      "evidence": ".audit/entregar-issue/issue-789/evidence/chrome-summary-789.json",
+      "evidence_sha256": "25ffa08b97cdf5fbf3c96f5a9209b80f52025ea18a72c544d68fc9e55625e467",
+      "control_type": "test",
+      "procedure": "Retain Chrome ARIA negative positioning and restoration assertions from existing issue-662 full browser run.",
+      "expected": "The mutation that reveals assistive text must overflow and the finally block must restore the hidden style and original text.",
+      "observed": "Artifact 13807825750 on SHA 906178554... reports rejected=true and restored=true, failures empty.",
+      "attack_control_id": "NC-789-003"
+    }
+  ],
+  "unresolved_controls": [],
+  "retired_controls": []
+}

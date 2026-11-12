@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "escapes": [
+    {
+      "escape_id": "A-001-SECONDARY-PATCH-TEMPORAL-PAYLOAD",
+      "escape_class": "secondary-handler-null-vs-omission-drift",
+      "status": "passed",
+      "revalidated_head_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+      "source_audit": {
+        "kind": "independent-rejection",
+        "rejection_id": "audit-rejection:pr656-2757bd7-a001",
+        "finding_id": "A-001",
+        "finding_ids": [
+          "A-001"
+        ],
+        "head_sha": "2757bd7d0a33ba6abec601126a5723fa9509dee2",
+        "audit_report_sha256": "72221fc4f0e477c9b839067b7c0d9497b1fda61e6095e23023a82ede30afd648"
+      },
+      "plausible_wrong_implementation": "A capture-phase secondary PATCH handler can stop the primary submit path and serialize a blank optional effective date as explicit null, bypassing canonical omission semantics for later status transitions.",
+      "literal_case": {
+        "procedure": "Submit an edit from planned to posted with an old occurredOn and blank effectiveOn through the captured secondary PATCH handler and inspect the request body.",
+        "expected": "The PATCH omits effectiveOn so the domain assigns the transition UTC civil date instead of reusing occurredOn or rejecting explicit null.",
+        "observed": "At material head 9d909e26c3d21b768d4f71337e94eddac8b9087e, the behavior regression confirms that the planned-to-posted PATCH omits effectiveOn and preserves canonical transition semantics.",
+        "status": "passed",
+        "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+      },
+      "sibling_cases": [
+        {
+          "id": "A001-S1",
+          "surface": "secondary-patch-handler",
+          "dimension": "planned-to-reconciled-blank-effective",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+        },
+        {
+          "id": "A001-S2",
+          "surface": "secondary-patch-handler",
+          "dimension": "explicit-effective-date-preserved",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+        },
+        {
+          "id": "A001-S3",
+          "surface": "ui-error-boundary",
+          "dimension": "raw-technical-error-not-leaked",
+          "status": "passed",
+          "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "statement-presentation buildPayload omits blank effectiveOn instead of serializing null",
+        "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+      },
+      "detection_change": {
+        "skill_or_gate": "behavior regression for competing captured PATCH handler",
+        "control_id": "NEG-REQ-031-01",
+        "evidence": ".audit/entregar-issue/issue-653/evidence/a001-regression.txt"
+      },
+      "trigger_terms": [
+        "multiple submit handlers",
+        "capture listener",
+        "stopImmediatePropagation",
+        "PATCH",
+        "optional date",
+        "null vs omitted",
+        "status transition"
+      ],
+      "required_risk_families": [
+        "temporal-consistency",
+        "structural-contract"
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "secondary-patch-handler",
+          "dimension": "null-vs-omission"
+        },
+        {
+          "risk_family": "structural-contract",
+          "surface": "secondary-handler-parity",
+          "dimension": "competing-submit-handler"
+        }
+      ]
+    }
+  ]
+}

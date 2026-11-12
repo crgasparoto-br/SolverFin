@@ -1,0 +1,216 @@
+Specification version: 3
+
+## Objetivo
+
+Na tela de **novo lançamento da conta**, quando o tipo selecionado for **Transferência**, exibir de forma explícita e separada a **Conta origem** e a **Conta destino**, eliminando a dependência do título/contexto do Extrato para identificar qual conta será debitada.
+
+## Contexto e fontes canônicas
+
+Hoje o modal de lançamento aberto a partir do Extrato identifica a conta atual no título/contexto, mas no formulário de transferência exibe apenas o campo **Conta destino**. Isso torna a origem implícita.
+
+O contrato financeiro da transferência já existe e não deve ser redefinido nesta issue:
+
+- `docs/API_TRANSACTIONS.md` é a fonte canônica do contrato de API, incluindo `accountId`, `destinationAccountId`, validação de origem != destino e semântica monetária;
+- `docs/TRANSACTIONS.md` é a fonte canônica do comportamento operacional do Extrato;
+- #668 define e já implementou o contrato de transferências entre moedas diferentes;
+- #473 definiu que, **na criação**, a conta vem do contexto/filtro atual do Extrato e que troca de conta de origem é comportamento de **edição**, não de criação.
+
+Esta issue amplia o fluxo de transferência em três frentes coordenadas: tornar visíveis as duas pontas da operação, melhorar a composição visual do modal e permitir **Repetição = Fixo** para transferências **na mesma moeda**, reutilizando o contrato canônico de recorrências. Transferências cross-currency continuam com ocorrência única nesta entrega, preservando #668.
+
+## Escopo
+
+- Exibir **Conta origem** e **Conta destino** simultaneamente quando `Tipo = Transferência`.
+- Tornar a conta origem explicitamente visível no modo de criação.
+- Preservar o fluxo atual de seleção da conta origem pelo contexto do Extrato.
+- Preservar criação/edição de transferências same-currency e cross-currency já suportadas.
+- Cobrir regressão visual e funcional do modal.
+- Revisar quebras de texto, alinhamento e proporção dos campos do pop-up.
+- Permitir **Repetição = Fixo** em transferências same-currency.
+- Preservar o bloqueio de repetição fixa/parcelada em transferências cross-currency conforme #668.
+
+## Requisitos funcionais
+
+### 1. Conta origem no modo de criação
+
+- Ao abrir **Novo lançamento** a partir do Extrato, a **Conta origem** deve ser preenchida com a conta atualmente selecionada no contexto principal da tela.
+- No modo de criação, **Conta origem é informativa/read-only**: esta issue não cria um segundo seletor capaz de trocar a origem.
+- O usuário deve enxergar no próprio formulário qual conta será debitada, sem depender apenas do título `Novo lançamento em ...`.
+- O campo deve apresentar pelo menos **nome da conta e moeda**.
+
+### 2. Conta destino
+
+- Quando `Tipo = Transferência`, exibir **Conta destino** separadamente da origem.
+- A conta destino deve continuar sendo selecionável entre contas elegíveis do mesmo tenant/perfil, conforme o contrato existente.
+- A opção correspondente à própria conta origem não deve produzir uma transferência válida.
+- Se a UI mantiver a origem disponível na lista por limitação do componente, selecionar origem = destino deve gerar validação clara antes do salvamento; preferencialmente a opção deve ficar indisponível quando o padrão existente permitir isso.
+- O campo deve apresentar pelo menos **nome da conta e moeda**.
+
+### 3. Edição
+
+- No modo de edição, carregar a **conta de origem real vinculada ao lançamento** e a conta destino persistida, sem herdar incorretamente a conta selecionada no filtro do Extrato.
+- A possibilidade de trocar a conta de origem na edição continua obedecendo ao contrato já entregue em #473; esta issue não redefine suas regras de recorrência, propagação ou escopo.
+- Para uma transferência existente, origem e destino devem permanecer distinguíveis antes do salvamento.
+
+### 4. Troca de tipo
+
+- Ao trocar de **Transferência** para um tipo que não possua destino, ocultar os campos específicos de destino e não enviar estado residual incompatível.
+- Ao voltar para **Transferência**, reconstruir o estado a partir das regras atuais do formulário sem transformar silenciosamente a origem em destino ou vice-versa.
+
+### 5. Transferência com repetição fixa
+
+- Quando `Tipo = Transferência` e as contas origem/destino possuírem a **mesma moeda**, a opção `Repetição = Fixo` deve ser permitida.
+- A recorrência deve preservar, em cada ocorrência materializada, a mesma conta origem, conta destino, valor e moeda da transferência configurada, salvo edição posterior permitida pelos fluxos existentes.
+- O primeiro vencimento e as ocorrências futuras devem aparecer no Extrato como transferências reais, mantendo uma única identidade lógica por ocorrência e sem serem reinterpretadas como receita/despesa.
+- A geração deve reutilizar o mecanismo canônico de recorrências e sua proteção contra duplicidade; não criar um segundo agendador específico para transferências.
+- Pausar, retomar, cancelar e editar a recorrência devem seguir os fluxos canônicos já descritos em `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`.
+- A recorrência de transferência precisa preservar **origem e destino**; o contrato atual de recorrência, hoje centrado em `kind=income|expense` e um único `accountId`, deverá ser estendido de forma coerente para representar transferências, incluindo `destinationAccountId`.
+- Em transferência recorrente, origem e destino continuam não podendo ser iguais.
+- Transferências cross-currency continuam aceitando somente ocorrência única nesta entrega, conforme #668; não inventar valor/taxa futura.
+
+### 6. Transferências entre moedas diferentes
+
+- Preservar integralmente #668 e `docs/API_TRANSACTIONS.md`.
+- `accountId` permanece a conta/moeda de origem.
+- `destinationAccountId` permanece a conta/moeda de destino.
+- Quando as moedas diferirem, continuar exibindo **Valor origem**, **Valor destino** e **Taxa efetiva** derivada/read-only conforme o contrato atual.
+- Alterar destino/moeda deve continuar invalidando somente o estado cambial incompatível; esta issue não pode introduzir reaproveitamento silencioso de valor destino de outra moeda.
+
+## Requisitos de layout e usabilidade
+
+- Revisar labels e textos auxiliares para evitar quebras anti-naturais, como moeda ou parênteses isolados em linha própria.
+- Sempre que houver espaço suficiente, manter rótulos curtos como **Valor origem (BRL)** e **Valor destino (USD)** em composição legível.
+- Campos de mesma hierarquia devem ter alturas e proporções coerentes no grid.
+- Campos com conteúdo curto podem ser menores, mas sem criar retângulos visualmente desproporcionais em relação aos campos vizinhos.
+- **Descrição** e **Observação** devem ocupar largura compatível com conteúdo textual.
+- Labels, inputs, mensagens e ações devem manter alinhamento e espaçamento consistentes.
+- Em viewport menor, o formulário deve reorganizar/empilhar campos em vez de comprimi-los a ponto de provocar quebras artificiais.
+- A revisão visual deve preservar foco, navegação por teclado e labels acessíveis.
+
+## Comportamento esperado
+
+Exemplo ao abrir o modal no Extrato da conta C6:
+
+```text
+Tipo
+Transferência
+
+Conta origem
+C6 · BRL            [somente leitura na criação]
+
+Conta destino
+Nubank · BRL        [selecionável]
+```
+
+O fato de a origem já estar determinada pelo Extrato não elimina sua apresentação explícita dentro do formulário.
+
+## Invariantes estruturais
+
+### `must_behave`
+
+- O usuário consegue identificar, antes de salvar, qual conta será debitada e qual será creditada.
+- Na criação, a origem exibida corresponde à conta do contexto atual do Extrato.
+- Na edição, a origem exibida corresponde à conta realmente persistida no lançamento.
+
+### `must_reuse`
+
+- Reutilizar o contrato de contas/tenant já existente em `docs/API_TRANSACTIONS.md`.
+- Reutilizar o comportamento de edição de conta definido em #473.
+- Reutilizar o contrato cross-currency definido em #668.
+
+### `must_not_behave`
+
+- Não usar apenas o título do modal como representação da origem.
+- Não permitir que uma transferência válida tenha origem e destino iguais.
+- Não trocar silenciosamente a origem quando o usuário escolhe o destino.
+- Não reaproveitar valor destino incompatível ao trocar para uma conta de outra moeda.
+
+### `must_be_single_source`
+
+- `accountId` continua sendo a fonte da conta de origem.
+- `destinationAccountId` continua sendo a fonte da conta destino.
+- A issue não cria outro estado financeiro concorrente apenas para apresentação.
+
+### `forbidden_implementation`
+
+- Adicionar um novo seletor editável de **Conta origem** na criação e alterar o contexto financeiro do lançamento por esse seletor.
+- Resolver a solicitação apenas renomeando **Conta destino** ou repetindo o nome da conta no título.
+- Criar duas transações independentes para representar origem e destino.
+
+**Controle discriminante:** um teste do modal deve abrir `/lancamentos` com a conta A selecionada, iniciar uma transferência, provar que **Conta origem = A** está visível e read-only, escolher conta B como destino e verificar que o payload mantém `accountId=A` e envia `destinationAccountId=B`. Uma implementação com dois seletores independentes na criação ou com origem apenas no título falha nesse controle.
+
+## Cenários e casos extremos
+
+- criação de transferência A -> B na mesma moeda;
+- criação de transferência A -> B entre moedas diferentes;
+- tentativa A -> A;
+- edição de transferência enquanto o filtro principal aponta para uma conta diferente da origem persistida;
+- troca de destino same-currency -> cross-currency e vice-versa;
+- troca do tipo `transfer` para `income`/`expense` e retorno para `transfer`;
+- conta destino inativa, inválida ou fora do tenant/perfil continua seguindo as validações existentes.
+
+## Tratamento de erros
+
+- Erro de origem = destino deve impedir o salvamento e indicar claramente que é necessário escolher outra conta destino.
+- Falhas de validação da conta destino devem seguir o padrão atual do modal/API e preservar os dados preenchidos quando o fluxo existente já faz isso.
+- Nenhum erro deve expor existência ou dados de conta fora do tenant/perfil ativo.
+
+## Critérios de aceite
+
+- [ ] Ao selecionar **Transferência**, **Conta origem** e **Conta destino** ficam visíveis simultaneamente.
+- [ ] Na criação, **Conta origem** mostra a conta atual do Extrato e é somente leitura.
+- [ ] A origem é identificável no corpo do formulário sem depender do título do modal.
+- [ ] **Conta destino** permanece selecionável e apresenta nome e moeda.
+- [ ] Origem e destino iguais não podem ser salvos.
+- [ ] Na edição, a origem exibida vem do lançamento persistido, mesmo que o filtro atual do Extrato aponte para outra conta.
+- [ ] A edição continua respeitando as regras já definidas em #473.
+- [ ] Transferências same-currency continuam funcionando sem regressão.
+- [ ] Transferências cross-currency continuam obedecendo #668 e exibindo corretamente os campos financeiros existentes.
+- [ ] Trocar o tipo remove estado de destino incompatível do payload.
+- [ ] O payload de criação mantém a conta atual em `accountId` e a escolha do usuário em `destinationAccountId`.
+- [ ] O modal mantém labels e navegação por teclado compatíveis com o padrão atual.
+- [ ] O gate visual cobre o modal alterado em desktop e mobile conforme o contrato do Extrato.
+
+## Considerações de testes
+
+Cobrir no mínimo:
+
+- renderização condicional de **Conta origem** e **Conta destino**;
+- origem inicial derivada do contexto do Extrato;
+- origem read-only na criação;
+- hidratação da origem real na edição;
+- seleção de destino e payload `accountId`/`destinationAccountId`;
+- origem = destino;
+- troca de tipo sem estado residual;
+- same-currency;
+- cross-currency e troca de moeda do destino;
+- repetição fixa de transferência same-currency;
+- materialização inicial e futura sem duplicidade;
+- preservação de origem/destino nas ocorrências recorrentes;
+- pausa, retomada, cancelamento e edição de recorrência de transferência;
+- rejeição de origem = destino também no fluxo recorrente;
+- bloqueio explícito de repetição em transferência cross-currency;
+- regressão visual do modal em desktop e mobile, incluindo labels, alinhamento e proporção dos campos.
+
+## Impacto na documentação
+
+A implementação deve atualizar `docs/TRANSACTIONS.md` para registrar, no contrato operacional do Extrato, que transferências exibem explicitamente origem e destino no formulário e que a origem permanece contextual/read-only na criação.
+
+A implementação também deve atualizar `docs/RECURRENCES_INSTALLMENTS_WEB.md` e `docs/API_RECURRENCES_INSTALLMENTS.md`, pois permitir repetição fixa para transferência altera de forma durável o contrato de recorrências e exige representar origem/destino.
+
+`docs/API_TRANSACTIONS.md` deve ser atualizado somente se a integração da recorrência exigir mudança observável no contrato de criação/leitura de transferências.
+
+Não atualizar a documentação agora apenas para declarar como vigente um comportamento que ainda não foi implementado.
+
+## Fora de escopo
+
+- Permitir trocar a conta origem durante a criação.
+- Alterar regras de conversão cambial.
+- Permitir recorrência cross-currency ou parcelamento de transferência nesta entrega.
+- Redefinir as regras de troca de conta na edição já cobertas por #473.
+- Criar uma segunda transação independente para representar a transferência.
+- Mudar regras de saldo, conciliação ou lifecycle.
+
+## Readiness
+
+**Pronta.** A origem permanece contextual/read-only na criação conforme #473. A nova capacidade de repetição fixa fica delimitada a transferências same-currency; cross-currency permanece ocorrência única conforme #668. A implementação deve estender o contrato canônico de recorrência para transportar também a conta destino, sem criar um mecanismo paralelo.
+

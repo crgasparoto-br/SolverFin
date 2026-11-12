@@ -1,0 +1,47 @@
+# GitHub Issue 714: [Golden Screen][Extrato] Consolidar referência aprovada e encerramento técnico
+
+**Parent epic:** #702
+**Fase:** 0 — marco de referência anterior à propagação.
+**PR em andamento:** #713 (base `develop`); #703 foi incorporada à `develop`.
+
+## Contexto
+O usuário aprovou a Golden Screen do Extrato em 14/10/2026; o aceite **visual/de produto não deve ser reaberto automaticamente** por critérios da propagação. Restam verificações técnicas/documentais específicas do Extrato, que não incluem redesenhar outras telas. Manter rastreabilidade do material exato aprovado na #702.
+
+## Escopo
+- Consolidar na #702 o registro do aceite visual, SHA de referência, evidências Chrome e decisão de modais de novo/editar/clonar **centralizados**.
+- Conferir documentação canônica do Extrato e reconciliar descrições antigas dos cards com a regra vigente de transferências.
+- Concluir auditoria técnica independente da PR #713 no HEAD real, com CI e validação visual terminal.
+- Produzir/validar o handoff certificado correto para #702/#713 se exigido pelo fluxo `crgasparoto-br/skill`; não reutilizar certificado herdado de #706/#707.
+- Após integração regular na `develop`, registrar o commit exato e a versão da referência para as demais subissues.
+
+<!-- review-702-2026-10-15 -->
+## Especificação de fechamento técnico — revisão de 15/10/2026
+
+- **Identidade da referência aprovada:** PR #713, material SHA `366e02072ee39116cfc50a7bc602273902e516fc` (snapshot de produto aceito em 14/10/2026). A `develop` ainda pode estar em SHA diferente até integração regular; **não afirmar que esse SHA já está na base**.
+- **Duas aprovações distintas:** aceite visual do produto já registrado na #702; validação técnica/handoff independente ainda deve ser comprovada. Não reabrir o aceite visual por tarefas de propagação, mas verificar regressões no SHA final.
+- **Fonte documental com drift identificado:** `docs/GOLDEN_STATEMENT.md` ainda inicia como `candidato` e diz que transferências não integram os cards de entradas/saídas, em contradição com a regra por modo aprovada. Reconciliar esse trecho e a referência à PR #703 na mesma entrega técnica, **sem alterar regra de negócio para acompanhar a documentação antiga**.
+- **Validação exact-SHA:** o material atual tem dois workflows verdes, mas `.audit/entregar-issue/handoff-ready.json` segue idêntico à base e pertence a #706/#707; gerar certificado próprio segundo `crgasparoto-br/skill` e revalidar a identidade atual depois. Se o material SHA mudar, repetir os gates aplicáveis.
+- **Saída observável:** comentário de fechamento com referência ao SHA material, SHA publicado, evidências, parecer técnico independente, link da integração regular e decisão explícita sobre readiness da #715–#719.
+
+## Controles de aceite discriminantes
+
+- [ ] O documento canônico não afirma que transferências são excluídas dos cards individuais; um leitor consegue distinguir individual, `Todas` e câmbio apenas com a documentação versionada.
+- [ ] O relatório de fechamento distingue aprovação visual do produto, CI automático, auditoria independente e certificado de entrega sem equivalências indevidas.
+- [ ] O documento de referência mostra a Golden Screen aprovada, não um candidato antigo como estado vigente.
+- [ ] Nenhum documento ou PR declara que a propagação foi implementada por concluir a #714.
+
+## Critérios de aceite
+- [ ] Aceite visual do usuário e sua evidência estão registrados, sem confundi-los com auditoria técnica.
+- [ ] Regra documentada: nas contas individuais, transferências entram nos cards de entradas/saídas; na visão `Todas`, transferências internas na mesma moeda não inflam totais, mas transferências cambiais permanecem conforme moeda selecionada.
+- [ ] Formulários do Extrato (novo, editar e clonar) seguem centralizados conforme decisão posterior ao mockup.
+- [ ] Documentação canônica consistente com comportamento testado, sem descrições contraditórias.
+- [ ] PR #713 auditada no material atual, CI/evidência no mesmo SHA e handoff correto quando aplicável.
+- [ ] Marco de referência para propagação publicado na épica.
+
+## Fora de escopo
+- Redesenhar Cartões, Contas e Cartões, Categorias ou Relatórios.
+- Encerrar a épica #702 enquanto houver subissues de propagação pendentes.
+
+Referências obrigatórias: épica [#702](https://github.com/crgasparoto-br/SolverFin/issues/702), Golden Screen aprovada pelo usuário em 14/10/2026, `docs/DESIGN_SYSTEM.md`, `docs/SCREEN_ARCHETYPES.md`, `docs/VISUAL_VALIDATION.md`, `docs/GOLDEN_STATEMENT.md`, `AGENTS.md` e mockup `SolverFin Bank Statement UI Mockup.png`.
+
+**Base de todas as PRs:** `develop`. Preservar arquitetura SSR, primitivas e contratos financeiros, acessibilidade, LGPD e responsividade. A referência é o **nível de acabamento** da Golden Screen, não uma cópia de seus componentes ou disposição. Exigir evidência Chrome/SSR desktop/mobile do **SHA material da entrega**, testes e checks relevantes verdes e auditoria independente por subissue. Não fazer merge automático.

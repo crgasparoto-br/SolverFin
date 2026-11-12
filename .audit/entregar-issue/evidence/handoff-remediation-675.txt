@@ -1,0 +1,7 @@
+PR 675 material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c is green.
+Finding A-002 is closed for both the filtered missing-currency path and the unfiltered commitment-only currency path.
+Known zero remains available: JPY has an active account with openingBalanceMinor=0.
+Missing source remains unavailable: EUR has a future invoice commitment but no active EUR account/opening-balance source, and freeToSpend omits numeric fields.
+Delivery V2 CI run 36035406314 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.
+Statement visual validation run 36035406276 completed success on exact material head bd9cc22a87b218de0e02ad9c54fad7df31c9c04c.
+The Delivery V2 classifier selected riskProfile=critical for this PR.

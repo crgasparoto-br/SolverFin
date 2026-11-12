@@ -1,0 +1,28 @@
+GitHub Actions Repository CI exact-material-head evidence
+repository: crgasparoto-br/SolverFin
+material_head_sha: 2274927adaf4ee7679a4b3e322d727a3145f03c7
+run_id: 40696535294
+job_id: 122845120994
+job: CRITICAL validation
+status: completed
+conclusion: success
+steps observed (GitHub Actions authentication via connected GitHub):
+- Verify exact head: success
+- Enforce complete repository formatting: success
+- Run npm run lint: success
+- Run npm run typecheck: success
+- Run npm run test: success
+- Run npm run test:integration --workspace @solverfin/api: success
+- Run npm run build: success
+- Delivery V2 gate: success
+- Repository CI gate: success
+Individual test reach confirmed from exact job log 122845120994:
+- [test] dev-server/entry-fill-rules.test.js
+- [test] dev-server/transaction-group-member-form-guard.test.js
+- [test] free-to-spend.test.js
+- [test] cash-flow-projection.integration.test.js
+- [test] manual-entry-fill-rules.integration.test.js
+- [test] transaction-creation-idempotency.integration.test.js
+Source: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696535294
+Chrome: https://github.com/crgasparoto-br/SolverFin/actions/runs/40696534811; completed/success exact M
+Chrome artifact: 12820740707; 70 scenarios; 0 failures

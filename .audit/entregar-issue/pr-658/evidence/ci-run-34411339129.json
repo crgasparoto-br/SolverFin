@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "subject_sha": "7080a2c1f38b44cc3a9c58f597fa64ab6f495fbf",
+  "run_id": 34411339129,
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    "Validate monorepo",
+    "Integration API + PostgreSQL"
+  ],
+  "observed_steps": [
+    "Validate Prisma schema",
+    "Check formatting",
+    "Lint",
+    "Typecheck",
+    "Apply migrations",
+    "Test",
+    "Build",
+    "Run API integration tests"
+  ]
+}

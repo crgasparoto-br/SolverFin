@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "bfdc368a8c485e764a7367b8cb24bd0654f2794b",
+  "base_sha": "5cd6e43265828a6712d24996a7a5844381b4ee29",
+  "merge_preview_sha": "79821e63ac2ac104632c14c23434bd171d5d0fd0",
+  "workflows": [
+    {
+      "name": "CI",
+      "run_id": 33786783206,
+      "run_number": 4798,
+      "status": "completed",
+      "conclusion": "success",
+      "validated_steps": [
+        "format",
+        "lint",
+        "typecheck",
+        "test",
+        "build",
+        "api-postgresql-integration"
+      ]
+    },
+    {
+      "name": "Statement visual validation",
+      "run_id": 33786783102,
+      "run_number": 3295,
+      "status": "completed",
+      "conclusion": "success",
+      "validated_steps": [
+        "production-build",
+        "chrome-registered-scenarios",
+        "secret-free-evidence"
+      ]
+    }
+  ]
+}

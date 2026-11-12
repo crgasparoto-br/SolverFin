@@ -1,0 +1,188 @@
+Parent epic: #592
+Depends on: #594, #595, #616, #617
+Specification version: 3
+
+## Objetivo
+
+Calcular o indicador **valor livre para gastar** de forma determinística e explicável, sem confundi-lo com saldo bancário bruto e sem misturar moedas.
+
+## Contrato de produto
+
+Para cada moeda, o indicador responde: **quanto pode sair hoje sem fazer o saldo projetado ficar negativo em nenhum momento dos próximos 30 dias, considerando somente fatos e compromissos determinísticos já conhecidos**.
+
+```text
+minimumProjectedBalance = min(openingBalance, todos os 30 closingBalance da #617)
+freeToSpend = max(0, minimumProjectedBalance)
+projectedDeficit = max(0, -minimumProjectedBalance)
+```
+
+O horizonte canônico é 30 dias corridos e reutiliza exatamente `referenceDate`, `openingBalance` e a série diária de #617.
+
+## Regras funcionais
+
+1. Consumir a projeção canônica de #617 com `horizonDays=30`; não consultar compromissos novamente nem construir agenda paralela.
+2. Avaliar a sequência temporal como:
+
+```text
+posição 0 = openingBalance na referenceDate
+posição 1..30 = closingBalance de cada dia futuro
+```
+
+3. `minimumProjectedBalance` é o menor valor nessa sequência.
+4. `minimumBalanceOn` é a **primeira ocorrência temporal** do mínimo. Portanto, se `openingBalance` empatar com um ou mais dias futuros, `minimumBalanceOn = referenceDate`.
+5. `freeToSpend = max(0, minimumProjectedBalance)`.
+6. `projectedDeficit = max(0, -minimumProjectedBalance)`.
+7. Receitas futuras participam somente quando já pertencem à agenda/projeção determinística de #616/#617. Uma receita posterior não mascara déficit anterior porque o mínimo considera toda a trajetória.
+8. Orçamento ainda não realizado não reserva caixa neste indicador.
+9. Reserva/meta protegida vale zero nesta fase; não inventar dedução sem domínio próprio.
+10. Limite de cartão, cheque especial ou outra forma de crédito não é caixa disponível.
+11. Resultado é sempre por moeda; não há `freeToSpend` consolidado cross-currency sem conversão explícita.
+
+## Disponibilidade do indicador
+
+O contrato público deve distinguir cálculo válido de ausência de base suficiente:
+
+- `available`: a projeção canônica necessária está completa para a moeda/horizonte e os campos numéricos podem ser publicados;
+- `unavailable`: falta dado obrigatório ou a projeção está materialmente incompleta; `freeToSpend`, `minimumProjectedBalance`, `minimumBalanceOn` e `projectedDeficit` não devem ser publicados como números sintéticos.
+
+Limitações meramente informativas podem acompanhar um resultado `available`, mas não devem mudar a fórmula. Não usar `0` para representar indisponibilidade e não criar um terceiro estado `limited` sem contrato próprio.
+
+## Transferência cross-currency
+
+#618 não recalcula transferência nem câmbio. Ela herda os efeitos de #668 através da agenda #616 e da série #617.
+
+Exemplo: se uma transferência futura de 538,32 BRL -> 100,00 USD ocorrer dentro do horizonte:
+
+- a série BRL da #617 já deve conter `-538,32 BRL`;
+- a série USD já deve conter `+100,00 USD`;
+- o `freeToSpend` BRL é derivado somente da trajetória BRL;
+- o `freeToSpend` USD é derivado somente da trajetória USD;
+- #618 não compensa nem converte os dois efeitos.
+
+## Exemplos normativos
+
+### Caixa preservado
+
+```text
+openingBalance = 5000
+menor closingBalance = 1800
+minimumProjectedBalance = 1800
+freeToSpend = 1800
+projectedDeficit = 0
+```
+
+### Déficit projetado
+
+```text
+openingBalance = 5000
+menor closingBalance = -700
+minimumProjectedBalance = -700
+freeToSpend = 0
+projectedDeficit = 700
+```
+
+### Receita posterior não mascara falta anterior
+
+```text
+openingBalance = 1000
+dia 5 = -200
+dia 20 = 3000
+minimumProjectedBalance = -200
+freeToSpend = 0
+projectedDeficit = 200
+```
+
+### Empate com saldo inicial
+
+```text
+referenceDate openingBalance = 1000
+dia 1 = 1000
+dia 2 = 1200
+minimumProjectedBalance = 1000
+minimumBalanceOn = referenceDate
+```
+
+## Invariantes estruturais
+
+### `must_reuse`
+- posição/saldo de #594;
+- contrato multi-moedas de #595;
+- agenda #616;
+- **série diária canônica #617 como única trajetória usada pelo cálculo**.
+
+### `must_be_single_source`
+#617 é a fonte da trajetória futura. #618 deriva o mínimo e os indicadores; não reconsulta `Transaction`, `Invoice`, recorrências ou parcelas para refazer projeção.
+
+### `must_behave`
+- mínimo considera `openingBalance` + todos os 30 fechamentos;
+- primeira ocorrência temporal do mínimo define `minimumBalanceOn`;
+- déficit produz `freeToSpend = 0` e `projectedDeficit > 0`;
+- transferência cross-currency afeta independentemente cada moeda apenas através da série recebida.
+
+### `must_not_behave`
+- não calcular `saldo atual - soma(despesas planejadas)`;
+- não usar somente saldo final do 30º dia;
+- não descontar orçamento como compromisso;
+- não somar crédito ao caixa;
+- não somar/converter moedas;
+- não publicar zero como fallback de dado indisponível.
+
+### `must_not_depend_on`
+- IA/provider;
+- regra financeira no frontend;
+- cotação cambial automática;
+- domínio de reserva/meta inexistente.
+
+### `forbidden_implementation`
+Recalcular compromissos diretamente dentro de #618 ou reconstruir a trajetória a partir de eventos esparsos. Uma implementação assim pode divergir de #617 após cancelamento, materialização ou transferência cross-currency.
+
+**Controle discriminante:** usar série com déficit intermediário seguido de receita, empate do mínimo na `referenceDate`, limite de cartão disponível e transferência BRL -> USD. O resultado deve ser derivável apenas da série fornecida por #617.
+
+## Critérios de aceite
+
+- [ ] Horizonte padrão é 30 dias e reutiliza exatamente `referenceDate`, `openingBalance` e série de #617.
+- [ ] `minimumProjectedBalance` considera a posição inicial e todos os 30 fechamentos.
+- [ ] `minimumBalanceOn` usa a primeira ocorrência temporal, incluindo `referenceDate` em caso de empate.
+- [ ] `freeToSpend` corresponde ao menor colchão financeiro não negativo da trajetória.
+- [ ] Déficit intermediário não é mascarado por receita posterior.
+- [ ] Orçamento sem compromisso materializado não reduz `freeToSpend`.
+- [ ] Limite de cartão/crédito não aumenta `freeToSpend`.
+- [ ] Não existe reserva mínima implícita.
+- [ ] Déficit produz `freeToSpend = 0` e `projectedDeficit > 0`.
+- [ ] BRL e USD permanecem independentes.
+- [ ] Transferência futura BRL -> USD afeta os dois indicadores apenas pelos respectivos pontos das séries de #617, sem compensação/conversão em #618.
+- [ ] Dado obrigatório insuficiente produz `unavailable` e omite campos numéricos sintéticos.
+- [ ] Saldo bruto, livre para gastar e déficit projetado são semanticamente distintos na UI/API.
+- [ ] Drilldown do ponto limitante reutiliza a evidência retornada pela projeção, sem recálculo frontend.
+- [ ] Cálculo não depende de IA.
+
+## Testes
+
+Cobrir os exemplos normativos, múltiplas moedas, fronteiras do horizonte, mínimo na data-base, empate da data-base com dias futuros, mínimo intermediário, receita posterior, orçamento sem compromisso, crédito disponível, dados insuficientes e transferência cross-currency herdada de #617.
+
+## Impacto na documentação
+
+Na implementação, documentar fórmula, estado `available|unavailable` e campos públicos no contrato financeiro/view-model aplicável; atualizar `docs/EVOLUTION_STRATEGY.md`/`docs/STATUS_MATRIX.md` quando a capacidade passar a implementada. A documentação de UI deve distinguir saldo, livre para gastar e déficit.
+
+## Fora de escopo
+
+- recomendação de consumo;
+- horizonte configurável pelo usuário nesta issue;
+- conversão cambial automática;
+- criar metas/reserva de emergência;
+- alterar a semântica de orçamento da #619.
+
+## Readiness
+
+**Pronta após #617.** Fórmula, desempate temporal, disponibilidade e relação com cross-currency estão definidos.
+
+## Referências
+
+- #592
+- #594
+- #595
+- #616
+- #617
+- #668
+- ADR 0013
+- `docs/EVOLUTION_STRATEGY.md`

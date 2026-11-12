@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "head_sha": "9d909e26c3d21b768d4f71337e94eddac8b9087e",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-011-01",
+        "NEG-REQ-019-01",
+        "NEG-REQ-024-01",
+        "NEG-REQ-032-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "hydrated-date-preservation",
+          "reason": "The hydrated-date-preservation boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-011-01",
+            "NEG-REQ-019-01",
+            "NEG-REQ-024-01",
+            "NEG-REQ-032-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-035-04",
+        "NEG-REQ-035-05"
+      ],
+      "dimensions": [
+        {
+          "surface": "creation-transition-semantics",
+          "reason": "The creation-transition-semantics boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-035-04"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "secondary-patch-handler",
+          "reason": "The captured secondary PATCH handler can diverge specifically on omission versus explicit null for an optional effective date during later status transitions.",
+          "control_ids": [
+            "NEG-REQ-035-05"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-014-01",
+        "NEG-REQ-020-03",
+        "NEG-REQ-020-04",
+        "NEG-REQ-026-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "date-default-destination",
+          "reason": "The date-default-destination boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-014-01",
+            "NEG-REQ-020-03",
+            "NEG-REQ-026-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "date-semantic-destination",
+          "reason": "The date-semantic-destination boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-020-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "rollback",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-022-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "invalid-null-rejection",
+          "reason": "The invalid-null-rejection boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-022-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-003-01",
+        "NEG-REQ-003-02",
+        "NEG-REQ-020-01",
+        "NEG-REQ-020-02",
+        "NEG-REQ-031-01",
+        "NEG-REQ-035-02",
+        "NEG-REQ-035-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "Equivalent runtime, seed, import or maintenance paths can drift when they do not consume the same canonical product definition.",
+          "control_ids": [
+            "NEG-REQ-003-01",
+            "NEG-REQ-020-01",
+            "NEG-REQ-035-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "NEG-REQ-003-02",
+            "NEG-REQ-020-02",
+            "NEG-REQ-035-03"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "secondary-handler-parity",
+          "reason": "The secondary-handler-parity boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-031-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NEG-REQ-035-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "The canonical-claims boundary can diverge from the canonical transaction-date behavior even when ordinary form submission remains green.",
+          "control_ids": [
+            "NEG-REQ-035-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

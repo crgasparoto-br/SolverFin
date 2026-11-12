@@ -1,0 +1,330 @@
+# Cartoes de credito e faturas
+
+Este documento descreve o contrato de dominio inicial para cartoes de credito, compras, parcelas e pagamento de fatura.
+
+## Status de transicao do epico #317
+
+A migracao destrutiva da #319 introduz a estrutura persistente para o novo modelo:
+
+- `Card` passa a representar o cartao agrupador/fatura, dono de bandeira, limite total, fechamento, vencimento e conta padrao de pagamento.
+- `CardInstrument` representa os meios internos de uso do agrupador, como fisico, virtual, titular principal e adicional.
+- `Transaction`, `Recurrence` e `Installment` passam a aceitar `cardInstrumentId` para preservar a origem da compra, recorrencia ou parcela.
+- `Invoice.cardId` continua apontando para o agrupador, nunca para um instrumento isolado.
+- O fluxo legado de vinculo manual entre cartoes separados foi aposentado como comportamento de API. Novas implementacoes devem usar instrumentos internos vinculados diretamente ao agrupador.
+
+A #320 liga o dominio de compras ao novo modelo quando o chamador fornece contexto de instrumentos:
+
+- compras podem receber `cardInstrumentId` explicito ou usar o instrumento ativo default do agrupador;
+- compras e parcelas preservam o `cardInstrumentId` usado;
+- instrumentos arquivados, inexistentes, de outro tenant ou de outro agrupador sao rejeitados;
+- agrupadores sem instrumento ativo sao bloqueados para novas compras no fluxo novo;
+- a fatura continua unica por agrupador e periodo, mesmo quando diferentes instrumentos fazem compras no mesmo ciclo.
+
+A #321 adiciona o contrato de API para agrupadores e instrumentos. As rotas antigas de `/api/cards` continuam como compatibilidade temporaria para operacoes basicas de cartao, mas o caminho principal para novas telas e integracoes passa a ser `/api/credit-card-accounts` e seus instrumentos aninhados.
+
+## Escopo entregue antes da UI nova
+
+- Cadastro de cartao agrupador com nome, status, dia de fechamento, dia de vencimento, limite opcional, bandeira, instituicao e conta padrao de pagamento opcional.
+- Cadastro e manutencao de instrumentos internos fisicos/virtuais, titular principal/adicional, default, identificador mascarado e limite individual.
+- Registro de compra no cartao com criacao ou atualizacao da fatura correta.
+- Suporte a compra com instrumento interno quando a camada chamadora fornece `cardInstrumentId`.
+- Suporte a compra parcelada com parcelas vinculadas ao cartao, a transacao de compra e, no fluxo novo, ao instrumento usado.
+- Pagamento integral da fatura com transacao de saida na conta de origem.
+- Regras de tenant/contexto em cartoes, instrumentos, faturas e contas de pagamento.
+- Auditoria redigida para criacao/atualizacao de cartoes, faturas e transacoes criadas pelos fluxos ja auditados.
+
+## API de agrupadores e instrumentos
+
+### Rotas principais
+
+```text
+GET    /api/credit-card-accounts
+POST   /api/credit-card-accounts
+GET    /api/credit-card-accounts/:cardId
+PATCH  /api/credit-card-accounts/:cardId
+POST   /api/credit-card-accounts/:cardId/archive
+
+GET    /api/credit-card-accounts/:cardId/instruments
+POST   /api/credit-card-accounts/:cardId/instruments
+PATCH  /api/credit-card-accounts/:cardId/default-instrument
+POST   /api/credit-card-accounts/:cardId/purchases
+
+PATCH  /api/credit-card-instruments/:instrumentId
+POST   /api/credit-card-instruments/:instrumentId/archive
+```
+
+### Criacao de agrupador
+
+`POST /api/credit-card-accounts` cria o agrupador e seus instrumentos iniciais no mesmo contrato. O corpo deve conter os dados do agrupador e uma lista `instruments` com ao menos um instrumento ativo.
+
+Exemplo:
+
+```json
+{
+  "name": "Cartao C6",
+  "institutionKey": "c6",
+  "brandKey": "mastercard",
+  "closingDay": 20,
+  "dueDay": 10,
+  "creditLimitMinor": 500000,
+  "instruments": [
+    {
+      "type": "physical",
+      "holder": "primary",
+      "name": "Fisico titular",
+      "maskedIdentifier": "**** 1111",
+      "creditLimitMinor": 300000
+    },
+    {
+      "type": "virtual",
+      "holder": "primary",
+      "name": "Virtual compras online",
+      "maskedIdentifier": "**** 2222",
+      "creditLimitMinor": 200000
+    }
+  ]
+}
+```
+
+A resposta usa `creditCardAccount` e inclui o agrupador com `instruments` aninhados. A listagem retorna `creditCardAccounts` no mesmo formato hierarquico.
+
+### Instrumentos
+
+`POST /api/credit-card-accounts/:cardId/instruments` adiciona um instrumento ao agrupador existente. O primeiro instrumento ativo de um agrupador vira default automaticamente. Para trocar o default, use:
+
+```json
+PATCH /api/credit-card-accounts/:cardId/default-instrument
+{
+  "instrumentId": "..."
+}
+```
+
+`PATCH /api/credit-card-instruments/:instrumentId` permite editar tipo, titularidade, nome, identificador mascarado, limite individual e marcar como default com `isDefault: true`. Para arquivar, prefira `POST /api/credit-card-instruments/:instrumentId/archive`, que promove outro instrumento ativo quando existir ou bloqueia o agrupador quando o ultimo ativo for arquivado.
+
+### Compras pelo contrato novo
+
+`POST /api/credit-card-accounts/:cardId/purchases` registra compra no agrupador. Quando `cardInstrumentId` e informado, a API carrega os instrumentos do agrupador, aplica as validacoes do dominio e persiste a origem da compra em `Transaction.cardInstrumentId` e nas parcelas.
+
+As respostas de leitura e atualização de compras expõem `kind` (`expense` ou `income`) a partir de `Transaction.kind`. Em `/cartoes`, `expense` é débito positivo e `income` é crédito negativo, independentemente da descrição. A totalização da fatura usa a mesma direção no banco, inclusive quando uma descrição de despesa contiver texto semelhante a `[estorno:...]`; o marcador não é indicador de sinal financeiro.
+
+### Exclusão lógica de compra simples
+
+A ação **Excluir** no menu de uma compra simples de fatura aberta aplica anulação lógica:
+`Transaction.status = VOIDED`, `voidedAt` e `updatedByUserId` são registrados, enquanto
+identidade, valor e vínculos financeiros são preservados para auditoria. A operação é
+atômica com a correção do total da fatura e o evento `AuditLogEntry.SOFT_DELETE`.
+Não há `DELETE FROM Transaction` neste fluxo.
+
+Compras anuladas não aparecem na lista operacional, no número/valor de ocorrências
+da fatura nem no limite utilizado. Um segundo pedido de exclusão ou edição não
+altera o registro. Compras conciliadas, com parcelas, recorrências ou membros de
+agrupamentos não podem ser excluídas por esse endpoint; a API valida tenant, perfil,
+fatura e moeda antes de gravar. A confirmação deixa de prometer exclusão física.
+
+Uma compra com **estorno ativo** não pode ser anulada isoladamente nem
+transferida para outra fatura, mesmo quando outras compras deixam o total
+positivo: a API retorna `CARD_PURCHASE_ACTIVE_REVERSAL` (HTTP 409) e reverte
+integralmente a operação, preservando compra, crédito, totais e auditoria.
+O vínculo é verificado em todas as faturas do cartão, não apenas na atual.
+Primeiro deve-se anular o crédito pelo fluxo especializado de estorno; depois
+é possível anular ou transferir a compra original, se continuar elegível.
+Os ajustes de exclusão e transferência também exigem saldo de fatura não
+negativo na própria gravação SQL; saldos incompatíveis são recusados com erro
+de contrato HTTP 409, sem expor a violação de constraint do banco.
+A rota e o envelope de resposta existentes são mantidos para compatibilidade.
+Os caminhos de estorno, edição de crédito e movimentação entre faturas recusam
+lançamentos anulados, impedindo novos efeitos financeiros a partir do histórico.
+Edições concorrentes rejeitam atualizações cujo estado original da compra tenha
+mudado antes da persistência, inclusive quando anulada por outra requisição.
+A edição também revalida o estado da fatura sob lock transacional, após o
+UPDATE condicional da compra, inclusive em mudanças sem efeito monetário:
+fechamento, pagamento ou cancelamento concorrente causa HTTP 409 e rollback
+integral da edição. Ajustes no total exigem fatura e moeda correspondentes e
+saldo não negativo, com conferência do UPDATE antes de registrar auditoria.
+A movimentação entre faturas confirma novamente, na gravação, o vínculo à
+fatura de origem, o estado e a versão da compra. Débito e crédito da movimentação
+exigem faturas ainda abertas, do mesmo cartão e moeda; qualquer disputa com
+outra movimentação, anulação ou fechamento provoca rollback completo e HTTP 409,
+sem duplicar impacto nos totais.
+
+As rotas gerais `POST /api/transactions/:transactionId/void` e
+`POST /api/transactions/bulk-actions` (`action: "void"`) reutilizam a exclusão
+lógica especializada para compras e créditos de estorno vinculados a faturas.
+Um lote misto é atômico: item inelegível provoca rollback de toda a seleção;
+cada compra recebe apenas um evento de auditoria `SOFT_DELETE`. Compras
+parceladas, recorrentes, conciliadas ou com fatura bloqueada são rejeitadas.
+Parcelas cujo registro principal esteja `VOIDED` são excluídas da listagem
+operacional e dos resumos, sem perda do histórico; conciliação e ajuste de
+valor também são bloqueados.
+
+### Ajuste pontual ou futuro de valores de parcelas (#742)
+
+`PATCH /api/invoices/:invoiceId/installments/:installmentId/amount` é o endpoint operacional para corrigir o valor exibido de parcelas **finitas** de compras de cartão. Exige sessão/tenant/perfil, `amountMinor` inteiro seguro e positivo e `scope` igual a `current` ou `current_and_future`. O segundo escopo atualiza a parcela indicada e as posteriores elegíveis do mesmo cronograma; responde `updatedCount` e `skippedCount`. A resposta inclui a fatura escolhida atualizada.
+
+A mutação valida vínculo de parcela/compra/fatura, moeda nativa da fatura, status aberto de cada fatura e estado planejado ou efetivado não conciliado. Não reabre faturas bloqueadas, não altera parcelas conciliadas ou de recorrência, não edita `Transaction.amountMinor` da compra de origem e não altera datas, quantidade, instrumento ou vínculos. Atualiza atomicamente `Installment.amountMinor`, o total de cada fatura afetada e a trilha de auditoria minimizada. Ausência de parcela/tenant equivale a não encontrada; seleção bloqueada retorna conflito. A rota genérica `PATCH /api/installments/:id` continua sem permitir valor de parcelas de fatura.
+
+## Modelo persistente alvo
+
+### Cartao agrupador/fatura
+
+O agrupador concentra dados do contrato e da fatura:
+
+- nome do cartao;
+- instituicao financeira;
+- bandeira;
+- dia de fechamento;
+- dia de vencimento;
+- conta padrao de pagamento;
+- limite total;
+- status do agrupador.
+
+Um agrupador sem instrumentos ativos fica bloqueado para novas compras no dominio quando o fluxo novo fornece a lista de instrumentos.
+
+### Instrumento interno
+
+O instrumento interno guarda os dados do meio usado na compra:
+
+- `cardId`, apontando para o agrupador;
+- tipo: `PHYSICAL` ou `VIRTUAL`;
+- titularidade: `PRIMARY` ou `ADDITIONAL`;
+- status: `ACTIVE` ou `ARCHIVED`;
+- `isDefault`, com no maximo um instrumento ativo default por agrupador;
+- nome/apelido opcional;
+- identificador mascarado/final opcional;
+- limite individual opcional.
+
+A migracao cria indice parcial para impedir mais de um instrumento default ativo por agrupador. A regra de soma dos limites individuais contra o limite total do agrupador permanece no dominio/API, pois depende de agregacao entre linhas ativas.
+
+## Regras de fechamento e vencimento
+
+O dominio usa `closingDay` e `dueDay` do agrupador.
+
+- Compras realizadas ate o dia de fechamento entram na fatura que fecha no mesmo mes.
+- Compras realizadas apos o fechamento entram na proxima fatura.
+- O periodo da fatura inicia no dia seguinte ao fechamento anterior.
+- O vencimento e o primeiro `dueDay` posterior ao fechamento da fatura.
+- Quando o mes nao possui o dia configurado, o calculo usa o ultimo dia valido do mes.
+
+Exemplo com fechamento dia 20 e vencimento dia 10:
+
+- Compra em 2026-06-15: periodo 2026-05-21 a 2026-06-20, vencimento 2026-07-10.
+- Compra em 2026-06-21: periodo 2026-06-21 a 2026-07-20, vencimento 2026-08-10.
+
+## Compras
+
+No modelo novo, `registerCardPurchase` cria uma transacao `expense` com:
+
+- `cardId` do agrupador, para resolver a fatura;
+- `cardInstrumentId` do instrumento usado, para rastreabilidade e exibicao;
+- `invoiceId` da fatura do periodo.
+
+Enquanto a API antiga ainda esta em transicao, `cardInstrumentId` e exigido apenas quando o chamador informa contexto de instrumentos ou um instrumento explicito. Sem esse contexto, o dominio preserva compatibilidade com os fluxos que ainda nao migraram para `/api/credit-card-accounts`.
+
+Quando `instruments` e informado:
+
+- se `cardInstrumentId` vier no payload, ele deve apontar para instrumento ativo do mesmo agrupador e tenant;
+- se `cardInstrumentId` nao vier, o dominio usa o instrumento ativo default do agrupador;
+- se nao houver instrumento ativo elegivel, a compra e rejeitada;
+- instrumentos arquivados nao podem receber novas compras.
+
+A fatura e resolvida por `cardId + periodStartOn + periodEndOn`:
+
+- se nao existir, uma fatura `open` e criada na moeda normalizada da compra;
+- se existir e estiver `open`, o total so e incrementado quando a moeda da compra for igual a moeda da fatura;
+- divergencia de moeda e rejeitada com `CARD_INVOICE_CURRENCY_MISMATCH` antes de qualquer persistencia do resultado da compra;
+- faturas `closed`, `paid`, `overdue` ou `cancelled` nao recebem novas compras.
+
+Cada fatura e monomoeda. Nao existe conversao cambial implicita no registro, parcelamento, materializacao de recorrencia ou movimentacao de compra entre periodos. Parcelas futuras tambem validam a moeda de cada fatura existente antes de qualquer resultado ser persistido.
+
+Estados historicos em que uma compra esteja ligada a uma fatura de moeda diferente falham de forma explicita antes de resumo, edicao, fechamento ou movimentacao. Esses estados nao podem ser usados para agregar totais como se os minor units fossem comparaveis.
+
+Compras feitas por instrumentos diferentes do mesmo agrupador compartilham a mesma fatura quando pertencem ao mesmo periodo e a mesma moeda.
+
+`updateCardPurchaseForContext` (`PATCH /api/credit-card-accounts/:cardId/purchases/:transactionId`) rejeita qualquer edicao quando a fatura vinculada estiver `CLOSED`, `PAID` ou `CANCELLED`, retornando o codigo `CARD_PURCHASE_INVOICE_LOCKED` com HTTP 409. O bloqueio ocorre antes de qualquer alteracao em `Transaction`, `Installment`, `Invoice` ou auditoria. Se o estado historico tiver moeda divergente entre compra e fatura, `CARD_INVOICE_CURRENCY_MISMATCH` tambem bloqueia a edicao antes da mutacao.
+
+Compras parceladas criam parcelas planejadas. `Transaction.amountMinor` preserva o valor total canônico da compra; `Installment.amountMinor` preserva o valor da ocorrência e `Invoice.totalAmountMinor` recebe somente a ocorrência do período. O valor total e dividido pelo domínio, com centavos excedentes aplicados nas primeiras parcelas; o navegador não recompõe essa divisão.
+
+Cada nova parcela persiste `transactionId` para a compra de origem, `invoiceId` para a fatura que a contém e o `cardInstrumentId` escolhido. Assim, `GET /api/installments?invoiceId=...` devolve o cronograma de compras manuais em uma única consulta. Não há backfill por descrição, valor, instrumento ou proximidade de datas para registros legados ambíguos.
+
+Para uma compra parcelada existente, o `PATCH` operacional aceita somente descrição, categoria e instrumento. Valor, data, fatura e situação estrutural são rejeitados por `CARD_INSTALLMENT_PURCHASE_STRUCTURE_LOCKED` antes de qualquer mutação. A troca de instrumento atualiza a `Transaction` e todas as `Installment` da compra na mesma transação de banco.
+
+`installmentStart` permite registrar uma compra que ja esta em andamento. Informando `totalInstallments` e `installmentStart`, somente as parcelas de `installmentStart` ate o total sao criadas, e a fatura atual recebe a parcela `installmentStart`.
+
+## Compra fixa/recorrente
+
+Uma compra recorrente no cartao usa o mesmo recurso de `Recurrence` ja usado para lancamentos fixos de conta.
+
+No modelo alvo, a recorrencia de cartao deve guardar:
+
+- `cardId` do agrupador;
+- `cardInstrumentId` escolhido no momento da criacao.
+
+Pelo contrato REST, `POST /api/recurrences` e `PATCH /api/recurrences/:recurrenceId` aceitam `cardInstrumentId` quando a recorrencia usa `cardId`. O instrumento informado precisa estar ativo e pertencer ao mesmo agrupador, organizacao e perfil financeiro. O campo retornado em `recurrence.cardInstrumentId` e o valor preservado para as compras geradas por `POST /api/recurrences/:recurrenceId/generate-installments`.
+
+Exemplo:
+
+```json
+{
+  "frequency": "monthly",
+  "startOn": "2027-06-05",
+  "amountMinor": 1234,
+  "description": "Assinatura no cartao virtual",
+  "cardId": "...",
+  "cardInstrumentId": "..."
+}
+```
+
+Mudancas futuras no instrumento default apenas preenchem novas criacoes. Elas nao alteram recorrencias existentes. A materializacao reutiliza `registerCardPurchaseForContext`, portanto herda a validacao de moeda da fatura sem manter uma politica paralela.
+
+## Pagamento de fatura
+
+`payInvoice` cria uma transacao `expense` na conta de pagamento e marca a fatura como `paid`.
+
+Decisao de MVP:
+
+- pagamento parcial ou maior que o total da fatura e rejeitado;
+- o pagamento deve ser exatamente igual ao total atual da fatura;
+- a conta de pagamento deve ter a mesma moeda da fatura; divergencia e rejeitada por `CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH` antes da persistencia;
+- suporte a pagamento parcial depende de campo persistente de valor pago/saldo em aberto e fica para evolucao futura.
+
+## Previsao de pagamento da fatura
+
+Quando o agrupador tem `paymentAccountId` configurado e a conta esta `active`, a compra gera ou atualiza uma `Transaction` de previsao somente para faturas cuja moeda corresponda a moeda da conta configurada:
+
+- `kind: "expense"`, `status: "planned"`, `source: "manual"`, sem `effectiveOn`.
+- `accountId` = conta de pagamento do agrupador.
+- `cardId` = agrupador da fatura.
+- `invoiceId` referencia a fatura correspondente.
+- `amountMinor` e `plannedOn` acompanham `totalAmountMinor` e `dueOn` da fatura.
+- se a moeda da conta for diferente, nenhuma previsao e criada para aquela fatura, porque nao existe conversao implicita.
+- Ao pagar a fatura (`payInvoice`), a previsao correspondente e marcada como `voided`.
+
+## Privacidade de dados de cartao
+
+O identificador do meio de uso deve ficar no instrumento interno e deve ser sempre mascarado. Valores que contenham 13 ou mais digitos sao rejeitados no dominio para evitar armazenamento acidental de numero completo de cartao.
+
+Fixtures e exemplos usam apenas dados ficticios e mascarados.
+
+## Erros principais
+
+- `CARD_IDENTIFIER_UNSAFE`: identificador legado do cartao aparenta conter numero completo de cartao.
+- `CARD_INSTRUMENT_IDENTIFIER_UNSAFE`: identificador do instrumento aparenta conter numero completo de cartao.
+- `CARD_INSTRUMENT_LIMIT_EXCEEDS_CARD_LIMIT`: soma de limites individuais ativos excede o limite total do agrupador.
+- `CARD_INSTRUMENT_REQUIRED`: compra no fluxo novo nao encontrou instrumento ativo para o agrupador.
+- `CARD_INSTRUMENT_CARD_MISMATCH`: instrumento informado nao pertence ao agrupador/tenant da compra.
+- `CARD_INSTRUMENT_NOT_ACTIVE`: instrumento informado esta arquivado e nao pode receber nova compra.
+- `CARD_NOT_ACTIVE`: cartao arquivado ou bloqueado nao pode receber compra.
+- `CARD_INVOICE_NOT_OPEN`: fatura nao esta aberta para novas compras.
+- `CARD_INVOICE_CURRENCY_MISMATCH`: compra e fatura nao podem ser agregadas ou movidas quando suas moedas divergem.
+- `CARD_INVOICE_PAYMENT_ACCOUNT_CURRENCY_MISMATCH`: conta de pagamento e fatura possuem moedas diferentes.
+- `CARD_INVOICE_PAYMENT_AMOUNT_INVALID`: pagamento nao corresponde ao total da fatura.
+- `CARD_PAYMENT_ACCOUNT_ARCHIVED`: conta de pagamento nao esta ativa.
+- `RECURRENCE_CARD_INSTRUMENT_INVALID`: instrumento informado na recorrencia nao esta ativo ou nao pertence ao agrupador/tenant.
+
+## Fora de escopo desta transicao
+
+- Integracao com operadora de cartao.
+- Juros, rotativo e parcelamento da propria fatura.
+- Pagamentos parciais.
+- Provider de cambio ou conversao automatica entre moedas.
+- Ajuste completo de UI e fluxo de compras/faturas, previstos nas #322 e #323.
