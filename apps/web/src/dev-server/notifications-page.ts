@@ -9,7 +9,13 @@ interface NotificationItem {
   id: string;
   occurredAt: string;
   readAt: string | null;
-  facts: { code: string; severity: string; currency?: string; amountMinor?: number; effectiveOn?: string };
+  facts: {
+    code: string;
+    severity: string;
+    currency?: string;
+    amountMinor?: number;
+    effectiveOn?: string;
+  };
 }
 
 interface NotificationPage {
@@ -48,15 +54,14 @@ export async function renderNotificationsPage(
   url: URL = new URL("https://solverfin.invalid/notificacoes"),
 ): Promise<string> {
   const requestedOffset = Number(url.searchParams.get("offset") ?? 0);
-  const offset = Number.isSafeInteger(requestedOffset) && requestedOffset >= 0 &&
-    requestedOffset <= 10000 ? requestedOffset : 0;
+  const offset =
+    Number.isSafeInteger(requestedOffset) && requestedOffset >= 0 && requestedOffset <= 10000
+      ? requestedOffset
+      : 0;
   const profileId = url.searchParams.get("profileId");
   const profileSuffix = profileId ? "&profileId=" + encodeURIComponent(profileId) : "";
   const [feed, preferences] = await Promise.all([
-    apiGet<NotificationPage>(
-      token,
-      "/api/notifications?limit=20&offset=" + offset + profileSuffix,
-    ),
+    apiGet<NotificationPage>(token, "/api/notifications?limit=20&offset=" + offset + profileSuffix),
     apiGet<{ preferences: NotificationPreference[] }>(
       token,
       "/api/notifications/preferences?" + profileSuffix.slice(1),
@@ -74,14 +79,16 @@ export async function renderNotificationsPage(
     '<header><h2>Recebidas</h2><p aria-live="polite">',
     feed.ok ? String(feed.data.unreadCount) + " não lidas" : "Não foi possível carregar",
     "</p></header>",
-    feed.ok ? renderFeed(feed.data, offset, profileId) :
-      '<p role="alert">' + escapeHtml(feed.error) + "</p>",
+    feed.ok
+      ? renderFeed(feed.data, offset, profileId)
+      : '<p role="alert">' + escapeHtml(feed.error) + "</p>",
     "</section>",
     '<aside class="panel notifications-preferences" aria-label="Preferências de notificações">',
     "<h2>Preferências</h2>",
     '<p class="muted">Defina quais eventos deseja receber em cada canal.</p>',
-    preferences.ok ? renderPreferences(preferences.data.preferences) :
-      '<p role="alert">' + escapeHtml(preferences.error) + "</p>",
+    preferences.ok
+      ? renderPreferences(preferences.data.preferences)
+      : '<p role="alert">' + escapeHtml(preferences.error) + "</p>",
     '<p class="muted">Push e e-mail ainda não realizam envios. A preferência será preservada.</p>',
     "</aside>",
     "</div>",
@@ -99,8 +106,10 @@ export async function renderNotificationsPage(
 
 function renderFeed(page: NotificationPage, offset: number, profileId: string | null): string {
   if (page.items.length === 0) {
-    return '<div class="notifications-empty"><h3>Nenhuma notificação</h3>' +
-      '<p>Os eventos financeiros disponíveis aparecerão aqui, sem preencher com dados fictícios.</p></div>';
+    return (
+      '<div class="notifications-empty"><h3>Nenhuma notificação</h3>' +
+      "<p>Os eventos financeiros disponíveis aparecerão aqui, sem preencher com dados fictícios.</p></div>"
+    );
   }
   const currentProfile = profileId ? "&profileId=" + encodeURIComponent(profileId) : "";
   const previous = offset > 0 ? Math.max(offset - 20, 0) : null;
@@ -109,12 +118,13 @@ function renderFeed(page: NotificationPage, offset: number, profileId: string | 
     page.items.map(renderNotification).join(""),
     "</ol>",
     '<nav class="notifications-pagination" aria-label="Paginação de notificações">',
-    previous === null ? "" :
-      '<a href="/notificacoes?offset=' + previous + currentProfile + '">Anterior</a>',
-    '<span>' + (offset + 1) + "–" + (offset + page.items.length) +
-      " de " + page.total + "</span>",
-    page.nextOffset === null ? "" :
-      '<a href="/notificacoes?offset=' + page.nextOffset + currentProfile + '">Próxima</a>',
+    previous === null
+      ? ""
+      : '<a href="/notificacoes?offset=' + previous + currentProfile + '">Anterior</a>',
+    "<span>" + (offset + 1) + "–" + (offset + page.items.length) + " de " + page.total + "</span>",
+    page.nextOffset === null
+      ? ""
+      : '<a href="/notificacoes?offset=' + page.nextOffset + currentProfile + '">Próxima</a>',
     "</nav>",
   ].join("");
 }

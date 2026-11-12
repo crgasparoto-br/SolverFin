@@ -230,7 +230,11 @@ async function assertResourceAllowed(
 export async function publishFinancialNotificationForContext(
   context: TenantContext,
   event: FinancialNotificationEvent,
-): Promise<{ notification: FinancialNotificationItem | null; created: boolean; suppressed: boolean }> {
+): Promise<{
+  notification: FinancialNotificationItem | null;
+  created: boolean;
+  suppressed: boolean;
+}> {
   validateFinancialNotificationEvent(event);
   return withSharedTransaction(async (executeQuery) => {
     await assertFinancialNotificationScope(context, executeQuery);
@@ -241,9 +245,16 @@ export async function publishFinancialNotificationForContext(
     if (event.resource) await assertResourceAllowed(context, event.resource, executeQuery);
     const id = randomUUID();
     const parameters = [
-      id, context.organizationId, context.financialProfileId, context.userId,
-      event.type, event.fingerprint, JSON.stringify(event.facts),
-      event.resource?.kind ?? null, event.resource?.id ?? null, event.occurredAt,
+      id,
+      context.organizationId,
+      context.financialProfileId,
+      context.userId,
+      event.type,
+      event.fingerprint,
+      JSON.stringify(event.facts),
+      event.resource?.kind ?? null,
+      event.resource?.id ?? null,
+      event.occurredAt,
     ];
     const inserted = await executeQuery<NotificationRow>(
       [
@@ -257,15 +268,30 @@ export async function publishFinancialNotificationForContext(
       ].join(" "),
       parameters,
     );
-    const row = inserted[0] ?? (await executeQuery<NotificationRow>(
-      [
-        'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
-        'from "FinancialNotification" where "organizationId"=$1 and "financialProfileId"=$2',
-        'and "recipientUserId"=$3 and "eventType"=$4 and "fingerprint"=$5',
-      ].join(" "),
-      [context.organizationId, context.financialProfileId, context.userId, event.type, event.fingerprint],
-    ))[0];
-    if (!row) throw new FinancialNotificationError("NOTIFICATION_CONFLICT", "Falha na identidade do evento.", 409);
+    const row =
+      inserted[0] ??
+      (
+        await executeQuery<NotificationRow>(
+          [
+            'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+            'from "FinancialNotification" where "organizationId"=$1 and "financialProfileId"=$2',
+            'and "recipientUserId"=$3 and "eventType"=$4 and "fingerprint"=$5',
+          ].join(" "),
+          [
+            context.organizationId,
+            context.financialProfileId,
+            context.userId,
+            event.type,
+            event.fingerprint,
+          ],
+        )
+      )[0];
+    if (!row)
+      throw new FinancialNotificationError(
+        "NOTIFICATION_CONFLICT",
+        "Falha na identidade do evento.",
+        409,
+      );
     if (
       !sameFacts(row.facts, event.facts) ||
       row.occurredAt.toISOString() !== event.occurredAt ||
@@ -285,9 +311,16 @@ export async function publishFinancialNotificationForContext(
             [
               'insert into "FinancialNotificationDelivery"',
               '("id","organizationId","financialProfileId","recipientUserId","notificationId","channel","updatedAt")',
-              "values ($1,$2,$3,$4,$5,$6,now()) on conflict (\"notificationId\",\"channel\") do nothing",
+              'values ($1,$2,$3,$4,$5,$6,now()) on conflict ("notificationId","channel") do nothing',
             ].join(" "),
-            [randomUUID(), context.organizationId, context.financialProfileId, context.userId, row.id, channel],
+            [
+              randomUUID(),
+              context.organizationId,
+              context.financialProfileId,
+              context.userId,
+              row.id,
+              channel,
+            ],
           );
         }
       }
@@ -302,7 +335,11 @@ export async function publishFinancialNotificationForContext(
         redactedChanges: { event: "added" },
       });
     }
-    return { notification: projectNotification(row), created: inserted.length > 0, suppressed: false };
+    return {
+      notification: projectNotification(row),
+      created: inserted.length > 0,
+      suppressed: false,
+    };
   });
 }
 
@@ -320,7 +357,8 @@ export async function listFinancialNotificationsForContext(
     const rows = await executeQuery<NotificationRow>(
       [
         'select "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
-        where, 'order by "occurredAt" desc, "id" desc limit $4 offset $5',
+        where,
+        'order by "occurredAt" desc, "id" desc limit $4 offset $5',
       ].join(" "),
       [...params, input.limit, input.offset],
     );
@@ -342,7 +380,9 @@ export async function listFinancialNotificationsForContext(
   });
 }
 
-export async function countUnreadFinancialNotificationsForContext(context: TenantContext): Promise<number> {
+export async function countUnreadFinancialNotificationsForContext(
+  context: TenantContext,
+): Promise<number> {
   await assertFinancialNotificationScope(context);
   const rows = await query<CountRow>(
     [
@@ -376,14 +416,16 @@ export async function setFinancialNotificationReadStateForContext(
     const existing = rows[0];
     if (!existing) throw notFound();
     if ((existing.readAt !== null) === read) return projectNotification(existing);
-    const changed = (await executeQuery<NotificationRow>(
-      [
-        'update "FinancialNotification" set "readAt" = $5, "updatedAt"=now()',
-        'where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3 and "recipientUserId"=$4',
-        'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
-      ].join(" "),
-      [...params, read ? new Date().toISOString() : null],
-    ))[0];
+    const changed = (
+      await executeQuery<NotificationRow>(
+        [
+          'update "FinancialNotification" set "readAt" = $5, "updatedAt"=now()',
+          'where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3 and "recipientUserId"=$4',
+          'returning "id","eventType","facts","resourceKind","resourceId","occurredAt","createdAt","readAt"',
+        ].join(" "),
+        [...params, read ? new Date().toISOString() : null],
+      )
+    )[0];
     if (!changed) throw notFound();
     await insertAuditLogEntry(executeQuery, {
       organizationId: context.organizationId,
@@ -403,7 +445,13 @@ export async function setFinancialNotificationReadStateForContext(
 
 export async function listFinancialNotificationPreferencesForContext(
   context: TenantContext,
-): Promise<Array<{ type: FinancialNotificationEventType; channel: FinancialNotificationChannel; enabled: boolean }>> {
+): Promise<
+  Array<{
+    type: FinancialNotificationEventType;
+    channel: FinancialNotificationChannel;
+    enabled: boolean;
+  }>
+> {
   await assertFinancialNotificationScope(context);
   const rows = await query<PreferenceRow>(
     [
@@ -415,31 +463,49 @@ export async function listFinancialNotificationPreferencesForContext(
   const overrides = new Map(rows.map((row) => [row.eventType + ":" + row.channel, row.enabled]));
   return FINANCIAL_NOTIFICATION_EVENT_TYPES.flatMap((type) =>
     FINANCIAL_NOTIFICATION_CHANNELS.map((channel) => ({
-      type, channel, enabled: overrides.get(type + ":" + channel) ?? channel === "in_app",
+      type,
+      channel,
+      enabled: overrides.get(type + ":" + channel) ?? channel === "in_app",
     })),
   );
 }
 
 export async function setFinancialNotificationPreferenceForContext(
   context: TenantContext,
-  input: { type: FinancialNotificationEventType; channel: FinancialNotificationChannel; enabled: boolean },
+  input: {
+    type: FinancialNotificationEventType;
+    channel: FinancialNotificationChannel;
+    enabled: boolean;
+  },
   correlationId?: string,
-): Promise<{ type: FinancialNotificationEventType; channel: FinancialNotificationChannel; enabled: boolean }> {
+): Promise<{
+  type: FinancialNotificationEventType;
+  channel: FinancialNotificationChannel;
+  enabled: boolean;
+}> {
   const type = parseNotificationEventType(input.type);
   const channel = parseNotificationChannel(input.channel);
   if (typeof input.enabled !== "boolean") throw invalid("NOTIFICATION_PREFERENCE_INVALID");
   return withSharedTransaction(async (executeQuery) => {
     await assertFinancialNotificationScope(context, executeQuery);
     await lockPreferenceOrdering(executeQuery, context, type);
-    const params = [context.organizationId, context.financialProfileId, context.userId, type, channel];
-    const existing = (await executeQuery<{ id: string; enabled: boolean }>(
-      [
-        'select "id","enabled" from "FinancialNotificationPreference"',
-        'where "organizationId"=$1 and "financialProfileId"=$2 and "recipientUserId"=$3',
-        'and "eventType"=$4 and "channel"=$5 for update',
-      ].join(" "),
-      params,
-    ))[0];
+    const params = [
+      context.organizationId,
+      context.financialProfileId,
+      context.userId,
+      type,
+      channel,
+    ];
+    const existing = (
+      await executeQuery<{ id: string; enabled: boolean }>(
+        [
+          'select "id","enabled" from "FinancialNotificationPreference"',
+          'where "organizationId"=$1 and "financialProfileId"=$2 and "recipientUserId"=$3',
+          'and "eventType"=$4 and "channel"=$5 for update',
+        ].join(" "),
+        params,
+      )
+    )[0];
     if (existing?.enabled === input.enabled) return { type, channel, enabled: input.enabled };
     const id = existing?.id ?? randomUUID();
     if (existing) {
@@ -489,22 +555,23 @@ export async function getFinancialNotificationNavigationForContext(
     );
     const notification = rows[0];
     if (!notification) throw notFound();
-    if (!notification.resourceKind || !notification.resourceId) return { available: false, href: null };
+    if (!notification.resourceKind || !notification.resourceId)
+      return { available: false, href: null };
     const kind = notification.resourceKind;
     if (kind !== "ai_suggestion" && kind !== "budget" && kind !== "invoice") {
       return { available: false, href: null };
     }
     try {
-      await assertResourceAllowed(
-        context,
-        { kind, id: notification.resourceId },
-        executeQuery,
-      );
+      await assertResourceAllowed(context, { kind, id: notification.resourceId }, executeQuery);
     } catch (error) {
       if (error instanceof TenantAuthorizationError) return { available: false, href: null };
       throw error;
     }
-    const href = { ai_suggestion: "/inbox#financial-insights", budget: "/orcamentos", invoice: "/cartoes" }[kind];
+    const href = {
+      ai_suggestion: "/inbox#financial-insights",
+      budget: "/orcamentos",
+      invoice: "/cartoes",
+    }[kind];
     return { available: true, href };
   });
 }
@@ -512,24 +579,44 @@ export async function getFinancialNotificationNavigationForContext(
 function sameFacts(actual: unknown, expected: FinancialNotificationFacts): boolean {
   if (!isRecord(actual)) return false;
   const keys = Object.keys(expected).sort();
-  return Object.keys(actual).length === keys.length &&
-    keys.every((key) => actual[key] === (expected as Record<string, unknown>)[key]);
+  return (
+    Object.keys(actual).length === keys.length &&
+    keys.every((key) => actual[key] === (expected as Record<string, unknown>)[key])
+  );
 }
 
-function validateFacts(type: FinancialNotificationEventType, value: unknown): asserts value is FinancialNotificationFacts {
-  if (!isRecord(value) || !exactKeys(value, ["code", "severity", "currency", "amountMinor", "effectiveOn"])) {
+function validateFacts(
+  type: FinancialNotificationEventType,
+  value: unknown,
+): asserts value is FinancialNotificationFacts {
+  if (
+    !isRecord(value) ||
+    !exactKeys(value, ["code", "severity", "currency", "amountMinor", "effectiveOn"])
+  ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
-  if (value.code !== EVENT_CODES[type] || !["info", "warning", "critical"].includes(String(value.severity))) {
+  if (
+    value.code !== EVENT_CODES[type] ||
+    !["info", "warning", "critical"].includes(String(value.severity))
+  ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
-  if (value.currency !== undefined && (typeof value.currency !== "string" || !/^[A-Z]{3}$/.test(value.currency))) {
+  if (
+    value.currency !== undefined &&
+    (typeof value.currency !== "string" || !/^[A-Z]{3}$/.test(value.currency))
+  ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
-  if (value.amountMinor !== undefined && (!Number.isSafeInteger(value.amountMinor) || value.currency === undefined)) {
+  if (
+    value.amountMinor !== undefined &&
+    (!Number.isSafeInteger(value.amountMinor) || value.currency === undefined)
+  ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
-  if (value.effectiveOn !== undefined && (typeof value.effectiveOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.effectiveOn))) {
+  if (
+    value.effectiveOn !== undefined &&
+    (typeof value.effectiveOn !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value.effectiveOn))
+  ) {
     throw invalid("NOTIFICATION_FACTS_INVALID");
   }
 }
@@ -548,7 +635,8 @@ function projectNotification(row: NotificationRow): FinancialNotificationItem {
 }
 
 function isIsoInstant(value: unknown): value is string {
-  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)) return false;
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value))
+    return false;
   const date = new Date(value);
   return !Number.isNaN(date.getTime()) && date.toISOString() === value;
 }
@@ -562,7 +650,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function isUuid(value: unknown): value is string {
-  return typeof value === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  return (
+    typeof value === "string" &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value)
+  );
 }
 
 function notFound(): TenantAuthorizationError {
