@@ -93,7 +93,10 @@ try {
       })()`,
     ).catch(() => false);
   }
-  await writeFile(join(outputDir, "issue-693-notifications.json"), `${JSON.stringify(report, null, 2)}\n`);
+  await writeFile(
+    join(outputDir, "issue-693-notifications.json"),
+    `${JSON.stringify(report, null, 2)}\n`,
+  );
   await browser.close(outputDir);
 }
 

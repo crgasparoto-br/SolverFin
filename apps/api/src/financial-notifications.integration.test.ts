@@ -180,7 +180,11 @@ async function main(): Promise<void> {
     channel: "in_app",
     enabled: false,
   });
-  const allDisabled: FinancialNotificationEvent = { ...fixture("all-disabled"), type: externalType, facts: externalFacts };
+  const allDisabled: FinancialNotificationEvent = {
+    ...fixture("all-disabled"),
+    type: externalType,
+    facts: externalFacts,
+  };
   assert.deepEqual(await publishFinancialNotificationForContext(context, allDisabled), {
     notification: null,
     created: false,
@@ -191,7 +195,11 @@ async function main(): Promise<void> {
     channel: "push",
     enabled: true,
   });
-  const pushOnly: FinancialNotificationEvent = { ...fixture("push-only"), type: externalType, facts: externalFacts };
+  const pushOnly: FinancialNotificationEvent = {
+    ...fixture("push-only"),
+    type: externalType,
+    facts: externalFacts,
+  };
   assert.deepEqual(await publishFinancialNotificationForContext(context, pushOnly), {
     notification: null,
     created: true,
@@ -209,12 +217,21 @@ async function main(): Promise<void> {
     'select "channel" from "FinancialNotificationDelivery" where "notificationId"=$1 order by "channel"',
     [pushOnlyId],
   );
-  assert.deepEqual(pushOnlyChannels.map((row) => row.channel), ["push"]);
-  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 2);
+  assert.deepEqual(
+    pushOnlyChannels.map((row) => row.channel),
+    ["push"],
+  );
+  assert.equal(
+    (await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total,
+    2,
+  );
   assert.equal(await countUnreadFinancialNotificationsForContext(context), 2);
-  await assert.rejects(() => setFinancialNotificationReadStateForContext(context, pushOnlyId, true), {
-    statusCode: 404,
-  });
+  await assert.rejects(
+    () => setFinancialNotificationReadStateForContext(context, pushOnlyId, true),
+    {
+      statusCode: 404,
+    },
+  );
   await assert.rejects(() => getFinancialNotificationNavigationForContext(context, pushOnlyId), {
     statusCode: 404,
   });
@@ -237,12 +254,17 @@ async function main(): Promise<void> {
     created: false,
     suppressed: false,
   });
-  assert.equal((await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total, 2);
+  assert.equal(
+    (await listFinancialNotificationsForContext(context, { limit: 20, offset: 0 })).total,
+    2,
+  );
   assert.deepEqual(
-    (await query<{ channel: string }>(
-      'select "channel" from "FinancialNotificationDelivery" where "notificationId"=$1',
-      [pushOnlyId],
-    )).map((row) => row.channel),
+    (
+      await query<{ channel: string }>(
+        'select "channel" from "FinancialNotificationDelivery" where "notificationId"=$1',
+        [pushOnlyId],
+      )
+    ).map((row) => row.channel),
     ["push"],
   );
   const external = await publishFinancialNotificationForContext(context, {
