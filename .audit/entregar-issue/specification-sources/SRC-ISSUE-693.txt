@@ -1,0 +1,83 @@
+Parent epic: #689
+
+## Objetivo
+
+Criar uma fundação reutilizável de notificações financeiras determinísticas, com primeiro canal in-app, preferências, estado de leitura, idempotência e isolamento. Push e e-mail ficam preparados como adapters, sem entrega externa obrigatória nesta issue.
+
+## Fontes canônicas
+
+- `docs/PRODUCT.md`
+- `docs/EVOLUTION_STRATEGY.md`
+- `docs/FINANCIAL_INSIGHTS.md` como exemplo de produtor financeiro determinístico
+- contratos de tenant/autorização e auditoria existentes
+
+## Escopo
+
+- Contrato único de evento/notificação.
+- Persistência tenant/profile/user scoped.
+- Estados de leitura e timestamps necessários.
+- Preferências por tipo de evento/canal.
+- Listagem in-app e contagem de não lidas.
+- Marcar como lida/não lida de forma idempotente.
+- Deduplicação de evento equivalente.
+- Contrato de adapter/outbox que permita adicionar push/e-mail sem alterar o fato financeiro.
+- Observabilidade/auditoria sem dados financeiros em claro desnecessários.
+
+## Fora de escopo
+
+- Criar novos algoritmos de risco, vencimento ou orçamento.
+- Provider de IA decidindo se existe um evento financeiro, seu valor ou sua elegibilidade.
+- Envio real de push/e-mail nesta issue.
+- Marketing, campanhas ou notificações não financeiras.
+- Alterar o fato financeiro quando uma entrega falha.
+
+## Contrato mínimo
+
+Um evento publicável deve possuir, no mínimo:
+
+- tipo versionado;
+- organização/perfil e destinatário autorizável;
+- identidade/fingerprint determinístico para idempotência;
+- referência segura ao recurso/evidência quando houver;
+- instante de ocorrência/efetivação;
+- conteúdo estruturado suficiente para a apresentação local, sem depender de texto livre de provider.
+
+A camada de apresentação pode gerar copy controlada, mas não pode inventar valor, moeda, severidade ou fato financeiro ausente do evento estruturado.
+
+## Invariantes
+
+1. **must_be_single_source:** o evento estruturado é a fonte do fato; texto de provider nunca é autoridade.
+2. **must_not_depend_on:** criação da notificação in-app funciona sem IA e sem canal externo.
+3. **must_not_behave:** falha de notificação nunca reverte, duplica ou altera transação/fatura/orçamento/insight de origem.
+4. **precedence:** preferência e autorização são avaliadas antes de qualquer entrega externa; isolamento de tenant/perfil não pode ser “corrigido” pelo adapter.
+5. Eventos equivalentes sob retry/concorrência convergem para uma notificação lógica por destinatário e fingerprint.
+
+## Comportamento in-app
+
+- Usuário autenticado vê apenas notificações do contexto permitido.
+- A listagem possui estado vazio, paginação/limite e ordenação determinística.
+- Leitura/não leitura é persistida e idempotente.
+- Preferência desativada impede novas entregas daquele tipo/canal a partir da mudança, sem apagar histórico já entregue.
+- Recurso removido/inacessível não pode vazar dados ao abrir a notificação; a navegação degrada para estado seguro.
+
+## Adapters e retry
+
+- O produtor publica o evento uma vez; cada adapter deriva sua tentativa a partir da mesma identidade.
+- Tentativas recuperáveis podem ser repetidas sem criar segunda notificação lógica.
+- Push/e-mail permanecem desabilitados até issue própria configurar provider, segredo, templates e regras operacionais.
+- Retry de adapter não reexecuta o cálculo financeiro que originou o evento.
+
+## Critérios de aceite
+
+- [ ] Existe um contrato persistente único para evento/notificação, isolado por organização/perfil/usuário.
+- [ ] Canal in-app lista e marca leitura sem depender de provider de IA.
+- [ ] Evento repetido/concorrente não duplica notificação equivalente.
+- [ ] Preferências são persistidas e aplicadas deterministicamente.
+- [ ] Um adapter com falha recuperável pode repetir a entrega sem alterar o fato financeiro.
+- [ ] Push/e-mail possuem fronteira de extensão, mas não são enviados em produção por esta issue.
+- [ ] Testes negativos provam isolamento entre perfis/usuários e ausência de vazamento no payload público.
+- [ ] Documentação descreve contrato, estados, preferências, idempotência, retry e rollout de canais externos.
+
+## Considerações de testes
+
+Cobrir caminho feliz, duplicidade/concorrência, leitura repetida, preferência, recurso de origem inacessível, retry após reinício e isolamento. Produtores reais adicionais podem ser ligados em issues próprias; a fundação deve ser testável com evento determinístico estruturado sem criar nova regra de negócio.

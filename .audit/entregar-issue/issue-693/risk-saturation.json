@@ -1,0 +1,280 @@
+{
+  "schema_version": 1,
+  "head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-003-03",
+        "NC-693-016-01",
+        "NC-693-018-01",
+        "NC-693-021-03",
+        "NC-693-023-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "scoped-recipient-check",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family authorization at scoped-recipient-check via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-003-03",
+            "NC-693-016-01",
+            "NC-693-018-01",
+            "NC-693-021-03",
+            "NC-693-023-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-003-02",
+        "NC-693-023-02",
+        "NC-693-029-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family tenant-isolation at tenant-scope-isolation via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-003-02",
+            "NC-693-023-02",
+            "NC-693-029-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-006-02",
+        "NC-693-010-02",
+        "NC-693-028-02",
+        "NC-693-029-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "serialized-public-payload",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family public-boundary at serialized-public-payload via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-006-02",
+            "NC-693-010-02",
+            "NC-693-028-02",
+            "NC-693-029-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-021-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "resource-existence-recheck",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family reference-liveness at resource-existence-recheck via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-021-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-016-02",
+        "NC-693-027-02",
+        "NC-693-031-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "preference-delivery-time",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family temporal-consistency at preference-delivery-time via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-016-02",
+            "NC-693-027-02",
+            "NC-693-031-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-008-03",
+        "NC-693-017-01",
+        "NC-693-031-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "concurrent-event-insert",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family concurrency-atomicity at concurrent-event-insert via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-008-03",
+            "NC-693-017-01",
+            "NC-693-031-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-001-01",
+        "NC-693-004-02",
+        "NC-693-007-01",
+        "NC-693-008-02",
+        "NC-693-009-03",
+        "NC-693-017-02",
+        "NC-693-022-02",
+        "NC-693-025-01",
+        "NC-693-027-03",
+        "NC-693-030-02",
+        "NC-693-031-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family idempotency at duplicate-processing via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-001-01",
+            "NC-693-004-02",
+            "NC-693-007-01",
+            "NC-693-008-02",
+            "NC-693-009-03",
+            "NC-693-017-02",
+            "NC-693-022-02",
+            "NC-693-025-01",
+            "NC-693-027-03",
+            "NC-693-030-02",
+            "NC-693-031-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-009-02",
+        "NC-693-015-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "failure-does-not-mutate-source",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family rollback at failure-does-not-mutate-source via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-009-02",
+            "NC-693-015-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-001-02",
+        "NC-693-012-01",
+        "NC-693-013-01",
+        "NC-693-031-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family structural-contract at relational-semantic-integrity via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-012-01",
+            "NC-693-013-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "versioned-event-identity",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family structural-contract at versioned-event-identity via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-001-02",
+            "NC-693-031-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-693-030-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family documentation at canonical-claims via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "control_ids": [
+            "NC-693-030-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": [],
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 693,
+    "pull_request_number": 793,
+    "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282"
+  }
+}

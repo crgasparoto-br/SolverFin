@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
+  "comparison_base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/api/src/financial-notification-access.ts",
+      "lines_before": null,
+      "lines_after": 272
+    },
+    {
+      "path": "apps/api/src/financial-notification-outbox.ts",
+      "lines_before": null,
+      "lines_after": 178
+    },
+    {
+      "path": "apps/api/src/financial-notification-scope.ts",
+      "lines_before": null,
+      "lines_after": 80
+    },
+    {
+      "path": "apps/api/src/financial-notifications-contract.ts",
+      "lines_before": null,
+      "lines_after": 233
+    },
+    {
+      "path": "apps/api/src/financial-notifications-router.ts",
+      "lines_before": null,
+      "lines_after": 132
+    },
+    {
+      "path": "apps/api/src/financial-notifications.ts",
+      "lines_before": null,
+      "lines_after": 182
+    },
+    {
+      "path": "apps/api/src/server.ts",
+      "lines_before": 402,
+      "lines_after": 410
+    },
+    {
+      "path": "apps/web/src/app-shell/routes.ts",
+      "lines_before": 225,
+      "lines_after": 236
+    },
+    {
+      "path": "apps/web/src/dev-server.ts",
+      "lines_before": 389,
+      "lines_after": 407
+    },
+    {
+      "path": "apps/web/src/dev-server/api.ts",
+      "lines_before": 400,
+      "lines_after": 424
+    },
+    {
+      "path": "apps/web/src/dev-server/notifications-page.ts",
+      "lines_before": null,
+      "lines_after": 299
+    },
+    {
+      "path": "apps/web/src/dev-server/shell.ts",
+      "lines_before": 384,
+      "lines_after": 385
+    },
+    {
+      "path": "apps/web/src/dev-server/ssr-style-contract.ts",
+      "lines_before": 643,
+      "lines_after": 647
+    },
+    {
+      "path": "packages/domain/src/index.ts",
+      "lines_before": 578,
+      "lines_after": 579
+    },
+    {
+      "path": "scripts/statement-visual/coverage-contract.mjs",
+      "lines_before": 449,
+      "lines_after": 450
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
+      "lines_before": 697,
+      "lines_after": 701
+    },
+    {
+      "path": "scripts/statement-visual/issue-606-pilot-empty-shared.mjs",
+      "lines_before": 167,
+      "lines_after": 175
+    },
+    {
+      "path": "scripts/statement-visual/issue-693-notifications-behavior-evidence.mjs",
+      "lines_before": null,
+      "lines_after": 67
+    },
+    {
+      "path": "scripts/statement-visual/issue-693-notifications.mjs",
+      "lines_before": null,
+      "lines_after": 184
+    }
+  ],
+  "blocking_files": []
+}

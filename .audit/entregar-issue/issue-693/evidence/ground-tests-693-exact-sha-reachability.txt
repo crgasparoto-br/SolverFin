@@ -1,0 +1,17 @@
+PROVENANCE: secondary reachability manifest derived from authenticated GitHub Actions run 43309777626 (job 131502846867) on exact material HEAD; this file is NOT the original stdout JUnit artifact.
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43309777626
+RUN_STATUS: completed/success
+CI_STEP: Run npm run test => completed/success; log reports financial-notifications.test.js and 164 compiled tests passed for API and 52 for web.
+CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; log reports financial-notifications.integration.test.js and 128 compiled test files passed.
+LOCAL_STEP: node --test scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs scripts/statement-visual/coverage-contract.test.mjs => 20/20 passed; source raw log included separately.
+NOTE: Reached declarations for integration card test and web file are based on runner discovery (*.integration.test.js / *.test.js), terminal successful sweep and absence of skips in the logged complete suite.
+HEAD: 93481ecf16c5d5139c51c42e49989490e38c6282
+EXIT_CODE: 0
+COMMAND: node --test scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs scripts/statement-visual/coverage-contract.test.mjs
+COMMAND: npm run test
+COMMAND: npm run test:integration --workspace @solverfin/api
+REACHED: apps/api/src/card-purchase-installment-audit-controls.integration.test.ts
+REACHED: apps/api/src/financial-notifications.integration.test.ts
+REACHED: apps/api/src/financial-notifications.test.ts
+REACHED: apps/web/src/dev-server/api-financial-profile.test.ts
+REACHED: scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs

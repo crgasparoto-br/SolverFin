@@ -1,0 +1,62 @@
+{
+  "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "scope": [
+    {
+      "surface": "authorization",
+      "path": "apps/api/src/financial-notification-scope.ts",
+      "source_sha256": "9d64b4f7b0a27d5cb05c0be618cada23f6b457ee40da25ea4b0961b83d27274f",
+      "line": 10,
+      "anchor": "assertFinancialNotificationScope"
+    },
+    {
+      "surface": "privacy",
+      "path": "apps/api/src/financial-notifications-contract.ts",
+      "source_sha256": "d05e04139d1d6d18d1ba07f4f2ef92efac97e4a6c81b97cc546c1e8a498aefe3",
+      "line": 187,
+      "anchor": "projectNotification"
+    },
+    {
+      "surface": "concurrency",
+      "path": "apps/api/src/financial-notifications.ts",
+      "source_sha256": "73aa492c5f250951530731fa402b755359748644bbf32370057cd1cea795d87d",
+      "line": 105,
+      "anchor": "on conflict"
+    },
+    {
+      "surface": "external-retry",
+      "path": "apps/api/src/financial-notification-outbox.ts",
+      "source_sha256": "1762a5e3f02e8ac2a7f5154f89071c73e005cc3995186b544285f93c080ee9b0",
+      "line": 102,
+      "anchor": "leaseToken"
+    },
+    {
+      "surface": "api",
+      "path": "apps/api/src/financial-notifications-router.ts",
+      "source_sha256": "430356f6df58ec6424fe6e61172215a696d4589e2937a408480e115dbfeb6415",
+      "line": 1,
+      "anchor": "requireAuthenticatedRequest"
+    },
+    {
+      "surface": "ui",
+      "path": "apps/web/src/dev-server/notifications-page.ts",
+      "source_sha256": "b7c2b1fa1281148cda7c47c75e462cf8c364633fb3323c35dd844de961511544",
+      "line": 54,
+      "anchor": "/notificacoes"
+    },
+    {
+      "surface": "migration",
+      "path": "prisma/migrations/20261112150000_financial_notifications_foundation/migration.sql",
+      "source_sha256": "cf15482fc65ca127a0f0d4f0646b0fee7151efa3cd1d33cd62f21b4bf0a1847b",
+      "line": 38,
+      "anchor": "CREATE UNIQUE INDEX"
+    },
+    {
+      "surface": "documentation",
+      "path": "docs/FINANCIAL_NOTIFICATIONS.md",
+      "source_sha256": "147daaf286dab0f5163787cfdd3ce3162ede2fb0cc9f5c54505dc4d44ae52c85",
+      "line": 24,
+      "anchor": "idempotência"
+    }
+  ],
+  "result": "all source anchors present"
+}

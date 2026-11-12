@@ -1,0 +1,45 @@
+{
+  "commit": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "route": "/notificacoes",
+  "viewports": [
+    {
+      "width": 1366,
+      "height": 900,
+      "preferenceGroupCount": 4,
+      "groupsHaveThreeChannels": true,
+      "readableChannelWidths": true,
+      "labelsUseGridLayout": true,
+      "route": "/notificacoes",
+      "rootVisible": true,
+      "emptyState": true,
+      "preferenceCount": 12,
+      "unreadCount": "0 não lidas",
+      "noHorizontalOverflow": true,
+      "viewportWidth": 1366
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "preferenceGroupCount": 4,
+      "groupsHaveThreeChannels": true,
+      "readableChannelWidths": true,
+      "labelsUseGridLayout": true,
+      "route": "/notificacoes",
+      "rootVisible": true,
+      "emptyState": true,
+      "preferenceCount": 12,
+      "unreadCount": "0 não lidas",
+      "noHorizontalOverflow": true,
+      "viewportWidth": 390
+    }
+  ],
+  "preference": {
+    "changedAndRestored": true,
+    "persistsAcrossReload": true
+  },
+  "result": "passed",
+  "navigation": {
+    "preservesProfileId": true,
+    "preservesAnchor": true
+  }
+}
