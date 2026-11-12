@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "material_head_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
-  "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
+  "material_head_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+  "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
   "subject_issue": 714,
   "subject_pr": 760,
   "control_count": 16,
@@ -13,7 +13,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "713-integrated-sha",
@@ -22,7 +22,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "721-integrated-sha",
@@ -31,7 +31,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "propagation-boundary",
@@ -40,7 +40,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "individual-transfer-legs",
@@ -49,7 +49,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "all-accounts-no-inflation",
@@ -58,7 +58,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "fx-selected-currency-leg",
@@ -67,7 +67,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "centered-dialogs",
@@ -76,7 +76,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "footer-precedence",
@@ -85,7 +85,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "independence-distinct",
@@ -94,7 +94,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "7a1d30e8d12191dea8c4896b22bdfea59eb19465b2eddfc2fae2032f4d6409ba",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "inventory-26-not-22",
@@ -103,7 +103,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "inventory-7-deferred",
@@ -112,7 +112,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "prospective-not-retroactive",
@@ -121,7 +121,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "required-check-pending",
@@ -130,7 +130,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "review-seven-deferred",
@@ -139,7 +139,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "903d138ae332aaf0a7475166a8806e312cff7a9f98516815a929bca108f083e7",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     },
     {
       "id": "center-and-financial-adr",
@@ -148,7 +148,7 @@
       "negative": "mutated source rejected",
       "restoration": "source unchanged and accepted",
       "source_sha256": "9877540291509d01a321d7344c3375f7b7dbdd5ce924107b91e4f52a84564a2c",
-      "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459"
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a"
     }
   ],
   "independent_approval_observed": false,

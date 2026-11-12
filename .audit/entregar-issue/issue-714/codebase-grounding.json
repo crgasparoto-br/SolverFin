@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
-  "base_sha": "99eced51cc2f9262bb9990f032ff786293f232bf",
+  "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+  "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
   "creations": [
     {
       "path": ".audit/entregar-issue/issue-714/evidence/verify_714_material.py",
@@ -63,13 +63,13 @@
         "status": "passed",
         "command": "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs",
         "exit_code": 0,
-        "subject_sha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+        "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
         "reached_tests": [
           "scripts/statement-visual/issue-714-documentation-contract.test.mjs",
           "scripts/statement-visual/*.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log",
-        "evidence_sha256": "e698fc78ed37305c7acb28c058d9e10e2d94b3893dc138a00c56f8c0cd644a21"
+        "evidence_sha256": "a05f75489bb4a276a8f7266e3d95f89ab6e6660c7a3d471e06352130402e2d85"
       }
     }
   ]

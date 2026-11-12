@@ -1,173 +1,177 @@
-HEAD: 4118e899c2a37209864d5dcde609a6c57fffa459
+HEAD: 47db0619b42d52f209506618a35f221ca2290c7a
 COMMAND: node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs
 EXIT_CODE: 0
 REACHED: scripts/statement-visual/issue-714-documentation-contract.test.mjs
 REACHED: scripts/statement-visual/*.test.mjs
-MATERIAL_SHA=4118e899c2a37209864d5dcde609a6c57fffa459
-BASE_SHA=99eced51cc2f9262bb9990f032ff786293f232bf
+MATERIAL_SHA=47db0619b42d52f209506618a35f221ca2290c7a
+BASE_SHA=a34bc5fcfff4b36302a8c08e861ea0ebf2676631
+EXECUTED: node --test scripts/statement-visual/*.test.mjs; exit=0; 153 passed, 0 failed
+EXECUTED: verify_714_material.py; exit=0; 16 negative source controls and restoration
+REMOTE_CI_RUN: 43123358506; conclusion=success
+REMOTE_CHROME_RUN: 43123358510; conclusion=success; attempt=2
 
-== Node.js exact material tests ==
+DOCUMENTATION TESTS
 TAP version 13
 # Subtest: issue 714 documentary contract contains 22 distinct checks
 ok 1 - issue 714 documentary contract contains 22 distinct checks
   ---
-  duration_ms: 0.989056
+  duration_ms: 1.247348
   type: 'test'
   ...
 # Subtest: issue 714 documentation: approved-heading rejects omission and restores
 ok 2 - issue 714 documentation: approved-heading rejects omission and restores
   ---
-  duration_ms: 0.650193
+  duration_ms: 0.5737
   type: 'test'
   ...
 # Subtest: issue 714 documentation: product-acceptance-date rejects omission and restores
 ok 3 - issue 714 documentation: product-acceptance-date rejects omission and restores
   ---
-  duration_ms: 0.16522
+  duration_ms: 0.123433
   type: 'test'
   ...
 # Subtest: issue 714 documentation: approved-product-material rejects omission and restores
 ok 4 - issue 714 documentation: approved-product-material rejects omission and restores
   ---
-  duration_ms: 2.215578
+  duration_ms: 1.475286
   type: 'test'
   ...
 # Subtest: issue 714 documentation: integrated-pr-713 rejects omission and restores
 ok 5 - issue 714 documentation: integrated-pr-713 rejects omission and restores
   ---
-  duration_ms: 0.204118
+  duration_ms: 0.365391
   type: 'test'
   ...
 # Subtest: issue 714 documentation: integrated-pr-721 rejects omission and restores
 ok 6 - issue 714 documentation: integrated-pr-721 rejects omission and restores
   ---
-  duration_ms: 0.132958
+  duration_ms: 0.079057
   type: 'test'
   ...
 # Subtest: issue 714 documentation: functional-material-713 rejects omission and restores
 ok 7 - issue 714 documentation: functional-material-713 rejects omission and restores
   ---
-  duration_ms: 0.14938
+  duration_ms: 0.127739
   type: 'test'
   ...
 # Subtest: issue 714 documentation: responsive-material-721 rejects omission and restores
 ok 8 - issue 714 documentation: responsive-material-721 rejects omission and restores
   ---
-  duration_ms: 0.082868
+  duration_ms: 0.075142
   type: 'test'
   ...
 # Subtest: issue 714 documentation: centered-dialogs rejects omission and restores
 ok 9 - issue 714 documentation: centered-dialogs rejects omission and restores
   ---
-  duration_ms: 0.434488
+  duration_ms: 0.505629
   type: 'test'
   ...
 # Subtest: issue 714 documentation: new-entry-dialog rejects omission and restores
 ok 10 - issue 714 documentation: new-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.468402
+  duration_ms: 0.345322
   type: 'test'
   ...
 # Subtest: issue 714 documentation: edit-entry-dialog rejects omission and restores
 ok 11 - issue 714 documentation: edit-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.250441
+  duration_ms: 0.358271
   type: 'test'
   ...
 # Subtest: issue 714 documentation: clone-entry-dialog rejects omission and restores
 ok 12 - issue 714 documentation: clone-entry-dialog rejects omission and restores
   ---
-  duration_ms: 0.161794
+  duration_ms: 0.160217
   type: 'test'
   ...
 # Subtest: issue 714 documentation: individual-account-transfers rejects omission and restores
 ok 13 - issue 714 documentation: individual-account-transfers rejects omission and restores
   ---
-  duration_ms: 0.223266
+  duration_ms: 0.155651
   type: 'test'
   ...
 # Subtest: issue 714 documentation: all-accounts-currency-filter rejects omission and restores
 ok 14 - issue 714 documentation: all-accounts-currency-filter rejects omission and restores
   ---
-  duration_ms: 1.615909
+  duration_ms: 0.64085
   type: 'test'
   ...
 # Subtest: issue 714 documentation: internal-transfers rejects omission and restores
 ok 15 - issue 714 documentation: internal-transfers rejects omission and restores
   ---
-  duration_ms: 0.392136
+  duration_ms: 0.244782
   type: 'test'
   ...
 # Subtest: issue 714 documentation: exchange-transfers rejects omission and restores
 ok 16 - issue 714 documentation: exchange-transfers rejects omission and restores
   ---
-  duration_ms: 0.368713
+  duration_ms: 0.285393
   type: 'test'
   ...
 # Subtest: issue 714 documentation: independent-review-remains-distinct rejects omission and restores
 ok 17 - issue 714 documentation: independent-review-remains-distinct rejects omission and restores
   ---
-  duration_ms: 0.17491
+  duration_ms: 0.214769
   type: 'test'
   ...
 # Subtest: issue 714 documentation: exact-sha-certification rejects omission and restores
 ok 18 - issue 714 documentation: exact-sha-certification rejects omission and restores
   ---
-  duration_ms: 0.348942
+  duration_ms: 0.150753
   type: 'test'
   ...
 # Subtest: issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
 ok 19 - issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
   ---
-  duration_ms: 0.271869
+  duration_ms: 0.15519
   type: 'test'
   ...
 # Subtest: issue 714 documentation: propagation-not-automatic rejects omission and restores
 ok 20 - issue 714 documentation: propagation-not-automatic rejects omission and restores
   ---
-  duration_ms: 0.155377
+  duration_ms: 0.144875
   type: 'test'
   ...
 # Subtest: issue 714 documentation: epic-traceability rejects omission and restores
 ok 21 - issue 714 documentation: epic-traceability rejects omission and restores
   ---
-  duration_ms: 0.396225
+  duration_ms: 0.140569
   type: 'test'
   ...
 # Subtest: issue 714 documentation: touch-target-44px rejects omission and restores
 ok 22 - issue 714 documentation: touch-target-44px rejects omission and restores
   ---
-  duration_ms: 0.126341
+  duration_ms: 0.14818
   type: 'test'
   ...
 # Subtest: issue 714 documentation: design-system-reference rejects omission and restores
 ok 23 - issue 714 documentation: design-system-reference rejects omission and restores
   ---
-  duration_ms: 0.054219
+  duration_ms: 0.059909
   type: 'test'
   ...
 # Subtest: issue 714: the \#747 footer supersession stays explicit and testable
 ok 24 - issue 714: the \#747 footer supersession stays explicit and testable
   ---
-  duration_ms: 0.241615
+  duration_ms: 0.212425
   type: 'test'
   ...
 # Subtest: issue 714: current card contract rejects contradictory individual/all/FX mutations
 ok 25 - issue 714: current card contract rejects contradictory individual/all/FX mutations
   ---
-  duration_ms: 1.902624
+  duration_ms: 1.728661
   type: 'test'
   ...
 # Subtest: issue 714: prospective assurance is documented without retroactive approval
 ok 26 - issue 714: prospective assurance is documented without retroactive approval
   ---
-  duration_ms: 0.650578
+  duration_ms: 0.665867
   type: 'test'
   ...
 # Subtest: issue 714: current inventory rejects stale 22-obligation closure
 ok 27 - issue 714: current inventory rejects stale 22-obligation closure
   ---
-  duration_ms: 1.579225
+  duration_ms: 2.349551
   type: 'test'
   ...
 1..27
@@ -178,29 +182,940 @@ ok 27 - issue 714: current inventory rejects stale 22-obligation closure
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 96.820162
+# duration_ms 97.356198
 
-== Python independent-of-Node source mutation ==
-PASS 16 exact-material source-mutation/restoration controls at 4118e899c2a37209864d5dcde609a6c57fffa459; no approval
-
-== Scope ==
-.audit/entregar-issue/handoff-ready.json
-.audit/entregar-issue/issue-714/code-growth.json
-.audit/entregar-issue/issue-714/codebase-grounding.json
-.audit/entregar-issue/issue-714/evidence-provenance.json
-.audit/entregar-issue/issue-714/evidence/governance-material-controls.json
-.audit/entregar-issue/issue-714/evidence/governance-material-controls.log
-.audit/entregar-issue/issue-714/evidence/issue-714-chrome-contextual-exact-sha.json
-.audit/entregar-issue/issue-714/evidence/issue-714-documentation-contract.log
-.audit/entregar-issue/issue-714/evidence/issue-714-test-reach.log
-.audit/entregar-issue/issue-714/evidence/verify_714_material.py
-.audit/entregar-issue/issue-714/inherited-controls.json
-.audit/entregar-issue/issue-714/requirement-attack-matrix.json
-.audit/entregar-issue/issue-714/requirement-closure.json
-.audit/entregar-issue/issue-714/risk-saturation.json
-.audit/entregar-issue/issue-714/specification-snapshot.json
-.audit/entregar-issue/issue-714/specification-sources/SRC-ISSUE-714.txt
-docs/GOLDEN_STATEMENT.md
-docs/adr/0018-golden-statement-consolidated-by-currency.md
-docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md
-scripts/statement-visual/issue-714-documentation-contract.test.mjs
+FULL STATEMENT TESTS
+TAP version 13
+# Subtest: A3 Escape dispatches key down and up
+ok 1 - A3 Escape dispatches key down and up
+  ---
+  duration_ms: 1.968727
+  type: 'test'
+  ...
+# Subtest: A3 Enter dispatches down, carriage return and up
+ok 2 - A3 Enter dispatches down, carriage return and up
+  ---
+  duration_ms: 0.739335
+  type: 'test'
+  ...
+# Subtest: login helper never exposes the raw authentication response
+ok 3 - login helper never exposes the raw authentication response
+  ---
+  duration_ms: 1.135532
+  type: 'test'
+  ...
+# Subtest: clean and explicitly redacted evidence is accepted
+ok 4 - clean and explicitly redacted evidence is accepted
+  ---
+  duration_ms: 20.857132
+  type: 'test'
+  ...
+# Subtest: literal session-token leak is rejected without echoing the secret
+ok 5 - literal session-token leak is rejected without echoing the secret
+  ---
+  duration_ms: 11.243839
+  type: 'test'
+  ...
+# Subtest: authorization header sibling is rejected
+ok 6 - authorization header sibling is rejected
+  ---
+  duration_ms: 0.403558
+  type: 'test'
+  ...
+# Subtest: session cookie sibling is rejected
+ok 7 - session cookie sibling is rejected
+  ---
+  duration_ms: 0.281917
+  type: 'test'
+  ...
+# Subtest: raw auth payload sibling is rejected
+ok 8 - raw auth payload sibling is rejected
+  ---
+  duration_ms: 0.217462
+  type: 'test'
+  ...
+# Subtest: \#715: first desktop purchase must be fully readable, not just begin above the fold
+ok 9 - \#715: first desktop purchase must be fully readable, not just begin above the fold
+  ---
+  duration_ms: 0.988885
+  type: 'test'
+  ...
+# Subtest: \#715: mobile invoice amount leads the header and rejects a late decision
+ok 10 - \#715: mobile invoice amount leads the header and rejects a late decision
+  ---
+  duration_ms: 1.554213
+  type: 'test'
+  ...
+# Subtest: accepts Chrome stderr DevTools readiness when profile-port evidence is delayed
+ok 11 - accepts Chrome stderr DevTools readiness when profile-port evidence is delayed
+  ---
+  duration_ms: 2.012021
+  type: 'test'
+  ...
+# Subtest: rejects invalid, foreign and missing DevTools listeners
+ok 12 - rejects invalid, foreign and missing DevTools listeners
+  ---
+  duration_ms: 0.193086
+  type: 'test'
+  ...
+# Subtest: screenshot retries one transient Chrome compositor timeout and preserves evidence
+ok 13 - screenshot retries one transient Chrome compositor timeout and preserves evidence
+  ---
+  duration_ms: 320.084906
+  type: 'test'
+  ...
+# Subtest: screenshot fails closed when Chrome repeatedly times out
+ok 14 - screenshot fails closed when Chrome repeatedly times out
+  ---
+  duration_ms: 301.119305
+  type: 'test'
+  ...
+# Subtest: screenshot does not retry non-transient Chrome protocol errors
+ok 15 - screenshot does not retry non-transient Chrome protocol errors
+  ---
+  duration_ms: 0.306625
+  type: 'test'
+  ...
+# Subtest: canonical visual coverage contract is internally consistent
+ok 16 - canonical visual coverage contract is internally consistent
+  ---
+  duration_ms: 5.630542
+  type: 'test'
+  ...
+# Subtest: equivalent route/state/layout/interaction/data fingerprints are rejected
+ok 17 - equivalent route/state/layout/interaction/data fingerprints are rejected
+  ---
+  duration_ms: 2.853699
+  type: 'test'
+  ...
+# Subtest: critical component coverage cannot disappear silently
+ok 18 - critical component coverage cannot disappear silently
+  ---
+  duration_ms: 1.195521
+  type: 'test'
+  ...
+# Subtest: a component fixture cannot satisfy critical structural real-flow coverage
+ok 19 - a component fixture cannot satisfy critical structural real-flow coverage
+  ---
+  duration_ms: 1.374857
+  type: 'test'
+  ...
+# Subtest: a state fixture cannot impersonate a real structural filter flow
+ok 20 - a state fixture cannot impersonate a real structural filter flow
+  ---
+  duration_ms: 1.756293
+  type: 'test'
+  ...
+# Subtest: a route-shaped record without real-browser execution cannot satisfy structural coverage
+ok 21 - a route-shaped record without real-browser execution cannot satisfy structural coverage
+  ---
+  duration_ms: 2.444952
+  type: 'test'
+  ...
+# Subtest: a route-shaped record without an explicit component claim cannot satisfy structural coverage
+ok 22 - a route-shaped record without an explicit component claim cannot satisfy structural coverage
+  ---
+  duration_ms: 2.243655
+  type: 'test'
+  ...
+# Subtest: canonical structural real-flow mappings cover only critical components
+ok 23 - canonical structural real-flow mappings cover only critical components
+  ---
+  duration_ms: 0.329057
+  type: 'test'
+  ...
+# Subtest: a foundation fixture cannot substitute a pilot route alternate state
+ok 24 - a foundation fixture cannot substitute a pilot route alternate state
+  ---
+  duration_ms: 1.701471
+  type: 'test'
+  ...
+# Subtest: a secondary coverage failure keeps its exact route and state identity
+ok 25 - a secondary coverage failure keeps its exact route and state identity
+  ---
+  duration_ms: 1.424891
+  type: 'test'
+  ...
+# Subtest: candidate visual SHA replaces merge-preview SHA in child evidence
+ok 26 - candidate visual SHA replaces merge-preview SHA in child evidence
+  ---
+  duration_ms: 0.5541
+  type: 'test'
+  ...
+# Subtest: new multi-coverage scenarios fail closed without a focused execution override
+ok 27 - new multi-coverage scenarios fail closed without a focused execution override
+  ---
+  duration_ms: 0.474163
+  type: 'test'
+  ...
+# Subtest: focused overrides cannot retain interaction metadata without semantic assertions
+ok 28 - focused overrides cannot retain interaction metadata without semantic assertions
+  ---
+  duration_ms: 1.787508
+  type: 'test'
+  ...
+# Subtest: semantic proof rejects a missing declared interaction while identity stays correct
+ok 29 - semantic proof rejects a missing declared interaction while identity stays correct
+  ---
+  duration_ms: 0.64759
+  type: 'test'
+  ...
+# Subtest: semantic proof rejects a sibling route identity even when assertions are complete
+ok 30 - semantic proof rejects a sibling route identity even when assertions are complete
+  ---
+  duration_ms: 0.410709
+  type: 'test'
+  ...
+# Subtest: legacy retirement evidence remains mandatory after an adapter disappears
+ok 31 - legacy retirement evidence remains mandatory after an adapter disappears
+  ---
+  duration_ms: 1.132688
+  type: 'test'
+  ...
+# Subtest: legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
+ok 32 - legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
+  ---
+  duration_ms: 2.437812
+  type: 'test'
+  ...
+# Subtest: a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
+ok 33 - a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
+  ---
+  duration_ms: 1.770213
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency produces evidence only after all three widths pass
+ok 34 - Dashboard \#724 multi-currency produces evidence only after all three widths pass
+  ---
+  duration_ms: 6.479239
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+ok 35 - Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.522614
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 partial produces evidence only after all three widths pass
+ok 36 - Dashboard \#724 partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.413212
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 error produces evidence only after all three widths pass
+ok 37 - Dashboard \#724 error produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.208829
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 long-content produces evidence only after all three widths pass
+ok 38 - Dashboard \#724 long-content produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.277261
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects mobile navigation stretching and a bypassed negative control
+ok 39 - Dashboard \#724 rejects mobile navigation stretching and a bypassed negative control
+  ---
+  duration_ms: 1.875298
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects missing compact-mobile coverage
+ok 40 - Dashboard \#724 rejects missing compact-mobile coverage
+  ---
+  duration_ms: 1.028093
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+ok 41 - Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+  ---
+  duration_ms: 0.975956
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects a missing keyboard action
+ok 42 - Dashboard \#724 rejects a missing keyboard action
+  ---
+  duration_ms: 0.635652
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency rejects a mobile first-fold regression
+ok 43 - Dashboard \#724 multi-currency rejects a mobile first-fold regression
+  ---
+  duration_ms: 3.405476
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+ok 44 - Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+  ---
+  duration_ms: 0.935506
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency rejects an unfocusable first action
+ok 45 - Dashboard \#724 multi-currency rejects an unfocusable first action
+  ---
+  duration_ms: 0.325703
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial rejects an unfocusable first action
+ok 46 - Dashboard \#724 multi-currency-partial rejects an unfocusable first action
+  ---
+  duration_ms: 0.240326
+  type: 'test'
+  ...
+# Subtest: full-width fields coexist with actual pairs, independent of DOM order
+ok 47 - full-width fields coexist with actual pairs, independent of DOM order
+  ---
+  duration_ms: 1.69469
+  type: 'test'
+  ...
+# Subtest: 3+1 is not two columns, even though the old average says two
+ok 48 - 3+1 is not two columns, even though the old average says two
+  ---
+  duration_ms: 2.485022
+  type: 'test'
+  ...
+# Subtest: a late DOM field placed on an earlier row cannot escape the measurement
+ok 49 - a late DOM field placed on an earlier row cannot escape the measurement
+  ---
+  duration_ms: 0.356408
+  type: 'test'
+  ...
+# Subtest: all mobile fields must form one column
+ok 50 - all mobile fields must form one column
+  ---
+  duration_ms: 0.22913
+  type: 'test'
+  ...
+# Subtest: label overflow, collision, cropped money and duplicate currency fail independently
+ok 51 - label overflow, collision, cropped money and duplicate currency fail independently
+  ---
+  duration_ms: 2.428909
+  type: 'test'
+  ...
+# Subtest: a complete first desktop transaction remains visible
+ok 52 - a complete first desktop transaction remains visible
+  ---
+  duration_ms: 1.63313
+  type: 'test'
+  ...
+# Subtest: excess vertical chrome cannot pass only because horizontal layout is correct
+ok 53 - excess vertical chrome cannot pass only because horizontal layout is correct
+  ---
+  duration_ms: 0.894676
+  type: 'test'
+  ...
+# Subtest: desktop balance must not overlap the value column
+ok 54 - desktop balance must not overlap the value column
+  ---
+  duration_ms: 0.299573
+  type: 'test'
+  ...
+# Subtest: mobile reflow is not forced into a desktop height budget
+ok 55 - mobile reflow is not forced into a desktop height budget
+  ---
+  duration_ms: 0.486762
+  type: 'test'
+  ...
+# Subtest: sidebar and typography regressions remain rejected
+ok 56 - sidebar and typography regressions remain rejected
+  ---
+  duration_ms: 0.312753
+  type: 'test'
+  ...
+# Subtest: missing viewport dimensions cannot bypass the density check
+ok 57 - missing viewport dimensions cannot bypass the density check
+  ---
+  duration_ms: 0.158004
+  type: 'test'
+  ...
+# Subtest: a category folded back under the description is rejected on desktop
+ok 58 - a category folded back under the description is rejected on desktop
+  ---
+  duration_ms: 0.271362
+  type: 'test'
+  ...
+# Subtest: a category running into the amount column is rejected
+ok 59 - a category running into the amount column is rejected
+  ---
+  duration_ms: 0.179777
+  type: 'test'
+  ...
+# Subtest: a movement row without its glyph tile is rejected on desktop
+ok 60 - a movement row without its glyph tile is rejected on desktop
+  ---
+  duration_ms: 0.39138
+  type: 'test'
+  ...
+# Subtest: a glyph placed after the date is rejected on desktop
+ok 61 - a glyph placed after the date is rejected on desktop
+  ---
+  duration_ms: 0.558207
+  type: 'test'
+  ...
+# Subtest: visible elements outside the viewport fail the Golden Screen gate
+ok 62 - visible elements outside the viewport fail the Golden Screen gate
+  ---
+  duration_ms: 0.937439
+  type: 'test'
+  ...
+# Subtest: filter action overlap is rejected
+ok 63 - filter action overlap is rejected
+  ---
+  duration_ms: 0.368476
+  type: 'test'
+  ...
+# Subtest: exposed status text fails the icon-only contract
+ok 64 - exposed status text fails the icon-only contract
+  ---
+  duration_ms: 0.303489
+  type: 'test'
+  ...
+# Subtest: overlapping summary values fail the Golden Screen gate
+ok 65 - overlapping summary values fail the Golden Screen gate
+  ---
+  duration_ms: 0.295347
+  type: 'test'
+  ...
+# Subtest: a long currency value must remain within its own summary card
+ok 66 - a long currency value must remain within its own summary card
+  ---
+  duration_ms: 0.338532
+  type: 'test'
+  ...
+# Subtest: Chrome must inject and reject a long summary value escaping its card
+ok 67 - Chrome must inject and reject a long summary value escaping its card
+  ---
+  duration_ms: 0.457698
+  type: 'test'
+  ...
+# Subtest: mobile month clipping must have a negative control
+ok 68 - mobile month clipping must have a negative control
+  ---
+  duration_ms: 0.183432
+  type: 'test'
+  ...
+# Subtest: budgets-normal requires observed mobile proof even without component or legacy claims
+ok 69 - budgets-normal requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 1.578669
+  type: 'test'
+  ...
+# Subtest: dashboard-empty requires observed mobile proof even without component or legacy claims
+ok 70 - dashboard-empty requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 0.155671
+  type: 'test'
+  ...
+# Subtest: accounts-cards-empty requires observed mobile proof even without component or legacy claims
+ok 71 - accounts-cards-empty requires observed mobile proof even without component or legacy claims
+  ---
+  duration_ms: 0.095531
+  type: 'test'
+  ...
+# Subtest: supplemental empty-state records bind desktop-mobile metadata to observed assertions
+ok 72 - supplemental empty-state records bind desktop-mobile metadata to observed assertions
+  ---
+  duration_ms: 0.280465
+  type: 'test'
+  ...
+# Subtest: component fixtures remain outside real-flow desktop-mobile behavior binding
+ok 73 - component fixtures remain outside real-flow desktop-mobile behavior binding
+  ---
+  duration_ms: 0.114599
+  type: 'test'
+  ...
+# Subtest: issue 714 documentary contract contains 22 distinct checks
+ok 74 - issue 714 documentary contract contains 22 distinct checks
+  ---
+  duration_ms: 1.069685
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: approved-heading rejects omission and restores
+ok 75 - issue 714 documentation: approved-heading rejects omission and restores
+  ---
+  duration_ms: 0.394455
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: product-acceptance-date rejects omission and restores
+ok 76 - issue 714 documentation: product-acceptance-date rejects omission and restores
+  ---
+  duration_ms: 0.1215
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: approved-product-material rejects omission and restores
+ok 77 - issue 714 documentation: approved-product-material rejects omission and restores
+  ---
+  duration_ms: 0.760687
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: integrated-pr-713 rejects omission and restores
+ok 78 - issue 714 documentation: integrated-pr-713 rejects omission and restores
+  ---
+  duration_ms: 0.152236
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: integrated-pr-721 rejects omission and restores
+ok 79 - issue 714 documentation: integrated-pr-721 rejects omission and restores
+  ---
+  duration_ms: 0.12093
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: functional-material-713 rejects omission and restores
+ok 80 - issue 714 documentation: functional-material-713 rejects omission and restores
+  ---
+  duration_ms: 0.132837
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: responsive-material-721 rejects omission and restores
+ok 81 - issue 714 documentation: responsive-material-721 rejects omission and restores
+  ---
+  duration_ms: 0.072627
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: centered-dialogs rejects omission and restores
+ok 82 - issue 714 documentation: centered-dialogs rejects omission and restores
+  ---
+  duration_ms: 0.312363
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: new-entry-dialog rejects omission and restores
+ok 83 - issue 714 documentation: new-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 1.038759
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: edit-entry-dialog rejects omission and restores
+ok 84 - issue 714 documentation: edit-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 0.277592
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: clone-entry-dialog rejects omission and restores
+ok 85 - issue 714 documentation: clone-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 0.158055
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: individual-account-transfers rejects omission and restores
+ok 86 - issue 714 documentation: individual-account-transfers rejects omission and restores
+  ---
+  duration_ms: 0.153507
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: all-accounts-currency-filter rejects omission and restores
+ok 87 - issue 714 documentation: all-accounts-currency-filter rejects omission and restores
+  ---
+  duration_ms: 0.542534
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: internal-transfers rejects omission and restores
+ok 88 - issue 714 documentation: internal-transfers rejects omission and restores
+  ---
+  duration_ms: 0.179677
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: exchange-transfers rejects omission and restores
+ok 89 - issue 714 documentation: exchange-transfers rejects omission and restores
+  ---
+  duration_ms: 0.213637
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: independent-review-remains-distinct rejects omission and restores
+ok 90 - issue 714 documentation: independent-review-remains-distinct rejects omission and restores
+  ---
+  duration_ms: 0.157453
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: exact-sha-certification rejects omission and restores
+ok 91 - issue 714 documentation: exact-sha-certification rejects omission and restores
+  ---
+  duration_ms: 0.119537
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
+ok 92 - issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
+  ---
+  duration_ms: 0.13496
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: propagation-not-automatic rejects omission and restores
+ok 93 - issue 714 documentation: propagation-not-automatic rejects omission and restores
+  ---
+  duration_ms: 0.177624
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: epic-traceability rejects omission and restores
+ok 94 - issue 714 documentation: epic-traceability rejects omission and restores
+  ---
+  duration_ms: 0.277932
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: touch-target-44px rejects omission and restores
+ok 95 - issue 714 documentation: touch-target-44px rejects omission and restores
+  ---
+  duration_ms: 0.109843
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: design-system-reference rejects omission and restores
+ok 96 - issue 714 documentation: design-system-reference rejects omission and restores
+  ---
+  duration_ms: 0.050655
+  type: 'test'
+  ...
+# Subtest: issue 714: the \#747 footer supersession stays explicit and testable
+ok 97 - issue 714: the \#747 footer supersession stays explicit and testable
+  ---
+  duration_ms: 0.199365
+  type: 'test'
+  ...
+# Subtest: issue 714: current card contract rejects contradictory individual/all/FX mutations
+ok 98 - issue 714: current card contract rejects contradictory individual/all/FX mutations
+  ---
+  duration_ms: 1.641342
+  type: 'test'
+  ...
+# Subtest: issue 714: prospective assurance is documented without retroactive approval
+ok 99 - issue 714: prospective assurance is documented without retroactive approval
+  ---
+  duration_ms: 0.26358
+  type: 'test'
+  ...
+# Subtest: issue 714: current inventory rejects stale 22-obligation closure
+ok 100 - issue 714: current inventory rejects stale 22-obligation closure
+  ---
+  duration_ms: 1.071308
+  type: 'test'
+  ...
+# Subtest: budget long-list requires exact API readback and the same category's nine history entries
+ok 101 - budget long-list requires exact API readback and the same category's nine history entries
+  ---
+  duration_ms: 5.564365
+  type: 'test'
+  ...
+# Subtest: transaction modal absent, collapsed and mismatched identity all fail closed
+ok 102 - transaction modal absent, collapsed and mismatched identity all fail closed
+  ---
+  duration_ms: 0.859533
+  type: 'test'
+  ...
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-untrusted-fixture-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-fixture-9-failure.json
+# [issue-755] Failure diagnostics written: /tmp/issue-755-diagnostics-rUL4ID/issue-755-fixture-9-failure.json
+# Subtest: failure diagnostics preserve DOM, fixture and network causes without financial payloads
+ok 103 - failure diagnostics preserve DOM, fixture and network causes without financial payloads
+  ---
+  duration_ms: 14.633491
+  type: 'test'
+  ...
+# Subtest: fitting tables are exercised with wide content and restored
+ok 104 - fitting tables are exercised with wide content and restored
+  ---
+  duration_ms: 0.915937
+  type: 'test'
+  ...
+# Subtest: visible or hidden overflow cannot satisfy local scrolling
+ok 105 - visible or hidden overflow cannot satisfy local scrolling
+  ---
+  duration_ms: 0.140398
+  type: 'test'
+  ...
+# Subtest: document expansion is rejected even when the table scrolls
+ok 106 - document expansion is rejected even when the table scrolls
+  ---
+  duration_ms: 0.106507
+  type: 'test'
+  ...
+# Subtest: an invisible or absent table is not evidence
+ok 107 - an invisible or absent table is not evidence
+  ---
+  duration_ms: 0.174429
+  type: 'test'
+  ...
+# Subtest: accepts the horizontal hierarchy with one exposed action
+ok 108 - accepts the horizontal hierarchy with one exposed action
+  ---
+  duration_ms: 2.183034
+  type: 'test'
+  ...
+# Subtest: rejects stacked desktop hierarchy even with the right nodes
+ok 109 - rejects stacked desktop hierarchy even with the right nodes
+  ---
+  duration_ms: 0.85708
+  type: 'test'
+  ...
+# Subtest: rejects three exposed actions and lost secondary actions
+ok 110 - rejects three exposed actions and lost secondary actions
+  ---
+  duration_ms: 0.559719
+  type: 'test'
+  ...
+# Subtest: rejects an initially open menu and a summary sidebar
+ok 111 - rejects an initially open menu and a summary sidebar
+  ---
+  duration_ms: 0.282638
+  type: 'test'
+  ...
+# Subtest: accepts mobile stacking but rejects reversed financial context
+ok 112 - accepts mobile stacking but rejects reversed financial context
+  ---
+  duration_ms: 0.301437
+  type: 'test'
+  ...
+# Subtest: rejects the pre-fix mobile composition that delays the movement list
+ok 113 - rejects the pre-fix mobile composition that delays the movement list
+  ---
+  duration_ms: 0.296259
+  type: 'test'
+  ...
+# Subtest: keeps the account chevron at the right edge on desktop and mobile
+ok 114 - keeps the account chevron at the right edge on desktop and mobile
+  ---
+  duration_ms: 1.393755
+  type: 'test'
+  ...
+# Subtest: desktop period and Current month share both account-selector edges
+ok 115 - desktop period and Current month share both account-selector edges
+  ---
+  duration_ms: 1.005801
+  type: 'test'
+  ...
+# Subtest: rejects a hidden currency selector or a currency selector editable on one account
+ok 116 - rejects a hidden currency selector or a currency selector editable on one account
+  ---
+  duration_ms: 0.825343
+  type: 'test'
+  ...
+# Subtest: rejects selector left in query or orphaned from original GET form
+ok 117 - rejects selector left in query or orphaned from original GET form
+  ---
+  duration_ms: 1.740258
+  type: 'test'
+  ...
+# Subtest: rejects admin-style stacked filters at desktop widths
+ok 118 - rejects admin-style stacked filters at desktop widths
+  ---
+  duration_ms: 0.293284
+  type: 'test'
+  ...
+# Subtest: rejects desktop filters hidden from the visual composition
+ok 119 - rejects desktop filters hidden from the visual composition
+  ---
+  duration_ms: 0.158555
+  type: 'test'
+  ...
+# Subtest: rejects desktop composition hiding the first movement below the fold
+ok 120 - rejects desktop composition hiding the first movement below the fold
+  ---
+  duration_ms: 0.126147
+  type: 'test'
+  ...
+# Subtest: rejects a partially clipped first desktop movement
+ok 121 - rejects a partially clipped first desktop movement
+  ---
+  duration_ms: 0.163743
+  type: 'test'
+  ...
+# Subtest: rejects first desktop transaction rendered with zero height
+ok 122 - rejects first desktop transaction rendered with zero height
+  ---
+  duration_ms: 0.825162
+  type: 'test'
+  ...
+# Subtest: rejects truncated default financial filter choices on desktop
+ok 123 - rejects truncated default financial filter choices on desktop
+  ---
+  duration_ms: 0.48588
+  type: 'test'
+  ...
+# Subtest: rejects a truncated desktop search placeholder
+ok 124 - rejects a truncated desktop search placeholder
+  ---
+  duration_ms: 0.45269
+  type: 'test'
+  ...
+# Subtest: rejects overlapping desktop sort and Apply controls
+ok 125 - rejects overlapping desktop sort and Apply controls
+  ---
+  duration_ms: 0.165085
+  type: 'test'
+  ...
+# Subtest: metadata below the description does not overlap despite sharing horizontal space
+ok 126 - metadata below the description does not overlap despite sharing horizontal space
+  ---
+  duration_ms: 0.902757
+  type: 'test'
+  ...
+# Subtest: adjacent columns and touching edges do not overlap
+ok 127 - adjacent columns and touching edges do not overlap
+  ---
+  duration_ms: 0.167198
+  type: 'test'
+  ...
+# Subtest: real horizontal and vertical collisions are rejected in either ordering
+ok 128 - real horizontal and vertical collisions are rejected in either ordering
+  ---
+  duration_ms: 0.828648
+  type: 'test'
+  ...
+# Subtest: expanded details overlapping a metadata row are detected
+ok 129 - expanded details overlapping a metadata row are detected
+  ---
+  duration_ms: 0.126107
+  type: 'test'
+  ...
+# Subtest: non-rendered boxes and subpixel touching are not collisions
+ok 130 - non-rendered boxes and subpixel touching are not collisions
+  ---
+  duration_ms: 0.316209
+  type: 'test'
+  ...
+# Subtest: invalid geometry fails closed
+ok 131 - invalid geometry fails closed
+  ---
+  duration_ms: 0.490777
+  type: 'test'
+  ...
+# Subtest: accepts a contained viewport with independently scrollable financial charts
+ok 132 - accepts a contained viewport with independently scrollable financial charts
+  ---
+  duration_ms: 3.200332
+  type: 'test'
+  ...
+# Subtest: rejects a genuine out-of-viewport layout, not just local scrolling
+ok 133 - rejects a genuine out-of-viewport layout, not just local scrolling
+  ---
+  duration_ms: 2.933776
+  type: 'test'
+  ...
+# Subtest: rejects hidden or clipped local charts and charts outside their viewport
+ok 134 - rejects hidden or clipped local charts and charts outside their viewport
+  ---
+  duration_ms: 3.410904
+  type: 'test'
+  ...
+# Subtest: fails closed if the report boundary is absent
+ok 135 - fails closed if the report boundary is absent
+  ---
+  duration_ms: 1.156233
+  type: 'test'
+  ...
+# Subtest: supports an explicit viewport boundary for cash-flow and SSR error states
+ok 136 - supports an explicit viewport boundary for cash-flow and SSR error states
+  ---
+  duration_ms: 1.921247
+  type: 'test'
+  ...
+# Subtest: A718-05: catches visually clipped selected values even without global overflow
+ok 137 - A718-05: catches visually clipped selected values even without global overflow
+  ---
+  duration_ms: 39.378088
+  type: 'test'
+  ...
+# Subtest: A718-05: rejects missing filter form instead of silently accepting an empty set
+ok 138 - A718-05: rejects missing filter form instead of silently accepting an empty set
+  ---
+  duration_ms: 0.827997
+  type: 'test'
+  ...
+# Subtest: \#718 adapter validates original Chrome evidence and full viewport coverage
+ok 139 - \#718 adapter validates original Chrome evidence and full viewport coverage
+  ---
+  duration_ms: 6.29695
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects category trend scrollbar, tall matrix rows or detached review alerts
+ok 140 - \#718 adapter rejects category trend scrollbar, tall matrix rows or detached review alerts
+  ---
+  duration_ms: 2.942701
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects incomplete currency coverage or mobile overflow
+ok 141 - \#718 adapter rejects incomplete currency coverage or mobile overflow
+  ---
+  duration_ms: 1.205486
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects untested or un-restored negative controls
+ok 142 - \#718 adapter rejects untested or un-restored negative controls
+  ---
+  duration_ms: 0.86383
+  type: 'test'
+  ...
+# Subtest: \#718 adapter does not accept an omitted small mobile viewport
+ok 143 - \#718 adapter does not accept an omitted small mobile viewport
+  ---
+  duration_ms: 0.577335
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects opening-only screenshot evidence with no offscreen captures
+ok 144 - \#718 adapter rejects opening-only screenshot evidence with no offscreen captures
+  ---
+  duration_ms: 0.585006
+  type: 'test'
+  ...
+# Subtest: \#718 adapter rejects a capture without visible monetary content or currency context
+ok 145 - \#718 adapter rejects a capture without visible monetary content or currency context
+  ---
+  duration_ms: 0.859604
+  type: 'test'
+  ...
+# Subtest: \#718 rejects missing cash-flow currency/layer and mobile state evidence
+ok 146 - \#718 rejects missing cash-flow currency/layer and mobile state evidence
+  ---
+  duration_ms: 0.730533
+  type: 'test'
+  ...
+# Subtest: \#718 rejects cash-flow money mix, mobile overflow and broken recovery link
+ok 147 - \#718 rejects cash-flow money mix, mobile overflow and broken recovery link
+  ---
+  duration_ms: 1.960134
+  type: 'test'
+  ...
+# Subtest: \#718 rejects overlapping trend currency text and an ineffective negative control
+ok 148 - \#718 rejects overlapping trend currency text and an ineffective negative control
+  ---
+  duration_ms: 1.149653
+  type: 'test'
+  ...
+# Subtest: A718-05 adapter rejects clipped desktop selections despite no page overflow
+ok 149 - A718-05 adapter rejects clipped desktop selections despite no page overflow
+  ---
+  duration_ms: 1.098488
+  type: 'test'
+  ...
+# Subtest: A718-05 adapter requires real tablet coverage
+ok 150 - A718-05 adapter requires real tablet coverage
+  ---
+  duration_ms: 0.317901
+  type: 'test'
+  ...
+# Subtest: creation and cloning support primary action below Continue at 320, 390 and 1366
+ok 151 - creation and cloning support primary action below Continue at 320, 390 and 1366
+  ---
+  duration_ms: 1.861889
+  type: 'test'
+  ...
+# Subtest: editing requires one visible primary submit, allowing narrow stacking
+ok 152 - editing requires one visible primary submit, allowing narrow stacking
+  ---
+  duration_ms: 1.036896
+  type: 'test'
+  ...
+# Subtest: negative controls reject undersized buttons and leaked create-only action
+ok 153 - negative controls reject undersized buttons and leaked create-only action
+  ---
+  duration_ms: 1.797203
+  type: 'test'
+  ...
+1..153
+# tests 153
+# suites 0
+# pass 153
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 821.80832

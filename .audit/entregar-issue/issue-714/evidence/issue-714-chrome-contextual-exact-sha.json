@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "subjectSha": "4118e899c2a37209864d5dcde609a6c57fffa459",
+  "subjectSha": "47db0619b42d52f209506618a35f221ca2290c7a",
   "status": "passed",
-  "runId": 42901674337,
-  "artifactId": 13804545554,
-  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/42901674337/artifacts/13804545554",
+  "runId": 43123358510,
+  "artifactId": 13903273376,
+  "sourceUrl": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43123358510/artifacts/13903273376",
   "rawEvidenceFile": "statement-contextual-surfaces.json",
-  "rawEvidenceSha256": "b6cbca179e051f298a1e8336fa58127fe95b1bbe64dab2bce3a68388be21a679",
+  "rawEvidenceSha256": "5a6cf92a248ae861a3ad382b51ef690e070cd50e9c72e7d3e2b5ef7f7736a08f",
   "rawObservedCount": 20,
   "rawNegativeControlCount": 72,
   "observations": [
@@ -118,12 +118,12 @@
         "height": 768
       },
       "route": "/lancamentos?accountId=all&currency=BRL&month=2026-07",
-      "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+      "accountId": "03e80e91-c217-49ed-a8de-cf7667cda268",
       "sourceCurrency": "BRL",
       "modalState": {
         "open": true,
         "method": "PATCH",
-        "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+        "accountId": "03e80e91-c217-49ed-a8de-cf7667cda268",
         "accountDisplay": "QA Visual - Valores Extensos · BRL",
         "sourceCurrency": "BRL",
         "saveDisabled": false
@@ -136,12 +136,12 @@
         "height": 768
       },
       "route": "/lancamentos?accountId=all&currency=BRL&month=2026-07",
-      "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+      "accountId": "03e80e91-c217-49ed-a8de-cf7667cda268",
       "cloneState": {
         "open": true,
         "title": "Clonar lançamento",
         "method": "POST",
-        "accountId": "f51a4129-6c05-4b45-8824-b9759008ac7c",
+        "accountId": "03e80e91-c217-49ed-a8de-cf7667cda268",
         "saveDisabled": false
       }
     },

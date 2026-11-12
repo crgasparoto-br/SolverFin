@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": ".audit/entregar-issue/issue-714/specification-snapshot.json",
-    "sha256": "46dbf4b41b5bb88f584391e126b37c38e8e3ceb714f18d7bc90db3fa4d89b410"
+    "sha256": "288400758b2e1c1517d4faf796b9df93b44416efa9aefa3e407215d49978c508"
   },
   "primary_issue_source_id": "SRC-ISSUE-714",
   "obligations": [
@@ -737,8 +737,8 @@
     ],
     "evidence": [
       "git diff current-develop..material-head: 20 paths (4 documentation/test + 16 historical audit artifacts), no finance/API/CSS changes",
-      "https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725 CRITICAL green exact-SHA",
-      "https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688 Chrome pass exact-SHA",
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/43123358506 CRITICAL green exact-SHA",
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/43123358510 Chrome pass exact-SHA",
       "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs: 25 passed; removal and 4 transfer adversarial mutations fail",
       "get_pr_info #760 Draft and independent reviews [] do not substitute independent approval"
     ],
