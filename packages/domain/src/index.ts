@@ -65,7 +65,8 @@ export type AuditEntityKind =
   | "reconciliation_link"
   | "ai_suggestion"
   | "privacy_consent"
-  | "attachment";
+  | "attachment"
+  | "financial_notification";
 
 export type AuditChangeMarker = "changed" | "added" | "removed";
 export type RedactedAuditChanges = Record<string, AuditChangeMarker>;

@@ -291,7 +291,7 @@ export async function publishFinancialNotificationForContext(
         action: "create",
         entityKind: "financial_notification",
         entityId: row.id,
-        redactedChanges: { event: "created" },
+        redactedChanges: { event: "added" },
       });
     }
     return { notification: projectNotification(row), created: inserted.length > 0, suppressed: false };
@@ -387,7 +387,7 @@ export async function setFinancialNotificationReadStateForContext(
       entityKind: "financial_notification",
       entityId: id,
       ...(correlationId ? { correlationId } : {}),
-      redactedChanges: { readAt: read ? "added" : "cleared" },
+      redactedChanges: { readAt: read ? "added" : "removed" },
     });
     return projectNotification(changed);
   });
@@ -505,7 +505,7 @@ function sameFacts(actual: unknown, expected: FinancialNotificationFacts): boole
   if (!isRecord(actual)) return false;
   const keys = Object.keys(expected).sort();
   return Object.keys(actual).length === keys.length &&
-    keys.every((key) => actual[key] === expected[key]);
+    keys.every((key) => actual[key] === (expected as Record<string, unknown>)[key]);
 }
 
 function validateFacts(type: FinancialNotificationEventType, value: unknown): asserts value is FinancialNotificationFacts {

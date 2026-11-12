@@ -904,14 +904,14 @@ model FinancialNotification {
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
 
-  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  recipient User @relation("FinancialNotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotification_profile_fkey")
+  recipient User @relation("FinancialNotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotification_recipient_fkey")
   deliveries FinancialNotificationDelivery[]
 
-  @@unique([id, organizationId, financialProfileId, recipientUserId])
-  @@unique([organizationId, financialProfileId, recipientUserId, eventType, fingerprint])
-  @@index([organizationId, financialProfileId, recipientUserId, occurredAt, id])
-  @@index([organizationId, financialProfileId, recipientUserId, readAt])
+  @@unique([id, organizationId, financialProfileId, recipientUserId], map: "FinancialNotification_scoped_id_key")
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, fingerprint], map: "FinancialNotification_dedup_key")
+  @@index([organizationId, financialProfileId, recipientUserId, occurredAt, id], map: "FinancialNotification_feed_idx")
+  @@index([organizationId, financialProfileId, recipientUserId, readAt], map: "FinancialNotification_read_idx")
 }
 
 /// A missing preference means in-app enabled and all external channels disabled.
@@ -926,11 +926,11 @@ model FinancialNotificationPreference {
   createdAt          DateTime @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime @updatedAt @db.Timestamptz(3)
 
-  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
-  recipient User @relation("FinancialNotificationPreferenceRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotificationPreference_profile_fkey")
+  recipient User @relation("FinancialNotificationPreferenceRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotificationPreference_recipient_fkey")
 
-  @@unique([organizationId, financialProfileId, recipientUserId, eventType, channel])
-  @@index([organizationId, financialProfileId, recipientUserId])
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, channel], map: "FinancialNotificationPreference_scoped_key")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationPreference_list_idx")
 }
 
 /// Durable claim/retry record; never changes or recomputes the financial source.
@@ -951,9 +951,9 @@ model FinancialNotificationDelivery {
   createdAt          DateTime  @default(now()) @db.Timestamptz(3)
   updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
 
-  notification FinancialNotification @relation(fields: [notificationId, organizationId, financialProfileId, recipientUserId], references: [id, organizationId, financialProfileId, recipientUserId], onDelete: Restrict)
+  notification FinancialNotification @relation(fields: [notificationId, organizationId, financialProfileId, recipientUserId], references: [id, organizationId, financialProfileId, recipientUserId], onDelete: Restrict, map: "FinancialNotificationDelivery_fkey")
 
-  @@unique([notificationId, channel])
-  @@index([channel, state, nextAttemptAt])
-  @@index([organizationId, financialProfileId, recipientUserId])
+  @@unique([notificationId, channel], map: "FinancialNotificationDelivery_notification_channel_key")
+  @@index([channel, state, nextAttemptAt], map: "FinancialNotificationDelivery_retry_idx")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationDelivery_scope_idx")
 }

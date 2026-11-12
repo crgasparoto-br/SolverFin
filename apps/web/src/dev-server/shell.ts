@@ -117,7 +117,7 @@ const routeIconMap: Record<
   budgets: "pie-chart",
   assistant: "zap",
   inbox: "inbox",
-  notifications: "bell",
+  notifications: "inbox",
   reports: "bar-chart-2",
   settings: "settings",
   adminInstitutions: "building-2",

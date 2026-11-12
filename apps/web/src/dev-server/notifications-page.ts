@@ -140,7 +140,7 @@ function renderNotification(item: NotificationItem): string {
     "</div>",
     '<div class="notifications-entry-actions">',
     '<button type="button" class="button-neutral" data-notification-target="' + id + '">',
-    icon("external-link", 14) + " Ver origem</button>",
+    icon("link", 14) + " Ver origem</button>",
     '<button type="button" class="button-neutral" data-notification-read="' +
       (item.readAt ? "false" : "true") + '" data-id="' + id + '">',
     item.readAt ? "Marcar não lida" : "Marcar lida",
