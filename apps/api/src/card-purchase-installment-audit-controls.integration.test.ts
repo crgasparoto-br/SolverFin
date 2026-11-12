@@ -182,7 +182,7 @@ async function assertConcurrentInstrumentConsistency(
   virtualInstrumentId: string,
   suffix: string,
 ): Promise<void> {
-  await Promise.all([
+  const attempts = await Promise.allSettled([
     updateCardPurchaseForContext(CONTEXT, cardId, transactionId, {
       description: `Concorrente A ${suffix}`,
       cardInstrumentId: virtualInstrumentId,
@@ -192,6 +192,16 @@ async function assertConcurrentInstrumentConsistency(
       cardInstrumentId: physicalInstrumentId,
     }),
   ]);
+  assert.ok(attempts.some((attempt) => attempt.status === "fulfilled"));
+  for (const attempt of attempts) {
+    if (attempt.status === "rejected") {
+      assert.equal(
+        (attempt.reason as { code?: string }).code,
+        "CARD_PURCHASE_CONCURRENT_CHANGE",
+        "Only the expected optimistic concurrency guard may reject an edit.",
+      );
+    }
+  }
 
   const transaction = await readPurchaseState(transactionId);
   const installmentInstruments = await readInstallmentInstruments(transactionId);
