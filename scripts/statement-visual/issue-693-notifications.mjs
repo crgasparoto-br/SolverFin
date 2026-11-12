@@ -38,7 +38,13 @@ try {
       browser.cdp,
       `(() => {
         const root = document.querySelector('[data-financial-notifications]');
+        const groups = [...(root?.querySelectorAll('.notifications-preference-group') ?? [])];
+        const channels = [...(root?.querySelectorAll('.notifications-preference-channel') ?? [])];
         return {
+          preferenceGroupCount: groups.length,
+          groupsHaveThreeChannels: groups.every((group) => group.querySelectorAll('[data-preference-event]').length === 3),
+          readableChannelWidths: channels.length === 12 && channels.every((channel) => channel.getBoundingClientRect().width >= 120),
+          labelsUseGridLayout: channels.length === 12 && channels.every((channel) => getComputedStyle(channel.closest('label')).display === 'grid'),
           route: location.pathname,
           rootVisible: Boolean(root),
           emptyState: Boolean(root?.querySelector('.notifications-empty')),
@@ -53,6 +59,10 @@ try {
     assert.equal(observed.rootVisible, true);
     assert.equal(observed.emptyState, true, "A new profile must render an honest empty state");
     assert.equal(observed.preferenceCount, 12, "All event/channel preferences must be visible");
+    assert.equal(observed.preferenceGroupCount, 4, "Event preferences must be grouped");
+    assert.equal(observed.groupsHaveThreeChannels, true, "Each event needs its three channels");
+    assert.equal(observed.readableChannelWidths, true, "Preference labels are too narrow");
+    assert.equal(observed.labelsUseGridLayout, true, "Preference controls are not aligned");
     assert.equal(observed.unreadCount, "0 não lidas");
     assert.equal(observed.noHorizontalOverflow, true, `${width}px horizontal overflow`);
     assert.equal(observed.viewportWidth, width);

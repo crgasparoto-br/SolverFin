@@ -39,8 +39,8 @@ const EVENT_LABELS: Record<string, string> = {
 };
 const CHANNEL_LABELS: Record<string, string> = {
   in_app: "No aplicativo",
-  push: "Push (canal ainda não ativado)",
-  email: "E-mail (canal ainda não ativado)",
+  push: "Push · indisponível",
+  email: "E-mail · indisponível",
 };
 const FACT_LABELS: Record<string, string> = {
   insight_available: "Um insight financeiro está disponível para revisão.",
@@ -163,33 +163,36 @@ function renderNotification(item: NotificationItem): string {
 }
 
 function renderPreferences(preferences: NotificationPreference[]): string {
-  return (
-    '<div class="notification-preference-list">' +
-    preferences
-      .map((preference) => {
-        const label = EVENT_LABELS[preference.type];
-        const channel = CHANNEL_LABELS[preference.channel];
-        if (!label || !channel) return "";
-        return [
-          '<label class="notifications-preference">',
-          "<span><strong>" +
-            escapeHtml(label) +
-            "</strong><small>" +
-            escapeHtml(channel) +
-            "</small></span>",
-          '<input type="checkbox" data-preference-event="' +
-            escapeHtml(preference.type) +
-            '" data-preference-channel="' +
-            escapeHtml(preference.channel) +
-            '" ' +
-            (preference.enabled ? "checked" : "") +
-            " />",
-          "</label>",
-        ].join("");
-      })
-      .join("") +
-    "</div>"
-  );
+  const grouped = Object.entries(EVENT_LABELS).map(([type, title]) => {
+    const channels = preferences.filter((preference) => preference.type === type);
+    if (channels.length === 0) return "";
+    return (
+      '<fieldset class="notifications-preference-group">' +
+      "<legend>" +
+      escapeHtml(title) +
+      "</legend>" +
+      channels
+        .map((preference) => {
+          const channel = CHANNEL_LABELS[preference.channel];
+          if (!channel) return "";
+          return [
+            '<label class="notifications-preference">',
+            '<span class="notifications-preference-channel">' + escapeHtml(channel) + "</span>",
+            '<input type="checkbox" data-preference-event="' +
+              escapeHtml(preference.type) +
+              '" data-preference-channel="' +
+              escapeHtml(preference.channel) +
+              '" ' +
+              (preference.enabled ? "checked" : "") +
+              " />",
+            "</label>",
+          ].join("");
+        })
+        .join("") +
+      "</fieldset>"
+    );
+  });
+  return '<div class="notifications-preference-list">' + grouped.join("") + "</div>";
 }
 
 function notificationsControllerScript(): string {
@@ -267,10 +270,13 @@ function notificationsPageStyles(): string {
     ".notifications-entry-actions { display: flex; flex-wrap: wrap; gap: .4rem; }",
     ".notifications-entry-actions button { white-space: nowrap; }",
     ".notifications-pagination { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; }",
-    ".notifications-preference-list { display: grid; gap: .65rem; }",
-    ".notifications-preference { display: flex; align-items: center; justify-content: space-between; gap: .6rem; }",
-    ".notifications-preference small { display: block; font-size: .8rem; color: var(--muted, #5f6572); }",
-    ".notifications-preference input { min-width: 18px; min-height: 18px; }",
+    ".notifications-preference-list { display: grid; gap: .75rem; }",
+    ".notifications-preference-group { min-width: 0; margin: 0; padding: .75rem .875rem .5rem; border: 1px solid var(--border, #dadfe7); border-radius: var(--sf-radius-md, .625rem); }",
+    ".notifications-preference-group legend { padding: 0 .25rem; font-size: .9rem; font-weight: 700; }",
+    ".notifications-preference { display: grid; grid-template-columns: minmax(0, 1fr) 1.5rem; align-items: center; gap: .75rem; min-height: 44px; font-weight: 500; }",
+    ".notifications-preference + .notifications-preference { border-top: 1px solid var(--border, #dadfe7); }",
+    ".notifications-preference-channel { min-width: 0; line-height: 1.35; overflow-wrap: normal; }",
+    ".notifications-preference input { width: 20px; height: 20px; margin: 0; accent-color: var(--accent, #145d93); cursor: pointer; }",
     ".notifications-empty { padding: 1.5rem 0; }",
     "[data-notifications-status] { min-height: 1rem; }",
     "@media (max-width: 780px) { .notifications-layout { grid-template-columns: minmax(0, 1fr); } .notifications-entry { flex-wrap: wrap; } }",
