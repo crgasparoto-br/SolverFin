@@ -228,6 +228,6 @@ export function sameFacts(actual: unknown, expected: FinancialNotificationFacts)
   );
 }
 
-function invalid(code: string): FinancialNotificationError {
+export function invalid(code: string): FinancialNotificationError {
   return new FinancialNotificationError(code, "Contrato de notificação inválido.", 400);
 }

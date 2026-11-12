@@ -1,8 +1,0 @@
-HEAD: fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55
-COMMAND: npm run test
-EXIT_CODE: 0
-REACHED: apps/web/src/dev-server/reports-export.test.ts
-SOURCE: GitHub Actions Repository CI run 42690866197, CRITICAL validation job 129410334480, completed/success.
-SOURCE_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/42690866197/job/129410334480
-OBSERVED: unicode financial text semantic collision regression, independent CSV/XLSX/PDF parity, invalid filters, empty states, currencies and profile isolation tests passed within npm run test.
-PROVENANCE: authenticated GitHub Actions job metadata, steps and logs reviewed; raw job log is the source of truth at SOURCE_URL.

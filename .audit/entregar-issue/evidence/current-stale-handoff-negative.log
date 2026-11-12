@@ -1,3 +1,0 @@
-BLOCK: result-only child parent differs from certified material_head_sha
-BLOCK: result-only child validation requires candidate changed paths
-RECOVERY: post-write-refreeze

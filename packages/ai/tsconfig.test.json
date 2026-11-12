@@ -1,8 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "declaration": false,
-    "outDir": "../../.tmp-tests/ai"
-  },
-  "include": ["src/**/*.ts"]
-}

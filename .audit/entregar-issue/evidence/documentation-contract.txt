@@ -1,5 +1,0 @@
-Material head: cc1d2b9ba804adbfd34aa7f52577391f6dc987e2
-Canonical UI document: docs/ACCOUNTS_CARDS_UI.md
-PR #661 documents sessionStorage persistence for Buscar, Tipo, Moeda and Status, same-tab scope, restoration before filtering, neutral fallback for obsolete values, resource as the sole detail-selection authority, and issue #659 Chrome regression coverage.
-The exact-head CI run 34616164006 completed formatting, lint, typecheck, test and build successfully.
-The remediation for audit finding A-002 does not change the UI documentation or product behavior; it restores an unrelated package command to its prior bootstrap contract.

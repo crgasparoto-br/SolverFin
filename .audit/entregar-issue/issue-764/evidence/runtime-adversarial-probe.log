@@ -1,9 +1,0 @@
-PASS: valid stable evidence and authority accepted
-PASS: changed check ids denied
-PASS: changed PR identity denied
-PASS: key registry changed denied
-PASS: signed comment changed denied
-PASS: operator permissions revoked denied
-PASS: two open PRs same HEAD denied
-PASS: trusted execution source revoked denied
-PASS: 8/8 independent ephemeral controls

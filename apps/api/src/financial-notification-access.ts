@@ -6,6 +6,7 @@ import { query, withSharedTransaction } from "./db.js";
 import {
   FINANCIAL_NOTIFICATION_CHANNELS,
   FINANCIAL_NOTIFICATION_EVENT_TYPES,
+  invalid,
   isUuid,
   parseNotificationChannel,
   parseNotificationEventType,

@@ -1,6 +1,0 @@
-HEAD: fe7dc09fbce28f268d3d6d9ecf4d766f4b4e4f55
-COMMAND: node --test scripts/statement-visual/cdp.test.mjs
-EXIT_CODE: 0
-REACHED: scripts/statement-visual/cdp.test.mjs
-SOURCE: local exact SHA checkout restored from authenticated GitHub Actions git bundle run 42690866231.
-OBSERVED: Node TAP test run 5 passed, 0 failed; actual saved log at /mnt/data/handoff761/cdp-test-full.log.
