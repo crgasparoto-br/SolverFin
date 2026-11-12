@@ -8,6 +8,7 @@ O serviço interno publishFinancialNotificationForContext aceita eventos version
 não existe rota HTTP de publicação nem ligação automática dos motores existentes nesta fase.
 
 Tipos aceitos:
+
 - financial.insight.available.v1 — insight gerado pelo motor existente;
 - financial.budget.threshold.v1 — limiar de orçamento;
 - financial.invoice.due.v1 — fatura a vencer;
@@ -41,14 +42,14 @@ Na falha de banco não existe fallback em memória, e a transação de criação
 
 ## API autenticada
 
-| Método | Rota | Contrato |
-| --- | --- | --- |
-| GET | /api/notifications?limit=20&offset=0 | Lista, total, unreadCount, nextOffset |
-| GET | /api/notifications/unread-count | Contagem de não lidas |
-| PATCH | /api/notifications/:id/read | Corpo JSON: read boolean |
-| GET | /api/notifications/preferences | Tipos/canais e habilitação efetiva |
-| PUT | /api/notifications/preferences | Corpo JSON: type, channel, enabled |
-| GET | /api/notifications/:id/navigation | available e href seguro |
+| Método | Rota                                 | Contrato                              |
+| ------ | ------------------------------------ | ------------------------------------- |
+| GET    | /api/notifications?limit=20&offset=0 | Lista, total, unreadCount, nextOffset |
+| GET    | /api/notifications/unread-count      | Contagem de não lidas                 |
+| PATCH  | /api/notifications/:id/read          | Corpo JSON: read boolean              |
+| GET    | /api/notifications/preferences       | Tipos/canais e habilitação efetiva    |
+| PUT    | /api/notifications/preferences       | Corpo JSON: type, channel, enabled    |
+| GET    | /api/notifications/:id/navigation    | available e href seguro               |
 
 Todas exigem sessão e TenantContext do servidor. O parâmetro profileId seleciona somente
 um perfil ativo pertencente à sessão. Corpo não pode sobrescrever organização, perfil

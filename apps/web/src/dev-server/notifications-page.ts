@@ -132,46 +132,64 @@ function renderFeed(page: NotificationPage, offset: number, profileId: string | 
 function renderNotification(item: NotificationItem): string {
   const title = FACT_LABELS[item.facts.code] ?? "Notificação indisponível";
   const occurredAt = new Date(item.occurredAt);
-  const dateText = Number.isNaN(occurredAt.getTime()) ? "Data indisponível" :
-    new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(occurredAt);
-  const hasAmount = item.facts.currency && typeof item.facts.amountMinor === "number" &&
+  const dateText = Number.isNaN(occurredAt.getTime())
+    ? "Data indisponível"
+    : new Intl.DateTimeFormat("pt-BR", { dateStyle: "medium" }).format(occurredAt);
+  const hasAmount =
+    item.facts.currency &&
+    typeof item.facts.amountMinor === "number" &&
     Number.isSafeInteger(item.facts.amountMinor);
-  const amount = hasAmount ?
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: item.facts.currency as string,
-    }).format((item.facts.amountMinor as number) / 100) : null;
+  const amount = hasAmount
+    ? formatMinorAmount(item.facts.amountMinor as number, item.facts.currency as string)
+    : null;
   const id = escapeHtml(item.id);
   return [
     '<li class="notifications-entry" data-read-state="' + (item.readAt ? "read" : "unread") + '">',
-    '<div><h3>' + escapeHtml(title) + "</h3>",
-    '<p>' + escapeHtml(dateText) + (amount ? " · " + escapeHtml(amount) : "") + "</p>",
-    item.facts.effectiveOn ? '<p>Referência: ' + escapeHtml(item.facts.effectiveOn) + "</p>" : "",
+    "<div><h3>" + escapeHtml(title) + "</h3>",
+    "<p>" + escapeHtml(dateText) + (amount ? " · " + escapeHtml(amount) : "") + "</p>",
+    item.facts.effectiveOn ? "<p>Referência: " + escapeHtml(item.facts.effectiveOn) + "</p>" : "",
     "</div>",
     '<div class="notifications-entry-actions">',
     '<button type="button" class="button-neutral" data-notification-target="' + id + '">',
     icon("link", 14) + " Ver origem</button>",
     '<button type="button" class="button-neutral" data-notification-read="' +
-      (item.readAt ? "false" : "true") + '" data-id="' + id + '">',
+      (item.readAt ? "false" : "true") +
+      '" data-id="' +
+      id +
+      '">',
     item.readAt ? "Marcar não lida" : "Marcar lida",
     "</button></div></li>",
   ].join("");
 }
 
 function renderPreferences(preferences: NotificationPreference[]): string {
-  return '<div class="notification-preference-list">' + preferences.map((preference) => {
-    const label = EVENT_LABELS[preference.type];
-    const channel = CHANNEL_LABELS[preference.channel];
-    if (!label || !channel) return "";
-    return [
-      '<label class="notifications-preference">',
-      '<span><strong>' + escapeHtml(label) + "</strong><small>" + escapeHtml(channel) + "</small></span>",
-      '<input type="checkbox" data-preference-event="' + escapeHtml(preference.type) +
-        '" data-preference-channel="' + escapeHtml(preference.channel) +
-        '" ' + (preference.enabled ? "checked" : "") + " />",
-      "</label>",
-    ].join("");
-  }).join("") + "</div>";
+  return (
+    '<div class="notification-preference-list">' +
+    preferences
+      .map((preference) => {
+        const label = EVENT_LABELS[preference.type];
+        const channel = CHANNEL_LABELS[preference.channel];
+        if (!label || !channel) return "";
+        return [
+          '<label class="notifications-preference">',
+          "<span><strong>" +
+            escapeHtml(label) +
+            "</strong><small>" +
+            escapeHtml(channel) +
+            "</small></span>",
+          '<input type="checkbox" data-preference-event="' +
+            escapeHtml(preference.type) +
+            '" data-preference-channel="' +
+            escapeHtml(preference.channel) +
+            '" ' +
+            (preference.enabled ? "checked" : "") +
+            " />",
+          "</label>",
+        ].join("");
+      })
+      .join("") +
+    "</div>"
+  );
 }
 
 function notificationsControllerScript(): string {
@@ -255,6 +273,12 @@ function notificationsPageStyles(): string {
     "[data-notifications-status] { min-height: 1rem; }",
     "@media (max-width: 780px) { .notifications-layout { grid-template-columns: minmax(0, 1fr); } .notifications-entry { flex-wrap: wrap; } }",
   ].join("\n");
+}
+
+function formatMinorAmount(value: number, currency: string): string {
+  const formatter = new Intl.NumberFormat("pt-BR", { style: "currency", currency });
+  const minorDigits = formatter.resolvedOptions().maximumFractionDigits;
+  return formatter.format(value / 10 ** minorDigits);
 }
 
 function escapeHtml(value: string): string {
