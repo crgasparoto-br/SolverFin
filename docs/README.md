@@ -25,6 +25,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`product/INTERFACE_INVENTORY.md`](./product/INTERFACE_INVENTORY.md): inventario navegavel usado como baseline de interface no fechamento da Fase 2.
 - [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato funcional, persistencia, privacidade, concorrencia e UX do assistente somente leitura.
+- [`FINANCIAL_NOTIFICATIONS.md`](./FINANCIAL_NOTIFICATIONS.md): eventos versionados, Inbox de notificacoes, preferencia por canal e outbox duravel (#693).
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao

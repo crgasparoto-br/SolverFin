@@ -18,6 +18,7 @@ import { renderFinancialAssistantPage } from "./dev-server/financial-assistant-p
 import { apiError, resolveCorrelationId, sendHtml, sendJson } from "./dev-server/http.js";
 import { downloadReportExport, ReportExportError } from "./dev-server/reports-export.js";
 import { renderInboxPage } from "./dev-server/inbox-page.js";
+import { renderNotificationsPage } from "./dev-server/notifications-page.js";
 import { applyLegacyHtmlPostProcessorPipeline } from "./dev-server/legacy-html-post-processors.js";
 import { renderLoginPage } from "./dev-server/login-page.js";
 import { renderNotFoundPage, renderPrivatePage } from "./dev-server/pages.js";
@@ -218,6 +219,11 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
   if (url.pathname === "/orcamentos" && token) {
     sendHtml(response, 200, await renderBudgetsPage(token, url));
+    return;
+  }
+
+  if (url.pathname === "/notificacoes" && token) {
+    sendHtml(response, 200, await renderNotificationsPage(token, url));
     return;
   }
 
