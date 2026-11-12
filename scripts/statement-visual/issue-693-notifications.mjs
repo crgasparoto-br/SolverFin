@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import { evaluate, launchChrome, navigate, screenshot, setViewport } from "./cdp.mjs";
+import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
@@ -73,6 +73,52 @@ try {
   await navigate(browser.cdp, `${baseUrl}/notificacoes`);
   assert.equal(await readPreference(), preference, "Preference was not restored");
   report.preference = { changedAndRestored: true, persistsAcrossReload: true };
+
+  // Exercise the real click handler with a safe mocked navigation response.
+  // The origin is revalidated by the API in production; this isolates the
+  // browser's profileId propagation without publishing fabricated events.
+  const profileId = "33333333-3333-4333-8333-333333333331";
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?profileId=${profileId}`);
+  const triggered = await evaluate(
+    browser.cdp,
+    `(() => {
+      const root = document.querySelector('[data-financial-notifications]');
+      if (!root) return false;
+      const originalFetch = window.fetch.bind(window);
+      window.fetch = (path, init) => {
+        if (String(path).includes('/api/notifications/00000000-0000-4000-8000-000000000693/navigation')) {
+          return Promise.resolve(new Response(JSON.stringify({
+            available: true, href: '/inbox#financial-insights'
+          }), { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return originalFetch(path, init);
+      };
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('data-notification-target', '00000000-0000-4000-8000-000000000693');
+      root.append(button);
+      button.click();
+      return true;
+    })()`,
+  );
+  assert.equal(triggered, true);
+  let navigation;
+  for (let attempt = 0; attempt < 15; attempt += 1) {
+    await sleep(150);
+    navigation = await evaluate(
+      browser.cdp,
+      `(() => ({
+        pathname: location.pathname,
+        profileId: new URLSearchParams(location.search).get('profileId'),
+        hash: location.hash
+      }))()`,
+    );
+    if (navigation.pathname === "/inbox") break;
+  }
+  assert.equal(navigation?.pathname, "/inbox");
+  assert.equal(navigation.profileId, profileId, "Navigation changed the selected profile");
+  assert.equal(navigation.hash, "#financial-insights");
+  report.navigation = { preservesProfileId: true, preservesAnchor: true };
   report.result = "passed";
 } catch (error) {
   report.result = "failed";

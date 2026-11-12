@@ -2,8 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
+import type { PoolClient } from "pg";
 
-import { closePool, query } from "./db.js";
+import { closePool, getPool, query } from "./db.js";
 import {
   countUnreadFinancialNotificationsForContext,
   getFinancialNotificationNavigationForContext,
@@ -388,6 +389,91 @@ async function main(): Promise<void> {
     "expired lease is recoverable from durable state after restart",
   );
   assert.equal(restartCalls, 1);
+
+  // Fault at the second authorization read, after a lease has been committed:
+  // the old catch(() => false) incorrectly marked this delivery as disabled.
+  const transient = await publishFinancialNotificationForContext(context, {
+    ...fixture("transient-recheck"),
+    type: externalType,
+    facts: { code: "invoice_due", severity: "warning" },
+  });
+  const transientId = (
+    await query<{ id: string }>(
+      'select "id" from "FinancialNotificationDelivery" where "notificationId"=$1',
+      [transient.notification?.id],
+    )
+  )[0]?.id;
+  assert.ok(transientId);
+  const pool = getPool();
+  const originalQueries = new Map<PoolClient, PoolClient["query"]>();
+  let scopeChecks = 0;
+  let transientCalls = 0;
+  const interceptAcquire = (client: PoolClient): void => {
+    if (originalQueries.has(client)) return;
+    const originalQuery = client.query;
+    const realQuery = originalQuery.bind(client) as (
+      sql: string,
+      params?: readonly unknown[],
+    ) => Promise<unknown>;
+    originalQueries.set(client, originalQuery);
+    client.query = ((sql: string, params?: readonly unknown[]) => {
+      if (typeof sql === "string" && sql.includes('select p."id" from "FinancialProfile" p')) {
+        scopeChecks += 1;
+        if (scopeChecks === 2) {
+          return Promise.reject(new Error("forced transient notification recheck outage"));
+        }
+      }
+      return realQuery(sql, params);
+    }) as PoolClient["query"];
+  };
+  const transientAdapter = {
+    channel: "push" as const,
+    async deliver() {
+      transientCalls += 1;
+    },
+  };
+  pool.on("acquire", interceptAcquire);
+  try {
+    await assert.rejects(
+      () =>
+        retryFinancialNotificationDeliveryForContext(context, transientId, transientAdapter, {
+          externalDeliveryEnabled: true,
+          now: new Date("2035-01-04T00:00:00.000Z"),
+        }),
+      /forced transient notification recheck outage/,
+    );
+  } finally {
+    pool.off("acquire", interceptAcquire);
+    for (const [client, originalQuery] of originalQueries) client.query = originalQuery;
+  }
+  assert.equal(scopeChecks, 2, "the injected outage must hit the post-lease recheck");
+  assert.equal(transientCalls, 0, "no adapter can run after a failed authorization read");
+  const leased = (
+    await query<{ state: string; attempts: number; leaseToken: string | null }>(
+      'select "state","attempts","leaseToken" from "FinancialNotificationDelivery" where "id"=$1',
+      [transientId],
+    )
+  )[0];
+  assert.equal(leased?.state, "leased", "transient failures must not disable a delivery");
+  assert.equal(leased?.attempts, 1);
+  assert.ok(leased?.leaseToken);
+  assert.equal(
+    await retryFinancialNotificationDeliveryForContext(context, transientId, transientAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-04T00:00:30.000Z"),
+    }),
+    "not_due",
+    "an active durable lease must prevent concurrent retries",
+  );
+  assert.equal(
+    await retryFinancialNotificationDeliveryForContext(context, transientId, transientAdapter, {
+      externalDeliveryEnabled: true,
+      now: new Date("2035-01-04T00:02:00.000Z"),
+    }),
+    "delivered",
+    "an expired lease must be reclaimable after a transient database error",
+  );
+  assert.equal(transientCalls, 1);
 
   const revoked = await publishFinancialNotificationForContext(context, {
     ...fixture("revoked"),

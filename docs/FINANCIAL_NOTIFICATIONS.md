@@ -64,8 +64,9 @@ um perfil ativo pertencente à sessão. Corpo não pode sobrescrever organizaç�
 ou destinatário. A listagem é ordenada por occurredAt decrescente + id, com limite máximo
 100 e offset até 10000. Resposta pública omite fingerprint e IDs privados de origem.
 A navegação revalida a referência no momento de uso; se inacessível, retorna
-available=false sem link. Página /notificacoes fornece leitura, paginação e preferências
-sem eventos artificiais.
+available=false sem link. Ao abrir uma origem acessível, a interface preserva o
+`profileId` selecionado antes do fragmento da URL, sem aceitar destinos externos.
+Página /notificacoes fornece leitura, paginação e preferências sem eventos artificiais.
 
 ## Privacidade e auditoria
 
@@ -73,7 +74,10 @@ O servidor revalida organização/perfil/usuário ativo no banco, dentro das tra
 mutação. Marcadores de leitura são idempotentes e preservam o timestamp após repetição.
 Auditoria inclui somente mudança redigida e correlationId, sem conteúdo bancário.
 Tentativas de entrega armazenam código de erro genérico, sem erro bruto do provider.
-Nenhum canal externo é chamado pelo servidor atual.
+Uma falha transitória na segunda verificação de escopo/preferência, após reivindicar o
+lease, interrompe a tentativa sem chamar o adapter e sem gravar `disabled`; o lease
+expira para uma nova tentativa segura. Somente preferência explicitamente desativada
+pode cancelar a entrega. Nenhum canal externo é chamado pelo servidor atual.
 
 ## Validação e rollout
 

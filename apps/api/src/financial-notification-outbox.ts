@@ -109,7 +109,9 @@ export async function retryFinancialNotificationDeliveryForContext(
   );
   if (typeof claim === "string") return claim;
 
-  // Authorization and current preference must remain valid immediately before any adapter call.
+  // Only a confirmed disabled preference can suppress delivery. If the database
+  // or scope lookup fails, propagate the error and leave the durable lease to
+  // expire; retry must never mistake a transient outage for revocation.
   const allowed = await withSharedTransaction(async (executeQuery) => {
     await assertFinancialNotificationScope(context, executeQuery);
     return readEffectiveNotificationPreference(
@@ -118,7 +120,7 @@ export async function retryFinancialNotificationDeliveryForContext(
       adapter.channel,
       executeQuery,
     );
-  }).catch(() => false);
+  });
   if (!allowed) {
     await finishAttempt(context, claim, "disabled", now);
     return "disabled";
