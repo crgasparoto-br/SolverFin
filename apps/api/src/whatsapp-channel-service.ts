@@ -136,6 +136,11 @@ const defaultDependencies: ChannelServiceDependencies = {
             : "revoked",
       },
     );
+    // The Inbox has recorded the intake but a worker has not finished extraction.
+    // Returning 2xx here would lose Meta's only replay of the raw signed message.
+    if (item.extractionState === "processing") {
+      throw new WhatsappChannelError("WHATSAPP_CAPTURE_PROCESSING", 503);
+    }
     return {
       ...(item.suggestion?.id ? { suggestionId: item.suggestion.id } : {}),
       importBatchId: item.id,
