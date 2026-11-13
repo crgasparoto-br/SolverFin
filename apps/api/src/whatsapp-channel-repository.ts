@@ -29,6 +29,7 @@ export type ChannelOutcome =
   | "awaiting_confirmation"
   | "awaiting_selection"
   | "query_complete"
+  | "query_incomplete"
   | "capture_pending_review"
   | "capture_incomplete"
   | "cancelled"
@@ -429,7 +430,7 @@ export async function replaceResponseAfterRevocation(id: string, now = new Date(
          "replyText"='Para continuar, vincule este canal novamente no SolverFin.',
          "version"="version"+1,"updatedAt"=$2
      where "id"=$1 and "state"='response_ready'
-       and "outcome" in ('query_complete','capture_pending_review','capture_incomplete')`,
+       and "outcome" in ('query_complete','query_incomplete','capture_pending_review','capture_incomplete')`,
     [id, now],
   );
 }

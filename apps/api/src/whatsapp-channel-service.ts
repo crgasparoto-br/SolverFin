@@ -6,7 +6,9 @@ import type { TenantContext } from "@solverfin/domain";
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
 import { cancelFinancialAssistantConversation } from "./financial-assistant-repository.js";
 import {
+  FinancialAssistantServiceError,
   getOrStartFinancialAssistantConversation,
+  normalizeAndValidateFinancialAssistantMessage,
   sendFinancialAssistantMessage,
 } from "./financial-assistant-service.js";
 import {
@@ -73,7 +75,7 @@ export interface ChannelServiceDependencies {
     idempotencyKey: string,
     eventId: string,
     link: ActiveChannelLink,
-  ) => Promise<{ conversationId: string; answer: string }>;
+  ) => Promise<{ conversationId: string; answer: string; completed?: boolean }>;
   captureFinancial: (
     context: TenantContext,
     rawMessage: string,
@@ -113,7 +115,19 @@ const defaultDependencies: ChannelServiceDependencies = {
       },
     });
     const turn = view.turns.find((candidate) => candidate.idempotencyKey === idempotencyKey);
-    if (!turn?.safeResponse?.answer || turn.status === "PROCESSING") {
+    if (!turn || turn.status === "PROCESSING") {
+      throw new WhatsappChannelError("WHATSAPP_ASSISTANT_NOT_READY", 503);
+    }
+    if (turn.status === "FAILED" || turn.status === "CANCELLED" || turn.status === "EXPIRED") {
+      // A crashed assistant turn is terminal for this idempotency key.
+      // A safe reply closes the webhook event instead of looping Meta retries.
+      return {
+        conversationId: view.conversation.id,
+        answer: "Não consegui concluir esta consulta. Envie uma nova pergunta para tentar novamente.",
+        completed: false,
+      };
+    }
+    if (!turn.safeResponse?.answer) {
       throw new WhatsappChannelError("WHATSAPP_ASSISTANT_NOT_READY", 503);
     }
     return { conversationId: view.conversation.id, answer: turn.safeResponse.answer };
@@ -270,15 +284,22 @@ async function decideChannelReply(
   }
   const question = text.replace(/^CONSULTAR\s+/i, "").trim();
   if (!question) return { outcome: "unsupported", reply: UNSUPPORTED_MESSAGE, link };
-  const answer = await deps.queryFinancial(
-    context,
-    question,
-    channelEventIdempotencyKey(message),
-    eventId,
-    link,
-  );
+  const idempotencyKey = channelEventIdempotencyKey(message);
+  try {
+    normalizeAndValidateFinancialAssistantMessage(question, idempotencyKey);
+  } catch (error) {
+    if (error instanceof FinancialAssistantServiceError && error.statusCode === 400) {
+      return {
+        outcome: "unsupported",
+        reply: "A pergunta é inválida ou longa demais. Envie uma pergunta financeira mais curta.",
+        link,
+      };
+    }
+    throw error;
+  }
+  const answer = await deps.queryFinancial(context, question, idempotencyKey, eventId, link);
   return {
-    outcome: "query_complete",
+    outcome: answer.completed === false ? "query_incomplete" : "query_complete",
     reply: answer.answer,
     link,
     conversationId: answer.conversationId,
@@ -288,6 +309,7 @@ async function decideChannelReply(
 function isFinancialOutcome(outcome: ChannelOutcome | null): boolean {
   return (
     outcome === "query_complete" ||
+    outcome === "query_incomplete" ||
     outcome === "capture_pending_review" ||
     outcome === "capture_incomplete"
   );

@@ -236,6 +236,39 @@ test("consulta delega ao assistente tenant-scoped e retry não envia resposta du
   assert.equal(event?.replyText, null);
 });
 
+test("falha terminal do assistente encerra o evento com uma resposta segura", async () => {
+  const state = fixture();
+  const inbound = message("saldo?", "wamid.failed-turn");
+  state.deps.queryFinancial = async (requestContext, question, idempotencyKey) => {
+    state.queries.push({ context: requestContext, question, idempotencyKey });
+    return {
+      conversationId: "66666666-6666-4666-8666-666666666666",
+      answer: "Não consegui concluir esta consulta. Envie uma nova pergunta para tentar novamente.",
+      completed: false,
+    };
+  };
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(state.queries.length, 1);
+  assert.equal(state.queries[0]?.idempotencyKey, channelEventIdempotencyKey(inbound));
+  assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "query_incomplete");
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "sent");
+  assert.equal(state.sent.length, 1);
+  assert.match(state.sent[0] ?? "", /Envie uma nova pergunta/);
+});
+
+test("pergunta maior que o contrato canônico recebe resposta terminal sem retry", async () => {
+  const state = fixture();
+  const inbound = message("CONSULTAR " + "X".repeat(1001), "wamid.question-too-long");
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(state.queries.length, 0);
+  assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "unsupported");
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "sent");
+  assert.equal(state.sent.length, 1);
+  assert.match(state.sent[0] ?? "", /longa demais/);
+});
+
 test("captura apenas gera sugestão pendente na Inbox, nunca um lançamento financeiro", async () => {
   const state = fixture();
   const inbound = message("CAPTURAR Pix realizado de R$ 20,00 em 13/11/2026");

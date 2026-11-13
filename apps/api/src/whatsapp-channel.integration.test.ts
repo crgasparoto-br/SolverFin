@@ -4,6 +4,10 @@ import { randomUUID } from "node:crypto";
 import type { TenantContext } from "@solverfin/domain";
 
 import { closePool, query } from "./db.js";
+import {
+  claimFinancialAssistantTurn,
+  startFinancialAssistantConversation,
+} from "./financial-assistant-repository.js";
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
 import {
   acknowledgeWhatsappPairingCode,
@@ -21,7 +25,11 @@ import {
   withAuthorizedWhatsappOutbound,
   WhatsappChannelError,
 } from "./whatsapp-channel-repository.js";
-import { deliverPersistedChannelReply } from "./whatsapp-channel-service.js";
+import {
+  channelEventIdempotencyKey,
+  deliverPersistedChannelReply,
+  processInboundChannelMessage,
+} from "./whatsapp-channel-service.js";
 
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const PROFILE_ID = "33333333-3333-4333-8333-333333333331";
@@ -53,6 +61,7 @@ async function main(): Promise<void> {
   const suffix = BigInt("0x" + randomUUID().replace(/-/g, "").slice(0, 14)).toString();
   const accountId = "99" + suffix.slice(-12).padStart(12, "0");
   const senderId = "55" + suffix.slice(-10).padStart(10, "0");
+  let interruptedConversationId: string | null = null;
   const outboundTexts: string[] = [];
   const outbound: ChannelOutboundPort = {
     async sendText(input) {
@@ -154,6 +163,59 @@ async function main(): Promise<void> {
       "a non-redacted message must not be replayed as a different sender",
     );
 
+    // RESTART-IDEM-001: a crash happened after the assistant turn persisted,
+    // but before its reply did. The same Meta POST must close safely, once.
+    const interruptedQuestion = "Qual meu saldo projetado este mes em BRL?";
+    const interruptedMessage: ChannelInboundMessage = {
+      ...inbound(randomUUID()),
+      text: interruptedQuestion,
+    };
+    const conversation = await startFinancialAssistantConversation(context);
+    interruptedConversationId = conversation.conversation.id;
+    const assistantKey = channelEventIdempotencyKey(interruptedMessage);
+    const startedTurn = await claimFinancialAssistantTurn({
+      context,
+      conversationId: conversation.conversation.id,
+      normalizedQuestion: interruptedQuestion,
+      idempotencyKey: assistantKey,
+      intent: "balance_projection",
+      filters: {},
+      now: new Date(Date.now() - 3 * 60_000),
+    });
+    assert.equal(startedTurn.kind, "claimed");
+    const retryReplies: string[] = [];
+    const retryOutbound: ChannelOutboundPort = {
+      async sendText(input) {
+        assert.equal(input.accountId, accountId);
+        assert.equal(input.recipientId, senderId);
+        retryReplies.push(input.text);
+        return "wamid.recovered-safe-reply";
+      },
+    };
+    await processInboundChannelMessage(interruptedMessage, retryOutbound);
+    await processInboundChannelMessage(interruptedMessage, retryOutbound);
+    assert.equal(retryReplies.length, 1, "same Meta event cannot emit a second response");
+    assert.match(retryReplies[0] ?? "", /Não consegui concluir esta consulta/);
+    const terminalAssistantTurns = await query<{
+      status: string;
+      failureCode: string | null;
+      safeResponse: unknown;
+    }>(
+      `select "status", "failureCode", "safeResponse" from "FinancialAssistantTurn"
+        where "conversationId"=$1 and "idempotencyKey"=$2`,
+      [conversation.conversation.id, assistantKey],
+    );
+    assert.equal(terminalAssistantTurns.length, 1, "same-key retry cannot recalculate the turn");
+    assert.equal(terminalAssistantTurns[0]?.status, "FAILED");
+    assert.equal(terminalAssistantTurns[0]?.failureCode, "ASSISTANT_PROCESS_INTERRUPTED");
+    assert.equal(terminalAssistantTurns[0]?.safeResponse, null);
+    const terminalChannelEvents = await query<{ state: string; outcome: string }>(
+      `select "state", "outcome" from "WhatsappChannelEvent"
+        where "accountId"=$1 and "providerMessageId"=$2`,
+      [accountId, interruptedMessage.externalMessageId],
+    );
+    assert.deepEqual(terminalChannelEvents, [{ state: "sent", outcome: "query_incomplete" }]);
+
     const failed = await claimWhatsappInboundEvent(inbound(randomUUID()));
     assert.ok(failed.token);
     await failWhatsappInboundEvent(failed.event.id, failed.token);
@@ -236,5 +298,13 @@ async function main(): Promise<void> {
   } finally {
     await query('delete from "WhatsappChannelEvent" where "accountId"=$1', [accountId]);
     await query('delete from "WhatsappChannelLink" where "accountId"=$1', [accountId]);
+    if (interruptedConversationId !== null) {
+      await query('delete from "FinancialAssistantTurn" where "conversationId"=$1', [
+        interruptedConversationId,
+      ]);
+      await query('delete from "FinancialAssistantConversation" where "id"=$1', [
+        interruptedConversationId,
+      ]);
+    }
   }
 }
