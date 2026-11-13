@@ -30,34 +30,70 @@ function signedHeaders(payload: Buffer) {
   };
 }
 
-function webhookPayload(text = "qual meu saldo hoje?", businessId = env.WHATSAPP_META_PHONE_NUMBER_ID) {
+function webhookPayload(
+  text = "qual meu saldo hoje?",
+  businessId = env.WHATSAPP_META_PHONE_NUMBER_ID,
+) {
   return {
     object: "whatsapp_business_account",
-    entry: [{
-      changes: [{
-        field: "messages",
-        value: {
-          messaging_product: "whatsapp",
-          metadata: { phone_number_id: businessId },
-          messages: [{ id: messageId, from: senderId, timestamp: "1794531600", type: "text", text: { body: text } }],
-          statuses: [{ id: "unrelated", status: "read" }],
-        },
-      }],
-    }],
+    entry: [
+      {
+        changes: [
+          {
+            field: "messages",
+            value: {
+              messaging_product: "whatsapp",
+              metadata: { phone_number_id: businessId },
+              messages: [
+                {
+                  id: messageId,
+                  from: senderId,
+                  timestamp: "1794531600",
+                  type: "text",
+                  text: { body: text },
+                },
+              ],
+              statuses: [{ id: "unrelated", status: "read" }],
+            },
+          },
+        ],
+      },
+    ],
   };
 }
 
 test("Meta webhook verifies the exact byte buffer before parsing", () => {
   const buffer = Buffer.from(JSON.stringify(webhookPayload()));
-  assert.equal(verifyMetaSignature(buffer, signedHeaders(buffer)["x-hub-signature-256"], env.WHATSAPP_META_APP_SECRET), true);
-  assert.equal(verifyMetaSignature(Buffer.from(buffer.toString() + " "), signedHeaders(buffer)["x-hub-signature-256"], env.WHATSAPP_META_APP_SECRET), false);
+  assert.equal(
+    verifyMetaSignature(
+      buffer,
+      signedHeaders(buffer)["x-hub-signature-256"],
+      env.WHATSAPP_META_APP_SECRET,
+    ),
+    true,
+  );
+  assert.equal(
+    verifyMetaSignature(
+      Buffer.from(buffer.toString() + " "),
+      signedHeaders(buffer)["x-hub-signature-256"],
+      env.WHATSAPP_META_APP_SECRET,
+    ),
+    false,
+  );
   assert.equal(verifyMetaSignature(buffer, "sha256=not-hex", env.WHATSAPP_META_APP_SECRET), false);
   assert.equal(verifyMetaSignature(buffer, undefined, env.WHATSAPP_META_APP_SECRET), false);
-  assert.equal(verifyMetaSignature(buffer, signedHeaders(buffer)["x-hub-signature-256"], ""), false);
+  assert.equal(
+    verifyMetaSignature(buffer, signedHeaders(buffer)["x-hub-signature-256"], ""),
+    false,
+  );
 });
 
 test("Meta GET challenge is allowed only with configured token and subscribe mode", () => {
-  const valid = new URLSearchParams({ "hub.mode": "subscribe", "hub.verify_token": env.WHATSAPP_META_VERIFY_TOKEN, "hub.challenge": "98765" });
+  const valid = new URLSearchParams({
+    "hub.mode": "subscribe",
+    "hub.verify_token": env.WHATSAPP_META_VERIFY_TOKEN,
+    "hub.challenge": "98765",
+  });
   assert.equal(verifyMetaSubscription(valid, env.WHATSAPP_META_VERIFY_TOKEN), "98765");
   valid.set("hub.verify_token", "another");
   assert.equal(verifyMetaSubscription(valid, env.WHATSAPP_META_VERIFY_TOKEN), null);
@@ -71,22 +107,52 @@ test("Meta parser ignores status updates and unrelated business accounts", () =>
   assert.equal(parsed.length, 1);
   assert.equal(parsed[0]?.accountId, env.WHATSAPP_META_PHONE_NUMBER_ID);
   assert.equal(parsed[0]?.text, "qual meu saldo hoje?");
-  assert.deepEqual(parseMetaInboundMessages(webhookPayload("x", "99999999999"), env.WHATSAPP_META_PHONE_NUMBER_ID), []);
-  assert.throws(() => parseMetaInboundMessages({ object: "unknown" }, env.WHATSAPP_META_PHONE_NUMBER_ID), ChannelProviderError);
-  assert.deepEqual(parseMetaInboundMessages({
-    object: "whatsapp_business_account",
-    entry: [{ changes: [{ field: "messages", value: { metadata: { phone_number_id: env.WHATSAPP_META_PHONE_NUMBER_ID }, statuses: [{ id: "x" }] } }] }],
-  }, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+  assert.deepEqual(
+    parseMetaInboundMessages(webhookPayload("x", "99999999999"), env.WHATSAPP_META_PHONE_NUMBER_ID),
+    [],
+  );
+  assert.throws(
+    () => parseMetaInboundMessages({ object: "unknown" }, env.WHATSAPP_META_PHONE_NUMBER_ID),
+    ChannelProviderError,
+  );
+  assert.deepEqual(
+    parseMetaInboundMessages(
+      {
+        object: "whatsapp_business_account",
+        entry: [
+          {
+            changes: [
+              {
+                field: "messages",
+                value: {
+                  metadata: { phone_number_id: env.WHATSAPP_META_PHONE_NUMBER_ID },
+                  statuses: [{ id: "x" }],
+                },
+              },
+            ],
+          },
+        ],
+      },
+      env.WHATSAPP_META_PHONE_NUMBER_ID,
+    ),
+    [],
+  );
 });
 
 test("Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL", async () => {
   const sent: { url: string; init: RequestInit }[] = [];
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
     sent.push({ url: String(url), init: init ?? {} });
-    return new Response(JSON.stringify({ messages: [{ id: "wamid.answer-001" }] }), { status: 200 });
+    return new Response(JSON.stringify({ messages: [{ id: "wamid.answer-001" }] }), {
+      status: 200,
+    });
   };
   const outbound = createMetaCloudApiOutbound(env, transport as typeof fetch);
-  const result = await outbound.sendText({ accountId: env.WHATSAPP_META_PHONE_NUMBER_ID, recipientId: senderId, text: "Saldo na moeda solicitada." });
+  const result = await outbound.sendText({
+    accountId: env.WHATSAPP_META_PHONE_NUMBER_ID,
+    recipientId: senderId,
+    text: "Saldo na moeda solicitada.",
+  });
   assert.equal(result, "wamid.answer-001");
   assert.equal(sent.length, 1);
   assert.equal(sent[0]?.url, "https://graph.facebook.com/v25.0/12345678901234/messages");

@@ -35,7 +35,11 @@ const EXTERNAL_SENDER_ID = /^\d{6,30}$/;
 const META_ID = /^\d{5,30}$/;
 const MAX_MESSAGES = 1000;
 
-export function verifyMetaSignature(rawBody: Buffer, header: string | undefined, appSecret: string): boolean {
+export function verifyMetaSignature(
+  rawBody: Buffer,
+  header: string | undefined,
+  appSecret: string,
+): boolean {
   const match = header?.match(SIGNATURE_PATTERN);
   if (!appSecret || !match) return false;
   const expected = createHmac("sha256", appSecret).update(rawBody).digest();
@@ -43,10 +47,7 @@ export function verifyMetaSignature(rawBody: Buffer, header: string | undefined,
   return provided.length === expected.length && timingSafeEqual(expected, provided);
 }
 
-export function verifyMetaSubscription(
-  query: URLSearchParams,
-  verifyToken: string,
-): string | null {
+export function verifyMetaSubscription(query: URLSearchParams, verifyToken: string): string | null {
   const challenge = query.get("hub.challenge");
   const provided = query.get("hub.verify_token");
   if (
@@ -55,7 +56,8 @@ export function verifyMetaSubscription(
     query.get("hub.mode") !== "subscribe" ||
     !challenge ||
     challenge.length > 256
-  ) return null;
+  )
+    return null;
   const expectedBytes = Buffer.from(verifyToken, "utf8");
   const providedBytes = Buffer.from(provided, "utf8");
   return expectedBytes.length === providedBytes.length &&
@@ -99,13 +101,17 @@ export function parseMetaInboundMessages(
         const id = message.id;
         const sender = message.from;
         if (
-          typeof id !== "string" || !PROVIDER_MESSAGE_ID.test(id) ||
-          typeof sender !== "string" || !EXTERNAL_SENDER_ID.test(sender)
-        ) continue;
+          typeof id !== "string" ||
+          !PROVIDER_MESSAGE_ID.test(id) ||
+          typeof sender !== "string" ||
+          !EXTERNAL_SENDER_ID.test(sender)
+        )
+          continue;
         const text = message.type === "text" ? record(message.text)?.body : null;
-        const timestamp = typeof message.timestamp === "string" && /^\d{10}$/.test(message.timestamp)
-          ? new Date(Number(message.timestamp) * 1000)
-          : now;
+        const timestamp =
+          typeof message.timestamp === "string" && /^\d{10}$/.test(message.timestamp)
+            ? new Date(Number(message.timestamp) * 1000)
+            : now;
         received.push({
           provider: "meta_whatsapp",
           accountId: expectedAccountId,
@@ -132,7 +138,9 @@ export interface MetaChannelEnvironment {
 }
 
 export function requireMetaWebhookConfig(env: MetaChannelEnvironment): {
-  appSecret: string; verifyToken: string; accountId: string;
+  appSecret: string;
+  verifyToken: string;
+  accountId: string;
 } {
   if (
     !env.WHATSAPP_META_APP_SECRET ||
@@ -156,8 +164,13 @@ export function createMetaCloudApiOutbound(
   const accountId = env.WHATSAPP_META_PHONE_NUMBER_ID;
   const accessToken = env.WHATSAPP_META_ACCESS_TOKEN;
   const version = env.WHATSAPP_META_GRAPH_VERSION;
-  if (!accountId || !META_ID.test(accountId) || !accessToken || !version ||
-      !/^v\d{1,2}\.\d{1,2}$/.test(version)) {
+  if (
+    !accountId ||
+    !META_ID.test(accountId) ||
+    !accessToken ||
+    !version ||
+    !/^v\d{1,2}\.\d{1,2}$/.test(version)
+  ) {
     throw new ChannelProviderError("WHATSAPP_OUTBOUND_NOT_CONFIGURED", true);
   }
 

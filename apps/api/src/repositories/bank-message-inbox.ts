@@ -456,11 +456,12 @@ function mapRow(row: BankMessageInboxRow): BankMessageInboxItem {
   }
 
   const suggestion = row.suggestionId === null ? undefined : mapSuggestion(row);
-  const origin = row.originalFileName?.endsWith("whatsapp") === true
-    ? "whatsapp"
-    : row.originalFileName?.endsWith("shared") === true
-      ? "shared"
-      : "pasted";
+  const origin =
+    row.originalFileName?.endsWith("whatsapp") === true
+      ? "whatsapp"
+      : row.originalFileName?.endsWith("shared") === true
+        ? "shared"
+        : "pasted";
 
   return {
     id: row.importBatchId,

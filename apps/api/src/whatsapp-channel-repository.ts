@@ -17,9 +17,22 @@ export class WhatsappChannelError extends Error {
   }
 }
 
-type LinkStatus = "pending" | "awaiting_confirmation" | "active" | "cancelled" | "expired" | "revoked";
-export type ChannelOutcome = "awaiting_link" | "awaiting_confirmation" | "awaiting_selection" |
-  "query_complete" | "capture_pending_review" | "capture_incomplete" | "cancelled" | "unsupported";
+type LinkStatus =
+  | "pending"
+  | "awaiting_confirmation"
+  | "active"
+  | "cancelled"
+  | "expired"
+  | "revoked";
+export type ChannelOutcome =
+  | "awaiting_link"
+  | "awaiting_confirmation"
+  | "awaiting_selection"
+  | "query_complete"
+  | "capture_pending_review"
+  | "capture_incomplete"
+  | "cancelled"
+  | "unsupported";
 
 export interface ChannelLinkRow {
   id: string;
