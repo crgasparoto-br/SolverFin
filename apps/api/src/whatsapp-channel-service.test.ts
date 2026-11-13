@@ -262,6 +262,34 @@ test("sem consentimento, captura não simula sugestão ou aprovação", async ()
   assert.equal(state.events.get("wamid.consent")?.suggestionId, null);
 });
 
+test("captura ainda em processamento mantém replay do mesmo evento sem confirmação falsa", async () => {
+  const state = fixture();
+  const inbound = message("CAPTURAR Compra de R$ 20,00", "wamid.capture-pending");
+  let attempts = 0;
+  state.deps.captureFinancial = async () => {
+    attempts++;
+    if (attempts === 1) throw new WhatsappChannelError("WHATSAPP_CAPTURE_PROCESSING", 503);
+    return {
+      pendingReview: true,
+      suggestionId: "77777777-7777-4777-8777-777777777777",
+      importBatchId: "88888888-8888-4888-8888-888888888888",
+    };
+  };
+  await assert.rejects(
+    () => processInboundChannelMessage(inbound, state.outbound, state.deps),
+    (error: unknown) =>
+      error instanceof WhatsappChannelError && error.code === "WHATSAPP_EVENT_RETRY_REQUIRED",
+  );
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "failure_retryable");
+  assert.deepEqual(state.sent, [], "in-flight capture must not acknowledge a missing suggestion");
+
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(attempts, 2);
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "sent");
+  assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "capture_pending_review");
+  assert.equal(state.sent.length, 1);
+});
+
 test("origem não vinculada e identidade de outro número não obtêm contexto privado", async () => {
   const state = fixture();
   state.link = null;
