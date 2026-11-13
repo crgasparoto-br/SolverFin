@@ -19,6 +19,7 @@ import {
   resolveActiveWhatsappLink,
   revokeWhatsappLink,
   withAuthorizedWhatsappOutbound,
+  WhatsappChannelError,
 } from "./whatsapp-channel-repository.js";
 import { deliverPersistedChannelReply } from "./whatsapp-channel-service.js";
 
@@ -146,6 +147,13 @@ async function main(): Promise<void> {
     assert.equal(persistedDelivery[0]?.state, "sent");
     assert.equal(persistedDelivery[0]?.replyText, null);
 
+    await assert.rejects(
+      () => claimWhatsappInboundEvent({ ...msg, senderId: "559999000000" }),
+      (error: unknown) =>
+        error instanceof WhatsappChannelError && error.code === "WHATSAPP_EVENT_IDENTITY_CONFLICT",
+      "a non-redacted message must not be replayed as a different sender",
+    );
+
     const failed = await claimWhatsappInboundEvent(inbound(randomUUID()));
     assert.ok(failed.token);
     await failWhatsappInboundEvent(failed.event.id, failed.token);
@@ -194,7 +202,29 @@ async function main(): Promise<void> {
     assert.equal(stale.event.state, "expired");
     assert.equal(stale.token, null);
 
+    // A completed event keeps its provider ID but loses sender PII at TTL.
+    // The same signed Meta event must remain an idempotent no-op, not return 503.
+    await query('update "WhatsappChannelEvent" set "expiresAt"=$2 where "id"=$1', [
+      claimed.event.id,
+      new Date(Date.now() - 1000),
+    ]);
     await redactExpiredWhatsappState();
+    const redacted = await query<{ senderId: string | null; state: string; replyText: string | null }>(
+      'select "senderId","state","replyText" from "WhatsappChannelEvent" where "id"=$1',
+      [claimed.event.id],
+    );
+    assert.equal(redacted[0]?.state, "sent");
+    assert.equal(redacted[0]?.senderId, null);
+    assert.equal(redacted[0]?.replyText, null);
+    const afterRedaction = await claimWhatsappInboundEvent(msg);
+    assert.equal(afterRedaction.token, null);
+    assert.equal(afterRedaction.event.id, claimed.event.id);
+    assert.equal(afterRedaction.event.state, "sent");
+    assert.deepEqual(outboundTexts, [
+      "Resultado de teste do assistente canônico.",
+      "Para continuar, vincule este canal novamente no SolverFin.",
+    ]);
+
     const expired = await query<{ challengeHash: string | null; state: string }>(
       'select "challengeHash","state" from "WhatsappChannelLink" where "id"=$1',
       [expiring.id],
