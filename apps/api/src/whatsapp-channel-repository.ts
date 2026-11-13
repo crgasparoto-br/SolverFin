@@ -338,7 +338,7 @@ export async function claimWhatsappInboundEvent(
      set "state"='processing',"leaseToken"=$4,"leaseUntil"=$5,
          "attempts"="attempts"+1,"version"="version"+1,"updatedAt"=$6
      where "provider"=$1 and "accountId"=$2 and "providerMessageId"=$3
-       and "expiresAt">$6
+       and "senderId"=$7 and "expiresAt">$6
        and (
          "state" in ('received','failure_retryable')
          or ("state"='processing' and "leaseUntil"<=$6)
@@ -351,15 +351,17 @@ export async function claimWhatsappInboundEvent(
       token,
       new Date(now.getTime() + PROCESSING_LEASE_MS),
       now,
+      message.senderId,
     ],
   );
   if (claimed[0]) return { event: claimed[0], token };
   const rows = await query<ChannelEventRow>(
     `select * from "WhatsappChannelEvent" where "provider"=$1
-      and "accountId"=$2 and "providerMessageId"=$3`,
-    [message.provider, message.accountId, message.externalMessageId],
+      and "accountId"=$2 and "providerMessageId"=$3
+      and "senderId"=$4`,
+    [message.provider, message.accountId, message.externalMessageId, message.senderId],
   );
-  if (!rows[0]) throw new WhatsappChannelError("WHATSAPP_EVENT_MISSING", 503);
+  if (!rows[0]) throw new WhatsappChannelError("WHATSAPP_EVENT_IDENTITY_CONFLICT", 409);
   return { event: rows[0], token: null };
 }
 
@@ -483,8 +485,15 @@ export async function withAuthorizedWhatsappOutbound<T>(
          and l."senderId"=$3 and l."userId"=$4 and l."organizationId"=$5
          and l."financialProfileId"=$6 and l."state"='active' and l."version"=$7
        for share of l,u,p`,
-      [link.id,link.accountId,link.senderId,link.userId,
-        link.organizationId,link.financialProfileId,link.version],
+      [
+        link.id,
+        link.accountId,
+        link.senderId,
+        link.userId,
+        link.organizationId,
+        link.financialProfileId,
+        link.version,
+      ],
     );
     if (!rows[0] || rows[0].version !== link.version) {
       throw new WhatsappChannelError("WHATSAPP_LINK_REVOKED", 403);

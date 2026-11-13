@@ -27,7 +27,8 @@ import { processInboundChannelMessage } from "./whatsapp-channel-service.js";
 
 const MANAGEMENT_BASE = "/api/channels/whatsapp";
 const WEBHOOK_PATH = "/api/webhooks/whatsapp";
-const LINK_ACTION = /^\/api\/channels\/whatsapp\/(pairings|links)\/([0-9a-f-]{36})\/(confirm|cancel|revoke)$/i;
+const LINK_ACTION =
+  /^\/api\/channels\/whatsapp\/(pairings|links)\/([0-9a-f-]{36})\/(confirm|cancel|revoke)$/i;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const MAX_WEBHOOK_BYTES = 256 * 1024;
 
@@ -42,9 +43,10 @@ function response(statusCode: number, body: unknown): ApiResponse {
 function readExplicitProfileId(request: ApiRequest): string {
   // Explicit selection is mandatory, including accounts with one default profile.
   const body = request.body;
-  const fromBody = body !== null && typeof body === "object" && !Array.isArray(body)
-    ? (body as Record<string, unknown>).profileId
-    : undefined;
+  const fromBody =
+    body !== null && typeof body === "object" && !Array.isArray(body)
+      ? (body as Record<string, unknown>).profileId
+      : undefined;
   const profileId = request.query.get("profileId") ?? fromBody;
   if (typeof profileId !== "string" || !UUID_PATTERN.test(profileId)) {
     throw new WhatsappChannelError("WHATSAPP_EXPLICIT_PROFILE_REQUIRED", 400);
@@ -57,8 +59,8 @@ export async function handleWhatsappChannelManagementApiRequest(
   request: ApiRequest,
   env: MetaChannelEnvironment = process.env,
 ): Promise<ApiResponse | undefined> {
-  if (request.pathname !== MANAGEMENT_BASE &&
-      !request.pathname.startsWith(MANAGEMENT_BASE + "/")) return undefined;
+  if (request.pathname !== MANAGEMENT_BASE && !request.pathname.startsWith(MANAGEMENT_BASE + "/"))
+    return undefined;
   const correlationId = resolveCorrelationId(request.headers);
   try {
     const user = await requireAuthenticatedRequest({
@@ -71,7 +73,8 @@ export async function handleWhatsappChannelManagementApiRequest(
     if (request.method === "POST" && request.pathname === MANAGEMENT_BASE + "/pairings") {
       return response(201, {
         pairing: await createWhatsappPairing(context, accountId),
-        instructions: "Envie VINCULAR seguido do código para o número oficial. Depois confirme no SolverFin.",
+        instructions:
+          "Envie VINCULAR seguido do código para o número oficial. Depois confirme no SolverFin.",
       });
     }
     if (request.method === "GET" && request.pathname === MANAGEMENT_BASE + "/links") {
@@ -96,15 +99,20 @@ export async function handleWhatsappChannelManagementApiRequest(
     }
     return undefined;
   } catch (error) {
-    const mapped = error instanceof TenantError
-      ? {
-          code: error.code,
-          message: "Perfil financeiro não autorizado.",
-          statusCode: error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403,
-        }
-      : error instanceof TenantAuthorizationError
-        ? { code: error.code, message: "Perfil financeiro não autorizado.", statusCode: error.statusCode }
-        : error;
+    const mapped =
+      error instanceof TenantError
+        ? {
+            code: error.code,
+            message: "Perfil financeiro não autorizado.",
+            statusCode: error.code === "TENANT_PROFILE_REQUIRED" ? 404 : 403,
+          }
+        : error instanceof TenantAuthorizationError
+          ? {
+              code: error.code,
+              message: "Perfil financeiro não autorizado.",
+              statusCode: error.statusCode,
+            }
+          : error;
     const failure = buildApiErrorResponse({ error: mapped, correlationId });
     return response(failure.statusCode, failure.body);
   }
@@ -146,14 +154,18 @@ export async function handleWhatsappChannelWebhook(
     };
   }
   if (request.method !== "POST") {
-    return { statusCode: 405, contentType: "text/plain; charset=utf-8", body: "Method not allowed" };
+    return {
+      statusCode: 405,
+      contentType: "text/plain; charset=utf-8",
+      body: "Method not allowed",
+    };
   }
   if (request.rawBody.byteLength > MAX_WEBHOOK_BYTES) {
     return { statusCode: 413, contentType: "text/plain; charset=utf-8", body: "Too large" };
   }
-  if (!verifyMetaSignature(
-    request.rawBody, request.headers["x-hub-signature-256"], config.appSecret,
-  )) {
+  if (
+    !verifyMetaSignature(request.rawBody, request.headers["x-hub-signature-256"], config.appSecret)
+  ) {
     return { statusCode: 403, contentType: "text/plain; charset=utf-8", body: "Forbidden" };
   }
   let payload: unknown;
@@ -169,7 +181,11 @@ export async function handleWhatsappChannelWebhook(
     return { statusCode: 400, contentType: "text/plain; charset=utf-8", body: "Invalid event" };
   }
   if (!incoming.length) {
-    return { statusCode: 200, contentType: "application/json; charset=utf-8", body: '{"received":true}' };
+    return {
+      statusCode: 200,
+      contentType: "application/json; charset=utf-8",
+      body: '{"received":true}',
+    };
   }
   let outbound: ChannelOutboundPort;
   try {
@@ -186,12 +202,14 @@ export async function handleWhatsappChannelWebhook(
       return { statusCode: 503, contentType: "text/plain; charset=utf-8", body: "Retry later" };
     }
   }
-  return { statusCode: 200, contentType: "application/json; charset=utf-8", body: '{"received":true}' };
+  return {
+    statusCode: 200,
+    contentType: "application/json; charset=utf-8",
+    body: '{"received":true}',
+  };
 }
 
-export async function readWhatsappRawBody(
-  request: IncomingMessage,
-): Promise<Buffer> {
+export async function readWhatsappRawBody(request: IncomingMessage): Promise<Buffer> {
   const chunks: Buffer[] = [];
   let size = 0;
   for await (const chunk of request) {

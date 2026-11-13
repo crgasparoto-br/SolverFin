@@ -3,7 +3,11 @@ import test from "node:test";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { ChannelProviderError, type ChannelInboundMessage, type ChannelOutboundPort } from "./whatsapp-channel-provider.js";
+import {
+  ChannelProviderError,
+  type ChannelInboundMessage,
+  type ChannelOutboundPort,
+} from "./whatsapp-channel-provider.js";
 import {
   type ActiveChannelLink,
   type ChannelEventRow,
@@ -26,20 +30,30 @@ const linkId = "44444444-4444-4444-8444-444444444444";
 
 function message(text: string, id = "wamid.event-001"): ChannelInboundMessage {
   return {
-    provider: "meta_whatsapp", accountId: "12345678901234",
-    externalMessageId: id, senderId: "5511999988888",
-    text, receivedAt: now,
+    provider: "meta_whatsapp",
+    accountId: "12345678901234",
+    externalMessageId: id,
+    senderId: "5511999988888",
+    text,
+    receivedAt: now,
   };
 }
 
 function makeActiveLink(): ActiveChannelLink {
   return {
-    id: linkId, provider: "meta_whatsapp", accountId: "12345678901234",
-    senderId: "5511999988888", challengeHash: null, state: "active",
-    userId: context.userId, organizationId: context.organizationId,
+    id: linkId,
+    provider: "meta_whatsapp",
+    accountId: "12345678901234",
+    senderId: "5511999988888",
+    challengeHash: null,
+    state: "active",
+    userId: context.userId,
+    organizationId: context.organizationId,
     financialProfileId: context.financialProfileId,
     financialProfileKind: context.financialProfileKind,
-    confirmedAt: now, revokedAt: null, expiresAt: new Date(now.getTime() + 3600000),
+    confirmedAt: now,
+    revokedAt: null,
+    expiresAt: new Date(now.getTime() + 3600000),
     version: 1,
   };
 }
@@ -47,13 +61,26 @@ function makeActiveLink(): ActiveChannelLink {
 function makeEvent(input: ChannelInboundMessage): ChannelEventRow {
   return {
     id: "55555555-5555-4555-8555-555555555555",
-    provider: input.provider, accountId: input.accountId,
-    providerMessageId: input.externalMessageId, senderId: input.senderId,
-    linkId: null, userId: null, organizationId: null,
-    financialProfileId: null, assistantConversationId: null, suggestionId: null,
-    importBatchId: null, state: "received", outcome: null, version: 0,
-    attempts: 0, leaseToken: null, leaseUntil: null, replyText: null,
-    outboundProviderMessageId: null, expiresAt: new Date(now.getTime() + 86400000),
+    provider: input.provider,
+    accountId: input.accountId,
+    providerMessageId: input.externalMessageId,
+    senderId: input.senderId,
+    linkId: null,
+    userId: null,
+    organizationId: null,
+    financialProfileId: null,
+    assistantConversationId: null,
+    suggestionId: null,
+    importBatchId: null,
+    state: "received",
+    outcome: null,
+    version: 0,
+    attempts: 0,
+    leaseToken: null,
+    leaseUntil: null,
+    replyText: null,
+    outboundProviderMessageId: null,
+    expiresAt: new Date(now.getTime() + 86400000),
     receivedAt: now,
   };
 }
@@ -82,7 +109,11 @@ function fixture(): Fixture {
     },
   };
   const state: Fixture = {
-    events, sent, queries, captures, cancellations,
+    events,
+    sent,
+    queries,
+    captures,
+    cancellations,
     outbound: outward,
     link: makeActiveLink(),
     deps: {} as ChannelServiceDependencies,
@@ -100,7 +131,9 @@ function fixture(): Fixture {
       return { event: { ...existing }, token: "fake-lease" };
     },
     async finishInbound(input) {
-      const stored = [...events.values()].find((item) => item.id === input.eventId && item.state === "processing");
+      const stored = [...events.values()].find(
+        (item) => item.id === input.eventId && item.state === "processing",
+      );
       assert.ok(stored);
       assert.equal(input.token, "fake-lease");
       stored.state = "response_ready";
