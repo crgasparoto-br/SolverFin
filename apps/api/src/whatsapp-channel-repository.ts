@@ -358,8 +358,11 @@ export async function claimWhatsappInboundEvent(
   const rows = await query<ChannelEventRow>(
     `select * from "WhatsappChannelEvent" where "provider"=$1
       and "accountId"=$2 and "providerMessageId"=$3
-      and "senderId"=$4`,
-    [message.provider, message.accountId, message.externalMessageId, message.senderId],
+      and ("senderId"=$4 or (
+        "senderId" is null and "expiresAt"<=$5
+        and "state" in ('expired','cancelled','sent','send_unknown')
+      ))`,
+    [message.provider, message.accountId, message.externalMessageId, message.senderId, now],
   );
   if (!rows[0]) throw new WhatsappChannelError("WHATSAPP_EVENT_IDENTITY_CONFLICT", 409);
   return { event: rows[0], token: null };
