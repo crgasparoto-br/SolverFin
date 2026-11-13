@@ -39,7 +39,7 @@ O consentimento de extração de mensagem bancária é exclusivo do SolverFin: `
 
 - Perguntas financeiras em linguagem natural, ou `CONSULTAR <pergunta>`: delegadas ao `FinancialAssistantService` existente, com dados determinísticos por perfil/período/moeda. O resultado fora de escopo não executa comandos financeiros.
 - `CAPTURAR <texto de notificação bancária>`: delega à **mesma** `createBankMessageInboxWithAiForContext` e seu parser determinístico/IA opcional; persiste `ImportBatch` do tipo `BANK_MESSAGE` (origem `whatsapp`) e, quando a extração é válida, uma `AiSuggestion` de `TRANSACTION_EXTRACTION` em `PENDING_REVIEW`. A aprovação/edição ocorre **exclusivamente** na Inbox/fila de revisão autenticada.
-- `CANCELAR`: encerra o contexto conversacional somente leitura, sem alterar lançamentos.
+- `CANCELAR`: registra o desfecho `cancelled` do pedido recebido pelo canal, sem cancelar a conversa do Assistente compartilhada com a interface web nem alterar lançamentos. O encerramento da conversa canônica permanece no aplicativo autenticado.
 - Outros formatos, mensagens sem texto e conta não vinculada: apenas resposta operacional segura. A mensagem nunca vira instrução SQL ou mutação automática.
 
 A linguagem `CAPTURAR` é um comando de roteamento, **não um parser financeiro**; toda interpretação, deduplicação e sugestão permanece na fundação existente. Não há nova tabela de transações, cálculo de saldo ou aprovação automática.

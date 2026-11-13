@@ -4,7 +4,6 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
-import { cancelFinancialAssistantConversation } from "./financial-assistant-repository.js";
 import {
   FinancialAssistantServiceError,
   getOrStartFinancialAssistantConversation,
@@ -84,7 +83,6 @@ export interface ChannelServiceDependencies {
   ) => Promise<
     { suggestionId?: string; importBatchId?: string; pendingReview: boolean } | "consent_required"
   >;
-  cancelFinancial: (context: TenantContext) => Promise<void>;
 }
 
 const defaultDependencies: ChannelServiceDependencies = {
@@ -161,11 +159,6 @@ const defaultDependencies: ChannelServiceDependencies = {
       importBatchId: item.id,
       pendingReview: item.suggestion !== undefined && item.status === "pending_review",
     };
-  },
-  cancelFinancial: async (context) => {
-    // Cancelling the conversational context never cancels a financial transaction.
-    const conversation = await getOrStartFinancialAssistantConversation(context);
-    await cancelFinancialAssistantConversation(context, conversation.conversation.id);
   },
 };
 
@@ -259,10 +252,11 @@ async function decideChannelReply(
   const context = contextFromChannelLink(link);
 
   if (/^CANCELAR$/i.test(text)) {
-    await deps.cancelFinancial(context);
+    // This conversation is shared with the authenticated app. A channel-only
+    // CANCELAR must never terminate the app user's financial assistant session.
     return {
       outcome: "cancelled",
-      reply: "Conversa encerrada. Nenhum registro financeiro foi alterado.",
+      reply: "Pedido encerrado neste canal. A conversa no SolverFin não foi alterada.",
       link,
     };
   }

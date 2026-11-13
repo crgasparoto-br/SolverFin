@@ -6,6 +6,7 @@ import type { TenantContext } from "@solverfin/domain";
 import { closePool, query } from "./db.js";
 import {
   claimFinancialAssistantTurn,
+  getConversationById,
   startFinancialAssistantConversation,
 } from "./financial-assistant-repository.js";
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
@@ -172,6 +173,32 @@ async function main(): Promise<void> {
     };
     const conversation = await startFinancialAssistantConversation(context);
     interruptedConversationId = conversation.conversation.id;
+
+    // WhatsApp CANCELAR is a channel outcome, not an instruction to cancel
+    // the same user's active conversation on the authenticated web app.
+    const cancellationMessage = { ...inbound(randomUUID()), text: "CANCELAR" };
+    const cancelReplyTexts: string[] = [];
+    await processInboundChannelMessage(cancellationMessage, {
+      async sendText(input) {
+        cancelReplyTexts.push(input.text);
+        return "wamid.channel-cancel-ack";
+      },
+    });
+    const conversationAfterCancel = await getConversationById(
+      context,
+      conversation.conversation.id,
+      true,
+    );
+    assert.equal(conversationAfterCancel?.conversation.status, conversation.conversation.status);
+    assert.equal(cancelReplyTexts.length, 1);
+    assert.match(cancelReplyTexts[0] ?? "", /conversa no SolverFin não foi alterada/);
+    const channelCancellation = await query<{ outcome: string; state: string }>(
+      `select "outcome","state" from "WhatsappChannelEvent"
+       where "accountId"=$1 and "providerMessageId"=$2`,
+      [accountId, cancellationMessage.externalMessageId],
+    );
+    assert.deepEqual(channelCancellation, [{ outcome: "cancelled", state: "sent" }]);
+
     const assistantKey = channelEventIdempotencyKey(interruptedMessage);
     const startedTurn = await claimFinancialAssistantTurn({
       context,

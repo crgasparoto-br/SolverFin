@@ -91,7 +91,6 @@ interface Fixture {
   sent: string[];
   queries: { context: TenantContext; question: string; idempotencyKey: string }[];
   captures: string[];
-  cancellations: string[];
   deps: ChannelServiceDependencies;
   link: ActiveChannelLink | null;
 }
@@ -101,7 +100,6 @@ function fixture(): Fixture {
   const sent: string[] = [];
   const queries: Fixture["queries"] = [];
   const captures: string[] = [];
-  const cancellations: string[] = [];
   const outward: ChannelOutboundPort = {
     async sendText(request) {
       sent.push(request.text);
@@ -113,7 +111,6 @@ function fixture(): Fixture {
     sent,
     queries,
     captures,
-    cancellations,
     outbound: outward,
     link: makeActiveLink(),
     deps: {} as ChannelServiceDependencies,
@@ -211,9 +208,6 @@ function fixture(): Fixture {
         suggestionId: "77777777-7777-4777-8777-777777777777",
         importBatchId: "88888888-8888-4888-8888-888888888888",
       };
-    },
-    async cancelFinancial(requestContext) {
-      cancellations.push(requestContext.financialProfileId);
     },
   };
   return state;
@@ -482,7 +476,8 @@ test("cancelamento e expiração não produzem mutações nem chamadas externas 
     state.outbound,
     state.deps,
   );
-  assert.deepEqual(state.cancellations, [context.financialProfileId]);
+  assert.equal(state.events.get("wamid.cancel")?.outcome, "cancelled");
+  assert.match(state.sent[0] ?? "", /conversa no SolverFin não foi alterada/);
   assert.equal(state.queries.length, 0);
   assert.equal(state.captures.length, 0);
   const expired = makeEvent(message("saldo?", "wamid.expired"));
