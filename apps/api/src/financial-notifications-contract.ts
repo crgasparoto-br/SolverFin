@@ -111,7 +111,7 @@ export function parseNotificationPageFilters(queryParams: URLSearchParams): {
     }
     return number;
   };
-  return { limit: parse("limit", 20, 100), offset: parse("offset", 0, 10000) };
+  return { limit: parse("limit", 20, 100), offset: parse("offset", 0, Number.MAX_SAFE_INTEGER) };
 }
 
 export function validateFinancialNotificationEvent(input: FinancialNotificationEvent): void {

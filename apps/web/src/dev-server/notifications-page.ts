@@ -55,7 +55,7 @@ export async function renderNotificationsPage(
 ): Promise<string> {
   const requestedOffset = Number(url.searchParams.get("offset") ?? 0);
   const offset =
-    Number.isSafeInteger(requestedOffset) && requestedOffset >= 0 && requestedOffset <= 10000
+    Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
       ? requestedOffset
       : 0;
   const profileId = url.searchParams.get("profileId");

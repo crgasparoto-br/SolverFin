@@ -669,8 +669,72 @@ async function main(): Promise<void> {
     "the source fingerprint must stay private after deletion",
   );
 
+  // A-79304: full history remains reachable after the former 10,000-offset ceiling.
+  // A single set-based insert keeps the PostgreSQL integration test inexpensive.
+  const largeHistory = await createProfile(organization, USER_ID);
+  await query(
+    [
+      'insert into "FinancialNotification"',
+      '("id","organizationId","financialProfileId","recipientUserId","eventType",',
+      '"fingerprint","facts","occurredAt","updatedAt")',
+      "select gen_random_uuid(), $1, $2, $3, $4,",
+      "'sha256-' || lpad(to_hex(n), 64, '0'),",
+      `'{"code":"insight_available","severity":"info"}'::jsonb,`,
+      "'2026-11-12T12:00:00.000Z'::timestamptz + n * interval '1 second', now()",
+      "from generate_series(1, 10021) as n",
+    ].join(" "),
+    [largeHistory.organizationId, largeHistory.financialProfileId, USER_ID, FIXTURE_TYPE],
+  );
+  const largeHistoryPath =
+    "/api/notifications?limit=20&profileId=" + largeHistory.financialProfileId;
+  const firstDeepPage = await dispatch(token, "GET", largeHistoryPath + "&offset=10000");
+  assert.equal(firstDeepPage.statusCode, 200);
+  const deepPage = firstDeepPage.body as {
+    total: number;
+    items: unknown[];
+    nextOffset: number | null;
+  };
+  assert.equal(deepPage.total, 10021);
+  assert.equal(deepPage.items.length, 20);
+  assert.equal(deepPage.nextOffset, 10020);
+  const lastPage = await dispatch(
+    token,
+    "GET",
+    largeHistoryPath + "&offset=" + deepPage.nextOffset,
+  );
+  assert.equal(lastPage.statusCode, 200, "the advertised next offset must be accepted");
+  const lastPageBody = lastPage.body as {
+    total: number;
+    items: unknown[];
+    nextOffset: number | null;
+  };
+  assert.equal(lastPageBody.total, 10021);
+  assert.equal(lastPageBody.items.length, 1);
+  assert.equal(lastPageBody.nextOffset, null, "the last page cannot advertise an inaccessible link");
+  assert.equal(
+    (await dispatch(token, "GET", largeHistoryPath + "&offset=9007199254740992")).statusCode,
+    400,
+    "unsafe offsets must remain invalid",
+  );
+  assert.equal(
+    (await dispatch(token, "GET", largeHistoryPath + "&offset=1e4")).statusCode,
+    400,
+    "non-decimal offsets must remain invalid",
+  );
+  const isolatedPage = await dispatch(
+    token,
+    "GET",
+    "/api/notifications?limit=20&offset=10020&profileId=" + other.financialProfileId,
+  );
+  assert.equal(isolatedPage.statusCode, 200);
+  assert.equal(
+    (isolatedPage.body as { total: number }).total,
+    0,
+    "a different permitted profile cannot see this large history",
+  );
+
   console.log(
-    "Issue 693: persistence, isolation, idempotency, origin liveness and public JSON boundary OK",
+    "Issue 693: persistence, isolation, idempotency, origin liveness, public JSON and deep pagination OK",
   );
 }
 

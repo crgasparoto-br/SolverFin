@@ -62,7 +62,9 @@ Na falha de banco não existe fallback em memória, e a transação de criação
 Todas exigem sessão e TenantContext do servidor. O parâmetro profileId seleciona somente
 um perfil ativo pertencente à sessão. Corpo não pode sobrescrever organização, perfil
 ou destinatário. A listagem é ordenada por occurredAt decrescente + id, com limite máximo
-100 e offset até 10000. Resposta pública omite fingerprint e IDs privados de origem.
+100 e offset em representação decimal canônica não negativa dentro dos inteiros seguros.
+O offset não trunca históricos acima de 10.000 eventos; `nextOffset` só é fornecido quando existe uma
+próxima página acessível. Resposta pública omite fingerprint e IDs privados de origem.
 A navegação revalida a referência no momento de uso; se inacessível, retorna
 available=false sem link. Ao abrir uma origem acessível, a interface preserva o
 `profileId` selecionado antes do fragmento da URL, sem aceitar destinos externos.

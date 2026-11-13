@@ -64,11 +64,13 @@ export async function listFinancialNotificationsForContext(
       params,
     );
     const total = Number(counts?.total ?? 0);
+    const followingOffset = input.offset + rows.length;
     return {
       items: rows.map(projectNotification),
       total,
       unreadCount: Number(counts?.unread ?? 0),
-      nextOffset: input.offset + rows.length < total ? input.offset + rows.length : null,
+      nextOffset:
+        Number.isSafeInteger(followingOffset) && followingOffset < total ? followingOffset : null,
     };
   });
 }

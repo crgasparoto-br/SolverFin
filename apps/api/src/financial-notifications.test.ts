@@ -88,13 +88,21 @@ assert.deepEqual(parseNotificationPageFilters(new URLSearchParams("limit=100&off
   limit: 100,
   offset: 10000,
 });
+for (const offset of [10020, 10021, Number.MAX_SAFE_INTEGER]) {
+  assert.equal(
+    parseNotificationPageFilters(new URLSearchParams("limit=20&offset=" + offset)).offset,
+    offset,
+    "pagination must accept the next offset it can return for a large history",
+  );
+}
 for (const query of [
   "limit=0",
   "limit=101",
   "offset=-1",
   "offset=1.5",
   "limit=NaN",
-  "offset=10001",
+  "offset=9007199254740992",
+  "offset=1e4",
 ]) {
   assert.throws(
     () => parseNotificationPageFilters(new URLSearchParams(query)),
