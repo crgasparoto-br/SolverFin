@@ -85,6 +85,22 @@ interface StoredBankMessageOutcome {
 }
 
 const BANK_MESSAGE_PURPOSE = "bank_message_transaction_extraction";
+const EXTRACTION_LEASE_MS = 2 * 60 * 1000;
+
+/** Processing metadata is non-sensitive, persisted to allow a single crash-safe reclaim. */
+function processingOutcome(token: string): string {
+  return JSON.stringify([
+    {
+      code: "BANK_MESSAGE_EXTRACTION_PROCESSING",
+      message: "A mensagem está sendo processada. Atualize a Inbox para acompanhar o resultado.",
+      source: "none",
+      state: "processing",
+      retryable: false,
+      reviewReasons: [],
+      processingToken: token,
+    },
+  ]);
+}
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function createBankMessageInboxWithAiForContext(
@@ -109,13 +125,14 @@ export async function createBankMessageInboxWithAiForContext(
     payload: { origin: payload.origin, text: payload.text },
   }).item;
   const safeMaskedPreview = buildSafeMaskedPreview(transient.sourceHash);
+  const processingToken = randomUUID();
 
   const inserted = await withTransaction(async (executeQuery) => {
     const rows = await executeQuery<{ id: string }>(
       `insert into "ImportBatch"
         ("id", "organizationId", "financialProfileId", "sourceKind", "status", "originalFileName",
          "sourceHash", "problems", "receivedAt", "completedAt", "createdAt", "updatedAt")
-       values ($1, $2, $3, 'BANK_MESSAGE', 'REVIEWING', $4, $5, '[]'::jsonb, $6, null, $7, $7)
+       values ($1, $2, $3, 'BANK_MESSAGE', 'REVIEWING', $4, $5, $6::jsonb, $7, null, $8, $8)
        on conflict ("organizationId", "financialProfileId", "sourceHash") do nothing
        returning "id"`,
       [
@@ -124,6 +141,7 @@ export async function createBankMessageInboxWithAiForContext(
         context.financialProfileId,
         `bank-message-${payload.origin}`,
         transient.sourceHash,
+        processingOutcome(processingToken),
         transient.receivedAt,
         now,
       ],
@@ -145,33 +163,55 @@ export async function createBankMessageInboxWithAiForContext(
   let importBatchId = inserted[0]?.id;
   if (importBatchId === undefined) {
     const existing = await findInboxItemBySourceHash(context, transient.sourceHash);
+    const storedOutcome = await readStoredOutcome(context, existing.id);
+    const awaitingExtraction =
+      existing.importBatch.status === "reviewing" &&
+      (storedOutcome === undefined || storedOutcome.diagnostic.state === "processing");
 
-    if (existing.importBatch.status !== "failed") {
-      return enrichInboxItem(
-        existing,
-        await readStoredOutcome(context, existing.id),
-        safeMaskedPreview,
-      );
+    if (existing.importBatch.status !== "failed" && !awaitingExtraction) {
+      return enrichInboxItem(existing, storedOutcome, safeMaskedPreview);
     }
 
+    // An in-flight duplicate observes 'processing'; a crashed worker may be
+    // reclaimed only after its lease. The SQL predicate is the concurrency gate.
+    const staleBefore = new Date(new Date(now).getTime() - EXTRACTION_LEASE_MS).toISOString();
     const claimed = await withTransaction(async (executeQuery) => {
       const rows = await executeQuery<{ id: string }>(
-        `update "ImportBatch"
-         set "status" = 'REVIEWING', "completedAt" = null, "problems" = '[]'::jsonb, "updatedAt" = $4
+        `update "ImportBatch" as batch
+         set "status" = 'REVIEWING', "completedAt" = null,
+             "problems" = $5::jsonb, "updatedAt" = $4
          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-           and "status" = 'FAILED'
+           and (
+             "status" = 'FAILED' or (
+               "status" = 'REVIEWING' and "updatedAt" <= $6::timestamptz
+               and ("problems" = '[]'::jsonb
+                    or "problems"->0->>'code' = 'BANK_MESSAGE_EXTRACTION_PROCESSING')
+               and not exists (
+                 select 1 from "AiSuggestion" suggestion
+                  where suggestion."sourceEntityId" = batch."id"
+                    and suggestion."organizationId" = $2
+                    and suggestion."financialProfileId" = $3
+               )
+             )
+           )
          returning "id"`,
-        [existing.id, context.organizationId, context.financialProfileId, now],
+        [
+          existing.id,
+          context.organizationId,
+          context.financialProfileId,
+          now,
+          processingOutcome(processingToken),
+          staleBefore,
+        ],
       );
 
-      const claimedId = rows[0]?.id;
-      if (claimedId !== undefined) {
+      if (rows[0] !== undefined) {
         await recordUserSubmissionAudit(executeQuery, {
           context,
-          importBatchId: claimedId,
+          importBatchId: rows[0].id,
           now,
           action: "update",
-          reason: "Mensagem bancária reenviada com nova autorização explícita.",
+          reason: "Mensagem bancária retomada para extração idempotente.",
         });
       }
       return rows;
@@ -204,14 +244,25 @@ export async function createBankMessageInboxWithAiForContext(
     parserResult: extraction.parserResult,
   });
 
-  await persistExtractionOutcome({
+  const persisted = await persistExtractionOutcome({
     context,
     importBatchId,
     now,
+    processingToken,
     diagnostic: extraction.diagnostic,
     maskedText: safeMaskedPreview,
     suggestion,
   });
+
+  // A slower worker must not overwrite a newer lease holder's result.
+  if (!persisted) {
+    const current = await findInboxItemBySourceHash(context, transient.sourceHash);
+    return enrichInboxItem(
+      current,
+      await readStoredOutcome(context, current.id),
+      safeMaskedPreview,
+    );
+  }
 
   const stored = await findInboxItemBySourceHash(context, transient.sourceHash);
   return enrichInboxItem(stored, {
@@ -471,11 +522,27 @@ async function persistExtractionOutcome(input: {
   context: TenantContext;
   importBatchId: string;
   now: string;
+  processingToken: string;
   diagnostic: BankMessageExtractionDiagnostic;
   maskedText: string;
   suggestion: PersistableSuggestion | undefined;
-}): Promise<void> {
-  await withTransaction(async (executeQuery) => {
+}): Promise<boolean> {
+  return withTransaction(async (executeQuery) => {
+    const lease = await executeQuery<{ id: string }>(
+      `select "id" from "ImportBatch"
+       where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
+         and "status" = 'REVIEWING'
+         and "problems"->0->>'processingToken' = $4
+       for update`,
+      [
+        input.importBatchId,
+        input.context.organizationId,
+        input.context.financialProfileId,
+        input.processingToken,
+      ],
+    );
+    if (lease[0] === undefined) return false;
+
     if (input.suggestion !== undefined) {
       await executeQuery(
         `insert into "AiSuggestion"
@@ -522,6 +589,7 @@ async function persistExtractionOutcome(input: {
     );
 
     await recordSafeAudit(executeQuery, input);
+    return true;
   });
 }
 
