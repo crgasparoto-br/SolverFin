@@ -456,7 +456,7 @@ export async function settleWhatsappOutboundEvent(
 ): Promise<void> {
   await query(
     `update "WhatsappChannelEvent"
-     set "state"=$3,"replyText"=case when $3='response_ready' then "replyText" else null end,
+     set "state"=$3::varchar(28),"replyText"=case when $3::varchar(28)='response_ready' then "replyText" else null end,
          "outboundProviderMessageId"=$4,
          "leaseToken"=null,"leaseUntil"=null,"version"="version"+1,"updatedAt"=$5
      where "id"=$1 and "leaseToken"=$2 and "state"='sending'`,
