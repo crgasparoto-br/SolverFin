@@ -67,8 +67,16 @@ export interface ChannelEventRow {
   assistantConversationId: string | null;
   suggestionId: string | null;
   importBatchId: string | null;
-  state: "received" | "processing" | "failure_retryable" | "response_ready" | "sending" |
-    "sent" | "send_unknown" | "expired" | "cancelled";
+  state:
+    | "received"
+    | "processing"
+    | "failure_retryable"
+    | "response_ready"
+    | "sending"
+    | "sent"
+    | "send_unknown"
+    | "expired"
+    | "cancelled";
   outcome: ChannelOutcome | null;
   version: number;
   attempts: number;
@@ -107,14 +115,25 @@ export async function createWhatsappPairing(
      ("id","provider","accountId","userId","organizationId","financialProfileId",
       "challengeHash","state","expiresAt","createdAt","updatedAt")
      values ($1,'meta_whatsapp',$2,$3,$4,$5,$6,'pending',$7,$8,$8)`,
-    [id, accountId, context.userId, context.organizationId, context.financialProfileId,
-      hashChallenge(code), expiresAt, now],
+    [
+      id,
+      accountId,
+      context.userId,
+      context.organizationId,
+      context.financialProfileId,
+      hashChallenge(code),
+      expiresAt,
+      now,
+    ],
   );
   return { id, code, expiresAt: expiresAt.toISOString() };
 }
 
 export async function acknowledgeWhatsappPairingCode(
-  accountId: string, senderId: string, code: string, now = new Date(),
+  accountId: string,
+  senderId: string,
+  code: string,
+  now = new Date(),
 ): Promise<boolean> {
   if (!/^[a-zA-Z0-9_-]{32}$/.test(code)) return false;
   const rows = await query<{ id: string }>(
@@ -153,8 +172,8 @@ export async function confirmWhatsappPairing(
       [id, context.userId, context.organizationId, context.financialProfileId],
     );
     const link = rows[0];
-    if (!link || !link.senderId || link.state !== "awaiting_confirmation" ||
-        link.expiresAt <= now) throw linkStateError();
+    if (!link || !link.senderId || link.state !== "awaiting_confirmation" || link.expiresAt <= now)
+      throw linkStateError();
 
     const current = await executeQuery<{ id: string }>(
       `select "id" from "WhatsappChannelLink"
@@ -215,9 +234,14 @@ export async function revokeWhatsappLink(
   if (!rows.length) throw linkStateError();
 }
 
-export async function listWhatsappLinks(context: TenantContext): Promise<{
-  id: string; state: LinkStatus; senderMasked: string | null; expiresAt: string;
-}[]> {
+export async function listWhatsappLinks(context: TenantContext): Promise<
+  {
+    id: string;
+    state: LinkStatus;
+    senderMasked: string | null;
+    expiresAt: string;
+  }[]
+> {
   const rows = await query<ChannelLinkRow>(
     `select * from "WhatsappChannelLink"
      where "userId"=$1 and "organizationId"=$2 and "financialProfileId"=$3
@@ -226,8 +250,12 @@ export async function listWhatsappLinks(context: TenantContext): Promise<{
   );
   return rows.map((row) => ({
     id: row.id,
-    state: row.state === "pending" || row.state === "awaiting_confirmation"
-      ? row.expiresAt <= new Date() ? "expired" : row.state : row.state,
+    state:
+      row.state === "pending" || row.state === "awaiting_confirmation"
+        ? row.expiresAt <= new Date()
+          ? "expired"
+          : row.state
+        : row.state,
     senderMasked: row.senderId ? maskSender(row.senderId) : null,
     expiresAt: row.expiresAt.toISOString(),
   }));
@@ -238,7 +266,8 @@ function maskSender(senderId: string): string {
 }
 
 export async function resolveActiveWhatsappLink(
-  accountId: string, senderId: string,
+  accountId: string,
+  senderId: string,
 ): Promise<ActiveChannelLink | null> {
   const rows = await query<ActiveChannelLink>(
     `select l.*, lower(p."kind"::text) as "financialProfileKind"
@@ -256,10 +285,14 @@ export async function resolveActiveWhatsappLink(
 
 export async function isWhatsappLinkStillActive(link: ActiveChannelLink): Promise<boolean> {
   const current = await resolveActiveWhatsappLink(link.accountId, link.senderId!);
-  return !!current && current.id === link.id && current.version === link.version &&
+  return (
+    !!current &&
+    current.id === link.id &&
+    current.version === link.version &&
     current.userId === link.userId &&
     current.organizationId === link.organizationId &&
-    current.financialProfileId === link.financialProfileId;
+    current.financialProfileId === link.financialProfileId
+  );
 }
 
 export function contextFromChannelLink(link: ActiveChannelLink): TenantContext {
@@ -276,7 +309,8 @@ export async function claimWhatsappInboundEvent(
   now = new Date(),
 ): Promise<ChannelEventClaim> {
   const receivedAt = message.receivedAt;
-  const expiredOnArrival = receivedAt.getTime() < now.getTime() - EVENT_TTL_MS ||
+  const expiredOnArrival =
+    receivedAt.getTime() < now.getTime() - EVENT_TTL_MS ||
     receivedAt.getTime() > now.getTime() + 5 * 60_000;
   const id = randomUUID();
   const expiresAt = new Date(now.getTime() + EVENT_TTL_MS);
@@ -286,8 +320,17 @@ export async function claimWhatsappInboundEvent(
       "receivedAt","createdAt","updatedAt")
      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$9)
      on conflict ("provider","accountId","providerMessageId") do nothing`,
-    [id,message.provider,message.accountId,message.externalMessageId,message.senderId,
-      expiredOnArrival ? "expired" : "received",expiresAt,receivedAt,now],
+    [
+      id,
+      message.provider,
+      message.accountId,
+      message.externalMessageId,
+      message.senderId,
+      expiredOnArrival ? "expired" : "received",
+      expiresAt,
+      receivedAt,
+      now,
+    ],
   );
   const token = randomUUID();
   const claimed = await query<ChannelEventRow>(
@@ -301,23 +344,38 @@ export async function claimWhatsappInboundEvent(
          or ("state"='processing' and "leaseUntil"<=$6)
        )
      returning *`,
-    [message.provider,message.accountId,message.externalMessageId,token,
-      new Date(now.getTime()+PROCESSING_LEASE_MS),now],
+    [
+      message.provider,
+      message.accountId,
+      message.externalMessageId,
+      token,
+      new Date(now.getTime() + PROCESSING_LEASE_MS),
+      now,
+    ],
   );
   if (claimed[0]) return { event: claimed[0], token };
   const rows = await query<ChannelEventRow>(
     `select * from "WhatsappChannelEvent" where "provider"=$1
       and "accountId"=$2 and "providerMessageId"=$3`,
-    [message.provider,message.accountId,message.externalMessageId],
+    [message.provider, message.accountId, message.externalMessageId],
   );
   if (!rows[0]) throw new WhatsappChannelError("WHATSAPP_EVENT_MISSING", 503);
   return { event: rows[0], token: null };
 }
 
-export async function finishWhatsappInboundEvent(input: {
-  eventId: string; token: string; outcome: ChannelOutcome; reply: string;
-  link?: ActiveChannelLink; conversationId?: string; suggestionId?: string; importBatchId?: string;
-}, now = new Date()): Promise<void> {
+export async function finishWhatsappInboundEvent(
+  input: {
+    eventId: string;
+    token: string;
+    outcome: ChannelOutcome;
+    reply: string;
+    link?: ActiveChannelLink;
+    conversationId?: string;
+    suggestionId?: string;
+    importBatchId?: string;
+  },
+  now = new Date(),
+): Promise<void> {
   const link = input.link;
   const rows = await query<{ id: string }>(
     `update "WhatsappChannelEvent" set
@@ -327,23 +385,35 @@ export async function finishWhatsappInboundEvent(input: {
       "leaseToken"=null,"leaseUntil"=null,"version"="version"+1,"updatedAt"=$12
      where "id"=$1 and "state"='processing' and "leaseToken"=$2 and "expiresAt">$12
      returning "id"`,
-    [input.eventId,input.token,input.outcome,input.reply.slice(0,4000),
-      link?.id ?? null,link?.userId ?? null,link?.organizationId ?? null,
-      link?.financialProfileId ?? null,input.conversationId ?? null,
-      input.suggestionId ?? null,input.importBatchId ?? null,now],
+    [
+      input.eventId,
+      input.token,
+      input.outcome,
+      input.reply.slice(0, 4000),
+      link?.id ?? null,
+      link?.userId ?? null,
+      link?.organizationId ?? null,
+      link?.financialProfileId ?? null,
+      input.conversationId ?? null,
+      input.suggestionId ?? null,
+      input.importBatchId ?? null,
+      now,
+    ],
   );
   if (!rows.length) throw new WhatsappChannelError("WHATSAPP_EVENT_STATE_CHANGED", 503);
 }
 
 export async function failWhatsappInboundEvent(
-  id: string, token: string, now = new Date(),
+  id: string,
+  token: string,
+  now = new Date(),
 ): Promise<void> {
   await query(
     `update "WhatsappChannelEvent"
       set "state"='failure_retryable',"leaseToken"=null,"leaseUntil"=null,
           "version"="version"+1,"updatedAt"=$3
       where "id"=$1 and "leaseToken"=$2 and "state"='processing'`,
-    [id,token,now],
+    [id, token, now],
   );
 }
 
@@ -355,12 +425,13 @@ export async function replaceResponseAfterRevocation(id: string, now = new Date(
          "version"="version"+1,"updatedAt"=$2
      where "id"=$1 and "state"='response_ready'
        and "outcome" in ('query_complete','capture_pending_review','capture_incomplete')`,
-    [id,now],
+    [id, now],
   );
 }
 
 export async function claimWhatsappOutboundEvent(
-  id: string, now = new Date(),
+  id: string,
+  now = new Date(),
 ): Promise<{ event: ChannelEventRow; token: string } | null> {
   const token = randomUUID();
   const rows = await query<ChannelEventRow>(
@@ -369,13 +440,14 @@ export async function claimWhatsappOutboundEvent(
          "version"="version"+1,"updatedAt"=$4
      where "id"=$1 and "state"='response_ready' and "expiresAt">$4
      returning *`,
-    [id,token,new Date(now.getTime()+SEND_LEASE_MS),now],
+    [id, token, new Date(now.getTime() + SEND_LEASE_MS), now],
   );
   return rows[0] ? { event: rows[0], token } : null;
 }
 
 export async function settleWhatsappOutboundEvent(
-  id: string, token: string,
+  id: string,
+  token: string,
   status: "sent" | "response_ready" | "send_unknown",
   outboundId: string | null,
   now = new Date(),
@@ -386,7 +458,7 @@ export async function settleWhatsappOutboundEvent(
          "outboundProviderMessageId"=$4,
          "leaseToken"=null,"leaseUntil"=null,"version"="version"+1,"updatedAt"=$5
      where "id"=$1 and "leaseToken"=$2 and "state"='sending'`,
-    [id,token,status,outboundId,now],
+    [id, token, status, outboundId, now],
   );
 }
 
