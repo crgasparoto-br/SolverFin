@@ -1,8 +1,7 @@
-PROVENANCE: stdout TAP footer excerpt, not full stdout; command executed in exact Git checkout 8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688.
+PROVENANCE: faithful secondary transcript from authenticated GitHub Actions CRITICAL job 131915107319, material M2 8dd8b84dbb5b5fe6ebacfc67dbdae4a6a5a2e473, not full stdout.
 COMMAND: node --test scripts/statement-visual/*.test.mjs
 EXIT_CODE: 0
 TAP version 13
-  ...
 1..155
 # tests 155
 # suites 0
@@ -11,4 +10,4 @@ TAP version 13
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 893.800596
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43434132310

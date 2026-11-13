@@ -1,20 +1,23 @@
-PROVENANCE: secondary reachability manifest from authenticated GitHub Actions run 43345512485 (CRITICAL job 131624070414) on exact material HEAD; this text is NOT a forged original stdout/JUnit artifact.
-RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512485
+PROVENANCE: secondary reachability manifest reconstructed from authenticated GitHub Actions job metadata and log; NOT original stdout or JUnit.
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43434132310
 RUN_STATUS: completed/success
-CI_STEP: Run npm run test => completed/success (CRITICAL job)
-CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; complete 128 compiled test files
-CI_STEP: Run npm run build => completed/success; Gate Repository CI and Delivery V2 => success
-CHROME_RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512445
-CHROME_STEP: Validate registered visual scenarios in Chrome => success
-LOCAL_STEP: node --test scripts/statement-visual/*.test.mjs => 155/155 passed; authenticated local TAP footer excerpt is evidence/local-visual-tests-693.log
-NOTE: Integration reachability from compiled file discovery, full successful runner sweep, and console sentinel in tested source; no individual JUnit provided by Repository CI for this statement.
-HEAD: 8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688
+CRITICAL_JOB: 131915107319
+CI_STEP: Run npm run test => completed/success; dev-server/notifications-page.test.js reached at 2026-11-13T13:33:27Z
+CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; 128 compiled test files including financial-notifications.integration.test.js at 2026-11-13T13:34:04Z
+CI_STEP: Build, lint, typecheck, format, migrate => completed/success
+CHROME_RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43434132323
+CHROME_STEP: Validate registered visual scenarios in Chrome => completed/success
+VISUAL_CONTRACT: node --test scripts/statement-visual/*.test.mjs => # tests 155; # pass 155; # fail 0 (exact CI job at 2026-11-13T13:32:00Z)
+POSTGRES_SENTINEL: Issue 693: persistence, isolation, idempotency, origin liveness, public JSON and deep pagination OK
+NOTE: Coverage derived from GitHub Actions exact-SHA runner file discovery and job conclusion, not fabricated individual JUnit.
+HEAD: 8dd8b84dbb5b5fe6ebacfc67dbdae4a6a5a2e473
 EXIT_CODE: 0
-COMMAND: node --test scripts/statement-visual/*.test.mjs
 COMMAND: npm run test
 COMMAND: npm run test:integration --workspace @solverfin/api
+COMMAND: node --test scripts/statement-visual/*.test.mjs
 REACHED: apps/api/src/card-purchase-installment-audit-controls.integration.test.ts
 REACHED: apps/api/src/financial-notifications.integration.test.ts
 REACHED: apps/api/src/financial-notifications.test.ts
 REACHED: apps/web/src/dev-server/api-financial-profile.test.ts
+REACHED: apps/web/src/dev-server/notifications-page.test.ts
 REACHED: scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs

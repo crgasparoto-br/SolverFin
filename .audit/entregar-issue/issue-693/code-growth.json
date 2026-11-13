@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
+  "subject_sha": "8dd8b84dbb5b5fe6ebacfc67dbdae4a6a5a2e473",
   "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "comparison_base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "policy": {
@@ -21,7 +21,7 @@
     {
       "path": "apps/api/src/financial-notification-access.ts",
       "lines_before": null,
-      "lines_after": 272
+      "lines_after": 274
     },
     {
       "path": "apps/api/src/financial-notification-outbox.ts",
@@ -71,7 +71,7 @@
     {
       "path": "apps/web/src/dev-server/notifications-page.ts",
       "lines_before": null,
-      "lines_after": 299
+      "lines_after": 297
     },
     {
       "path": "apps/web/src/dev-server/shell.ts",
