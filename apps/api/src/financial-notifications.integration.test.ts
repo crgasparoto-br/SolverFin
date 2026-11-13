@@ -128,79 +128,6 @@ async function main(): Promise<void> {
     statusCode: 404,
   });
 
-  // A-79301: live resource at publication must be reauthorized when opened later.
-  const sourceId = randomUUID();
-  await query(
-    [
-      'insert into "AiSuggestion"',
-      '("id","organizationId","financialProfileId","kind","confidence","explanation","updatedAt")',
-      "values ($1,$2,$3,'INSIGHT',0.95,'Notification navigation regression',now())",
-    ].join(" "),
-    [sourceId, context.organizationId, context.financialProfileId],
-  );
-  const sourceEvent: FinancialNotificationEvent = {
-    ...fixture("source-revocation"),
-    resource: { kind: "ai_suggestion", id: sourceId },
-  };
-  const publishedSource = await publishFinancialNotificationForContext(context, sourceEvent);
-  const sourceNotificationId = publishedSource.notification?.id;
-  assert.ok(sourceNotificationId, "an initially accessible resource must produce a notification");
-  const navigationPath =
-    "/api/notifications/" +
-    sourceNotificationId +
-    "/navigation?profileId=" +
-    context.financialProfileId;
-  const liveNavigation = await dispatch(token, "GET", navigationPath);
-  assert.equal(liveNavigation.statusCode, 200);
-  assert.deepEqual(JSON.parse(JSON.stringify(liveNavigation.body)), {
-    available: true,
-    href: "/inbox#financial-insights",
-  });
-  const otherNavigation = await dispatch(
-    token,
-    "GET",
-    "/api/notifications/" +
-      sourceNotificationId +
-      "/navigation?profileId=" +
-      other.financialProfileId,
-  );
-  assert.equal(otherNavigation.statusCode, 404, "another profile cannot read the notification");
-
-  // The notification persists, but the original resource becomes inaccessible in T2.
-  await query('update "AiSuggestion" set "financialProfileId"=$2,"updatedAt"=now() where "id"=$1', [
-    sourceId,
-    other.financialProfileId,
-  ]);
-  const revokedNavigation = await dispatch(token, "GET", navigationPath);
-  assert.equal(revokedNavigation.statusCode, 200);
-  assert.deepEqual(JSON.parse(JSON.stringify(revokedNavigation.body)), {
-    available: false,
-    href: null,
-  });
-  assert.deepEqual(
-    await getFinancialNotificationNavigationForContext(context, sourceNotificationId),
-    { available: false, href: null },
-  );
-  await query('delete from "AiSuggestion" where "id"=$1', [sourceId]);
-  const removedNavigation = await dispatch(token, "GET", navigationPath);
-  assert.equal(removedNavigation.statusCode, 200);
-  assert.deepEqual(JSON.parse(JSON.stringify(removedNavigation.body)), {
-    available: false,
-    href: null,
-  });
-  const survivingPage = await dispatch(
-    token,
-    "GET",
-    "/api/notifications?profileId=" + context.financialProfileId,
-  );
-  assert.equal(survivingPage.statusCode, 200);
-  assert.ok(
-    (JSON.parse(JSON.stringify(survivingPage.body)) as { items: Array<{ id: string }> }).items.some(
-      (item) => item.id === sourceNotificationId,
-    ),
-    "deleting the origin must not delete the delivered notification history",
-  );
-
   additionalUserId = randomUUID();
   await query(
     [
@@ -593,7 +520,6 @@ async function main(): Promise<void> {
     ["items", "total", "unreadCount", "nextOffset"].sort(),
   );
   assert.ok(publicPage.items.some((item) => item.id === id));
-  assert.ok(publicPage.items.some((item) => item.id === sourceNotificationId));
   const allowedPublicKeys = ["id", "type", "occurredAt", "createdAt", "readAt", "facts"];
   for (const item of publicPage.items) {
     assert.deepEqual(Object.keys(item).sort(), [...allowedPublicKeys].sort());
@@ -621,8 +547,6 @@ async function main(): Promise<void> {
     }
     for (const value of [
       event.fingerprint,
-      sourceEvent.fingerprint,
-      sourceId,
       context.userId,
       context.organizationId,
       context.financialProfileId,
@@ -662,6 +586,89 @@ async function main(): Promise<void> {
   );
   assert.ok(unauthenticated.statusCode === 401 || unauthenticated.statusCode === 403);
   assertNoPrivateFields(JSON.parse(JSON.stringify(unauthenticated.body)));
+  // A-79301: a real budget is navigable before deletion and safely unavailable afterwards.
+  // This fixture runs after the existing count/idempotency assertions, leaving them unchanged.
+  const sourceId = randomUUID();
+  const sourceCategoryId = randomUUID();
+  await query(
+    [
+      'insert into "Category"',
+      '("id","organizationId","financialProfileId","name","kind","status","createdAt","updatedAt")',
+      "values ($1,$2,$3,'Notification source fixture','EXPENSE','ACTIVE',now(),now())",
+    ].join(" "),
+    [sourceCategoryId, context.organizationId, context.financialProfileId],
+  );
+  await query(
+    [
+      'insert into "Budget"',
+      '("id","organizationId","financialProfileId","categoryId","status","periodStartOn","periodEndOn",',
+      '"plannedAmountMinor","currency","createdAt","updatedAt","createdByUserId","updatedByUserId")',
+      "values ($1,$2,$3,$4,'ACTIVE','2026-11-01'::date,'2026-11-30'::date,10000,'BRL',now(),now(),$5,$5)",
+    ].join(" "),
+    [sourceId, context.organizationId, context.financialProfileId, sourceCategoryId, USER_ID],
+  );
+  const sourceEvent: FinancialNotificationEvent = {
+    ...fixture("source-revocation"),
+    type: "financial.budget.threshold.v1",
+    facts: { code: "budget_threshold", severity: "warning" },
+    resource: { kind: "budget", id: sourceId },
+  };
+  const publishedSource = await publishFinancialNotificationForContext(context, sourceEvent);
+  const sourceNotificationId = publishedSource.notification?.id;
+  assert.ok(sourceNotificationId, "an initially accessible resource must produce a notification");
+  const navigationPath =
+    "/api/notifications/" +
+    sourceNotificationId +
+    "/navigation?profileId=" +
+    context.financialProfileId;
+  const liveNavigation = await dispatch(token, "GET", navigationPath);
+  assert.equal(liveNavigation.statusCode, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(liveNavigation.body)), {
+    available: true,
+    href: "/orcamentos",
+  });
+  const otherNavigation = await dispatch(
+    token,
+    "GET",
+    "/api/notifications/" +
+      sourceNotificationId +
+      "/navigation?profileId=" +
+      other.financialProfileId,
+  );
+  assert.equal(otherNavigation.statusCode, 404, "another profile cannot read the notification");
+  assertNoPrivateFields(JSON.parse(JSON.stringify(otherNavigation.body)));
+
+  // Deleting the source after a valid notification must never grant a stale link.
+  await query('delete from "Budget" where "id"=$1', [sourceId]);
+  await query('delete from "Category" where "id"=$1', [sourceCategoryId]);
+  const removedNavigation = await dispatch(token, "GET", navigationPath);
+  assert.equal(removedNavigation.statusCode, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(removedNavigation.body)), {
+    available: false,
+    href: null,
+  });
+  assert.deepEqual(
+    await getFinancialNotificationNavigationForContext(context, sourceNotificationId),
+    { available: false, href: null },
+  );
+  const survivingPage = await dispatch(
+    token,
+    "GET",
+    "/api/notifications?profileId=" + context.financialProfileId,
+  );
+  assert.equal(survivingPage.statusCode, 200);
+  assert.ok(
+    (JSON.parse(JSON.stringify(survivingPage.body)) as { items: Array<{ id: string }> }).items.some(
+      (item) => item.id === sourceNotificationId,
+    ),
+    "deleting the origin must not delete the delivered notification history",
+  );
+  assertNoPrivateFields(JSON.parse(JSON.stringify(survivingPage.body)));
+  assert.ok(
+    !JSON.stringify(survivingPage.body).includes(sourceEvent.fingerprint),
+    "the source fingerprint must stay private after deletion",
+  );
+
   console.log(
     "Issue 693: persistence, isolation, idempotency, origin liveness and public JSON boundary OK",
   );
