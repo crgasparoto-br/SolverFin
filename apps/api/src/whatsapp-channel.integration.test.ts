@@ -209,10 +209,13 @@ async function main(): Promise<void> {
       new Date(Date.now() - 1000),
     ]);
     await redactExpiredWhatsappState();
-    const redacted = await query<{ senderId: string | null; state: string; replyText: string | null }>(
-      'select "senderId","state","replyText" from "WhatsappChannelEvent" where "id"=$1',
-      [claimed.event.id],
-    );
+    const redacted = await query<{
+      senderId: string | null;
+      state: string;
+      replyText: string | null;
+    }>('select "senderId","state","replyText" from "WhatsappChannelEvent" where "id"=$1', [
+      claimed.event.id,
+    ]);
     assert.equal(redacted[0]?.state, "sent");
     assert.equal(redacted[0]?.senderId, null);
     assert.equal(redacted[0]?.replyText, null);
