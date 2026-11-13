@@ -123,7 +123,8 @@ const defaultDependencies: ChannelServiceDependencies = {
       // A safe reply closes the webhook event instead of looping Meta retries.
       return {
         conversationId: view.conversation.id,
-        answer: "Não consegui concluir esta consulta. Envie uma nova pergunta para tentar novamente.",
+        answer:
+          "Não consegui concluir esta consulta. Envie uma nova pergunta para tentar novamente.",
         completed: false,
       };
     }
