@@ -1,5 +1,5 @@
 {
-  "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "material_head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
   "scope": [
     {
       "surface": "authorization",
@@ -58,5 +58,5 @@
       "anchor": "idempotência"
     }
   ],
-  "result": "all source anchors present"
+  "result": "all source anchors present on exact material M; source file hashes verified"
 }

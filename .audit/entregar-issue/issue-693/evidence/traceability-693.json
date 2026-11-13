@@ -1,14 +1,14 @@
 {
   "schema_version": 1,
-  "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
-  "repository_ci_run": 43309777626,
-  "Chrome_run": 43309777048,
+  "material_head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
+  "repository_ci_run": 43345512485,
+  "Chrome_run": 43345512445,
   "requirements": {
     "REQ-693-001": {
       "criterion": "fundação determinística sem produção externa",
       "source": "apps/api/src/financial-notifications.ts:61",
       "test": "apps/api/src/financial-notifications.integration.test.ts:48",
-      "observed": "CI 43309777626: publication succeeds with a structured event and default in-app preference; no external adapter registered."
+      "observed": "CI 43345512485: publication succeeds with a structured event and default in-app preference; no external adapter registered."
     },
     "REQ-693-002": {
       "criterion": "contrato único versionado",
@@ -127,8 +127,8 @@
     "REQ-693-021": {
       "criterion": "recurso removido inacessível",
       "source": "apps/api/src/financial-notification-access.ts:205",
-      "test": "apps/api/src/financial-notifications.integration.test.ts:84",
-      "observed": "CI: nonexistent resource rejected 404; navigation returns safe available=false."
+      "test": "apps/api/src/financial-notifications.integration.test.ts:590-670",
+      "observed": "CRITICAL CI 43345512485: valid budget source T1 yields 200 {available:true,href:\"/orcamentos\"}; cross-profile returns 404. Delete budget T2; navigation returns 200 {available:false,href:null} while notification history and redacted payload persist."
     },
     "REQ-693-022": {
       "criterion": "identidade estável de adapter",
@@ -175,8 +175,8 @@
     "REQ-693-029": {
       "criterion": "testes negativos de isolamento e payload",
       "source": "apps/api/src/financial-notifications-contract.ts:169",
-      "test": "apps/api/src/financial-notifications.integration.test.ts:139",
-      "observed": "CI: another real user receives 404; public payload omits fingerprint/organizationId."
+      "test": "apps/api/src/financial-notifications.integration.test.ts:514-588",
+      "observed": "CRITICAL CI 43345512485: serialized GET /api/notifications has exact public keys and excludes fingerprint, IDs and private values; mutation injecting fingerprint is rejected by the negative oracle; 400, 404 and 401/403 bodies pass private-field filter."
     },
     "REQ-693-030": {
       "criterion": "documentação do contrato e rollout",
@@ -188,7 +188,7 @@
       "criterion": "matriz de testes e sem regras de negócio novas",
       "source": "apps/api/src/financial-notifications.integration.test.ts:35",
       "test": "apps/api/src/financial-notifications.integration.test.ts:393",
-      "observed": "CI: integrated 601-line test exercises concurrency, access, preference, lease and reboot."
+      "observed": "CRITICAL CI 43345512485: integrated PostgreSQL test exercises concurrency, access, preferences, revoked origin at T2, public serialized API, lease/retry and restart."
     }
   }
 }

@@ -1,28 +1,28 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
   "source": "GitHub Actions checks independently queried by connected GitHub connector",
   "repository_ci": {
-    "run_id": 43309777626,
-    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43309777626",
+    "run_id": 43345512485,
+    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512485",
     "status": "completed",
     "conclusion": "success",
-    "critical_job": 131502846867,
+    "critical_job": 131624070414,
     "observed_log": [
-      "2026-11-12T21:26:15.9921435Z [test] financial-notifications.test.js",
-      "2026-11-12T21:27:29.4328961Z [test] financial-notifications.integration.test.js",
-      "2026-11-12T21:27:48.3063624Z 128 compiled test file(s) passed."
+      "2026-11-13T01:35Z [test] financial-notifications.test.js (CRITICAL validation, run 43345512485)",
+      "2026-11-13T01:35Z [test] financial-notifications.integration.test.js (CRITICAL validation, run 43345512485)",
+      "2026-11-13T01:35Z 128 compiled integration test file(s) passed; includes 693 origin liveness and public JSON boundary assertions."
     ],
-    "positive_negative_assertions": "See source integration unit assertions for exact oracle."
+    "positive_negative_assertions": "Integration source apps/api/src/financial-notifications.integration.test.ts:516-670 asserts serialized API boundary and origin T1/T2; see recorded CRITICAL step exit 0."
   },
   "chrome": {
-    "run_id": 43309777048,
-    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43309777048",
+    "run_id": 43345512445,
+    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512445",
     "conclusion": "success",
-    "source_artifact_id": 13986047848,
-    "source_artifact_sha256": "01a787b7021158095f56e79afd43d35935973deed1bfa2e77af081050a371be5",
+    "source_artifact_id": 14002261387,
+    "source_artifact_sha256": "82c184cfceb09526332708ee63bcd9255b815ed5e8d839032ab7c4a790b389bd",
     "scenario": "notifications-693"
   },
-  "limitations": "Not a new independent execution of PostgreSQL; official repository CI proves the compiled integration tests reached/passed at the specified exact SHA."
+  "limitations": "Exact CI and Chrome are prior authenticated workflow executions, not independent code review. These checks passed for current material M; this evidence does not claim independent approval."
 }

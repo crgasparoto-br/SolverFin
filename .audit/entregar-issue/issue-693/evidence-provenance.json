@@ -1,61 +1,61 @@
 {
   "schema_version": 1,
-  "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "material_head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
   "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "evidence": [
     {
       "evidence_id": "EVID-693-CI",
       "kind": "behavioral",
       "path": "evidence/ci-exact-sha-693.json",
-      "sha256": "40d23182315855d8e7e0cff3406dcc318999054ea83d6e8a65ac0dae2d638f38",
-      "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+      "sha256": "2469d58cc703d6d1358122a1c91f6095ca6bac076c1409e91c5a78b55ca2b5d7",
+      "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
       "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions exact SHA Repository CI critical validation",
+      "producer": "GitHub Actions Repository CI CRITICAL job 131624070414, run 43345512485, material M",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-693-CHROME",
       "kind": "behavioral",
       "path": "evidence/chrome-notifications-693.json",
-      "sha256": "4850f4ab3242359600b984e8675cde7742d17d7aa5a9f58b6132f10d807ac024",
-      "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+      "sha256": "cf49ba3d239ee7e2370fab75229117d716286cab653eceb41d44d38907d6eb6f",
+      "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
       "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions exact SHA Chrome visual scenario",
+      "producer": "GitHub Actions Chrome visual validation run 43345512445, ZIP artifact 14002261387 sha256:82c184cfceb09526332708ee63bcd9255b815ed5e8d839032ab7c4a790b389bd",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-693-MEASURE",
       "kind": "quantitative",
       "path": "evidence/traceability-693.json",
-      "sha256": "a5e2a9f4eb0390501d0bbe7ecf46bc5ad57dc4782bb1d316de984e21d45ce7ec",
-      "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+      "sha256": "87321090483d2a1050082036be37ada40a043966f3aa76dc76836164dca5cd6f",
+      "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
       "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
       "freshness_policy": "exact-material-head",
-      "producer": "CI 43309777626, published integration test with 1/0 unreadCount assertions",
+      "producer": "CI 43345512485, compiled PostgreSQL integration with 128 passed files, real T1/T2 and redacted payload controls",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-693-SOURCE",
       "kind": "structural",
       "path": "evidence/source-grounding-693.json",
-      "sha256": "1aebdd99639d0cead0a4b84736034e88c12240de300842494ec190ae73625f9e",
-      "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+      "sha256": "cde88bb25be61419cd4eeb70617216e274a05fd6b18f264ddbcc8ae7491783c7",
+      "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
       "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
       "freshness_policy": "exact-material-head",
-      "producer": "independent Git bundle anchored source inspection",
+      "producer": "Exact Git bundle anchored source inspection, refreshed and verified at material M",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-693-LOCAL",
       "kind": "behavioral",
       "path": "evidence/local-visual-tests-693.log",
-      "sha256": "8a281e9b73b6d313335ffe274e9cd16807cb923fbc7531171a818a236423fa8b",
-      "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+      "sha256": "2cea4aaa87229efbc3bae0a4099db1329784203f44d8f5dbd0b1cc8e30f5c915",
+      "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
       "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
       "freshness_policy": "exact-material-head",
-      "producer": "node --test exact material checkout 20/20",
+      "producer": "node --test scripts/statement-visual/*.test.mjs, exact material checkout, 155/155 passed",
       "status": "passed"
     }
   ]

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
   "families": [
     {
       "family": "authorization",
@@ -16,7 +16,7 @@
       "dimensions": [
         {
           "surface": "scoped-recipient-check",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family authorization at scoped-recipient-check via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family authorization at scoped-recipient-check via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-003-03",
             "NC-693-016-01",
@@ -41,7 +41,7 @@
       "dimensions": [
         {
           "surface": "tenant-scope-isolation",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family tenant-isolation at tenant-scope-isolation via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family tenant-isolation at tenant-scope-isolation via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-003-02",
             "NC-693-023-02",
@@ -65,7 +65,7 @@
       "dimensions": [
         {
           "surface": "serialized-public-payload",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family public-boundary at serialized-public-payload via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact SHA CRITICAL run 43345512485 passed GET /api/notifications serialization to public contract; fingerprint-injection negative oracle; 400/404/401/403 redaction and no ID/fingerprint leakage (integration:514-588).",
           "control_ids": [
             "NC-693-006-02",
             "NC-693-010-02",
@@ -87,7 +87,7 @@
       "dimensions": [
         {
           "surface": "resource-existence-recheck",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family reference-liveness at resource-existence-recheck via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact SHA CRITICAL run 43345512485 passed real Budget origin T1/authorized navigation, foreign profile denial, deletion at T2, live navigation fail-closed and historical notification retention (integration:590-670).",
           "control_ids": [
             "NC-693-021-02"
           ],
@@ -108,7 +108,7 @@
       "dimensions": [
         {
           "surface": "preference-delivery-time",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family temporal-consistency at preference-delivery-time via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family temporal-consistency at preference-delivery-time via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-016-02",
             "NC-693-027-02",
@@ -139,7 +139,7 @@
       "dimensions": [
         {
           "surface": "concurrent-event-insert",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family concurrency-atomicity at concurrent-event-insert via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family concurrency-atomicity at concurrent-event-insert via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-008-03",
             "NC-693-017-01",
@@ -170,7 +170,7 @@
       "dimensions": [
         {
           "surface": "duplicate-processing",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family idempotency at duplicate-processing via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family idempotency at duplicate-processing via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-001-01",
             "NC-693-004-02",
@@ -200,7 +200,7 @@
       "dimensions": [
         {
           "surface": "failure-does-not-mutate-source",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family rollback at failure-does-not-mutate-source via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family rollback at failure-does-not-mutate-source via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-009-02",
             "NC-693-015-01"
@@ -231,7 +231,7 @@
       "dimensions": [
         {
           "surface": "relational-semantic-integrity",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family structural-contract at relational-semantic-integrity via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family structural-contract at relational-semantic-integrity via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-012-01",
             "NC-693-013-01"
@@ -240,7 +240,7 @@
         },
         {
           "surface": "versioned-event-identity",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family structural-contract at versioned-event-identity via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family structural-contract at versioned-event-identity via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-001-02",
             "NC-693-031-03"
@@ -260,7 +260,7 @@
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "Exact material SHA GitHub Actions 43309777626 confirmed the risk family documentation at canonical-claims via the negative and sibling controls listed in the matrix; source asserts inspected.",
+          "reason": "Exact material SHA GitHub Actions 43345512485 confirmed the risk family documentation at canonical-claims via the negative and sibling controls listed in the matrix; source asserts inspected.",
           "control_ids": [
             "NC-693-030-01"
           ],
@@ -275,6 +275,6 @@
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 693,
     "pull_request_number": 793,
-    "material_head_sha": "93481ecf16c5d5139c51c42e49989490e38c6282"
+    "material_head_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688"
   }
 }

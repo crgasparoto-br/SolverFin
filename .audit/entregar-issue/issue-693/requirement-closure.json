@@ -24,7 +24,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "fundação determinística sem produção externa. Material apps/api/src/financial-notifications.ts:61; discriminating case apps/api/src/financial-notifications.integration.test.ts:48. CI 43309777626: publication succeeds with a structured event and default in-app preference; no external adapter registered."
+      "rationale": "fundação determinística sem produção externa. Material apps/api/src/financial-notifications.ts:61; discriminating case apps/api/src/financial-notifications.integration.test.ts:48. CI 43345512485: publication succeeds with a structured event and default in-app preference; no external adapter registered."
     },
     {
       "id": "OBL-002",
@@ -409,7 +409,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "recurso removido inacessível. Material apps/api/src/financial-notification-access.ts:205; discriminating case apps/api/src/financial-notifications.integration.test.ts:84. CI: nonexistent resource rejected 404; navigation returns safe available=false."
+      "rationale": "recurso removido inacessível. Material apps/api/src/financial-notification-access.ts:205; discriminating PostgreSQL test apps/api/src/financial-notifications.integration.test.ts:590-670. CI 43345512485: authorized budget exists T1 and navigation succeeds; cross-profile attempt returns 404; after physical deletion at T2 navigation fails closed with available=false/href=null; notification history remains, payload is redacted."
     },
     {
       "id": "OBL-022",
@@ -562,7 +562,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "testes negativos de isolamento e payload. Material apps/api/src/financial-notifications-contract.ts:169; discriminating case apps/api/src/financial-notifications.integration.test.ts:139. CI: another real user receives 404; public payload omits fingerprint/organizationId."
+      "rationale": "testes negativos de isolamento e payload. Material apps/api/src/financial-notifications-contract.ts:187; PostgreSQL test apps/api/src/financial-notifications.integration.test.ts:514-588. CI 43345512485: response serialized as JSON has only approved fields and no private values; negative control injects fingerprint and must fail; invalid request 400, foreign profile 404 and unauthenticated 401/403 expose no private details."
     },
     {
       "id": "OBL-030",
@@ -603,7 +603,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "matriz de testes e sem regras de negócio novas. Material apps/api/src/financial-notifications.integration.test.ts:35; discriminating case apps/api/src/financial-notifications.integration.test.ts:393. CI: integrated 601-line test exercises concurrency, access, preference, lease and reboot."
+      "rationale": "matriz de testes e sem regras de negócio novas. Material apps/api/src/financial-notifications.integration.test.ts:35; discriminating case apps/api/src/financial-notifications.integration.test.ts:393. CI: integrated integrated PostgreSQL test exercises concurrency, access, preference, lease and reboot."
     }
   ],
   "source_coverage": [

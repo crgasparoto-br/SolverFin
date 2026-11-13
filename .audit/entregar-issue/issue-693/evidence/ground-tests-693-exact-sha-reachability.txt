@@ -1,13 +1,16 @@
-PROVENANCE: secondary reachability manifest derived from authenticated GitHub Actions run 43309777626 (job 131502846867) on exact material HEAD; this file is NOT the original stdout JUnit artifact.
-RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43309777626
+PROVENANCE: secondary reachability manifest from authenticated GitHub Actions run 43345512485 (CRITICAL job 131624070414) on exact material HEAD; this text is NOT a forged original stdout/JUnit artifact.
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512485
 RUN_STATUS: completed/success
-CI_STEP: Run npm run test => completed/success; log reports financial-notifications.test.js and 164 compiled tests passed for API and 52 for web.
-CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; log reports financial-notifications.integration.test.js and 128 compiled test files passed.
-LOCAL_STEP: node --test scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs scripts/statement-visual/coverage-contract.test.mjs => 20/20 passed; source raw log included separately.
-NOTE: Reached declarations for integration card test and web file are based on runner discovery (*.integration.test.js / *.test.js), terminal successful sweep and absence of skips in the logged complete suite.
-HEAD: 93481ecf16c5d5139c51c42e49989490e38c6282
+CI_STEP: Run npm run test => completed/success (CRITICAL job)
+CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; complete 128 compiled test files
+CI_STEP: Run npm run build => completed/success; Gate Repository CI and Delivery V2 => success
+CHROME_RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43345512445
+CHROME_STEP: Validate registered visual scenarios in Chrome => success
+LOCAL_STEP: node --test scripts/statement-visual/*.test.mjs => 155/155 passed; authenticated local TAP footer excerpt is evidence/local-visual-tests-693.log
+NOTE: Integration reachability from compiled file discovery, full successful runner sweep, and console sentinel in tested source; no individual JUnit provided by Repository CI for this statement.
+HEAD: 8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688
 EXIT_CODE: 0
-COMMAND: node --test scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs scripts/statement-visual/coverage-contract.test.mjs
+COMMAND: node --test scripts/statement-visual/*.test.mjs
 COMMAND: npm run test
 COMMAND: npm run test:integration --workspace @solverfin/api
 REACHED: apps/api/src/card-purchase-installment-audit-controls.integration.test.ts

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+  "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
   "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "creations": [
     {
@@ -11,7 +11,7 @@
           "notification list read preferences navigation",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/api/src/tenant-context.ts",
@@ -30,7 +30,7 @@
           "adapter lease retry and idempotency",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/api/src/db.ts",
@@ -49,7 +49,7 @@
           "financial profile user ownership authorization",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/api/src/tenant-context.ts",
@@ -68,7 +68,7 @@
           "closed deterministic notification event type",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "packages/domain/src/index.ts",
@@ -87,7 +87,7 @@
           "authenticated notification HTTP router",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/api/src/router.ts",
@@ -106,7 +106,7 @@
           "publish deterministic financial notifications",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/api/src/repositories/audit.ts",
@@ -125,7 +125,7 @@
           "authenticated notification UI feed pagination",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "apps/web/src/dev-server/budgets-page.ts",
@@ -144,7 +144,7 @@
           "notification persistence schema outbox tables unique fingerprint",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "prisma/schema.prisma",
@@ -163,7 +163,7 @@
           "semantic notifications scene proofs",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
@@ -182,7 +182,7 @@
           "Chrome notifications 693 visual scenario",
           "notification profile tenant scoped"
         ],
-        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..93481ecf16c5d5139c51c42e49989490e38c6282, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
+        "scope": "git diff 72323bae8a6a920347da6a79164371111ee06e90..8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688, rg over apps/api/src apps/web/src/dev-server scripts/statement-visual prisma",
         "candidates": [
           {
             "path": "scripts/statement-visual/issue-606-dashboard-empty.mjs",
@@ -265,18 +265,18 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+        "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
         "reached_tests": [
           "apps/api/src/card-purchase-installment-audit-controls.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-693/evidence/ground-tests-693-exact-sha-reachability.txt",
-        "evidence_sha256": "a19356e299baddf6dddd2f1c703d07c006c1fa0bab9b600797fd7f1beb646c04"
+        "evidence_sha256": "8a7e4ae33d62f5c4b840821ca158a4140ea1a5af93b1c5fdb5925cc2ff57857b"
       }
     },
     {
       "path": "apps/api/src/financial-notifications.integration.test.ts",
       "operation": "added",
-      "scenario": "dedup simultaneous transactions, unauthorized recipient, read-state idempotence, persisted preference and outbox lease recovery",
+      "scenario": "dedup simultaneous transactions, unauthorized recipient, read-state idempotence, persisted preference and outbox lease recovery; public serialized JSON and origin T1/T2 invalidation regression",
       "requirement": "Issue #693 / deterministic notification and scoped user preference contracts",
       "search": {
         "queries": [
@@ -295,18 +295,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "Financial notification persistence isolation and retries require PostgreSQL, not only mocked unit tests",
+      "justification": "Financial notification persistence isolation and retries require PostgreSQL, not only mocked unit tests Verified T1/T2 navigation and public payload controls on exact CI 43345512485.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+        "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
         "reached_tests": [
           "apps/api/src/financial-notifications.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-693/evidence/ground-tests-693-exact-sha-reachability.txt",
-        "evidence_sha256": "a19356e299baddf6dddd2f1c703d07c006c1fa0bab9b600797fd7f1beb646c04"
+        "evidence_sha256": "8a7e4ae33d62f5c4b840821ca158a4140ea1a5af93b1c5fdb5925cc2ff57857b"
       }
     },
     {
@@ -337,12 +337,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+        "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
         "reached_tests": [
           "apps/api/src/financial-notifications.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-693/evidence/ground-tests-693-exact-sha-reachability.txt",
-        "evidence_sha256": "a19356e299baddf6dddd2f1c703d07c006c1fa0bab9b600797fd7f1beb646c04"
+        "evidence_sha256": "8a7e4ae33d62f5c4b840821ca158a4140ea1a5af93b1c5fdb5925cc2ff57857b"
       }
     },
     {
@@ -373,12 +373,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+        "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
         "reached_tests": [
           "apps/web/src/dev-server/api-financial-profile.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-693/evidence/ground-tests-693-exact-sha-reachability.txt",
-        "evidence_sha256": "a19356e299baddf6dddd2f1c703d07c006c1fa0bab9b600797fd7f1beb646c04"
+        "evidence_sha256": "8a7e4ae33d62f5c4b840821ca158a4140ea1a5af93b1c5fdb5925cc2ff57857b"
       }
     },
     {
@@ -392,7 +392,7 @@
           "user profile financial notification test"
         ],
         "scope": "git grep and test runner manifests in apps/api/src apps/web/src/dev-server scripts/statement-visual at base+head",
-        "runner": "npm test, npm run test:integration --workspace @solverfin/api, node --test scripts/statement-visual/*.test.mjs",
+        "runner": "node --test scripts/statement-visual/*.test.mjs; npm run test; npm run test:integration --workspace @solverfin/api",
         "candidates": [
           {
             "path": "scripts/statement-visual/coverage-contract.test.mjs",
@@ -407,14 +407,14 @@
       "disposition": "keep",
       "verification": {
         "status": "passed",
-        "command": "node --test scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs scripts/statement-visual/coverage-contract.test.mjs",
+        "command": "node --test scripts/statement-visual/*.test.mjs",
         "exit_code": 0,
-        "subject_sha": "93481ecf16c5d5139c51c42e49989490e38c6282",
+        "subject_sha": "8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688",
         "reached_tests": [
           "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
         ],
         "evidence_path": ".audit/entregar-issue/issue-693/evidence/ground-tests-693-exact-sha-reachability.txt",
-        "evidence_sha256": "a19356e299baddf6dddd2f1c703d07c006c1fa0bab9b600797fd7f1beb646c04"
+        "evidence_sha256": "8a7e4ae33d62f5c4b840821ca158a4140ea1a5af93b1c5fdb5925cc2ff57857b"
       }
     }
   ]

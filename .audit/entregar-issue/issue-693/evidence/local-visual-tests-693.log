@@ -1,130 +1,14 @@
+PROVENANCE: stdout TAP footer excerpt, not full stdout; command executed in exact Git checkout 8250b220ab2d85afbcbb8ebddbe8b4a1b8d45688.
+COMMAND: node --test scripts/statement-visual/*.test.mjs
+EXIT_CODE: 0
 TAP version 13
-# Subtest: canonical visual coverage contract is internally consistent
-ok 1 - canonical visual coverage contract is internally consistent
-  ---
-  duration_ms: 6.176613
-  type: 'test'
   ...
-# Subtest: equivalent route/state/layout/interaction/data fingerprints are rejected
-ok 2 - equivalent route/state/layout/interaction/data fingerprints are rejected
-  ---
-  duration_ms: 2.470719
-  type: 'test'
-  ...
-# Subtest: critical component coverage cannot disappear silently
-ok 3 - critical component coverage cannot disappear silently
-  ---
-  duration_ms: 0.911266
-  type: 'test'
-  ...
-# Subtest: a component fixture cannot satisfy critical structural real-flow coverage
-ok 4 - a component fixture cannot satisfy critical structural real-flow coverage
-  ---
-  duration_ms: 2.444611
-  type: 'test'
-  ...
-# Subtest: a state fixture cannot impersonate a real structural filter flow
-ok 5 - a state fixture cannot impersonate a real structural filter flow
-  ---
-  duration_ms: 6.142983
-  type: 'test'
-  ...
-# Subtest: a route-shaped record without real-browser execution cannot satisfy structural coverage
-ok 6 - a route-shaped record without real-browser execution cannot satisfy structural coverage
-  ---
-  duration_ms: 6.085699
-  type: 'test'
-  ...
-# Subtest: a route-shaped record without an explicit component claim cannot satisfy structural coverage
-ok 7 - a route-shaped record without an explicit component claim cannot satisfy structural coverage
-  ---
-  duration_ms: 3.055803
-  type: 'test'
-  ...
-# Subtest: canonical structural real-flow mappings cover only critical components
-ok 8 - canonical structural real-flow mappings cover only critical components
-  ---
-  duration_ms: 0.437136
-  type: 'test'
-  ...
-# Subtest: a foundation fixture cannot substitute a pilot route alternate state
-ok 9 - a foundation fixture cannot substitute a pilot route alternate state
-  ---
-  duration_ms: 3.746504
-  type: 'test'
-  ...
-# Subtest: a secondary coverage failure keeps its exact route and state identity
-ok 10 - a secondary coverage failure keeps its exact route and state identity
-  ---
-  duration_ms: 2.026914
-  type: 'test'
-  ...
-# Subtest: candidate visual SHA replaces merge-preview SHA in child evidence
-ok 11 - candidate visual SHA replaces merge-preview SHA in child evidence
-  ---
-  duration_ms: 0.362585
-  type: 'test'
-  ...
-# Subtest: new multi-coverage scenarios fail closed without a focused execution override
-ok 12 - new multi-coverage scenarios fail closed without a focused execution override
-  ---
-  duration_ms: 0.546087
-  type: 'test'
-  ...
-# Subtest: focused overrides cannot retain interaction metadata without semantic assertions
-ok 13 - focused overrides cannot retain interaction metadata without semantic assertions
-  ---
-  duration_ms: 1.285098
-  type: 'test'
-  ...
-# Subtest: semantic proof rejects a missing declared interaction while identity stays correct
-ok 14 - semantic proof rejects a missing declared interaction while identity stays correct
-  ---
-  duration_ms: 0.566657
-  type: 'test'
-  ...
-# Subtest: semantic proof rejects a sibling route identity even when assertions are complete
-ok 15 - semantic proof rejects a sibling route identity even when assertions are complete
-  ---
-  duration_ms: 0.254496
-  type: 'test'
-  ...
-# Subtest: legacy retirement evidence remains mandatory after an adapter disappears
-ok 16 - legacy retirement evidence remains mandatory after an adapter disappears
-  ---
-  duration_ms: 0.834092
-  type: 'test'
-  ...
-# Subtest: legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
-ok 17 - legacy retirement mapping cannot survive when the mapped scenario drops its responsibility claim
-  ---
-  duration_ms: 1.67945
-  type: 'test'
-  ...
-# Subtest: a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
-ok 18 - a second legacy surface fails closed when metadata survives but equivalent behavior is unclaimed
-  ---
-  duration_ms: 1.173133
-  type: 'test'
-  ...
-# Subtest: notifications behavior proof derives layout and preference assertions from both viewports
-ok 19 - notifications behavior proof derives layout and preference assertions from both viewports
-  ---
-  duration_ms: 1.732639
-  type: 'test'
-  ...
-# Subtest: notifications proof rejects missing mobile, wrong route and page errors
-ok 20 - notifications proof rejects missing mobile, wrong route and page errors
-  ---
-  duration_ms: 3.958627
-  type: 'test'
-  ...
-1..20
-# tests 20
+1..155
+# tests 155
 # suites 0
-# pass 20
+# pass 155
 # fail 0
 # cancelled 0
 # skipped 0
 # todo 0
-# duration_ms 134.141375
+# duration_ms 893.800596
