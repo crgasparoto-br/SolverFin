@@ -102,7 +102,10 @@ async function main(): Promise<void> {
     );
     assert.equal(confirmed.state, "active");
     assert.match(confirmed.senderMasked, /\*{4}\d{4}$/);
-    assert.equal((await listWhatsappLinks(context)).some((item) => item.id === pairing.id), true);
+    assert.equal(
+      (await listWhatsappLinks(context)).some((item) => item.id === pairing.id),
+      true,
+    );
 
     const active = await resolveActiveWhatsappLink(accountId, senderId);
     assert.ok(active, "Link must resolve only with the configured account and sender.");
@@ -119,14 +122,17 @@ async function main(): Promise<void> {
     assert.equal(attempts.filter((claim) => claim.token !== null).length, 1);
     const claimed = attempts.find((item) => item.token !== null);
     assert.ok(claimed?.token);
-    await finishWhatsappInboundEvent({
-      eventId: claimed.event.id,
-      token: claimed.token,
-      outcome: "query_complete",
-      reply: "Resultado de teste do assistente canônico.",
-      link: active,
-      conversationId: randomUUID(),
-    }, new Date(now.getTime() + 4000));
+    await finishWhatsappInboundEvent(
+      {
+        eventId: claimed.event.id,
+        token: claimed.token,
+        outcome: "query_complete",
+        reply: "Resultado de teste do assistente canônico.",
+        link: active,
+        conversationId: randomUUID(),
+      },
+      new Date(now.getTime() + 4000),
+    );
     const recovered = await claimWhatsappInboundEvent(msg, new Date(now.getTime() + 5000));
     assert.equal(recovered.token, null);
     assert.equal(recovered.event.state, "response_ready");

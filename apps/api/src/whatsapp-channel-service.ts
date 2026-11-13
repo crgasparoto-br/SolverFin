@@ -266,7 +266,11 @@ async function decideChannelReply(
   const question = text.replace(/^CONSULTAR\s+/i, "").trim();
   if (!question) return { outcome: "unsupported", reply: UNSUPPORTED_MESSAGE, link };
   const answer = await deps.queryFinancial(
-    context, question, channelEventIdempotencyKey(message), eventId, link,
+    context,
+    question,
+    channelEventIdempotencyKey(message),
+    eventId,
+    link,
   );
   return {
     outcome: "query_complete",
@@ -277,8 +281,11 @@ async function decideChannelReply(
 }
 
 function isFinancialOutcome(outcome: ChannelOutcome | null): boolean {
-  return outcome === "query_complete" ||
-    outcome === "capture_pending_review" || outcome === "capture_incomplete";
+  return (
+    outcome === "query_complete" ||
+    outcome === "capture_pending_review" ||
+    outcome === "capture_incomplete"
+  );
 }
 
 /** A response is stored before outbound, so a crash/replay never recalculates the ledger. */
@@ -292,11 +299,14 @@ export async function deliverPersistedChannelReply(
     const link = event.senderId
       ? await dependencies.resolveLink(event.accountId, event.senderId)
       : null;
-    if (!link || link.id !== event.linkId ||
+    if (
+      !link ||
+      link.id !== event.linkId ||
       link.userId !== event.userId ||
       link.organizationId !== event.organizationId ||
       link.financialProfileId !== event.financialProfileId ||
-      !(await dependencies.isLinkActive(link))) {
+      !(await dependencies.isLinkActive(link))
+    ) {
       await dependencies.replaceRevoked(event.id);
     }
   }
@@ -313,11 +323,14 @@ export async function deliverPersistedChannelReply(
   let authorizationLink: ActiveChannelLink | undefined;
   if (isFinancialOutcome(claimed.event.outcome)) {
     const link = await dependencies.resolveLink(claimed.event.accountId, to);
-    if (!link || link.id !== claimed.event.linkId ||
-        link.userId !== claimed.event.userId ||
-        link.organizationId !== claimed.event.organizationId ||
-        link.financialProfileId !== claimed.event.financialProfileId ||
-        !(await dependencies.isLinkActive(link))) {
+    if (
+      !link ||
+      link.id !== claimed.event.linkId ||
+      link.userId !== claimed.event.userId ||
+      link.organizationId !== claimed.event.organizationId ||
+      link.financialProfileId !== claimed.event.financialProfileId ||
+      !(await dependencies.isLinkActive(link))
+    ) {
       await dependencies.settleOutbound(event.id, claimed.token, "send_unknown", null);
       return;
     }
@@ -337,7 +350,10 @@ export async function deliverPersistedChannelReply(
   } catch (error) {
     const safelyRetryable = error instanceof ChannelProviderError && error.knownNotSent;
     await dependencies.settleOutbound(
-      event.id, claimed.token, safelyRetryable ? "response_ready" : "send_unknown", null,
+      event.id,
+      claimed.token,
+      safelyRetryable ? "response_ready" : "send_unknown",
+      null,
     );
     if (safelyRetryable) throw new WhatsappChannelError("WHATSAPP_OUTBOUND_RETRY_REQUIRED", 503);
     // Ambiguous provider acceptance stays send_unknown, never re-sent blindly.

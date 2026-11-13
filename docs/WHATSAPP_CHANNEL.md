@@ -12,13 +12,13 @@ GET/POST https://<API_HOST>/api/webhooks/whatsapp
 
 Configure exclusivamente no gerenciador de segredos do ambiente, nunca no cliente/browser, `.env` commitado ou logs:
 
-| Variável | Finalidade |
-| --- | --- |
-| `WHATSAPP_META_APP_SECRET` | App Secret para validar `X-Hub-Signature-256` dos bytes exatos |
-| `WHATSAPP_META_VERIFY_TOKEN` | Token da verificação GET `hub.mode=subscribe` |
-| `WHATSAPP_META_PHONE_NUMBER_ID` | ID numérico do número remetente oficial |
-| `WHATSAPP_META_ACCESS_TOKEN` | Access token de sistema com escopo mínimo para Cloud API |
-| `WHATSAPP_META_GRAPH_VERSION` | Versão Graph explícita, como `v25.0`, conforme suporte Meta |
+| Variável                        | Finalidade                                                     |
+| ------------------------------- | -------------------------------------------------------------- |
+| `WHATSAPP_META_APP_SECRET`      | App Secret para validar `X-Hub-Signature-256` dos bytes exatos |
+| `WHATSAPP_META_VERIFY_TOKEN`    | Token da verificação GET `hub.mode=subscribe`                  |
+| `WHATSAPP_META_PHONE_NUMBER_ID` | ID numérico do número remetente oficial                        |
+| `WHATSAPP_META_ACCESS_TOKEN`    | Access token de sistema com escopo mínimo para Cloud API       |
+| `WHATSAPP_META_GRAPH_VERSION`   | Versão Graph explícita, como `v25.0`, conforme suporte Meta    |
 
 A verificação GET devolve o `hub.challenge` em texto puro somente após comparação segura com o token. A entrega POST exige assinatura HMAC-SHA256 constante no tempo sobre o corpo **bruto**; payload malformado/sem assinatura é rejeitado antes de qualquer leitura financeira ou escrita. Não usa cookie, bearer do app nem CORS para autenticar a Meta. Somente `phone_number_id` configurado é aceito. As APIs administrativas exigem sessão SolverFin e seguem a proteção de origem das mutações.
 
