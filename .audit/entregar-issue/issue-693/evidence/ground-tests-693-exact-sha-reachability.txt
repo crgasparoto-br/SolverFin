@@ -1,16 +1,16 @@
 PROVENANCE: secondary reachability manifest reconstructed from authenticated GitHub Actions job metadata and log; NOT original stdout or JUnit.
-RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43434132310
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43440378283
 RUN_STATUS: completed/success
-CRITICAL_JOB: 131915107319
-CI_STEP: Run npm run test => completed/success; dev-server/notifications-page.test.js reached at 2026-11-13T13:33:27Z
-CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; 128 compiled test files including financial-notifications.integration.test.js at 2026-11-13T13:34:04Z
+CRITICAL_JOB: 131936500718
+CI_STEP: Run npm run test => completed/success; dev-server/notifications-page.test.js reached at 2026-11-13T14:15:19Z
+CI_STEP: Run npm run test:integration --workspace @solverfin/api => completed/success; 128 compiled test files including financial-notifications.integration.test.js at 2026-11-13T14:16:03Z
 CI_STEP: Build, lint, typecheck, format, migrate => completed/success
-CHROME_RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43434132323
+CHROME_RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43440378218
 CHROME_STEP: Validate registered visual scenarios in Chrome => completed/success
-VISUAL_CONTRACT: node --test scripts/statement-visual/*.test.mjs => # tests 155; # pass 155; # fail 0 (exact CI job at 2026-11-13T13:32:00Z)
+VISUAL_CONTRACT: node --test scripts/statement-visual/*.test.mjs => # tests 157; # pass 157; # fail 0 (exact CI job at 2026-11-13T14:13:49Z)
 POSTGRES_SENTINEL: Issue 693: persistence, isolation, idempotency, origin liveness, public JSON and deep pagination OK
 NOTE: Coverage derived from GitHub Actions exact-SHA runner file discovery and job conclusion, not fabricated individual JUnit.
-HEAD: 8dd8b84dbb5b5fe6ebacfc67dbdae4a6a5a2e473
+HEAD: 3adc4c7787d869b3a6ea637c527c6898db2ff687
 EXIT_CODE: 0
 COMMAND: npm run test
 COMMAND: npm run test:integration --workspace @solverfin/api
@@ -21,3 +21,4 @@ REACHED: apps/api/src/financial-notifications.test.ts
 REACHED: apps/web/src/dev-server/api-financial-profile.test.ts
 REACHED: apps/web/src/dev-server/notifications-page.test.ts
 REACHED: scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs
+REACHED: scripts/statement-visual/issue-565-review-queue-waits.test.mjs

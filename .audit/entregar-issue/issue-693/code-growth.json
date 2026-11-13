@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "8dd8b84dbb5b5fe6ebacfc67dbdae4a6a5a2e473",
+  "subject_sha": "3adc4c7787d869b3a6ea637c527c6898db2ff687",
   "base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "comparison_base_sha": "72323bae8a6a920347da6a79164371111ee06e90",
   "policy": {
@@ -92,6 +92,16 @@
       "path": "scripts/statement-visual/coverage-contract.mjs",
       "lines_before": 449,
       "lines_after": 450
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue-states.mjs",
+      "lines_before": 427,
+      "lines_after": 431
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-review-queue-waits.mjs",
+      "lines_before": 111,
+      "lines_after": 124
     },
     {
       "path": "scripts/statement-visual/issue-606-behavior-claims.mjs",
