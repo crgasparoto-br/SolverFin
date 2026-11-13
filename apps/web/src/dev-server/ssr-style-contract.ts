@@ -181,6 +181,10 @@ export const solverFinSsrStyleContracts = [
     pageCssFragments: [".import-layout {"],
     auxiliaryStyleProviders: inboxRuntimeProviders,
   }),
+  authenticated("notifications", "/notificacoes", "notifications-page.js", {
+    representativeHtmlFragments: ['class="notifications-panel"'],
+    pageCssFragments: [".notifications-panel {"],
+  }),
   authenticated("reports", "/relatorios", "reports-page.js", {
     representativeHtmlFragments: ['class="reports-heading"'],
     pageCssFragments: [".reports-heading {"],

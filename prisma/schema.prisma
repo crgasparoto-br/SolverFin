@@ -208,6 +208,7 @@ enum AuditEntityKind {
   PAYABLE_RECEIVABLE
   AI_SUGGESTION
   ATTACHMENT
+  FINANCIAL_NOTIFICATION
 }
 
 enum LinkedEntityKind {
@@ -241,6 +242,8 @@ model User {
   ownedProfiles       FinancialProfile[]   @relation("FinancialProfileOwner")
   applicationSessions ApplicationSession[]
   securityAuditEvents SecurityAuditEvent[]
+  financialNotifications FinancialNotification[] @relation("FinancialNotificationRecipient")
+  financialNotificationPreferences FinancialNotificationPreference[] @relation("FinancialNotificationPreferenceRecipient")
 
   @@unique([externalAuthProvider, externalAuthSubject])
   @@index([status])
@@ -341,6 +344,8 @@ model FinancialProfile {
   aiSuggestions               AiSuggestion[]
   attachments                 Attachment[]
   auditLogs                   AuditLogEntry[]
+  financialNotifications      FinancialNotification[]
+  financialNotificationPreferences FinancialNotificationPreference[]
   transactionGroups           TransactionGroup[]
   installmentCreationRequests InstallmentCreationRequest[]
   transactionCreationRequests TransactionCreationRequest[]
@@ -880,4 +885,76 @@ model AuditLogEntry {
   @@index([organizationId, financialProfileId, occurredAt])
   @@index([organizationId, financialProfileId, entityKind, entityId])
   @@index([organizationId, financialProfileId, correlationId])
+}
+
+ 
+/// Immutable event fact + mutable per-recipient read state. Never store provider copy here.
+model FinancialNotification {
+  id                 String    @id @default(uuid()) @db.Uuid
+  organizationId     String    @db.Uuid
+  financialProfileId String    @db.Uuid
+  recipientUserId    String    @db.Uuid
+  eventType          String    @db.VarChar(96)
+  fingerprint        String    @db.VarChar(71)
+  facts              Json
+  resourceKind       String?   @db.VarChar(32)
+  resourceId         String?   @db.Uuid
+  occurredAt         DateTime @db.Timestamptz(3)
+  inAppVisible       Boolean  @default(true)
+  readAt             DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotification_profile_fkey")
+  recipient User @relation("FinancialNotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotification_recipient_fkey")
+  deliveries FinancialNotificationDelivery[]
+
+  @@unique([id, organizationId, financialProfileId, recipientUserId], map: "FinancialNotification_scoped_id_key")
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, fingerprint], map: "FinancialNotification_dedup_key")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, occurredAt, id], map: "FinancialNotification_feed_idx")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, readAt], map: "FinancialNotification_read_idx")
+}
+
+/// A missing preference means in-app enabled and all external channels disabled.
+model FinancialNotificationPreference {
+  id                 String   @id @default(uuid()) @db.Uuid
+  organizationId     String   @db.Uuid
+  financialProfileId String   @db.Uuid
+  recipientUserId    String   @db.Uuid
+  eventType          String   @db.VarChar(96)
+  channel            String   @db.VarChar(16)
+  enabled            Boolean
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotificationPreference_profile_fkey")
+  recipient User @relation("FinancialNotificationPreferenceRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotificationPreference_recipient_fkey")
+
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, channel], map: "FinancialNotificationPreference_scoped_key")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationPreference_list_idx")
+}
+
+/// Durable claim/retry record; never changes or recomputes the financial source.
+model FinancialNotificationDelivery {
+  id                 String    @id @default(uuid()) @db.Uuid
+  organizationId     String    @db.Uuid
+  financialProfileId String    @db.Uuid
+  recipientUserId    String    @db.Uuid
+  notificationId     String    @db.Uuid
+  channel            String    @db.VarChar(16)
+  state              String    @default("pending") @db.VarChar(20)
+  attempts           Int       @default(0)
+  nextAttemptAt      DateTime  @default(now()) @db.Timestamptz(3)
+  leaseToken         String?   @db.Uuid
+  lockedUntil        DateTime? @db.Timestamptz(3)
+  lastErrorCode      String?   @db.VarChar(60)
+  deliveredAt        DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  notification FinancialNotification @relation(fields: [notificationId, organizationId, financialProfileId, recipientUserId], references: [id, organizationId, financialProfileId, recipientUserId], onDelete: Restrict, map: "FinancialNotificationDelivery_fkey")
+
+  @@unique([notificationId, channel], map: "FinancialNotificationDelivery_notification_channel_key")
+  @@index([channel, state, nextAttemptAt], map: "FinancialNotificationDelivery_retry_idx")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationDelivery_scope_idx")
 }

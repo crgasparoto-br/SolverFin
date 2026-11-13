@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { apiError, readJsonBody, resolveCorrelationId, sendJson } from "./http.js";
@@ -16,6 +17,29 @@ import {
 } from "./session.js";
 
 const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:4000";
+const requestedApiProfileContext = new AsyncLocalStorage<string>();
+
+/**
+ * Use the selected profile only for authenticated SSR reads in the destination
+ * reached from a notification. The API remains the authorization authority.
+ */
+export function withRequestedApiFinancialProfile<T>(
+  url: URL,
+  render: () => Promise<T>,
+): Promise<T> {
+  const profileId = url.searchParams.get("profileId");
+  return profileId ? requestedApiProfileContext.run(profileId, render) : render();
+}
+
+function apiPathForRequestedProfile(path: string): string {
+  const profileId = requestedApiProfileContext.getStore();
+  if (!profileId || !path.startsWith("/api/")) return path;
+  const destination = new URL(path, "https://solverfin.invalid");
+  if (!destination.searchParams.has("profileId")) {
+    destination.searchParams.set("profileId", profileId);
+  }
+  return destination.pathname + destination.search;
+}
 const publicOidcPaths = new Set(["/api/auth/oidc/start", "/api/auth/oidc/callback"]);
 const RECURRENCE_MATERIALIZATION_PATH = "/api/recurrence-materialization";
 const API_SESSION_COOKIE_PREFIXES = ["__Host-solverfin_session=", "solverfin_session="];
@@ -131,7 +155,7 @@ export async function apiGet<T>(
   path: string,
 ): Promise<ApiSuccess<T> | ApiFailure> {
   try {
-    const upstreamResponse = await fetch(`${apiBaseUrl}${path}`, {
+    const upstreamResponse = await fetch(`${apiBaseUrl}${apiPathForRequestedProfile(path)}`, {
       headers: buildUpstreamAuthenticationHeaders(credential),
     });
 
