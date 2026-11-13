@@ -3,7 +3,6 @@ import { randomUUID } from "node:crypto";
 import { query, withTransaction } from "./db.js";
 import {
   PAIRING_TTL_MS,
-  resolveActiveWhatsappLink,
   WhatsappChannelError,
   type ActiveChannelLink,
 } from "./whatsapp-channel-link-repository.js";
