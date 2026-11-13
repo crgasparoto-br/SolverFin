@@ -18,6 +18,11 @@ import {
 } from "@solverfin/domain/ai-suggestion-payloads";
 
 import { query, withTransaction, type QueryExecutor } from "./db.js";
+import {
+  claimBankMessageExtractionLease,
+  processingOutcome,
+  recordUserSubmissionAudit,
+} from "./bank-message-extraction-lease.js";
 import { insertAuditLogEntry } from "./repositories/audit.js";
 import {
   BankMessageInboxRepositoryError,
@@ -85,22 +90,6 @@ interface StoredBankMessageOutcome {
 }
 
 const BANK_MESSAGE_PURPOSE = "bank_message_transaction_extraction";
-const EXTRACTION_LEASE_MS = 2 * 60 * 1000;
-
-/** Processing metadata is non-sensitive, persisted to allow a single crash-safe reclaim. */
-function processingOutcome(token: string): string {
-  return JSON.stringify([
-    {
-      code: "BANK_MESSAGE_EXTRACTION_PROCESSING",
-      message: "A mensagem está sendo processada. Atualize a Inbox para acompanhar o resultado.",
-      source: "none",
-      state: "processing",
-      retryable: false,
-      reviewReasons: [],
-      processingToken: token,
-    },
-  ]);
-}
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export async function createBankMessageInboxWithAiForContext(
@@ -172,52 +161,13 @@ export async function createBankMessageInboxWithAiForContext(
       return enrichInboxItem(existing, storedOutcome, safeMaskedPreview);
     }
 
-    // An in-flight duplicate observes 'processing'; a crashed worker may be
-    // reclaimed only after its lease. The SQL predicate is the concurrency gate.
-    const staleBefore = new Date(new Date(now).getTime() - EXTRACTION_LEASE_MS).toISOString();
-    const claimed = await withTransaction(async (executeQuery) => {
-      const rows = await executeQuery<{ id: string }>(
-        `update "ImportBatch" as batch
-         set "status" = 'REVIEWING', "completedAt" = null,
-             "problems" = $5::jsonb, "updatedAt" = $4
-         where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
-           and (
-             "status" = 'FAILED' or (
-               "status" = 'REVIEWING' and "updatedAt" <= $6::timestamptz
-               and ("problems" = '[]'::jsonb
-                    or "problems"->0->>'code' = 'BANK_MESSAGE_EXTRACTION_PROCESSING')
-               and not exists (
-                 select 1 from "AiSuggestion" suggestion
-                  where suggestion."sourceEntityId" = batch."id"
-                    and suggestion."organizationId" = $2
-                    and suggestion."financialProfileId" = $3
-               )
-             )
-           )
-         returning "id"`,
-        [
-          existing.id,
-          context.organizationId,
-          context.financialProfileId,
-          now,
-          processingOutcome(processingToken),
-          staleBefore,
-        ],
-      );
-
-      if (rows[0] !== undefined) {
-        await recordUserSubmissionAudit(executeQuery, {
-          context,
-          importBatchId: rows[0].id,
-          now,
-          action: "update",
-          reason: "Mensagem bancária retomada para extração idempotente.",
-        });
-      }
-      return rows;
+    // Reclaim only after the persisted extraction lease expires.
+    importBatchId = await claimBankMessageExtractionLease({
+      context,
+      importBatchId: existing.id,
+      now,
+      processingToken,
     });
-
-    importBatchId = claimed[0]?.id;
     if (importBatchId === undefined) {
       const concurrent = await findInboxItemBySourceHash(context, transient.sourceHash);
       return enrichInboxItem(
@@ -590,31 +540,6 @@ async function persistExtractionOutcome(input: {
 
     await recordSafeAudit(executeQuery, input);
     return true;
-  });
-}
-
-async function recordUserSubmissionAudit(
-  executeQuery: QueryExecutor,
-  input: {
-    context: TenantContext;
-    importBatchId: string;
-    now: string;
-    action: "create" | "update";
-    reason: string;
-  },
-): Promise<void> {
-  await insertAuditLogEntry(executeQuery, {
-    organizationId: input.context.organizationId,
-    financialProfileId: input.context.financialProfileId,
-    occurredAt: input.now,
-    actorKind: "user",
-    actorId: input.context.userId,
-    action: input.action,
-    entityKind: "import_batch",
-    entityId: input.importBatchId,
-    reason: input.reason,
-    redactedChanges:
-      input.action === "create" ? { sourceHash: "added", status: "added" } : { status: "changed" },
   });
 }
 
