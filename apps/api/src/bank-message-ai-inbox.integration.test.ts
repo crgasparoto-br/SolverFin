@@ -311,7 +311,8 @@ async function main(): Promise<void> {
     assert.equal(listedRetry?.extractionState, "ready_for_review");
 
     // Reconstruct a crash after the intake COMMIT but before the extraction persisted.
-    const interruptedText = randomUUID() + " aviso bancario fora dos formatos conhecidos em 05/08/2026";
+    const interruptedText =
+      randomUUID() + " aviso bancario fora dos formatos conhecidos em 05/08/2026";
     const interruptedHash = buildBankMessageSourceHash(context, interruptedText);
     createdSourceHashes.push(interruptedHash);
     const interruptedId = await seedUnfinishedInboxBatch(
@@ -351,7 +352,12 @@ async function main(): Promise<void> {
     const replay = await createBankMessageInboxWithAiForContext(
       context,
       { origin: "whatsapp", text: interruptedText, consentAccepted: true },
-      { selectProvider: () => { replayProviders += 1; return disabledSelection(); } },
+      {
+        selectProvider: () => {
+          replayProviders += 1;
+          return disabledSelection();
+        },
+      },
     );
     assert.equal(replay.suggestion?.id, recovered.suggestion?.id);
     assert.equal(replayProviders, 0, "completed webhook replay never re-extracts");
@@ -365,7 +371,12 @@ async function main(): Promise<void> {
     const active = await createBankMessageInboxWithAiForContext(
       context,
       { origin: "whatsapp", text: activeText, consentAccepted: true },
-      { selectProvider: () => { activeProviderCalls += 1; return disabledSelection(); } },
+      {
+        selectProvider: () => {
+          activeProviderCalls += 1;
+          return disabledSelection();
+        },
+      },
     );
     assert.equal(active.id, activeId);
     assert.equal(active.extractionState, "processing");
@@ -378,8 +389,12 @@ async function main(): Promise<void> {
     createdSourceHashes.push(racingHash);
     let started!: () => void;
     let release!: () => void;
-    const providerStarted = new Promise<void>((resolve) => { started = resolve; });
-    const staleProviderRelease = new Promise<void>((resolve) => { release = resolve; });
+    const providerStarted = new Promise<void>((resolve) => {
+      started = resolve;
+    });
+    const staleProviderRelease = new Promise<void>((resolve) => {
+      release = resolve;
+    });
     const slowProvider: AiProvider = {
       id: "stale-worker",
       model: "fixture-v1",
