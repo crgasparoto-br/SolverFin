@@ -133,9 +133,10 @@ const defaultDependencies: ChannelServiceDependencies = {
       },
     );
     return {
-      ...(item.suggestion?.id ? { suggestionId: item.suggestion.id } : {}),
+      ...(item.linkedSuggestionId ? { suggestionId: item.linkedSuggestionId } : {}),
       importBatchId: item.id,
-      pendingReview: item.suggestion?.status === "pending_review",
+      pendingReview: item.extractionState === "ready_for_review" &&
+        item.linkedSuggestionId !== undefined,
     };
   },
   cancelFinancial: async (context) => {
