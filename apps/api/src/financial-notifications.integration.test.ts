@@ -128,6 +128,77 @@ async function main(): Promise<void> {
     statusCode: 404,
   });
 
+  // A-79301: live resource at publication must be reauthorized when opened later.
+  const sourceId = randomUUID();
+  await query(
+    [
+      'insert into "AiSuggestion"',
+      '("id","organizationId","financialProfileId","kind","confidence","explanation","updatedAt")',
+      "values ($1,$2,$3,'INSIGHT',0.95,'Notification navigation regression',now())",
+    ].join(" "),
+    [sourceId, context.organizationId, context.financialProfileId],
+  );
+  const sourceEvent: FinancialNotificationEvent = {
+    ...fixture("source-revocation"),
+    resource: { kind: "ai_suggestion", id: sourceId },
+  };
+  const publishedSource = await publishFinancialNotificationForContext(context, sourceEvent);
+  const sourceNotificationId = publishedSource.notification?.id;
+  assert.ok(sourceNotificationId, "an initially accessible resource must produce a notification");
+  const navigationPath =
+    "/api/notifications/" +
+    sourceNotificationId +
+    "/navigation?profileId=" +
+    context.financialProfileId;
+  const liveNavigation = await dispatch(token, "GET", navigationPath);
+  assert.equal(liveNavigation.statusCode, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(liveNavigation.body)), {
+    available: true,
+    href: "/inbox#financial-insights",
+  });
+  const otherNavigation = await dispatch(
+    token,
+    "GET",
+    "/api/notifications/" + sourceNotificationId + "/navigation?profileId=" +
+      other.financialProfileId,
+  );
+  assert.equal(otherNavigation.statusCode, 404, "another profile cannot read the notification");
+
+  // The notification persists, but the original resource becomes inaccessible in T2.
+  await query(
+    'update "AiSuggestion" set "financialProfileId"=$2,"updatedAt"=now() where "id"=$1',
+    [sourceId, other.financialProfileId],
+  );
+  const revokedNavigation = await dispatch(token, "GET", navigationPath);
+  assert.equal(revokedNavigation.statusCode, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(revokedNavigation.body)), {
+    available: false,
+    href: null,
+  });
+  assert.deepEqual(
+    await getFinancialNotificationNavigationForContext(context, sourceNotificationId),
+    { available: false, href: null },
+  );
+  await query('delete from "AiSuggestion" where "id"=$1', [sourceId]);
+  const removedNavigation = await dispatch(token, "GET", navigationPath);
+  assert.equal(removedNavigation.statusCode, 200);
+  assert.deepEqual(JSON.parse(JSON.stringify(removedNavigation.body)), {
+    available: false,
+    href: null,
+  });
+  const survivingPage = await dispatch(
+    token,
+    "GET",
+    "/api/notifications?profileId=" + context.financialProfileId,
+  );
+  assert.equal(survivingPage.statusCode, 200);
+  assert.ok(
+    (JSON.parse(JSON.stringify(survivingPage.body)) as { items: Array<{ id: string }> }).items.some(
+      (item) => item.id === sourceNotificationId,
+    ),
+    "deleting the origin must not delete the delivered notification history",
+  );
+
   additionalUserId = randomUUID();
   await query(
     [
@@ -507,6 +578,62 @@ async function main(): Promise<void> {
     "/api/notifications?profileId=" + context.financialProfileId,
   );
   assert.equal(apiList.statusCode, 200);
+  // A-79302: assert the authenticated public response, after JSON serialization,
+  // rather than only inspecting the internal projection or the HTTP status.
+  const publicPage = JSON.parse(JSON.stringify(apiList.body)) as {
+    items: Array<Record<string, unknown>>;
+    total: number;
+    unreadCount: number;
+    nextOffset: number | null;
+  };
+  assert.deepEqual(
+    Object.keys(publicPage).sort(),
+    ["items", "total", "unreadCount", "nextOffset"].sort(),
+  );
+  assert.ok(publicPage.items.some((item) => item.id === id));
+  assert.ok(publicPage.items.some((item) => item.id === sourceNotificationId));
+  const allowedPublicKeys = ["id", "type", "occurredAt", "createdAt", "readAt", "facts"];
+  for (const item of publicPage.items) {
+    assert.deepEqual(Object.keys(item).sort(), [...allowedPublicKeys].sort());
+    assert.ok(item.facts && typeof item.facts === "object" && !Array.isArray(item.facts));
+    assert.ok(
+      Object.keys(item.facts).every((key) =>
+        ["code", "severity", "currency", "amountMinor", "effectiveOn"].includes(key),
+      ),
+      "financial facts must use only the structured public contract",
+    );
+  }
+  const assertNoPrivateFields = (payload: unknown): void => {
+    const serialized = JSON.stringify(payload);
+    for (const field of [
+      "fingerprint",
+      "organizationId",
+      "financialProfileId",
+      "recipientUserId",
+      "resourceId",
+      "resourceKind",
+      "inAppVisible",
+      "leaseToken",
+    ]) {
+      assert.ok(!serialized.includes('"' + field + '":'), `public payload leaked ${field}`);
+    }
+    for (const value of [
+      event.fingerprint,
+      sourceEvent.fingerprint,
+      sourceId,
+      context.userId,
+      context.organizationId,
+      context.financialProfileId,
+    ]) {
+      assert.ok(!serialized.includes(value), "public payload leaked private identity data");
+    }
+  };
+  assertNoPrivateFields(publicPage);
+  assert.throws(
+    () => assertNoPrivateFields({ ...publicPage, fingerprint: event.fingerprint }),
+    /public payload leaked fingerprint/,
+    "negative control must detect a router projection regression",
+  );
   const wrongPage = await dispatch(token, "GET", "/api/notifications?limit=0");
   assert.equal(wrongPage.statusCode, 400);
   const malicious = await dispatch(
@@ -516,6 +643,7 @@ async function main(): Promise<void> {
     { type: FIXTURE_TYPE, channel: "in_app", enabled: true, userId: other.userId },
   );
   assert.equal(malicious.statusCode, 400);
+  assertNoPrivateFields(JSON.parse(JSON.stringify(malicious.body)));
   const crossProfile = await dispatch(
     token,
     "PATCH",
@@ -523,13 +651,18 @@ async function main(): Promise<void> {
     { read: true },
   );
   assert.equal(crossProfile.statusCode, 404);
+  assertNoPrivateFields(JSON.parse(JSON.stringify(crossProfile.body)));
+  assertNoPrivateFields(JSON.parse(JSON.stringify(wrongPage.body)));
   const unauthenticated = await dispatch(
     "",
     "GET",
     "/api/notifications?profileId=" + context.financialProfileId,
   );
   assert.ok(unauthenticated.statusCode === 401 || unauthenticated.statusCode === 403);
-  console.log("Issue 693: persistence, isolation, idempotency, outbox retry and HTTP boundary OK");
+  assertNoPrivateFields(JSON.parse(JSON.stringify(unauthenticated.body)));
+  console.log(
+    "Issue 693: persistence, isolation, idempotency, origin liveness and public JSON boundary OK",
+  );
 }
 
 function fixture(seed: string): FinancialNotificationEvent {
