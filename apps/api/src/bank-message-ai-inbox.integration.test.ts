@@ -7,7 +7,7 @@ import {
   type AiProvider,
   type AiProviderSelection,
 } from "@solverfin/ai";
-import { buildBankMessageSourceHash } from "@solverfin/domain";
+import { buildBankMessageSourceHash, type TenantContext } from "@solverfin/domain";
 
 import {
   createBankMessageInboxWithAiForContext,
@@ -309,6 +309,153 @@ async function main(): Promise<void> {
     const listedRetry = listed.find((item) => item.id === retried.id);
     assert.equal(listedRetry?.extractionSource, "ai");
     assert.equal(listedRetry?.extractionState, "ready_for_review");
+
+    // Reconstruct a crash after the intake COMMIT but before the extraction persisted.
+    const interruptedText = randomUUID() + " aviso bancario fora dos formatos conhecidos em 05/08/2026";
+    const interruptedHash = buildBankMessageSourceHash(context, interruptedText);
+    createdSourceHashes.push(interruptedHash);
+    const interruptedId = await seedUnfinishedInboxBatch(
+      context,
+      interruptedHash,
+      new Date(Date.now() - 5 * 60_000),
+    );
+    const recovered = await createBankMessageInboxWithAiForContext(
+      context,
+      { origin: "whatsapp", text: interruptedText, consentAccepted: true },
+      {
+        selectProvider: () =>
+          readySelection(
+            new FakeAiProvider([
+              {
+                text: "structured",
+                structured: {
+                  amountMinor: 2000,
+                  currency: "BRL",
+                  occurredOn: "2026-08-05",
+                  type: "expense",
+                  merchant: "Loja Demo",
+                  confidence: 0.9,
+                  source: "bank_message",
+                  reasons: ["Retomada após interrupção fictícia."],
+                },
+              },
+            ]),
+          ),
+        resolveConsent: () => "granted",
+        policy: noRetryPolicy(),
+      },
+    );
+    assert.equal(recovered.id, interruptedId, "crash recovery must reuse original intake");
+    assert.ok(recovered.suggestion, "crash recovery must finish structured review suggestion");
+    let replayProviders = 0;
+    const replay = await createBankMessageInboxWithAiForContext(
+      context,
+      { origin: "whatsapp", text: interruptedText, consentAccepted: true },
+      { selectProvider: () => { replayProviders += 1; return disabledSelection(); } },
+    );
+    assert.equal(replay.suggestion?.id, recovered.suggestion?.id);
+    assert.equal(replayProviders, 0, "completed webhook replay never re-extracts");
+
+    // An immediate duplicate cannot steal a fresh lease or falsely acknowledge capture.
+    const activeText = randomUUID() + " aviso bancario fora dos formatos conhecidos em 05/08/2026";
+    const activeHash = buildBankMessageSourceHash(context, activeText);
+    createdSourceHashes.push(activeHash);
+    const activeId = await seedUnfinishedInboxBatch(context, activeHash, new Date());
+    let activeProviderCalls = 0;
+    const active = await createBankMessageInboxWithAiForContext(
+      context,
+      { origin: "whatsapp", text: activeText, consentAccepted: true },
+      { selectProvider: () => { activeProviderCalls += 1; return disabledSelection(); } },
+    );
+    assert.equal(active.id, activeId);
+    assert.equal(active.extractionState, "processing");
+    assert.equal(active.suggestion, undefined);
+    assert.equal(activeProviderCalls, 0);
+
+    // Simulate a worker that outlives its lease: only the new owner may persist.
+    const racingText = randomUUID() + " aviso bancario fora dos formatos conhecidos em 05/08/2026";
+    const racingHash = buildBankMessageSourceHash(context, racingText);
+    createdSourceHashes.push(racingHash);
+    let started!: () => void;
+    let release!: () => void;
+    const providerStarted = new Promise<void>((resolve) => { started = resolve; });
+    const providerRelease = new Promise<void>((resolve) => { release = resolve; });
+    const slowProvider: AiProvider = {
+      id: "stale-worker",
+      model: "fixture-v1",
+      async complete() {
+        started();
+        await providerRelease;
+        return {
+          text: "structured",
+          structured: {
+            amountMinor: 4250,
+            currency: "BRL",
+            occurredOn: "2026-08-05",
+            type: "expense",
+            merchant: "Original",
+            confidence: 0.9,
+            source: "bank_message",
+            reasons: ["Old lease must not persist."],
+          },
+        };
+      },
+    };
+    const firstWorker = createBankMessageInboxWithAiForContext(
+      context,
+      { origin: "whatsapp", text: racingText, consentAccepted: true },
+      {
+        selectProvider: () => readySelection(slowProvider),
+        resolveConsent: () => "granted",
+        policy: { ...noRetryPolicy(), timeoutMs: 15_000 },
+      },
+    );
+    await providerStarted;
+    let secondWorker: Awaited<ReturnType<typeof createBankMessageInboxWithAiForContext>>;
+    try {
+      await query(
+        `update "ImportBatch" set "updatedAt"=$4 where "sourceHash"=$1
+         and "organizationId"=$2 and "financialProfileId"=$3`,
+        [racingHash, organizationId, PERSONAL_PROFILE_ID, new Date(Date.now() - 5 * 60_000)],
+      );
+      secondWorker = await createBankMessageInboxWithAiForContext(
+        context,
+        { origin: "whatsapp", text: racingText, consentAccepted: true },
+        {
+          selectProvider: () =>
+            readySelection(
+              new FakeAiProvider([
+                {
+                  text: "structured",
+                  structured: {
+                    amountMinor: 1990,
+                    currency: "BRL",
+                    occurredOn: "2026-08-05",
+                    type: "expense",
+                    merchant: "New owner",
+                    confidence: 0.9,
+                    source: "bank_message",
+                    reasons: ["Recovered lease owns the result."],
+                  },
+                },
+              ]),
+            ),
+          resolveConsent: () => "granted",
+          policy: noRetryPolicy(),
+        },
+      );
+      assert.ok(secondWorker.suggestion);
+    } finally {
+      release();
+    }
+    const firstOutcome = await firstWorker;
+    assert.equal(firstOutcome.suggestion?.id, secondWorker!.suggestion?.id);
+    const racingRows = await query<{ suggestions: number }>(
+      `select count(*)::int as suggestions from "AiSuggestion"
+       where "sourceEntityId" = $1 and "organizationId"=$2 and "financialProfileId"=$3`,
+      [secondWorker!.id, organizationId, PERSONAL_PROFILE_ID],
+    );
+    assert.equal(racingRows[0]?.suggestions, 1, "old lease must not create a second suggestion");
   } finally {
     if (createdSourceHashes.length > 0) {
       await query(
@@ -327,6 +474,22 @@ async function main(): Promise<void> {
       );
     }
   }
+}
+
+async function seedUnfinishedInboxBatch(
+  context: TenantContext,
+  sourceHash: string,
+  updatedAt: Date,
+): Promise<string> {
+  const id = randomUUID();
+  await query(
+    `insert into "ImportBatch"
+      ("id","organizationId","financialProfileId","sourceKind","status",
+       "originalFileName","sourceHash","problems","receivedAt","createdAt","updatedAt")
+     values ($1,$2,$3,'BANK_MESSAGE','REVIEWING','bank-message-whatsapp',$4,'[]'::jsonb,$5,$5,$5)`,
+    [id, context.organizationId, context.financialProfileId, sourceHash, updatedAt],
+  );
+  return id;
 }
 
 function readySelection(provider: AiProvider): AiProviderSelection {
