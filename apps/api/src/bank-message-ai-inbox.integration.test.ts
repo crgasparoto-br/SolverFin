@@ -379,13 +379,13 @@ async function main(): Promise<void> {
     let started!: () => void;
     let release!: () => void;
     const providerStarted = new Promise<void>((resolve) => { started = resolve; });
-    const providerRelease = new Promise<void>((resolve) => { release = resolve; });
+    const staleProviderRelease = new Promise<void>((resolve) => { release = resolve; });
     const slowProvider: AiProvider = {
       id: "stale-worker",
       model: "fixture-v1",
       async complete() {
         started();
-        await providerRelease;
+        await staleProviderRelease;
         return {
           text: "structured",
           structured: {
