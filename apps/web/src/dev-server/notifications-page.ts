@@ -55,9 +55,7 @@ export async function renderNotificationsPage(
 ): Promise<string> {
   const requestedOffset = Number(url.searchParams.get("offset") ?? 0);
   const offset =
-    Number.isSafeInteger(requestedOffset) && requestedOffset >= 0
-      ? requestedOffset
-      : 0;
+    Number.isSafeInteger(requestedOffset) && requestedOffset >= 0 ? requestedOffset : 0;
   const profileId = url.searchParams.get("profileId");
   const profileSuffix = profileId ? "&profileId=" + encodeURIComponent(profileId) : "";
   const [feed, preferences] = await Promise.all([

@@ -710,7 +710,11 @@ async function main(): Promise<void> {
   };
   assert.equal(lastPageBody.total, 10021);
   assert.equal(lastPageBody.items.length, 1);
-  assert.equal(lastPageBody.nextOffset, null, "the last page cannot advertise an inaccessible link");
+  assert.equal(
+    lastPageBody.nextOffset,
+    null,
+    "the last page cannot advertise an inaccessible link",
+  );
   assert.equal(
     (await dispatch(token, "GET", largeHistoryPath + "&offset=9007199254740992")).statusCode,
     400,
