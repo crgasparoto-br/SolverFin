@@ -4,9 +4,7 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
-import {
-  cancelFinancialAssistantConversation,
-} from "./financial-assistant-repository.js";
+import { cancelFinancialAssistantConversation } from "./financial-assistant-repository.js";
 import {
   getOrStartFinancialAssistantConversation,
   sendFinancialAssistantMessage,
@@ -75,13 +73,15 @@ export interface ChannelServiceDependencies {
     idempotencyKey: string,
     eventId: string,
     link: ActiveChannelLink,
-  ) => Promise<{ conversationId: string; answer: string }>; 
+  ) => Promise<{ conversationId: string; answer: string }>;
   captureFinancial: (
     context: TenantContext,
     rawMessage: string,
     eventId: string,
     link: ActiveChannelLink,
-  ) => Promise<{ suggestionId?: string; importBatchId?: string; pendingReview: boolean } | "consent_required">;
+  ) => Promise<
+    { suggestionId?: string; importBatchId?: string; pendingReview: boolean } | "consent_required"
+  >;
   cancelFinancial: (context: TenantContext) => Promise<void>;
 }
 
@@ -105,9 +105,10 @@ const defaultDependencies: ChannelServiceDependencies = {
       idempotencyKey,
       runtime: {
         selectProvider: () => createAiProviderFromEnvironment(process.env),
-        resolveConsent: async () => await isWhatsappLinkStillActive(link)
-          ? resolveAiProcessingConsentForContext(context)
-          : "revoked",
+        resolveConsent: async () =>
+          (await isWhatsappLinkStillActive(link))
+            ? resolveAiProcessingConsentForContext(context)
+            : "revoked",
         correlationId: eventId,
       },
     });
@@ -118,8 +119,10 @@ const defaultDependencies: ChannelServiceDependencies = {
     return { conversationId: view.conversation.id, answer: turn.safeResponse.answer };
   },
   captureFinancial: async (context, text, eventId, link) => {
-    if (!(await isWhatsappLinkStillActive(link)) ||
-        await resolveBankMessageAiConsentForContext(context) !== "granted") {
+    if (
+      !(await isWhatsappLinkStillActive(link)) ||
+      (await resolveBankMessageAiConsentForContext(context)) !== "granted"
+    ) {
       return "consent_required";
     }
     const item = await createBankMessageInboxWithAiForContext(
@@ -127,9 +130,10 @@ const defaultDependencies: ChannelServiceDependencies = {
       { origin: "whatsapp", text, consentAccepted: true },
       {
         correlationId: eventId,
-        resolveConsent: async (current) => await isWhatsappLinkStillActive(link)
-          ? resolveBankMessageAiConsentForContext(current)
-          : "revoked",
+        resolveConsent: async (current) =>
+          (await isWhatsappLinkStillActive(link))
+            ? resolveBankMessageAiConsentForContext(current)
+            : "revoked",
       },
     );
     return {
@@ -152,10 +156,16 @@ function dependenciesFor(
 }
 
 export function channelEventIdempotencyKey(message: ChannelInboundMessage): string {
-  return "wa-" + createHash("sha256")
-    .update(message.provider).update(":")
-    .update(message.accountId).update(":")
-    .update(message.externalMessageId).digest("hex");
+  return (
+    "wa-" +
+    createHash("sha256")
+      .update(message.provider)
+      .update(":")
+      .update(message.accountId)
+      .update(":")
+      .update(message.externalMessageId)
+      .digest("hex")
+  );
 }
 
 /** Never infer authorization from a phone number or inbound text. */
@@ -230,7 +240,11 @@ async function decideChannelReply(
 
   if (/^CANCELAR$/i.test(text)) {
     await deps.cancelFinancial(context);
-    return { outcome: "cancelled", reply: "Conversa encerrada. Nenhum registro financeiro foi alterado.", link };
+    return {
+      outcome: "cancelled",
+      reply: "Conversa encerrada. Nenhum registro financeiro foi alterado.",
+      link,
+    };
   }
   if (/^CAPTURAR(?:\s+|$)/i.test(text)) {
     const rawMessage = text.replace(/^CAPTURAR(?:\s+|$)/i, "").trim();

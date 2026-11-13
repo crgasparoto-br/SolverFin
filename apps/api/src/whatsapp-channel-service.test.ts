@@ -151,14 +151,22 @@ function fixture(): Fixture {
       const stored = [...events.values()].find((item) => item.id === id);
       if (stored?.state === "processing") stored.state = "failure_retryable";
     },
-    async acknowledgePairing() { return true; },
+    async acknowledgePairing() {
+      return true;
+    },
     async resolveLink(accountId, senderId) {
-      return state.link?.state === "active" && state.link.accountId === accountId &&
-        state.link.senderId === senderId ? state.link : null;
+      return state.link?.state === "active" &&
+        state.link.accountId === accountId &&
+        state.link.senderId === senderId
+        ? state.link
+        : null;
     },
     async isLinkActive(link) {
-      return state.link?.state === "active" && state.link.id === link.id &&
-        state.link.version === link.version;
+      return (
+        state.link?.state === "active" &&
+        state.link.id === link.id &&
+        state.link.version === link.version
+      );
     },
     async replaceRevoked(id) {
       const stored = [...events.values()].find((item) => item.id === id);
@@ -234,7 +242,10 @@ test("captura apenas gera sugestão pendente na Inbox, nunca um lançamento fina
   await processInboundChannelMessage(inbound, state.outbound, state.deps);
   assert.deepEqual(state.captures, ["Pix realizado de R$ 20,00 em 13/11/2026"]);
   assert.equal(state.queries.length, 0);
-  assert.equal(state.events.get(inbound.externalMessageId)?.suggestionId, "77777777-7777-4777-8777-777777777777");
+  assert.equal(
+    state.events.get(inbound.externalMessageId)?.suggestionId,
+    "77777777-7777-4777-8777-777777777777",
+  );
   assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "capture_pending_review");
   assert.match(state.sent[0] ?? "", /Nenhum lançamento foi criado/);
 });
@@ -242,7 +253,11 @@ test("captura apenas gera sugestão pendente na Inbox, nunca um lançamento fina
 test("sem consentimento, captura não simula sugestão ou aprovação", async () => {
   const state = fixture();
   state.deps.captureFinancial = async () => "consent_required";
-  await processInboundChannelMessage(message("CAPTURAR Pix recebido", "wamid.consent"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("CAPTURAR Pix recebido", "wamid.consent"),
+    state.outbound,
+    state.deps,
+  );
   assert.match(state.sent[0] ?? "", /Autorize/);
   assert.equal(state.events.get("wamid.consent")?.suggestionId, null);
 });
@@ -250,7 +265,11 @@ test("sem consentimento, captura não simula sugestão ou aprovação", async ()
 test("origem não vinculada e identidade de outro número não obtêm contexto privado", async () => {
   const state = fixture();
   state.link = null;
-  await processInboundChannelMessage(message("qual meu saldo?", "wamid.unlinked"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("qual meu saldo?", "wamid.unlinked"),
+    state.outbound,
+    state.deps,
+  );
   assert.equal(state.queries.length, 0);
   assert.match(state.sent[0] ?? "", /vínculo/);
   state.link = makeActiveLink();
@@ -269,7 +288,11 @@ test("intenção de pagamento permanece no assistente somente leitura, sem captu
       answer: "O Assistente é somente leitura e não executa pagamento ou transferência.",
     };
   };
-  await processInboundChannelMessage(message("Pague minha conta hoje", "wamid.mutation"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("Pague minha conta hoje", "wamid.mutation"),
+    state.outbound,
+    state.deps,
+  );
   assert.equal(state.queries.length, 1);
   assert.equal(state.captures.length, 0);
   assert.match(state.sent[0] ?? "", /não executa pagamento/);
@@ -284,7 +307,11 @@ test("revogação durante processamento substitui resposta financeira por orient
       answer: "Saldo privado que não pode sair do servidor.",
     };
   };
-  await processInboundChannelMessage(message("saldo?", "wamid.revoked"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("saldo?", "wamid.revoked"),
+    state.outbound,
+    state.deps,
+  );
   assert.equal(state.events.get("wamid.revoked")?.linkId, null);
   assert.doesNotMatch(state.sent.join(" "), /Saldo privado/);
 });
@@ -329,8 +356,12 @@ test("duas mensagens concorrentes com o mesmo ID reivindicam no máximo uma exec
   const state = fixture();
   let entered!: () => void;
   let release!: () => void;
-  const firstEntered = new Promise<void>((resolve) => { entered = resolve; });
-  const gate = new Promise<void>((resolve) => { release = resolve; });
+  const firstEntered = new Promise<void>((resolve) => {
+    entered = resolve;
+  });
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
   state.deps.queryFinancial = async () => {
     entered();
     await gate;
@@ -360,7 +391,9 @@ test("429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia"
     },
   };
   const inbound = message("saldo?", "wamid.throttled");
-  await assert.rejects(() => processInboundChannelMessage(inbound, throttled.outbound, throttled.deps));
+  await assert.rejects(() =>
+    processInboundChannelMessage(inbound, throttled.outbound, throttled.deps),
+  );
   assert.equal(throttled.events.get(inbound.externalMessageId)?.state, "response_ready");
   await processInboundChannelMessage(inbound, throttled.outbound, throttled.deps);
   assert.equal(throttled.queries.length, 1);
@@ -368,7 +401,12 @@ test("429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia"
 
   const unknown = fixture();
   let unknownAttempts = 0;
-  unknown.outbound = { async sendText() { unknownAttempts++; throw new Error("connection dropped after POST"); } };
+  unknown.outbound = {
+    async sendText() {
+      unknownAttempts++;
+      throw new Error("connection dropped after POST");
+    },
+  };
   const uncertain = message("saldo?", "wamid.uncertain");
   await processInboundChannelMessage(uncertain, unknown.outbound, unknown.deps);
   await processInboundChannelMessage(uncertain, unknown.outbound, unknown.deps);
@@ -378,14 +416,22 @@ test("429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia"
 
 test("cancelamento e expiração não produzem mutações nem chamadas externas adicionais", async () => {
   const state = fixture();
-  await processInboundChannelMessage(message("CANCELAR", "wamid.cancel"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("CANCELAR", "wamid.cancel"),
+    state.outbound,
+    state.deps,
+  );
   assert.deepEqual(state.cancellations, [context.financialProfileId]);
   assert.equal(state.queries.length, 0);
   assert.equal(state.captures.length, 0);
   const expired = makeEvent(message("saldo?", "wamid.expired"));
   expired.state = "expired";
   state.events.set("wamid.expired", expired);
-  await processInboundChannelMessage(message("saldo?", "wamid.expired"), state.outbound, state.deps);
+  await processInboundChannelMessage(
+    message("saldo?", "wamid.expired"),
+    state.outbound,
+    state.deps,
+  );
   assert.equal(state.sent.length, 1);
 });
 
@@ -393,8 +439,15 @@ test("pairing pede confirmação no app sem revelar a validade do código", asyn
   const state = fixture();
   state.link = null;
   let codes = 0;
-  state.deps.acknowledgePairing = async () => { codes++; return false; };
-  await processInboundChannelMessage(message("VINCULAR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "wamid.pair"), state.outbound, state.deps);
+  state.deps.acknowledgePairing = async () => {
+    codes++;
+    return false;
+  };
+  await processInboundChannelMessage(
+    message("VINCULAR aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "wamid.pair"),
+    state.outbound,
+    state.deps,
+  );
   assert.equal(codes, 1);
   assert.match(state.sent[0] ?? "", /confirme no SolverFin/);
   assert.equal(state.events.get("wamid.pair")?.userId, null);

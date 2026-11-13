@@ -160,61 +160,135 @@ test("Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL", 
   assert.equal(body.to, senderId);
   assert.equal((body.text as { body: string }).body, "Saldo na moeda solicitada.");
   assert.doesNotMatch(JSON.stringify(body), /private-test-app-secret|test-protected-token/);
-  assert.equal((sent[0]?.init.headers as Record<string, string>).authorization, "Bearer test-protected-token");
-  await assert.rejects(() => outbound.sendText({ accountId: "999999999", recipientId: senderId, text: "x" }), ChannelProviderError);
+  assert.equal(
+    (sent[0]?.init.headers as Record<string, string>).authorization,
+    "Bearer test-protected-token",
+  );
+  await assert.rejects(
+    () => outbound.sendText({ accountId: "999999999", recipientId: senderId, text: "x" }),
+    ChannelProviderError,
+  );
 });
 
 test("Meta unavailable, throttled and uncertain failures are distinguishable without leaking provider details", async () => {
   assert.throws(() => requireMetaWebhookConfig({}), ChannelProviderError);
   assert.throws(() => createMetaCloudApiOutbound({}), ChannelProviderError);
-  for (const [status, knownNotSent] of [[429, true], [503, false]] as const) {
-    const outbound = createMetaCloudApiOutbound(env, async () => new Response("provider-secret", { status }) as never);
+  for (const [status, knownNotSent] of [
+    [429, true],
+    [503, false],
+  ] as const) {
+    const outbound = createMetaCloudApiOutbound(
+      env,
+      async () => new Response("provider-secret", { status }) as never,
+    );
     await assert.rejects(
-      () => outbound.sendText({ accountId: env.WHATSAPP_META_PHONE_NUMBER_ID, recipientId: senderId, text: "x" }),
-      (error: unknown) => error instanceof ChannelProviderError && error.knownNotSent === knownNotSent &&
+      () =>
+        outbound.sendText({
+          accountId: env.WHATSAPP_META_PHONE_NUMBER_ID,
+          recipientId: senderId,
+          text: "x",
+        }),
+      (error: unknown) =>
+        error instanceof ChannelProviderError &&
+        error.knownNotSent === knownNotSent &&
         !error.message.includes("provider-secret"),
     );
   }
-  const failing = createMetaCloudApiOutbound(env, async () => { throw new Error("transport-secret"); });
+  const failing = createMetaCloudApiOutbound(env, async () => {
+    throw new Error("transport-secret");
+  });
   await assert.rejects(
-    () => failing.sendText({ accountId: env.WHATSAPP_META_PHONE_NUMBER_ID, recipientId: senderId, text: "x" }),
-    (error: unknown) => error instanceof ChannelProviderError && !error.message.includes("transport-secret"),
+    () =>
+      failing.sendText({
+        accountId: env.WHATSAPP_META_PHONE_NUMBER_ID,
+        recipientId: senderId,
+        text: "x",
+      }),
+    (error: unknown) =>
+      error instanceof ChannelProviderError && !error.message.includes("transport-secret"),
   );
 });
 
 test("Signed webhook dispatches messages only after signature; status-only delivery is acknowledged", async () => {
   const rawBody = Buffer.from(JSON.stringify(webhookPayload()));
   let processed = 0;
-  const outbound: ChannelOutboundPort = { async sendText() { throw new Error("should never send from mocked processor"); } };
-  const processMessage = async () => { processed++; };
-  const verified = await handleWhatsappChannelWebhook({
-    method: "POST", query: new URLSearchParams(), headers: signedHeaders(rawBody), rawBody,
-  }, { env, outbound, processMessage });
+  const outbound: ChannelOutboundPort = {
+    async sendText() {
+      throw new Error("should never send from mocked processor");
+    },
+  };
+  const processMessage = async () => {
+    processed++;
+  };
+  const verified = await handleWhatsappChannelWebhook(
+    {
+      method: "POST",
+      query: new URLSearchParams(),
+      headers: signedHeaders(rawBody),
+      rawBody,
+    },
+    { env, outbound, processMessage },
+  );
   assert.equal(verified.statusCode, 200);
   assert.equal(processed, 1);
 
-  const tampered = await handleWhatsappChannelWebhook({
-    method: "POST", query: new URLSearchParams(), headers: { "x-hub-signature-256": "sha256=" + "0".repeat(64) }, rawBody,
-  }, { env, outbound, processMessage });
+  const tampered = await handleWhatsappChannelWebhook(
+    {
+      method: "POST",
+      query: new URLSearchParams(),
+      headers: { "x-hub-signature-256": "sha256=" + "0".repeat(64) },
+      rawBody,
+    },
+    { env, outbound, processMessage },
+  );
   assert.equal(tampered.statusCode, 403);
   assert.equal(processed, 1);
 
-  const broken = await handleWhatsappChannelWebhook({
-    method: "POST", query: new URLSearchParams(), headers: signedHeaders(rawBody), rawBody,
-  }, { env, outbound, processMessage: async () => { throw Error("sensitive"); } });
+  const broken = await handleWhatsappChannelWebhook(
+    {
+      method: "POST",
+      query: new URLSearchParams(),
+      headers: signedHeaders(rawBody),
+      rawBody,
+    },
+    {
+      env,
+      outbound,
+      processMessage: async () => {
+        throw Error("sensitive");
+      },
+    },
+  );
   assert.equal(broken.statusCode, 503);
   assert.doesNotMatch(broken.body, /sensitive/);
 
-  const statusOnly = Buffer.from(JSON.stringify({
-    object: "whatsapp_business_account",
-    entry: [{ changes: [{ field: "messages", value: {
-      metadata: { phone_number_id: env.WHATSAPP_META_PHONE_NUMBER_ID },
-      statuses: [{ id: "x", status: "read" }],
-    } }] }],
-  }));
-  const acknowledged = await handleWhatsappChannelWebhook({
-    method: "POST", query: new URLSearchParams(), headers: signedHeaders(statusOnly), rawBody: statusOnly,
-  }, { env, outbound, processMessage });
+  const statusOnly = Buffer.from(
+    JSON.stringify({
+      object: "whatsapp_business_account",
+      entry: [
+        {
+          changes: [
+            {
+              field: "messages",
+              value: {
+                metadata: { phone_number_id: env.WHATSAPP_META_PHONE_NUMBER_ID },
+                statuses: [{ id: "x", status: "read" }],
+              },
+            },
+          ],
+        },
+      ],
+    }),
+  );
+  const acknowledged = await handleWhatsappChannelWebhook(
+    {
+      method: "POST",
+      query: new URLSearchParams(),
+      headers: signedHeaders(statusOnly),
+      rawBody: statusOnly,
+    },
+    { env, outbound, processMessage },
+  );
   assert.equal(acknowledged.statusCode, 200);
   assert.equal(processed, 1);
 });

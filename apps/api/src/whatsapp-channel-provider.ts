@@ -183,24 +183,21 @@ export function createMetaCloudApiOutbound(
       // can select the URL or supply authorization headers.
       let response: Response;
       try {
-        response = await transport(
-          `https://graph.facebook.com/${version}/${accountId}/messages`,
-          {
-            method: "POST",
-            headers: {
-              authorization: `Bearer ${accessToken}`,
-              "content-type": "application/json",
-            },
-            body: JSON.stringify({
-              messaging_product: "whatsapp",
-              recipient_type: "individual",
-              to: message.recipientId,
-              type: "text",
-              text: { preview_url: false, body: message.text.slice(0, 4000) },
-            }),
-            signal: AbortSignal.timeout(8000),
+        response = await transport(`https://graph.facebook.com/${version}/${accountId}/messages`, {
+          method: "POST",
+          headers: {
+            authorization: `Bearer ${accessToken}`,
+            "content-type": "application/json",
           },
-        );
+          body: JSON.stringify({
+            messaging_product: "whatsapp",
+            recipient_type: "individual",
+            to: message.recipientId,
+            type: "text",
+            text: { preview_url: false, body: message.text.slice(0, 4000) },
+          }),
+          signal: AbortSignal.timeout(8000),
+        });
       } catch {
         // An interrupted network request might have been accepted by Meta: never
         // retry it automatically and risk sending a second financial response.
