@@ -54,8 +54,8 @@ export async function claimBankMessageExtractionLease(input: {
   const { context, importBatchId, now, processingToken } = input;
   const staleBefore = new Date(new Date(now).getTime() - EXTRACTION_LEASE_MS).toISOString();
   return withTransaction(async (executeQuery) => {
-      const rows = await executeQuery<{ id: string }>(
-        `update "ImportBatch" as batch
+    const rows = await executeQuery<{ id: string }>(
+      `update "ImportBatch" as batch
          set "status" = 'REVIEWING', "completedAt" = null,
              "problems" = $5::jsonb, "updatedAt" = $4
          where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3
@@ -73,15 +73,15 @@ export async function claimBankMessageExtractionLease(input: {
              )
            )
          returning "id"`,
-        [
-          importBatchId,
-          context.organizationId,
-          context.financialProfileId,
-          now,
-          processingOutcome(processingToken),
-          staleBefore,
-        ],
-      );
+      [
+        importBatchId,
+        context.organizationId,
+        context.financialProfileId,
+        now,
+        processingOutcome(processingToken),
+        staleBefore,
+      ],
+    );
 
     if (rows[0] !== undefined) {
       await recordUserSubmissionAudit(executeQuery, {

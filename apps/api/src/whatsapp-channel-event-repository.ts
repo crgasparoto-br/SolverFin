@@ -8,7 +8,11 @@ import {
   type ActiveChannelLink,
 } from "./whatsapp-channel-link-repository.js";
 import type { ChannelInboundMessage } from "./whatsapp-channel-provider.js";
-import type { ChannelEventClaim, ChannelEventRow, ChannelOutcome } from "./whatsapp-channel-types.js";
+import type {
+  ChannelEventClaim,
+  ChannelEventRow,
+  ChannelOutcome,
+} from "./whatsapp-channel-types.js";
 
 const EVENT_TTL_MS = 24 * 60 * 60 * 1000;
 const PROCESSING_LEASE_MS = 2 * 60 * 1000;

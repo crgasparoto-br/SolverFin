@@ -249,4 +249,3 @@ export function contextFromChannelLink(link: ActiveChannelLink): TenantContext {
     financialProfileKind: link.financialProfileKind,
   };
 }
-

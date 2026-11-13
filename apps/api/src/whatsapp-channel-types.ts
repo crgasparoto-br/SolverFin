@@ -47,4 +47,3 @@ export interface ChannelEventClaim {
   event: ChannelEventRow;
   token: string | null;
 }
-
