@@ -159,16 +159,18 @@ async function main(): Promise<void> {
   const otherNavigation = await dispatch(
     token,
     "GET",
-    "/api/notifications/" + sourceNotificationId + "/navigation?profileId=" +
+    "/api/notifications/" +
+      sourceNotificationId +
+      "/navigation?profileId=" +
       other.financialProfileId,
   );
   assert.equal(otherNavigation.statusCode, 404, "another profile cannot read the notification");
 
   // The notification persists, but the original resource becomes inaccessible in T2.
-  await query(
-    'update "AiSuggestion" set "financialProfileId"=$2,"updatedAt"=now() where "id"=$1',
-    [sourceId, other.financialProfileId],
-  );
+  await query('update "AiSuggestion" set "financialProfileId"=$2,"updatedAt"=now() where "id"=$1', [
+    sourceId,
+    other.financialProfileId,
+  ]);
   const revokedNavigation = await dispatch(token, "GET", navigationPath);
   assert.equal(revokedNavigation.statusCode, 200);
   assert.deepEqual(JSON.parse(JSON.stringify(revokedNavigation.body)), {
