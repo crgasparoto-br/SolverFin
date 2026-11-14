@@ -47,7 +47,16 @@ function readExplicitProfileId(request: ApiRequest): string {
     body !== null && typeof body === "object" && !Array.isArray(body)
       ? (body as Record<string, unknown>).profileId
       : undefined;
-  const profileId = request.query.get("profileId") ?? fromBody;
+  const queryProfiles = request.query.getAll("profileId");
+  // A conflicting body/query pair or duplicated query parameter is ambiguous.
+  // Never pick a different authorized financial profile by precedence alone.
+  if (
+    queryProfiles.length > 1 ||
+    (queryProfiles.length === 1 && fromBody !== undefined && queryProfiles[0] !== fromBody)
+  ) {
+    throw new WhatsappChannelError("WHATSAPP_EXPLICIT_PROFILE_REQUIRED", 400);
+  }
+  const profileId = queryProfiles[0] ?? fromBody;
   if (typeof profileId !== "string" || !UUID_PATTERN.test(profileId)) {
     throw new WhatsappChannelError("WHATSAPP_EXPLICIT_PROFILE_REQUIRED", 400);
   }
