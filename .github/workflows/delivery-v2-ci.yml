@@ -211,6 +211,41 @@ jobs:
       - run: npm run db:seed
       - run: npm run test
       - run: npm run test:integration --workspace @solverfin/api
+      # JUnit is produced by re-executing the exact compiled security tests on the
+      # same material SHA and seeded PostgreSQL; no semantic approval is inferred.
+      - name: Collect WhatsApp security JUnit (exact material SHA)
+        shell: bash
+        run: |
+          set -euo pipefail
+          out=".tmp-tests/whatsapp-semantic-evidence"
+          mkdir -p "$out"
+          node --test --test-concurrency=1 --test-reporter=junit \
+            .tmp-tests/api/whatsapp-channel-provider.test.js \
+            .tmp-tests/api/whatsapp-channel-service.test.js \
+            .tmp-tests/api-integration/whatsapp-channel.integration.test.js \
+            .tmp-tests/api-integration/whatsapp-channel-retention.integration.test.js \
+            .tmp-tests/api-integration/whatsapp-channel-management.integration.test.js \
+            > "$out/whatsapp-exact-head.xml"
+          python3 - <<'PYXML'
+          from pathlib import Path
+          from xml.etree import ElementTree
+
+          root = ElementTree.parse('.tmp-tests/whatsapp-semantic-evidence/whatsapp-exact-head.xml').getroot()
+          cases = root.findall('.//testcase')
+          if len(cases) < 5 or any(case.find('failure') is not None for case in cases):
+              raise SystemExit('Missing or failed exact-SHA WhatsApp JUnit cases')
+          print(f'Collected {len(cases)} factual exact-SHA test cases (not semantic certification)')
+          PYXML
+          printf '%s\n' "$VERIFICATION_HEAD_SHA" > "$out/material-head.sha"
+          ( cd "$out" && sha256sum whatsapp-exact-head.xml material-head.sha > SHA256SUMS )
+      - name: Upload exact-SHA WhatsApp JUnit for semantic review
+        uses: actions/upload-artifact@v4
+        with:
+          name: whatsapp-semantic-evidence-${{ github.event.pull_request.number }}-${{ env.VERIFICATION_HEAD_SHA }}
+          path: .tmp-tests/whatsapp-semantic-evidence/
+          include-hidden-files: true
+          retention-days: 14
+          if-no-files-found: error
       - run: npm run diagnose:import-statement-consistency -- --expect-zero
       - run: npm run build
 
