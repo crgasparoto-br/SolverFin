@@ -1,0 +1,451 @@
+{
+  "schema_version": 2,
+  "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
+  "creations": [
+    {
+      "path": "apps/api/src/bank-message-extraction-lease.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical bank-message-extraction-lease.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/bank-message-ai-inbox.ts",
+            "reason_not_reused": "Extracted transactional lease recovery shared by Inbox on interrupted extraction, preserving existing ImportBatch/AiSuggestion tables."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Extracted transactional lease recovery shared by Inbox on interrupted extraction, preserving existing ImportBatch/AiSuggestion tables."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-event-repository.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-event-repository.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-repository.ts",
+            "reason_not_reused": "Dedicated Meta event journal with provider-event idempotency, lease and outbound state distinct from assistant financial turns."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Dedicated Meta event journal with provider-event idempotency, lease and outbound state distinct from assistant financial turns."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-link-repository.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-link-repository.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/tenant-context.ts",
+            "reason_not_reused": "Persistent two-phase WhatsApp channel identity linking requires dedicated scoped and revocable records."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Persistent two-phase WhatsApp channel identity linking requires dedicated scoped and revocable records."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-provider.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-provider.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.ts",
+            "reason_not_reused": "Meta HMAC verifier and restricted Cloud API transport, separate from the canonical financial assistant service."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Meta HMAC verifier and restricted Cloud API transport, separate from the canonical financial assistant service."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-repository.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-repository.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-repository.ts",
+            "reason_not_reused": "Barrel maintaining compatibility for focused link, event and domain type repositories."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Barrel maintaining compatibility for focused link, event and domain type repositories."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-router.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-router.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-router.ts",
+            "reason_not_reused": "Dedicated authenticated administration endpoints and signed Meta webhook, not a financial-assistant mutation endpoint."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Dedicated authenticated administration endpoints and signed Meta webhook, not a financial-assistant mutation endpoint."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-service.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-service.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.ts",
+            "reason_not_reused": "Channel-only orchestration delegates to canonical FinancialAssistantService and BankMessageInbox without new finance engine."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Channel-only orchestration delegates to canonical FinancialAssistantService and BankMessageInbox without new finance engine."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-types.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical whatsapp-channel-types.ts event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "packages/domain/src/bank-message-inbox.ts",
+            "reason_not_reused": "Shared channel event and outcome states without changing financial domain contracts."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Shared channel event and outcome states without changing financial domain contracts."
+    },
+    {
+      "path": "prisma/migrations/20261113160000_whatsapp_channel_foundation/migration.sql",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find existing canonical migration.sql event handler and storage",
+          "search financial assistant Inbox and tenant authorization equivalents"
+        ],
+        "scope": "git grep at immutable base and candidate head over apps/api/src packages/domain/src prisma, existing assistants, import batches, subscriptions",
+        "candidates": [
+          {
+            "path": "prisma/schema.prisma",
+            "reason_not_reused": "New scoped event/link tables require SQL migrations; Prisma schema itself is extended but is not executable DDL."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "New scoped event/link tables require SQL migrations; Prisma schema itself is extended but is not executable DDL."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "sendFinancialAssistantMessage",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-service.ts",
+      "defined_at": {
+        "path": "apps/api/src/financial-assistant-service.ts",
+        "line": 61
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "createBankMessageInboxWithAiForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-service.ts",
+      "defined_at": {
+        "path": "apps/api/src/bank-message-ai-inbox.ts",
+        "line": 95
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "parseMetaInboundMessages",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-router.ts",
+      "defined_at": {
+        "path": "apps/api/src/whatsapp-channel-provider.ts",
+        "line": 75
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "withAuthorizedWhatsappOutbound",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-service.ts",
+      "defined_at": {
+        "path": "apps/api/src/whatsapp-channel-event-repository.ts",
+        "line": 189
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/bank-message-ai-inbox.integration.test.ts",
+      "operation": "modified",
+      "scenario": "Replay a crashed extraction in the original bank message Inbox and deny stale lease writer persistence.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/bank-message-ai-inbox.integration.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating replay a crashed extraction in the original bank message inbox and deny stale lease writer persistence. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/bank-message-ai-inbox.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-management.integration.test.ts",
+      "operation": "added",
+      "scenario": "Authenticated explicit profile, duplicate/conflicting profileId, tenant isolation, pairing and no writes on invalid requests.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating authenticated explicit profile, duplicate/conflicting profileid, tenant isolation, pairing and no writes on invalid requests. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-management.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-provider.test.ts",
+      "operation": "added",
+      "scenario": "HMAC signature over exact raw bytes, GET subscription, provider status-only, outgoing restricted endpoint, 429 and uncertain accepted results.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating hmac signature over exact raw bytes, get subscription, provider status-only, outgoing restricted endpoint, 429 and uncertain accepted results. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-provider.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-retention.integration.test.ts",
+      "operation": "added",
+      "scenario": "HTTP server startup expunges sensitive Whatsapp sender/response and expired challenges without Meta credentials.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating http server startup expunges sensitive whatsapp sender/response and expired challenges without meta credentials. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-retention.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-service.test.ts",
+      "operation": "added",
+      "scenario": "Assistant read-only, consent-gated Inbox, restart recovery, canceled outcome, revocation, outbound idempotency and concurrent events.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating assistant read-only, consent-gated inbox, restart recovery, canceled outcome, revocation, outbound idempotency and concurrent events. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-service.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel.integration.test.ts",
+      "operation": "added",
+      "scenario": "PostgreSQL link confirmation, exactly-once event, parallel claims, persisted reply recovery, redaction and replay after shared canonical conversation cancel.",
+      "requirement": "issue #694: Meta WhatsApp first-cut security, replay, tenant isolation and capture review",
+      "search": {
+        "queries": [
+          "existing authenticated tenant profile and provider tests",
+          "existing Inbox and financial assistant retry tests"
+        ],
+        "scope": "git grep plus CI workspaces in base and head (apps/api/src, npm test and integration runner)",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/financial-assistant-service.test.ts",
+            "case": "Existing canonical financial assistant or Inbox regression",
+            "oracle": "Existing assertions for financial contract, not Meta-specific entrypoint",
+            "comparison": "Reuse fixtures and canonical services while adding a distinct Meta entrypoint test"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating postgresql link confirmation, exactly-once event, parallel claims, persisted reply recovery, redaction and replay after shared canonical conversation cancel. Source and CI 43553359254 provide the current material head.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
+        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+      }
+    }
+  ]
+}

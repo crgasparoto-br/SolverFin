@@ -1,0 +1,128 @@
+Parent epic: #689
+
+## Objetivo
+
+Adicionar um primeiro corte de WhatsApp para consultas somente leitura e captura revisável, usando o WhatsApp apenas como canal. O canal não cria motor financeiro, não amplia autorização e não permite mutação financeira final.
+
+## Fontes canônicas
+
+- `docs/PRODUCT.md`
+- `docs/EVOLUTION_STRATEGY.md`
+- `docs/adr/0011-read-only-financial-assistant.md`
+- `docs/BANK_MESSAGE_INBOX.md`
+- `docs/AI_REVIEW_QUEUE.md`
+
+## Escopo
+
+- Adapter de entrada/saída para **Meta WhatsApp Business Platform — Cloud API**, usando um **app Meta específico do SolverFin**.
+- Manter uma abstração interna provider-neutral; a integração Meta é o adapter inicial e não deve contaminar os contratos financeiros.
+- Vínculo persistido e explícito entre identidade do canal e usuário/contexto SolverFin.
+- Consultas read-only delegadas ao Assistente financeiro canônico.
+- Capturas financeiras delegadas ao pipeline da Inbox/mensagem bancária e convertidas em `transaction_extraction` pendente.
+- Correlação entre mensagem do provedor, usuário, perfil, conversa e eventual sugestão.
+- Idempotência, retry, expiração/cancelamento e reconstrução após reinício.
+- Respostas seguras quando o canal não estiver vinculado ou a autorização tiver mudado.
+
+## Fora de escopo
+
+- Criar, editar, excluir, pagar, conciliar ou aprovar fato financeiro final pelo canal.
+- Open Finance.
+- Provider de linguagem como fonte de valor, moeda, conta, identidade ou autorização.
+- Novo parser financeiro exclusivo do WhatsApp.
+- Reutilizar número de telefone sozinho como prova de identidade/autorização.
+- Armazenar payload bruto do webhook ou texto livre mais tempo do que o necessário ao processamento autorizado.
+
+## Invariantes
+
+1. **must_reuse:** consultas usam o backend do Assistente read-only; capturas usam o pipeline `BANK_MESSAGE_INBOX -> transaction_extraction -> AI_REVIEW_QUEUE`.
+2. **must_not_behave:** WhatsApp nunca chama diretamente serviço que persiste efeito financeiro final.
+3. **must_be_single_source:** estado financeiro vem dos serviços canônicos; o texto da mensagem é apenas entrada.
+4. **must_not_depend_on:** consultas suportadas continuam determinísticas quando o provider de IA está desativado; copy externa não altera o cálculo.
+5. Sem vínculo de canal válido, nenhuma resposta pode revelar saldo, conta, perfil, elegibilidade ou existência de recurso.
+6. Retry do mesmo evento do provedor usa a mesma identidade/idempotency key e não duplica processamento ou resposta lógica.
+
+## Vínculo e autorização
+
+- O vínculo do canal deve ser iniciado/confirmado em contexto autenticado no SolverFin e persistir identificador do canal sem guardar segredo desnecessário.
+- Cada mensagem revalida usuário, organização/perfil ativo e estado do vínculo antes de consultar dados.
+- Se houver mais de um perfil elegível e nenhum estiver explicitamente selecionado para o canal, a resposta deve pedir seleção segura; não escolher perfil por heurística.
+- Revogação do vínculo impede novas consultas/capturas imediatamente após a revalidação.
+
+## Fluxo: consulta
+
+1. Receber evento e resolver idempotência.
+2. Persistir correlação/estado mínimo antes de qualquer resposta externa.
+3. Resolver vínculo e contexto autorizado.
+4. Delegar a pergunta ao Assistente financeiro read-only.
+5. Persistir o desfecho necessário para retry seguro.
+6. Enviar resposta; replay do mesmo evento não recalcula/duplica a resposta lógica.
+
+Consultas continuam limitadas pelas intenções e contratos da ADR 0011. Intenção de mutação não é executada.
+
+## Fluxo: captura
+
+1. Receber mensagem e resolver identidade/correlação.
+2. Encaminhar a captura ao contrato canônico da Inbox, com origem explícita do canal.
+3. Gerar no máximo uma sugestão estruturada pendente por identidade canônica.
+4. Responder com confirmação de recebimento/revisão, nunca com afirmação de lançamento concluído.
+5. A revisão/efeito permanece no contrato existente da Inbox.
+
+O texto bruto não deve ser usado como descrição persistente de fallback nem aparecer em logs. Quando o processamento falhar antes de existir estado estruturado durável, o retry deve ocorrer pelo mesmo entrypoint/evento do provedor; não depender de GET/health-check para “destravar”.
+
+## Máquina de estados mínima do canal
+
+Estados conceituais equivalentes a:
+
+- recebido;
+- processando;
+- aguardando seleção/vínculo quando necessário;
+- consulta concluída;
+- captura pendente de revisão;
+- cancelado;
+- expirado;
+- falha recuperável;
+- concluído.
+
+A implementação pode nomeá-los de outra forma, mas deve persistir estado/versão, correlação, prazo e decisão suficiente para reconstrução após reinício.
+
+## Cenários obrigatórios
+
+- consulta válida;
+- captura que gera sugestão;
+- intenção mutável: gerar orientação/proposta pendente, sem efeito;
+- canal não vinculado;
+- perfil ambíguo;
+- mensagem duplicada/retry;
+- reinício entre persistência e outbound;
+- evento expirado/cancelado;
+- duas mensagens concorrentes;
+- revogação do vínculo entre recebimento e resposta;
+- tentativa de acesso a outro perfil.
+
+## Critérios de aceite
+
+- [ ] Consultas respeitam os mesmos filtros, período, moeda e isolamento do Assistente canônico.
+- [ ] Capturas geram sugestão/revisão no pipeline existente e nunca lançamento final.
+- [ ] Correlação e idempotência impedem duplicação por replay/retry.
+- [ ] Estado pendente sobrevive a reinício sem depender de memória do processo.
+- [ ] Canal não vinculado/ambíguo não revela dados financeiros.
+- [ ] Cancelamento, expiração e falhas recuperáveis possuem comportamento testado.
+- [ ] Raw webhook/texto sensível não é persistido/logado além do contrato explicitamente autorizado.
+- [ ] Documentação registra vínculo, autorização, estados, idempotência, privacidade e configuração do adapter.
+
+## Considerações de testes
+
+Cobrir o mesmo entrypoint público com a mesma chave após reinício, mensagens concorrentes, isolamento e falhas antes/depois do outbound. Providers reais devem ser substituídos por fakes nos testes.
+
+## Definição do provedor
+
+- **Provedor inicial:** Meta WhatsApp Business Platform — Cloud API.
+- **Aplicação Meta:** criar um app dedicado ao SolverFin; não reutilizar apps de outros produtos.
+- O app SolverFin deve possuir sua própria configuração de webhook, credenciais/tokens, número/WABA e permissões necessárias ao canal.
+- O adapter interno continua provider-neutral para permitir substituição ou inclusão futura de outro BSP sem alterar domínio financeiro, revisão ou autorização.
+- Webhook, autenticação/validação de assinatura, idempotência por evento, política de retry e regras de templates devem ser implementados conforme o contrato oficial da Meta vigente no momento da integração.
+- Segredos da Meta permanecem em configuração segura e nunca em código, payload financeiro, logs ou auditoria.
+
+## Readiness
+
+A decisão de provider está fechada. A issue está **Ready para implementação**; cadastro/configuração efetiva do app Meta, WABA/número, credenciais e webhook são pré-requisitos operacionais da integração, não decisões de produto em aberto.

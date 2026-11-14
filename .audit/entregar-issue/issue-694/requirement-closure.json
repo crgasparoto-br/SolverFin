@@ -1,0 +1,1201 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/pr794/work/issue694/specification-snapshot.json",
+    "sha256": "b0a3115dc427dc84ded4bed40545469061c742e79dd2e7d5afc9a8ca91335a94"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-694",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "18b50a11434ea36c38bfcdcac23665822ee1a561ffdc063098a02d2c939f74b8",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 5,
+      "source_text": "Adicionar um primeiro corte de WhatsApp para consultas somente leitura e captura revisável, usando o WhatsApp apenas como canal. O canal não cria motor financeiro, não amplia autorização e não permite mutação financeira final.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43553359254. Observado: A tentativa de pagamento chega somente ao serviço de consulta read-only e nenhuma escrita financeira é invocada."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "3fc61db65fddebe13e72240215e162fb018847213d40952b5edffe60dd70e0f6",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 17,
+      "source_text": "Adapter de entrada/saída para **Meta WhatsApp Business Platform — Cloud API**, usando um **app Meta específico do SolverFin**.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:65; teste executado via CI 43553359254. Observado: Assinatura alterada do corpo bruto rejeita a entrada com 403 antes de qualquer despacho."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "88dac306d3898e5aaf0d92aa5572f15812b8fbbd0a138b98c5adaea3b1bf3d1b",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 18,
+      "source_text": "Manter uma abstração interna provider-neutral; a integração Meta é o adapter inicial e não deve contaminar os contratos financeiros.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:60, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:142; teste executado via CI 43553359254. Observado: O adapter fixa graph.facebook.com e rejeita URL, conta ou número de destino incompatível."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "781ff56510a75177b29b361e4e643110f45c885ffd2c83358c4172bc7c3aa39e",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 19,
+      "source_text": "Vínculo persistido e explícito entre identidade do canal e usuário/contexto SolverFin.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-link-repository.ts:51, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:104; teste executado via CI 43553359254. Observado: Vínculo é criado somente após perfil explícito; código armazenado é hash e outro perfil não lê a associação."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "5393abb63804ab51d6afa50cecedeebe9c5706a9075f22a4a6f13727262e3c08",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 20,
+      "source_text": "Consultas read-only delegadas ao Assistente financeiro canônico.",
+      "flags": [
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:216; teste executado via CI 43553359254. Observado: A mesma consulta tenant-scoped não chama o Assistente duas vezes no replay do ID Meta."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "82d64a081ce34a12cdeb1bba2742cfeeee578f553c13ec120f584df1065e9314",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 21,
+      "source_text": "Capturas financeiras delegadas ao pipeline da Inbox/mensagem bancária e convertidas em `transaction_extraction` pendente.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:134, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43553359254. Observado: CAPTURAR usa apenas a Inbox canônica e produz sugestão pendente, sem chamada de lançamento final."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "2400053aaa0c29e414e9421828f619c3ed5e9b7f0680e1ec3aa8158a9b8b0dbb",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 22,
+      "source_text": "Correlação entre mensagem do provedor, usuário, perfil, conversa e eventual sugestão.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:84, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:128; teste executado via CI 43553359254. Observado: A releitura PostgreSQL preserva evento, ID de mensagem, vínculo, conversa e contexto persistidos."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "cbe9ca39a9f5b5ccf49a1788452f252e2fc7d71f4c9dafee9cec37e02c7836e2",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 23,
+      "source_text": "Idempotência, retry, expiração/cancelamento e reconstrução após reinício.",
+      "flags": [
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:20, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43553359254. Observado: Após crash entre resposta persistida e envio, replay do mesmo evento envia uma única resposta sem recálculo."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "e6b91664e04c727043023c7cf29007916e6757be71d501a1b3260604a9e2ae65",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 24,
+      "source_text": "Respostas seguras quando o canal não estiver vinculado ou a autorização tiver mudado.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:320, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:374; teste executado via CI 43553359254. Observado: Revogação entre persistência e outbound substitui resposta financeira pela mensagem pública genérica."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "f4e09f103a63e4c49c41755c2115bb223ee0007eb6d47e480d5da795834fde46",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 37,
+      "source_text": "**must_reuse:** consultas usam o backend do Assistente read-only; capturas usam o pipeline `BANK_MESSAGE_INBOX -> transaction_extraction -> AI_REVIEW_QUEUE`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:141, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43553359254. Observado: O fluxo reutiliza createBankMessageInboxWithAiForContext e FinancialAssistantService sem segundo motor."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "b4daa3cc4024947d4e79103ba8a3a78ff5f80e975d2d76d421438fdbedd45313",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 38,
+      "source_text": "**must_not_behave:** WhatsApp nunca chama diretamente serviço que persiste efeito financeiro final.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:232, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43553359254. Observado: Entrada de intenção de pagamento permanece leitura ou orientação; não chama serviço de mutação."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "96f2425f006666f4380d4be12aff5d19724117285d8ab5f8f1d592525e8171f6",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 39,
+      "source_text": "**must_be_single_source:** estado financeiro vem dos serviços canônicos; o texto da mensagem é apenas entrada.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43553359254. Observado: A resposta determinística é calculada pelo serviço canônico sob filtros; texto externo não cria saldo."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "72cb74357ca7396a242744f0318647e6afd691d0c14989a5f3482bab4b218667",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 40,
+      "source_text": "**must_not_depend_on:** consultas suportadas continuam determinísticas quando o provider de IA está desativado; copy externa não altera o cálculo.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43553359254. Observado: O caminho determinístico do Assistente usa a mesma fonte para respostas com IA indisponível."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "022e23de12f908eb3c86712473fe75a8996cf9c7748149f8fc08d9e00f82dc90",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 41,
+      "source_text": "Sem vínculo de canal válido, nenhuma resposta pode revelar saldo, conta, perfil, elegibilidade ou existência de recurso.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43553359254. Observado: Remetente sem vínculo recebe apenas orientação genérica, nunca saldo, perfil ou elegibilidade."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "832bb627828321c6c5dff06d61ff247bfe35975af06076ae5c672569d155c945",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 42,
+      "source_text": "Retry do mesmo evento do provedor usa a mesma identidade/idempotency key e não duplica processamento ou resposta lógica.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-015"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:171, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:202; teste executado via CI 43553359254. Observado: O mesmo providerMessageId deriva uma única chave, uma única linha de turno e um único envio."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "42bead20a37cb108c4a94da7e0fdf9a18b01440b08805acbfa5bb43ec7e9e6f6",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 46,
+      "source_text": "O vínculo do canal deve ser iniciado/confirmado em contexto autenticado no SolverFin e persistir identificador do canal sem guardar segredo desnecessário.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-016"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-router.ts:75, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43553359254. Observado: Uma tentativa sem sessão ou com perfil divergente é rejeitada sem criar vínculo."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "1460acbfe43d6c5a8111e126a62f706d85031ee7d9c5b7c7cd8ab0a39b5b3648",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 47,
+      "source_text": "Cada mensagem revalida usuário, organização/perfil ativo e estado do vínculo antes de consultar dados.",
+      "flags": [
+        "exhaustive",
+        "temporal",
+        "reference-liveness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-link-repository.ts:214, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:256; teste executado via CI 43553359254. Observado: Vínculo revogado não se resolve, mesmo quando resposta de consulta já estava persistida."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "8873caba8301f78cb04900060dd4b957704ff93a9477f5db6bbc1f54d8edcbc7",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 48,
+      "source_text": "Se houver mais de um perfil elegível e nenhum estiver explicitamente selecionado para o canal, a resposta deve pedir seleção segura; não escolher perfil por heurística.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-router.ts:43, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:61; teste executado via CI 43553359254. Observado: Sem profileId ou com duplicidade/conflito query-body, HTTP 400 e zero registros na tabela."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "a2f22c9fa097fcca53046f9e0be3833b35fcaa91496c7d36239e110a0466cb6c",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 49,
+      "source_text": "Revogação do vínculo impede novas consultas/capturas imediatamente após a revalidação.",
+      "flags": [
+        "observable",
+        "temporal",
+        "reference-liveness",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-019"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:356; teste executado via CI 43553359254. Observado: Consulta com vínculo revogado durante o processamento não envia a resposta privada antiga."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "a795671b3516b3a37eade247d359c4404bfefd68442f172f108927262ce826df",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 66,
+      "source_text": "Gerar no máximo uma sugestão estruturada pendente por identidade canônica.",
+      "flags": [
+        "atomicity",
+        "structural",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-020"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/bank-message-ai-inbox.ts:119, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:421; teste executado via CI 43553359254. Observado: Duas extrações concorrentes sobre o mesmo sourceHash não persistem sugestão duplicada."
+    },
+    {
+      "id": "OBL-021",
+      "candidate_key": "351fad28663ed0403f6e0c70159e1cc45f617687558cb0afd5d8b700107dc4e4",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 67,
+      "source_text": "Responder com confirmação de recebimento/revisão, nunca com afirmação de lançamento concluído.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "aftermath",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-021"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:44, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43553359254. Observado: A confirmação menciona revisão pendente e nenhum lançamento, inclusive quando extrator não produz sugestão."
+    },
+    {
+      "id": "OBL-022",
+      "candidate_key": "8811de2c29e48c9dcd71f5eb8f269d9b04cb033b24714f53faccc77a56d73d51",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 70,
+      "source_text": "O texto bruto não deve ser usado como descrição persistente de fallback nem aparecer em logs. Quando o processamento falhar antes de existir estado estruturado durável, o retry deve ocorrer pelo mesmo entrypoint/evento do provedor; não depender de GET/health-check para “destravar”.",
+      "flags": [
+        "negative",
+        "temporal",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-022"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/bank-message-extraction-lease.ts:48, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:325; teste executado via CI 43553359254. Observado: A extração interrompida recupera somente por claim/replay; texto bruto não é gravado no journal."
+    },
+    {
+      "id": "OBL-023",
+      "candidate_key": "5ae5178b52d81e32b36d3666250cc5ca1b0f69a18fab8cc25d365b6c53ccd3b5",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 74,
+      "source_text": "Estados conceituais equivalentes a:",
+      "flags": [
+        "exhaustive",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-023"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-types.ts:1, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:128; teste executado via CI 43553359254. Observado: Estados recebidos, processing, response_ready, sent, cancelled, expired e retry permanecem distintos no banco."
+    },
+    {
+      "id": "OBL-024",
+      "candidate_key": "a7740a992cc9ad0bbd1befbc0f1c91ae816864af1b3651a92abb617c1edecddf",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 86,
+      "source_text": "A implementação pode nomeá-los de outra forma, mas deve persistir estado/versão, correlação, prazo e decisão suficiente para reconstrução após reinício.",
+      "flags": [
+        "temporal",
+        "freshness",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-024"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:50, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:147; teste executado via CI 43553359254. Observado: O status response_ready e o token de claim são reconstituídos por releitura PostgreSQL."
+    },
+    {
+      "id": "OBL-025",
+      "candidate_key": "632a4d1200bf9874c2e7621bdd10b5465c5364a1c6440b452ec154bf9c6064c5",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 91,
+      "source_text": "captura que gera sugestão;",
+      "flags": [
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-025"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:263, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43553359254. Observado: CAPTURAR entrega sugestão pendente e resultado capture_pending_review, não transação final."
+    },
+    {
+      "id": "OBL-026",
+      "candidate_key": "d2014e1a9ef2e0ee5b2d8fef02833c519c22babe78f6a42839f9bee4226e2677",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 92,
+      "source_text": "intenção mutável: gerar orientação/proposta pendente, sem efeito;",
+      "flags": [
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-026"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:280, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43553359254. Observado: Pedido de pagamento é encaminhado ao Assistente somente leitura, sem função de escrita."
+    },
+    {
+      "id": "OBL-027",
+      "candidate_key": "1f684f5f1d9227e60c9a409905a622d91754936017f4ea8a9ee1078628ae0efc",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 104,
+      "source_text": "[ ] Consultas respeitam os mesmos filtros, período, moeda e isolamento do Assistente canônico.",
+      "flags": [
+        "temporal",
+        "temporal-destination",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-027"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:177; teste executado via CI 43553359254. Observado: Consulta com BRL e período 2026-01 preserva filtros/período do serviço canônico; outra moeda não contamina o estado."
+    },
+    {
+      "id": "OBL-028",
+      "candidate_key": "3e68db8c94f663573434f222448f8114fbaea954c4d13894bf55e1d87c7b255a",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 105,
+      "source_text": "[ ] Capturas geram sugestão/revisão no pipeline existente e nunca lançamento final.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "review-surface",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-028"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/bank-message-ai-inbox.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43553359254. Observado: Inbox mantém o resultado como sugestão PENDING_REVIEW e canal não aprova fato financeiro."
+    },
+    {
+      "id": "OBL-029",
+      "candidate_key": "80fc0d8b654eff1b2689baa13c04d7e3bf5f44d44e42460d7c1808534aa75900",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 106,
+      "source_text": "[ ] Correlação e idempotência impedem duplicação por replay/retry.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-029"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:30, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:128; teste executado via CI 43553359254. Observado: Dois claims simultâneos da mesma chave obtêm exatamente um lease e um único envio."
+    },
+    {
+      "id": "OBL-030",
+      "candidate_key": "ecbaf2885b64221a7793e98b2ff5f47db7ab4daf7c6bde988893ce06bd7c9879",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 107,
+      "source_text": "[ ] Estado pendente sobrevive a reinício sem depender de memória do processo.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-030"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:150, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43553359254. Observado: A resposta persistida é reenviada apenas uma vez após reentrada sem estado em memória do processo."
+    },
+    {
+      "id": "OBL-031",
+      "candidate_key": "b253c444fcfd7bce5adb60dd1c10ed14cf2baccf0a5166c8503ee981bfe419b9",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 108,
+      "source_text": "[ ] Canal não vinculado/ambíguo não revela dados financeiros.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-031"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43553359254. Observado: Remetente estranho/não vinculado não recebe resposta privada nem o nome do perfil."
+    },
+    {
+      "id": "OBL-032",
+      "candidate_key": "16d073e9aefc21680613c6c195fe750a8b07da992bc87928479f557001aa08c2",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 109,
+      "source_text": "[ ] Cancelamento, expiração e falhas recuperáveis possuem comportamento testado.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-032"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:254, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:472; teste executado via CI 43553359254. Observado: CANCELAR encerra só o canal, expiração não gera efeitos e falha de envio 429 tem retry delimitado."
+    },
+    {
+      "id": "OBL-033",
+      "candidate_key": "8503bafcf2d6b576d6e6254a16bcdcfec474052f2975ec645d12746a9097c74b",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 110,
+      "source_text": "[ ] Raw webhook/texto sensível não é persistido/logado além do contrato explicitamente autorizado.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-033"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-event-repository.ts:222, controle/releitura apps/api/src/whatsapp-channel-retention.integration.test.ts:48; teste executado via CI 43553359254. Observado: Inicialização da API apaga replyText/senderId expirados mesmo com Meta desconfigurada."
+    },
+    {
+      "id": "OBL-034",
+      "candidate_key": "4eb208f66f1e44bb5ae753c9c02b85eac445b24734de1fccbe915aa4917404f5",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 111,
+      "source_text": "[ ] Documentação registra vínculo, autorização, estados, idempotência, privacidade e configuração do adapter.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-034"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação docs/WHATSAPP_CHANNEL.md:27, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43553359254. Observado: Documentação vincula pareamento autenticado, retenção, expiração, idempotência e configuração de adapter a rotas testadas."
+    },
+    {
+      "id": "OBL-035",
+      "candidate_key": "f126db65a6ee30f196f251b967ad9b6ea21e29a6c9a78e04db6c2b3f0403c4b3",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 115,
+      "source_text": "Cobrir o mesmo entrypoint público com a mesma chave após reinício, mensagens concorrentes, isolamento e falhas antes/depois do outbound. Providers reais devem ser substituídos por fakes nos testes.",
+      "flags": [
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-035"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:167; teste executado via CI 43553359254. Observado: O mesmo entrypoint e mesma chave após interrupção encerram o turno; os casos de concorrência/revogação são mantidos no mesmo CI."
+    },
+    {
+      "id": "OBL-036",
+      "candidate_key": "0a26fd723805c1393a28c30c92c7b6ad795dcb9d466aca24fd4912088882f303",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 120,
+      "source_text": "**Aplicação Meta:** criar um app dedicado ao SolverFin; não reutilizar apps de outros produtos.",
+      "flags": [
+        "negative",
+        "isolation",
+        "structural"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-694",
+        "decision_source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+        "decision_locator": "criar um app dedicado ao SolverFin; não reutilizar apps de outros produtos.",
+        "target_issue": 694,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Aplicação Meta:**",
+          "rationale": "O adapter do aplicativo Meta está implementado em whatsapp-channel-provider.ts e documentado em WHATSAPP_CHANNEL.md, sem reutilização de configurações de outros produtos."
+        }
+      },
+      "rationale": "Dependent on Meta app/WABA resources and secure credentials outside the code repository; tracked by operational issue #795. Do not claim production activation and keep parent issue #694 open."
+    },
+    {
+      "id": "OBL-037",
+      "candidate_key": "84625caac83d98cdab6c4d102f148f78113dac02a4b0ebc54c740e9566711dec",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 121,
+      "source_text": "O app SolverFin deve possuir sua própria configuração de webhook, credenciais/tokens, número/WABA e permissões necessárias ao canal.",
+      "flags": [],
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-694",
+        "decision_source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+        "decision_locator": "O app SolverFin deve possuir sua própria configuração de webhook, credenciais/tokens, número/WABA e permissões necessárias ao canal.",
+        "target_issue": 694,
+        "parent_issue_must_remain_open": true
+      },
+      "rationale": "Dependent on Meta app/WABA resources and secure credentials outside the code repository; tracked by operational issue #795. Do not claim production activation and keep parent issue #694 open."
+    },
+    {
+      "id": "OBL-038",
+      "candidate_key": "6353d5e094eac0ec4e9ca58a98393e041f4f612ab395d0a1f2e81c39bf0344c9",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 122,
+      "source_text": "O adapter interno continua provider-neutral para permitir substituição ou inclusão futura de outro BSP sem alterar domínio financeiro, revisão ou autorização.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-038"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-provider.ts:12, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:142; teste executado via CI 43553359254. Observado: Port de saída recebe contrato interno e não permite que o remetente imponha URL de provider ou domínio financeiro alternativo."
+    },
+    {
+      "id": "OBL-039",
+      "candidate_key": "45f4b69df95864f5a549ff8627a2ada182cd7020040104d0a9e0598f17f53953",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 123,
+      "source_text": "Webhook, autenticação/validação de assinatura, idempotência por evento, política de retry e regras de templates devem ser implementados conforme o contrato oficial da Meta vigente no momento da integração.",
+      "flags": [
+        "reference-liveness",
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-039"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-provider.ts:38, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:212; teste executado via CI 43553359254. Observado: Webhook com HMAC inválido, mudança de conta e evento de status sem mensagem não produz consulta, replay legítimo mantém idempotência."
+    },
+    {
+      "id": "OBL-040",
+      "candidate_key": "931a02cc73f5c71d6ab44d4d0c20eaa5a88453d3fb8116b14a3b8060135bb1be",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 124,
+      "source_text": "Segredos da Meta permanecem em configuração segura e nunca em código, payload financeiro, logs ou auditoria.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-040"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-provider.ts:160, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:142; teste executado via CI 43553359254. Observado: Segredo e bearer vêm somente do ambiente; o mock captura chamada Graph e verifica URL fixa sem credenciais persistidas."
+    },
+    {
+      "id": "OBL-041",
+      "candidate_key": "f9cab09e25a6f050c581fac3cdc5702aaab33c2fea231d26aae87264f6ccfb85",
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "source_line": 128,
+      "source_text": "A decisão de provider está fechada. A issue está **Ready para implementação**; cadastro/configuração efetiva do app Meta, WABA/número, credenciais e webhook são pré-requisitos operacionais da integração, não decisões de produto em aberto.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-694-041"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material SHA 26196dd2d536361dbf044192e41420aa02356b64; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:212; teste executado via CI 43553359254. Observado: Adapter dedicado e entradas assinadas estão implementados, mas configuração/homologação Meta real seguem diferidas pela issue #795."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-694",
+      "source_sha256": "55c89597d89fb8d1b71a83270cb2fd92bcb1208135e1984da439d1e4ef011347",
+      "candidate_count": 41,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029",
+        "OBL-030",
+        "OBL-031",
+        "OBL-032",
+        "OBL-033",
+        "OBL-034",
+        "OBL-035",
+        "OBL-036",
+        "OBL-037",
+        "OBL-038",
+        "OBL-039",
+        "OBL-040",
+        "OBL-041"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "The issue forbids a parallel financial engine and authorizes only canonical read-only and Inbox services.",
+    "entries": [
+      {
+        "id": "SIC-694001",
+        "kind": "forbidden-implementation",
+        "requirement_ids": [
+          "REQ-694-011",
+          "REQ-694-012"
+        ],
+        "obligation_ids": [
+          "OBL-011",
+          "OBL-012"
+        ],
+        "plausible_wrong_implementation": "Send WhatsApp text to an independent transaction writer or let message fields override canonical tenant-scoped balances.",
+        "canonical_path": "apps/api/src/whatsapp-channel-service.ts:99",
+        "competing_paths": [
+          "apps/api/src/bank-message-ai-inbox.ts:95",
+          "apps/api/src/financial-assistant-service.ts:1"
+        ],
+        "evidence_ids": [
+          "EVID-694-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-service.test.ts:337"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-service.test.ts:337"
+        ]
+      },
+      {
+        "id": "SIC-694002",
+        "kind": "dependency-independence",
+        "requirement_ids": [
+          "REQ-694-013",
+          "REQ-694-038"
+        ],
+        "obligation_ids": [
+          "OBL-013",
+          "OBL-038"
+        ],
+        "plausible_wrong_implementation": "Require a live Meta provider or AI output for deterministic financial results and leak provider-specific state into the finance domain.",
+        "canonical_path": "apps/api/src/financial-assistant-service.ts:1",
+        "competing_paths": [
+          "apps/api/src/whatsapp-channel-provider.ts:160"
+        ],
+        "evidence_ids": [
+          "EVID-694-CI"
+        ],
+        "scenario_ids": [
+          "apps/api/src/financial-assistant-service.integration.test.ts:80"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-provider.test.ts:142"
+        ]
+      },
+      {
+        "id": "SIC-694003",
+        "kind": "structural",
+        "obligation_ids": [
+          "OBL-020"
+        ],
+        "requirement_ids": [
+          "REQ-694-020"
+        ],
+        "plausible_wrong_implementation": "Allow a second WhatsApp replay to insert a second financial suggestion into the Inbox despite identical provider identity.",
+        "canonical_path": "apps/api/src/bank-message-ai-inbox.ts:95",
+        "competing_paths": [
+          "apps/api/src/whatsapp-channel-event-repository.ts:20"
+        ],
+        "evidence_ids": [
+          "EVID-694-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel.integration.test.ts:128"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/bank-message-ai-inbox.integration.test.ts:1"
+        ]
+      },
+      {
+        "id": "SIC-694004",
+        "kind": "dependency-independence",
+        "obligation_ids": [
+          "OBL-022"
+        ],
+        "requirement_ids": [
+          "REQ-694-022"
+        ],
+        "plausible_wrong_implementation": "Retry interrupted extraction from GET or a timer without signed webhook raw body, persisting sensitive fallback text to get unstuck.",
+        "canonical_path": "apps/api/src/whatsapp-channel-service.ts:134",
+        "competing_paths": [
+          "apps/api/src/bank-message-extraction-lease.ts:48",
+          "apps/api/src/whatsapp-channel-router.ts:143"
+        ],
+        "evidence_ids": [
+          "EVID-694-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-service.test.ts:292"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel.integration.test.ts:167"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "Persistent event journal supports replay, result state and readback with version and status.",
+    "entries": [
+      {
+        "id": "RMC-694001",
+        "contract_kind": "read-model",
+        "requirement_ids": [
+          "REQ-694-007",
+          "REQ-694-024",
+          "REQ-694-029"
+        ],
+        "required_fields": [
+          "providerMessageId",
+          "state",
+          "version",
+          "linkId",
+          "financialProfileId",
+          "assistantConversationId"
+        ],
+        "producer_evidence": [
+          "apps/api/src/whatsapp-channel-event-repository.ts:84"
+        ],
+        "public_projection_evidence": [
+          "apps/api/src/whatsapp-channel-router.ts:143"
+        ],
+        "consumer_evidence": [
+          "apps/api/src/whatsapp-channel-service.ts:191"
+        ],
+        "visible_surface_evidence": [
+          "apps/api/src/whatsapp-channel.integration.test.ts:147"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel.integration.test.ts:128"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel.integration.test.ts:160"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Financial values are sourced from canonical FinancialAssistantService and Inbox, not from WhatsApp sender or copy text.",
+    "entries": [
+      {
+        "id": "CSC-694001",
+        "semantic_field": "financial value/currency/period",
+        "canonical_source": "FinancialAssistantService/FinancialAssistantData",
+        "alternative_sources": [
+          "untrusted inbound WhatsApp text",
+          "Meta provider response body"
+        ],
+        "surfaces": [
+          "apps/api/src/whatsapp-channel-service.ts:99",
+          "apps/api/src/financial-assistant-service.integration.test.ts:177"
+        ],
+        "evidence_ids": [
+          "EVID-694-CI"
+        ],
+        "scenario_ids": [
+          "apps/api/src/financial-assistant-service.integration.test.ts:177"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-service.test.ts:337"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "financialProfileId from authenticated tenant context",
+          "alternative_values": [
+            "sender phone number from Meta body",
+            "requested currency in untrusted answer copy"
+          ]
+        }
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "New WhatsApp adapter rules and authorization/retention behavior are described; existing canonical docs were checked against the new channel.",
+    "old_contract_terms": [],
+    "new_contract_terms": [
+      "WhatsApp canal sem mutação financeira final",
+      "Pareamento explícito e consentimento autenticado"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/WHATSAPP_CHANNEL.md",
+        "line": 3,
+        "text": "O canal não realiza criação, edição, baixa, conciliação, exclusão, aprovação de sugestão, pagamento ou qualquer mutação financeira.",
+        "term": "WhatsApp canal sem mutação financeira final",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "EVID-694-CI"
+        ]
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "git grep WhatsApp over docs/PRODUCT.md and docs/EVOLUTION_STRATEGY.md at material HEAD: canonical channels reuse existing financial motors; no incompatible permission claim."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      {
+        "path": "issue-694",
+        "line": 120,
+        "text": "Criar app Meta dedicado à SolverFin (externo)",
+        "disposition": "canonical-decision",
+        "decision_source_id": "SRC-ISSUE-694",
+        "rationale": "Ativação externa #795 está explícita na especificação e não reduz o software entregue no HEAD."
+      },
+      {
+        "path": "issue-694",
+        "line": 121,
+        "text": "WABA/número/credenciais/webhook de app dedicado (externo)",
+        "disposition": "canonical-decision",
+        "decision_source_id": "SRC-ISSUE-694",
+        "rationale": "Mesmo pré-requisito operacional externo, pai #694 permanece aberto até homologação."
+      }
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-694-001",
+      "REQ-694-002",
+      "REQ-694-003",
+      "REQ-694-004",
+      "REQ-694-005",
+      "REQ-694-006",
+      "REQ-694-007",
+      "REQ-694-008",
+      "REQ-694-009",
+      "REQ-694-010",
+      "REQ-694-011",
+      "REQ-694-012",
+      "REQ-694-013",
+      "REQ-694-014",
+      "REQ-694-015",
+      "REQ-694-016",
+      "REQ-694-017",
+      "REQ-694-018",
+      "REQ-694-019",
+      "REQ-694-020",
+      "REQ-694-021",
+      "REQ-694-022",
+      "REQ-694-023",
+      "REQ-694-024",
+      "REQ-694-025",
+      "REQ-694-026",
+      "REQ-694-027",
+      "REQ-694-028",
+      "REQ-694-029",
+      "REQ-694-030",
+      "REQ-694-031",
+      "REQ-694-032",
+      "REQ-694-033",
+      "REQ-694-034",
+      "REQ-694-035",
+      "REQ-694-038",
+      "REQ-694-039",
+      "REQ-694-040",
+      "REQ-694-041"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-021",
+      "OBL-022",
+      "OBL-023",
+      "OBL-024",
+      "OBL-025",
+      "OBL-026",
+      "OBL-027",
+      "OBL-028",
+      "OBL-029",
+      "OBL-030",
+      "OBL-031",
+      "OBL-032",
+      "OBL-033",
+      "OBL-034",
+      "OBL-035",
+      "OBL-038",
+      "OBL-039",
+      "OBL-040",
+      "OBL-041"
+    ],
+    "evidence": [
+      "evidence/obligation-review-worklist.json",
+      "evidence/ci-exact-sha-794.json",
+      "evidence/whatsapp-exact-head.xml",
+      "apps/api/src/whatsapp-channel.integration.test.ts:128",
+      "apps/api/src/financial-assistant-service.integration.test.ts:177",
+      "docs/WHATSAPP_CHANNEL.md:1-79"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

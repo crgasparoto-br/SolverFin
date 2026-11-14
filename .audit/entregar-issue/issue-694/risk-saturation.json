@@ -1,0 +1,377 @@
+{
+  "schema_version": 1,
+  "head_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-001-01",
+        "NC-694-004-01",
+        "NC-694-005-01",
+        "NC-694-007-01",
+        "NC-694-009-01",
+        "NC-694-014-01",
+        "NC-694-016-01",
+        "NC-694-016-02",
+        "NC-694-017-01",
+        "NC-694-018-01",
+        "NC-694-031-01",
+        "NC-694-033-01",
+        "NC-694-034-01",
+        "NC-694-038-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "authorized-channel-link",
+          "reason": "OBL-038: authorization tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
+          "control_ids": [
+            "NC-694-001-01",
+            "NC-694-004-01",
+            "NC-694-005-01",
+            "NC-694-007-01",
+            "NC-694-009-01",
+            "NC-694-014-01",
+            "NC-694-016-01",
+            "NC-694-017-01",
+            "NC-694-018-01",
+            "NC-694-031-01",
+            "NC-694-033-01",
+            "NC-694-034-01",
+            "NC-694-038-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "session-target-binding",
+          "reason": "OBL-016: authorization tested at apps/api/src/whatsapp-channel-management.integration.test.ts:52 with canonical production path apps/api/src/whatsapp-channel-router.ts:75.",
+          "control_ids": [
+            "NC-694-016-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-004-03",
+        "NC-694-006-02",
+        "NC-694-017-04",
+        "NC-694-018-04",
+        "NC-694-027-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "OBL-027: tenant-isolation tested at apps/api/src/financial-assistant-service.integration.test.ts:177 with canonical production path apps/api/src/whatsapp-channel-service.ts:99.",
+          "control_ids": [
+            "NC-694-004-03",
+            "NC-694-006-02",
+            "NC-694-017-04",
+            "NC-694-018-04",
+            "NC-694-027-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-002-01",
+        "NC-694-009-02",
+        "NC-694-014-02",
+        "NC-694-016-03",
+        "NC-694-018-02",
+        "NC-694-018-03",
+        "NC-694-022-02",
+        "NC-694-026-01",
+        "NC-694-031-02",
+        "NC-694-033-03",
+        "NC-694-035-03",
+        "NC-694-039-02",
+        "NC-694-040-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "request-target-override",
+          "reason": "OBL-018: public-boundary tested at apps/api/src/whatsapp-channel-management.integration.test.ts:61 with canonical production path apps/api/src/whatsapp-channel-router.ts:43.",
+          "control_ids": [
+            "NC-694-018-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "signed-public-webhook",
+          "reason": "OBL-040: public-boundary tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:160.",
+          "control_ids": [
+            "NC-694-002-01",
+            "NC-694-009-02",
+            "NC-694-014-02",
+            "NC-694-016-03",
+            "NC-694-018-03",
+            "NC-694-022-02",
+            "NC-694-026-01",
+            "NC-694-031-02",
+            "NC-694-033-03",
+            "NC-694-035-03",
+            "NC-694-039-02",
+            "NC-694-040-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-017-02",
+        "NC-694-019-02",
+        "NC-694-024-02",
+        "NC-694-039-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "link-state-revalidation",
+          "reason": "OBL-039: reference-liveness tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-provider.ts:38.",
+          "control_ids": [
+            "NC-694-017-02",
+            "NC-694-019-02",
+            "NC-694-024-02",
+            "NC-694-039-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-008-03",
+        "NC-694-017-03",
+        "NC-694-019-03",
+        "NC-694-022-04",
+        "NC-694-024-03",
+        "NC-694-027-01",
+        "NC-694-032-02",
+        "NC-694-035-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "event-lease-and-expiry",
+          "reason": "OBL-035: temporal-consistency tested at apps/api/src/whatsapp-channel.integration.test.ts:167 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
+          "control_ids": [
+            "NC-694-008-03",
+            "NC-694-017-03",
+            "NC-694-019-03",
+            "NC-694-022-04",
+            "NC-694-024-03",
+            "NC-694-027-01",
+            "NC-694-032-02",
+            "NC-694-035-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-027-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-period-cutoff",
+          "reason": "OBL-027: temporal-destination tested at apps/api/src/financial-assistant-service.integration.test.ts:177 with canonical production path apps/api/src/whatsapp-channel-service.ts:99.",
+          "control_ids": [
+            "NC-694-027-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-008-01",
+        "NC-694-015-01",
+        "NC-694-019-01",
+        "NC-694-020-01",
+        "NC-694-029-01",
+        "NC-694-035-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "transactional-event-claim",
+          "reason": "OBL-035: concurrency-atomicity tested at apps/api/src/whatsapp-channel.integration.test.ts:167 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
+          "control_ids": [
+            "NC-694-008-01",
+            "NC-694-015-01",
+            "NC-694-019-01",
+            "NC-694-020-01",
+            "NC-694-029-01",
+            "NC-694-035-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-007-02",
+        "NC-694-008-02",
+        "NC-694-015-02",
+        "NC-694-020-02",
+        "NC-694-022-01",
+        "NC-694-024-01",
+        "NC-694-029-02",
+        "NC-694-030-01",
+        "NC-694-033-02",
+        "NC-694-034-03",
+        "NC-694-035-02",
+        "NC-694-039-01",
+        "NC-694-041-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "OBL-041: idempotency tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
+          "control_ids": [
+            "NC-694-007-02",
+            "NC-694-008-02",
+            "NC-694-015-02",
+            "NC-694-020-02",
+            "NC-694-022-01",
+            "NC-694-024-01",
+            "NC-694-029-02",
+            "NC-694-030-01",
+            "NC-694-033-02",
+            "NC-694-034-03",
+            "NC-694-035-02",
+            "NC-694-039-01",
+            "NC-694-041-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-003-02",
+        "NC-694-007-03",
+        "NC-694-010-02",
+        "NC-694-010-03",
+        "NC-694-011-02",
+        "NC-694-012-01",
+        "NC-694-020-03",
+        "NC-694-022-03",
+        "NC-694-023-02",
+        "NC-694-025-02",
+        "NC-694-028-02",
+        "NC-694-038-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-financial-service",
+          "reason": "OBL-038: structural-contract tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
+          "control_ids": [
+            "NC-694-003-02",
+            "NC-694-007-03",
+            "NC-694-010-02",
+            "NC-694-011-02",
+            "NC-694-020-03",
+            "NC-694-022-03",
+            "NC-694-023-02",
+            "NC-694-025-02",
+            "NC-694-028-02",
+            "NC-694-038-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "canonical-source-consistency",
+          "reason": "OBL-010: structural-contract tested at apps/api/src/whatsapp-channel-service.test.ts:266 with canonical production path apps/api/src/whatsapp-channel-service.ts:141.",
+          "control_ids": [
+            "NC-694-010-03"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "OBL-012: structural-contract tested at apps/api/src/financial-assistant-service.integration.test.ts:80 with canonical production path apps/api/src/whatsapp-channel-service.ts:99.",
+          "control_ids": [
+            "NC-694-012-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-694-034-02",
+        "NC-694-041-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-claims",
+          "reason": "OBL-041: documentation tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
+          "control_ids": [
+            "NC-694-034-02",
+            "NC-694-041-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}
