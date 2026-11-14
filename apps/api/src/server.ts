@@ -84,15 +84,14 @@ server.listen(port, host, () => {
   console.log(`@solverfin/api listening on http://${host}:${port}`);
   startAccountRemunerationScheduler();
   startOidcLoginAttemptScheduler();
-  if (process.env.WHATSAPP_META_APP_SECRET && process.env.WHATSAPP_META_PHONE_NUMBER_ID) {
-    const cleanWhatsappState = () => {
-      void redactExpiredWhatsappState().catch(() => {
-        console.warn("WhatsApp state cleanup deferred.");
-      });
-    };
-    cleanWhatsappState();
-    setInterval(cleanWhatsappState, 60 * 60 * 1000).unref();
-  }
+  // Retention applies to persisted data even after the Meta integration is disabled.
+  const cleanWhatsappState = () => {
+    void redactExpiredWhatsappState().catch(() => {
+      console.warn("WhatsApp state cleanup deferred.");
+    });
+  };
+  cleanWhatsappState();
+  setInterval(cleanWhatsappState, 60 * 60 * 1000).unref();
 });
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
