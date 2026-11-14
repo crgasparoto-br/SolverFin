@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
+  "comparison_base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/api/src/bank-message-ai-inbox.ts",
+      "lines_before": 787,
+      "lines_after": 780
+    },
+    {
+      "path": "apps/api/src/bank-message-extraction-lease.ts",
+      "lines_before": null,
+      "lines_after": 97
+    },
+    {
+      "path": "apps/api/src/repositories/bank-message-inbox.ts",
+      "lines_before": 540,
+      "lines_after": 545
+    },
+    {
+      "path": "apps/api/src/server.ts",
+      "lines_before": 410,
+      "lines_after": 447
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-event-repository.ts",
+      "lines_before": null,
+      "lines_after": 258
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-link-repository.ts",
+      "lines_before": null,
+      "lines_after": 251
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-provider.ts",
+      "lines_before": null,
+      "lines_after": 222
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-repository.ts",
+      "lines_before": null,
+      "lines_after": 32
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-router.ts",
+      "lines_before": null,
+      "lines_after": 235
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-service.ts",
+      "lines_before": null,
+      "lines_after": 383,
+      "justification": "Canal provider-neutral centraliza somente despacho, escopo, revalidação e coordenação de consulta/captura; as operações de banco, vínculo e eventos foram extraídas para módulos próprios, mantendo a orquestração abaixo do hard limit."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-types.ts",
+      "lines_before": null,
+      "lines_after": 49
+    },
+    {
+      "path": "packages/domain/src/bank-message-inbox.ts",
+      "lines_before": 362,
+      "lines_after": 362
+    }
+  ],
+  "blocking_files": []
+}

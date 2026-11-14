@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 694,
+  "pull_request_number": 794,
+  "evidence_type": "factual-run-not-semantic-approval",
+  "source": "github-actions-run",
+  "run_id": 43553359254,
+  "job_id": 132320845537,
+  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43553359254",
+  "artifact_id": 14097177606,
+  "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43553359254/artifacts/14097177606",
+  "artifact_digest_sha256": "dd5f1cfbfb86cf71a06a45041a34d07b66c512886934a523ee86c131d830e963",
+  "junit_path": "evidence/whatsapp-exact-head.xml",
+  "junit_sha256": "8a67dd7a01e3658242c68879a6422ec35413c9837266014a6c062d8b189cac01",
+  "tests": 24,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "junit_cases": [
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel-management.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel-retention.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": "Meta webhook verifies the exact byte buffer before parsing",
+      "classname": "test"
+    },
+    {
+      "name": "Meta GET challenge is allowed only with configured token and subscribe mode",
+      "classname": "test"
+    },
+    {
+      "name": "Meta parser ignores status updates and unrelated business accounts",
+      "classname": "test"
+    },
+    {
+      "name": "Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL",
+      "classname": "test"
+    },
+    {
+      "name": "Meta unavailable, throttled and uncertain failures are distinguishable without leaking provider details",
+      "classname": "test"
+    },
+    {
+      "name": "Signed webhook dispatches messages only after signature; status-only delivery is acknowledged",
+      "classname": "test"
+    },
+    {
+      "name": "consulta delega ao assistente tenant-scoped e retry não envia resposta duplicada",
+      "classname": "test"
+    },
+    {
+      "name": "falha terminal do assistente encerra o evento com uma resposta segura",
+      "classname": "test"
+    },
+    {
+      "name": "pergunta maior que o contrato canônico recebe resposta terminal sem retry",
+      "classname": "test"
+    },
+    {
+      "name": "captura apenas gera sugestão pendente na Inbox, nunca um lançamento financeiro",
+      "classname": "test"
+    },
+    {
+      "name": "sem consentimento, captura não simula sugestão ou aprovação",
+      "classname": "test"
+    },
+    {
+      "name": "captura ainda em processamento mantém replay do mesmo evento sem confirmação falsa",
+      "classname": "test"
+    },
+    {
+      "name": "origem não vinculada e identidade de outro número não obtêm contexto privado",
+      "classname": "test"
+    },
+    {
+      "name": "intenção de pagamento permanece no assistente somente leitura, sem capturar ou escrever",
+      "classname": "test"
+    },
+    {
+      "name": "revogação durante processamento substitui resposta financeira por orientação segura",
+      "classname": "test"
+    },
+    {
+      "name": "revogação depois de persistir e antes do outbound bloqueia resposta antiga",
+      "classname": "test"
+    },
+    {
+      "name": "crash após persistência antes do envio: retry despacha a saída persistida sem recalcular",
+      "classname": "test"
+    },
+    {
+      "name": "duas mensagens concorrentes com o mesmo ID reivindicam no máximo uma execução",
+      "classname": "test"
+    },
+    {
+      "name": "429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia",
+      "classname": "test"
+    },
+    {
+      "name": "cancelamento e expiração não produzem mutações nem chamadas externas adicionais",
+      "classname": "test"
+    },
+    {
+      "name": "pairing pede confirmação no app sem revelar a validade do código",
+      "classname": "test"
+    }
+  ],
+  "ci_validation": {
+    "risk": "critical",
+    "postgres_test_files_passed": 131,
+    "format": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "prisma": "passed",
+    "build": "passed",
+    "merge_preview": "passed",
+    "delivery_v2_gate": "passed",
+    "repository_ci_gate": "passed"
+  },
+  "scope_limitations": [
+    "The 24-case JUnit covers the named WhatsApp tests only.",
+    "Full-suite 131 compiled integration files are corroborated in the CRITICAL job log, not in the 24-case JUnit.",
+    "No Meta WABA sandbox or production activation was performed.",
+    "No independent semantic approval is asserted."
+  ]
+}

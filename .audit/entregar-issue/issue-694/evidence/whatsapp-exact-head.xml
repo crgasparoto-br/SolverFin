@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel-management.integration.test.js" time="0.112151" classname="test"/>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel-retention.integration.test.js" time="2.499895" classname="test"/>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel.integration.test.js" time="0.171708" classname="test"/>
+	<testcase name="Meta webhook verifies the exact byte buffer before parsing" time="0.000896" classname="test"/>
+	<testcase name="Meta GET challenge is allowed only with configured token and subscribe mode" time="0.000168" classname="test"/>
+	<testcase name="Meta parser ignores status updates and unrelated business accounts" time="0.000674" classname="test"/>
+	<testcase name="Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL" time="0.010330" classname="test"/>
+	<testcase name="Meta unavailable, throttled and uncertain failures are distinguishable without leaking provider details" time="0.000460" classname="test"/>
+	<testcase name="Signed webhook dispatches messages only after signature; status-only delivery is acknowledged" time="0.000551" classname="test"/>
+	<testcase name="consulta delega ao assistente tenant-scoped e retry não envia resposta duplicada" time="0.001652" classname="test"/>
+	<testcase name="falha terminal do assistente encerra o evento com uma resposta segura" time="0.000326" classname="test"/>
+	<testcase name="pergunta maior que o contrato canônico recebe resposta terminal sem retry" time="0.000230" classname="test"/>
+	<testcase name="captura apenas gera sugestão pendente na Inbox, nunca um lançamento financeiro" time="0.000498" classname="test"/>
+	<testcase name="sem consentimento, captura não simula sugestão ou aprovação" time="0.000201" classname="test"/>
+	<testcase name="captura ainda em processamento mantém replay do mesmo evento sem confirmação falsa" time="0.000497" classname="test"/>
+	<testcase name="origem não vinculada e identidade de outro número não obtêm contexto privado" time="0.000231" classname="test"/>
+	<testcase name="intenção de pagamento permanece no assistente somente leitura, sem capturar ou escrever" time="0.000226" classname="test"/>
+	<testcase name="revogação durante processamento substitui resposta financeira por orientação segura" time="0.000357" classname="test"/>
+	<testcase name="revogação depois de persistir e antes do outbound bloqueia resposta antiga" time="0.000339" classname="test"/>
+	<testcase name="crash após persistência antes do envio: retry despacha a saída persistida sem recalcular" time="0.000165" classname="test"/>
+	<testcase name="duas mensagens concorrentes com o mesmo ID reivindicam no máximo uma execução" time="0.000211" classname="test"/>
+	<testcase name="429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia" time="0.000401" classname="test"/>
+	<testcase name="cancelamento e expiração não produzem mutações nem chamadas externas adicionais" time="0.000115" classname="test"/>
+	<testcase name="pairing pede confirmação no app sem revelar a validade do código" time="0.000086" classname="test"/>
+	<!-- tests 24 -->
+	<!-- suites 0 -->
+	<!-- pass 24 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 2955.311446 -->
+</testsuites>

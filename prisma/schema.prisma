@@ -244,6 +244,8 @@ model User {
   securityAuditEvents SecurityAuditEvent[]
   financialNotifications FinancialNotification[] @relation("FinancialNotificationRecipient")
   financialNotificationPreferences FinancialNotificationPreference[] @relation("FinancialNotificationPreferenceRecipient")
+  whatsappChannelLinks WhatsappChannelLink[]
+  whatsappChannelEvents WhatsappChannelEvent[]
 
   @@unique([externalAuthProvider, externalAuthSubject])
   @@index([status])
@@ -346,6 +348,8 @@ model FinancialProfile {
   auditLogs                   AuditLogEntry[]
   financialNotifications      FinancialNotification[]
   financialNotificationPreferences FinancialNotificationPreference[]
+  whatsappChannelLinks WhatsappChannelLink[]
+  whatsappChannelEvents WhatsappChannelEvent[]
   transactionGroups           TransactionGroup[]
   installmentCreationRequests InstallmentCreationRequest[]
   transactionCreationRequests TransactionCreationRequest[]
@@ -957,4 +961,67 @@ model FinancialNotificationDelivery {
   @@unique([notificationId, channel], map: "FinancialNotificationDelivery_notification_channel_key")
   @@index([channel, state, nextAttemptAt], map: "FinancialNotificationDelivery_retry_idx")
   @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationDelivery_scope_idx")
+}
+
+/// Durable channel pairing. A raw pairing secret is never persisted.
+model WhatsappChannelLink {
+  id String @id @db.Uuid
+  provider String @default("meta_whatsapp") @db.VarChar(32)
+  accountId String @db.VarChar(64)
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  financialProfileId String @db.Uuid
+  senderId String? @db.VarChar(80)
+  challengeHash String? @db.VarChar(64)
+  state String @default("pending") @db.VarChar(28)
+  version Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  confirmedAt DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  events WhatsappChannelEvent[]
+
+  @@index([userId, organizationId, financialProfileId, state], map: "WhatsappChannelLink_context_idx")
+  @@index([state, expiresAt], map: "WhatsappChannelLink_cleanup_idx")
+}
+
+/// Provider-event idempotency and outbound journal; inbound raw text never lives here.
+model WhatsappChannelEvent {
+  id String @id @db.Uuid
+  provider String @db.VarChar(32)
+  accountId String @db.VarChar(64)
+  providerMessageId String @db.VarChar(200)
+  senderId String? @db.VarChar(80)
+  linkId String? @db.Uuid
+  userId String? @db.Uuid
+  organizationId String? @db.Uuid
+  financialProfileId String? @db.Uuid
+  assistantConversationId String? @db.Uuid
+  suggestionId String? @db.Uuid
+  importBatchId String? @db.Uuid
+  state String @default("received") @db.VarChar(28)
+  outcome String? @db.VarChar(40)
+  version Int @default(0)
+  attempts Int @default(0)
+  leaseToken String? @db.Uuid
+  leaseUntil DateTime? @db.Timestamptz(3)
+  replyText String? @db.Text
+  outboundProviderMessageId String? @db.VarChar(200)
+  expiresAt DateTime @db.Timestamptz(3)
+  receivedAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile? @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  link WhatsappChannelLink? @relation(fields: [linkId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, accountId, providerMessageId], map: "WhatsappChannelEvent_provider_message_key")
+  @@index([expiresAt, state], map: "WhatsappChannelEvent_expiry_idx")
+  @@index([provider, accountId, senderId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_sender_idx")
+  @@index([linkId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_link_idx")
 }
