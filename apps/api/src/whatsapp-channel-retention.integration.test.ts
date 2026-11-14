@@ -111,10 +111,9 @@ async function assertCleanupOnApiStartup(
         senderId: string | null;
         replyText: string | null;
         state: string;
-      }>(
-        'select "senderId","replyText","state" from "WhatsappChannelEvent" where "id"=$1',
-        [claim.event.id],
-      );
+      }>('select "senderId","replyText","state" from "WhatsappChannelEvent" where "id"=$1', [
+        claim.event.id,
+      ]);
       const links = await query<{ challengeHash: string | null; state: string }>(
         'select "challengeHash","state" from "WhatsappChannelLink" where "id"=$1',
         [pairing.id],
