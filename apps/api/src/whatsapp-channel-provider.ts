@@ -30,8 +30,12 @@ export class ChannelProviderError extends Error {
 }
 
 const SIGNATURE_PATTERN = /^sha256=([0-9a-f]{64})$/i;
-const PROVIDER_MESSAGE_ID = /^[a-zA-Z0-9_.:-]{4,200}$/;
-const EXTERNAL_SENDER_ID = /^\d{6,30}$/;
+// Meta message IDs may contain base64 padding and separators (e.g. wamid....==).
+const PROVIDER_MESSAGE_ID = /^[a-zA-Z0-9_.:+/=-]{4,200}$/;
+const PHONE_SENDER_ID = /^\d{6,30}$/;
+// BSUIDs remain scoped to the Meta business portfolio and must never be normalized.
+const BSUID = /^[A-Z]{2}\.(?:ENT\.)?[a-zA-Z0-9]{1,128}$/;
+const isMetaSenderId = (value: string) => PHONE_SENDER_ID.test(value) || BSUID.test(value);
 const META_ID = /^\d{5,30}$/;
 const MAX_MESSAGES = 1000;
 
@@ -72,6 +76,18 @@ function record(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
+/** Prefer the business-scoped ID whenever Meta supplies one; never infer a link from a phone. */
+function resolveMetaSender(message: Record<string, unknown>): string | null {
+  const { from, from_user_id: bsuid } = message;
+  if (bsuid !== undefined && (typeof bsuid !== "string" || !BSUID.test(bsuid))) return null;
+  if (from !== undefined && (typeof from !== "string" || !isMetaSenderId(from))) return null;
+  // Conflicting BSUIDs in the same message cannot be safely associated with a link.
+  if (typeof from === "string" && BSUID.test(from) && bsuid !== undefined && from !== bsuid)
+    return null;
+  if (typeof bsuid === "string") return bsuid;
+  return typeof from === "string" ? from : null;
+}
+
 export function parseMetaInboundMessages(
   payload: unknown,
   expectedAccountId: string,
@@ -99,14 +115,8 @@ export function parseMetaInboundMessages(
         const message = record(entryMessage);
         if (!message) continue;
         const id = message.id;
-        const sender = message.from;
-        if (
-          typeof id !== "string" ||
-          !PROVIDER_MESSAGE_ID.test(id) ||
-          typeof sender !== "string" ||
-          !EXTERNAL_SENDER_ID.test(sender)
-        )
-          continue;
+        const sender = resolveMetaSender(message);
+        if (typeof id !== "string" || !PROVIDER_MESSAGE_ID.test(id) || !sender) continue;
         const text = message.type === "text" ? record(message.text)?.body : null;
         const timestamp =
           typeof message.timestamp === "string" && /^\d{10}$/.test(message.timestamp)
@@ -176,7 +186,7 @@ export function createMetaCloudApiOutbound(
 
   return {
     async sendText(message) {
-      if (message.accountId !== accountId || !EXTERNAL_SENDER_ID.test(message.recipientId)) {
+      if (message.accountId !== accountId || !isMetaSenderId(message.recipientId)) {
         throw new ChannelProviderError("WHATSAPP_OUTBOUND_TARGET_INVALID", true);
       }
       // Only graph.facebook.com is permitted; neither the inbound message nor a caller
@@ -192,7 +202,9 @@ export function createMetaCloudApiOutbound(
           body: JSON.stringify({
             messaging_product: "whatsapp",
             recipient_type: "individual",
-            to: message.recipientId,
+            ...(BSUID.test(message.recipientId)
+              ? { recipient: message.recipientId }
+              : { to: message.recipientId }),
             type: "text",
             text: { preview_url: false, body: message.text.slice(0, 4000) },
           }),

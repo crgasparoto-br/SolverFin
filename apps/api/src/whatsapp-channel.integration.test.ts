@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { randomUUID } from "node:crypto";
+import { createHmac, randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -10,6 +10,7 @@ import {
   startFinancialAssistantConversation,
 } from "./financial-assistant-repository.js";
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
+import { handleWhatsappChannelWebhook } from "./whatsapp-channel-router.js";
 import {
   acknowledgeWhatsappPairingCode,
   cancelWhatsappPairing,
@@ -316,6 +317,90 @@ async function main(): Promise<void> {
       "Resultado de teste do assistente canônico.",
       "Para continuar, vincule este canal novamente no SolverFin.",
     ]);
+
+    // BSUID-ONLY-REPLAY-001: a signed, padded WAMID with no phone must reach
+    // the public webhook, persist its 131-character sender, and remain idempotent.
+    const bsuid = "BR." + randomUUID().replace(/-/g, "").repeat(4);
+    const bsuidPairing = await createWhatsappPairing(context, accountId);
+    assert.equal(await acknowledgeWhatsappPairingCode(accountId, bsuid, bsuidPairing.code), true);
+    assert.equal((await confirmWhatsappPairing(context, bsuidPairing.id)).state, "active");
+    const bsuidReplies: string[] = [];
+    let bsuidQueries = 0;
+    const bsuidOutbound: ChannelOutboundPort = {
+      async sendText(input) {
+        assert.equal(input.recipientId, bsuid);
+        bsuidReplies.push(input.text);
+        return "wamid.bsuid-response==";
+      },
+    };
+    const secret = "meta-only-integration-secret";
+    const bsuidMessageId = "wamid." + randomUUID().replace(/-/g, "") + "==";
+    const bsuidRaw = Buffer.from(
+      JSON.stringify({
+        object: "whatsapp_business_account",
+        entry: [
+          {
+            changes: [
+              {
+                field: "messages",
+                value: {
+                  metadata: { phone_number_id: accountId },
+                  messages: [
+                    {
+                      id: bsuidMessageId,
+                      from_user_id: bsuid,
+                      type: "text",
+                      text: { body: "CONSULTAR saldo autorizado" },
+                      timestamp: String(Math.floor(Date.now() / 1000)),
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+      }),
+    );
+    const handleBsuid = async () =>
+      handleWhatsappChannelWebhook(
+        {
+          method: "POST",
+          query: new URLSearchParams(),
+          headers: {
+            "x-hub-signature-256":
+              "sha256=" + createHmac("sha256", secret).update(bsuidRaw).digest("hex"),
+          },
+          rawBody: bsuidRaw,
+        },
+        {
+          env: {
+            WHATSAPP_META_APP_SECRET: secret,
+            WHATSAPP_META_VERIFY_TOKEN: "bsuid-test-token",
+            WHATSAPP_META_PHONE_NUMBER_ID: accountId,
+          },
+          outbound: bsuidOutbound,
+          processMessage: (received, port) =>
+            processInboundChannelMessage(received, port, {
+              queryFinancial: async (authorizedContext) => {
+                assert.equal(authorizedContext.financialProfileId, context.financialProfileId);
+                bsuidQueries++;
+                return { conversationId: randomUUID(), answer: "Resposta segura BSUID" };
+              },
+            }),
+        },
+      );
+    assert.equal((await handleBsuid()).statusCode, 200);
+    assert.equal((await handleBsuid()).statusCode, 200);
+    assert.equal(bsuidQueries, 1, "same signed WAMID must not query twice");
+    assert.deepEqual(bsuidReplies, ["Resposta segura BSUID"]);
+    const bsuidEvents = await query<{ senderId: string; state: string; outcome: string }>(
+      `select "senderId","state","outcome" from "WhatsappChannelEvent"
+       where "accountId"=$1 and "providerMessageId"=$2`,
+      [accountId, bsuidMessageId],
+    );
+    assert.deepEqual(bsuidEvents, [{ senderId: bsuid, state: "sent", outcome: "query_complete" }]);
+    await revokeWhatsappLink(context, bsuidPairing.id);
+    assert.equal(await resolveActiveWhatsappLink(accountId, bsuid), null);
 
     const expired = await query<{ challengeHash: string | null; state: string }>(
       'select "challengeHash","state" from "WhatsappChannelLink" where "id"=$1',

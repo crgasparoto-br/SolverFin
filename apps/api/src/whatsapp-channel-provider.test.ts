@@ -139,6 +139,54 @@ test("Meta parser ignores status updates and unrelated business accounts", () =>
   );
 });
 
+test("Meta parser preserves base64 WAMIDs and rejects unsafe IDs", () => {
+  const payload = webhookPayload();
+  const message = payload.entry[0]!.changes[0]!.value.messages[0]!;
+  const fullId = "wamid.HBgNNTUxMTk5OTAzMDEyMxUCABEYEjc+/==";
+  message.id = fullId;
+  assert.equal(
+    parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID)[0]?.externalMessageId,
+    fullId,
+  );
+  for (const id of ["wamid.unsafe\nvalue", "wamid." + "A".repeat(195), "a b c"]) {
+    message.id = id;
+    assert.deepEqual(parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+  }
+});
+
+test("Meta webhook uses BSUID without phone and rejects ambiguous sender identity", () => {
+  const bsuid = "BR." + "A".repeat(128);
+  const payload = webhookPayload();
+  const message = payload.entry[0]!.changes[0]!.value.messages[0]! as Record<string, unknown>;
+  delete message.from;
+  message.from_user_id = bsuid;
+  const parsed = parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID);
+  assert.equal(parsed.length, 1);
+  assert.equal(parsed[0]?.senderId, bsuid);
+  message.from = senderId;
+  assert.equal(
+    parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID)[0]?.senderId,
+    bsuid,
+    "BSUID must be preferred over the optional phone to survive its removal",
+  );
+  message.from = "BR.DIFFERENT";
+  assert.deepEqual(parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+  message.from = senderId;
+  for (const malformed of ["BR." + "A".repeat(129), "BR.invalid\nuser", "BR..123"]) {
+    message.from_user_id = malformed;
+    assert.deepEqual(
+      parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID),
+      [],
+      "malformed BSUID must not fall back to the phone identity",
+    );
+  }
+  message.from_user_id = "BR.ENT." + "Z".repeat(128);
+  assert.equal(
+    parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID)[0]?.senderId,
+    message.from_user_id,
+  );
+});
+
 test("Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL", async () => {
   const sent: { url: string; init: RequestInit }[] = [];
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
@@ -158,7 +206,30 @@ test("Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL", 
   assert.equal(sent[0]?.url, "https://graph.facebook.com/v25.0/12345678901234/messages");
   const body = JSON.parse(String(sent[0]?.init.body)) as Record<string, unknown>;
   assert.equal(body.to, senderId);
+  assert.equal("recipient" in body, false, "phone delivery must not include recipient BSUID");
   assert.equal((body.text as { body: string }).body, "Saldo na moeda solicitada.");
+  const bsuid = "BR." + "A".repeat(128);
+  assert.equal(
+    await outbound.sendText({
+      accountId: env.WHATSAPP_META_PHONE_NUMBER_ID,
+      recipientId: bsuid,
+      text: "Resposta para um usuário sem número compartilhado.",
+    }),
+    "wamid.answer-001",
+  );
+  const bsuidBody = JSON.parse(String(sent[1]?.init.body)) as Record<string, unknown>;
+  assert.equal(bsuidBody.recipient, bsuid);
+  assert.equal("to" in bsuidBody, false, "BSUID must never be passed as a phone number");
+  await assert.rejects(
+    () =>
+      outbound.sendText({
+        accountId: env.WHATSAPP_META_PHONE_NUMBER_ID,
+        recipientId: "BR." + "A".repeat(129),
+        text: "x",
+      }),
+    ChannelProviderError,
+  );
+  assert.equal(sent.length, 2, "invalid recipients must be rejected before transport");
   assert.doesNotMatch(JSON.stringify(body), /private-test-app-secret|test-protected-token/);
   assert.equal(
     (sent[0]?.init.headers as Record<string, string>).authorization,
@@ -291,4 +362,31 @@ test("Signed webhook dispatches messages only after signature; status-only deliv
   );
   assert.equal(acknowledged.statusCode, 200);
   assert.equal(processed, 1);
+
+  const bsuid = "BR.13491208655302741918";
+  const bsuidPayload = webhookPayload();
+  const message = bsuidPayload.entry[0]!.changes[0]!.value.messages[0]! as Record<string, unknown>;
+  message.id = "wamid.HBgNNTUxMTk5OTAzMDEyMxUCABEYEjc+/==";
+  message.from_user_id = bsuid;
+  delete message.from;
+  const signedBsuidBody = Buffer.from(JSON.stringify(bsuidPayload));
+  const bsuidResult = await handleWhatsappChannelWebhook(
+    {
+      method: "POST",
+      query: new URLSearchParams(),
+      headers: signedHeaders(signedBsuidBody),
+      rawBody: signedBsuidBody,
+    },
+    {
+      env,
+      outbound,
+      processMessage: async (received) => {
+        assert.equal(received.senderId, bsuid);
+        assert.equal(received.externalMessageId, message.id);
+        processed++;
+      },
+    },
+  );
+  assert.equal(bsuidResult.statusCode, 200);
+  assert.equal(processed, 2, "signed BSUID-only event must reach the public dispatcher");
 });

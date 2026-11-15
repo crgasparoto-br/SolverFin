@@ -971,7 +971,7 @@ model WhatsappChannelLink {
   userId String @db.Uuid
   organizationId String @db.Uuid
   financialProfileId String @db.Uuid
-  senderId String? @db.VarChar(80)
+  senderId String? @db.VarChar(160)
   challengeHash String? @db.VarChar(64)
   state String @default("pending") @db.VarChar(28)
   version Int @default(0)
@@ -995,7 +995,7 @@ model WhatsappChannelEvent {
   provider String @db.VarChar(32)
   accountId String @db.VarChar(64)
   providerMessageId String @db.VarChar(200)
-  senderId String? @db.VarChar(80)
+  senderId String? @db.VarChar(160)
   linkId String? @db.Uuid
   userId String? @db.Uuid
   organizationId String? @db.Uuid
