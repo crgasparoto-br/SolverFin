@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
   "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "creations": [
     {
@@ -173,6 +173,25 @@
       },
       "decision": "create",
       "justification": "New scoped event/link tables require SQL migrations; Prisma schema itself is extended but is not executable DDL."
+    },
+    {
+      "path": "prisma/migrations/20261115100000_whatsapp_bsuid_sender_capacity/migration.sql",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "Find existing Prisma migrations altering channel senderId capacity and BSUID schema",
+          "Find canonical WhatsappChannelLink and WhatsappChannelEvent migrations"
+        ],
+        "scope": "Immutable develop and new material checkout: prisma/migrations and prisma/schema.prisma",
+        "candidates": [
+          {
+            "path": "prisma/migrations/20261113160000_whatsapp_channel_foundation/migration.sql",
+            "reason_not_reused": "Published foundation migration must remain immutable. A forward-only migration preserves existing rows and enlarges the sender identifier columns."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Forward-only migration for BSUID length, preserving existing paired links and event idempotency."
     }
   ],
   "references": [
@@ -208,7 +227,7 @@
       "used_in": "apps/api/src/whatsapp-channel-router.ts",
       "defined_at": {
         "path": "apps/api/src/whatsapp-channel-provider.ts",
-        "line": 75
+        "line": 91
       },
       "verified_by": {
         "command": "npm run test:integration --workspace @solverfin/api",
@@ -253,18 +272,18 @@
         ]
       },
       "decision": "extend-existing",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating replay a crashed extraction in the original bank message inbox and deny stale lease writer persistence. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating replay a crashed extraction in the original bank message inbox and deny stale lease writer persistence. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/bank-message-ai-inbox.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     },
     {
@@ -289,18 +308,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating authenticated explicit profile, duplicate/conflicting profileid, tenant isolation, pairing and no writes on invalid requests. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating authenticated explicit profile, duplicate/conflicting profileid, tenant isolation, pairing and no writes on invalid requests. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-management.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     },
     {
@@ -325,18 +344,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating hmac signature over exact raw bytes, get subscription, provider status-only, outgoing restricted endpoint, 429 and uncertain accepted results. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating hmac signature over exact raw bytes, get subscription, provider status-only, outgoing restricted endpoint, 429 and uncertain accepted results. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-provider.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     },
     {
@@ -361,18 +380,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating http server startup expunges sensitive whatsapp sender/response and expired challenges without meta credentials. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating http server startup expunges sensitive whatsapp sender/response and expired challenges without meta credentials. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-retention.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     },
     {
@@ -397,18 +416,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating assistant read-only, consent-gated inbox, restart recovery, canceled outcome, revocation, outbound idempotency and concurrent events. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating assistant read-only, consent-gated inbox, restart recovery, canceled outcome, revocation, outbound idempotency and concurrent events. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-service.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     },
     {
@@ -433,18 +452,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating postgresql link confirmation, exactly-once event, parallel claims, persisted reply recovery, redaction and replay after shared canonical conversation cancel. Source and CI 43553359254 provide the current material head.",
+      "justification": "The incoming signed WhatsApp protocol and persisted event state require a discriminating postgresql link confirmation, exactly-once event, parallel claims, persisted reply recovery, redaction and replay after shared canonical conversation cancel. Source and CI 43708326079 provide the current material head.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+        "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
         "reached_tests": [
           "apps/api/src/whatsapp-channel.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-        "evidence_sha256": "ce74fd5de08b6c62e5ed3986443e0ed35d3842832c8aed0ef68d0d406443ed17"
+        "evidence_sha256": "b7efcf42cba2fdc399d59c7f322cef2919113c042fd9b22838486bdb4bdb179e"
       }
     }
   ]

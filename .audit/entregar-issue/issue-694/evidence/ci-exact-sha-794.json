@@ -1,20 +1,20 @@
 {
   "schema_version": 1,
-  "material_head_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
   "repository": "crgasparoto-br/SolverFin",
   "issue_number": 694,
   "pull_request_number": 794,
   "evidence_type": "factual-run-not-semantic-approval",
   "source": "github-actions-run",
-  "run_id": 43553359254,
-  "job_id": 132320845537,
-  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43553359254",
-  "artifact_id": 14097177606,
-  "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43553359254/artifacts/14097177606",
-  "artifact_digest_sha256": "dd5f1cfbfb86cf71a06a45041a34d07b66c512886934a523ee86c131d830e963",
+  "run_id": 43708326079,
+  "job_id": 132794399314,
+  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43708326079",
+  "artifact_id": 14159825806,
+  "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43708326079/artifacts/14159825806",
+  "artifact_digest_sha256": "2333ad29afc3ed0ae41d0fdcdda6978ae9659b9c301189ca452abe83f9ff9600",
   "junit_path": "evidence/whatsapp-exact-head.xml",
-  "junit_sha256": "8a67dd7a01e3658242c68879a6422ec35413c9837266014a6c062d8b189cac01",
-  "tests": 24,
+  "junit_sha256": "a183d51c7e9d6c35966d4584448d5283f20a576c5be70a23cd513f2b241bdf77",
+  "tests": 26,
   "failures": 0,
   "errors": 0,
   "skipped": 0,
@@ -41,6 +41,14 @@
     },
     {
       "name": "Meta parser ignores status updates and unrelated business accounts",
+      "classname": "test"
+    },
+    {
+      "name": "Meta parser preserves base64 WAMIDs and rejects unsafe IDs",
+      "classname": "test"
+    },
+    {
+      "name": "Meta webhook uses BSUID without phone and rejects ambiguous sender identity",
       "classname": "test"
     },
     {
@@ -129,8 +137,9 @@
     "repository_ci_gate": "passed"
   },
   "scope_limitations": [
-    "The 24-case JUnit covers the named WhatsApp tests only.",
-    "Full-suite 131 compiled integration files are corroborated in the CRITICAL job log, not in the 24-case JUnit.",
+    "The 26-case JUnit covers the named WhatsApp tests, including signed BSUID dispatch, padded WAMIDs, and outbound field selection.",
+    "Full-suite 131 compiled integration files are corroborated in the CRITICAL job log, not in the 26-case JUnit.",
+    "The public signed BSUID POST persisted one event and did not repeat its query on the second delivery (integration suite).",
     "No Meta WABA sandbox or production activation was performed.",
     "No independent semantic approval is asserted."
   ]

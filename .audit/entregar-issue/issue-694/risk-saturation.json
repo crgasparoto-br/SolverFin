@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
   "families": [
     {
       "family": "authorization",
@@ -25,7 +25,7 @@
       "dimensions": [
         {
           "surface": "authorized-channel-link",
-          "reason": "OBL-038: authorization tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
+          "reason": "OBL-038: authorization tested at apps/api/src/whatsapp-channel-provider.test.ts:190 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
           "control_ids": [
             "NC-694-001-01",
             "NC-694-004-01",
@@ -111,7 +111,7 @@
         },
         {
           "surface": "signed-public-webhook",
-          "reason": "OBL-040: public-boundary tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:160.",
+          "reason": "OBL-040: public-boundary tested at apps/api/src/whatsapp-channel-provider.test.ts:190 with canonical production path apps/api/src/whatsapp-channel-provider.ts:170.",
           "control_ids": [
             "NC-694-002-01",
             "NC-694-009-02",
@@ -144,7 +144,7 @@
       "dimensions": [
         {
           "surface": "link-state-revalidation",
-          "reason": "OBL-039: reference-liveness tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-provider.ts:38.",
+          "reason": "OBL-039: reference-liveness tested at apps/api/src/whatsapp-channel-provider.test.ts:283 with canonical production path apps/api/src/whatsapp-channel-provider.ts:42.",
           "control_ids": [
             "NC-694-017-02",
             "NC-694-019-02",
@@ -173,7 +173,7 @@
       "dimensions": [
         {
           "surface": "event-lease-and-expiry",
-          "reason": "OBL-035: temporal-consistency tested at apps/api/src/whatsapp-channel.integration.test.ts:167 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
+          "reason": "OBL-035: temporal-consistency tested at apps/api/src/whatsapp-channel.integration.test.ts:168 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
           "control_ids": [
             "NC-694-008-03",
             "NC-694-017-03",
@@ -223,7 +223,7 @@
       "dimensions": [
         {
           "surface": "transactional-event-claim",
-          "reason": "OBL-035: concurrency-atomicity tested at apps/api/src/whatsapp-channel.integration.test.ts:167 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
+          "reason": "OBL-035: concurrency-atomicity tested at apps/api/src/whatsapp-channel.integration.test.ts:168 with canonical production path apps/api/src/whatsapp-channel-service.ts:185.",
           "control_ids": [
             "NC-694-008-01",
             "NC-694-015-01",
@@ -259,7 +259,7 @@
       "dimensions": [
         {
           "surface": "duplicate-processing",
-          "reason": "OBL-041: idempotency tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
+          "reason": "OBL-041: idempotency tested at apps/api/src/whatsapp-channel-provider.test.ts:283 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
           "control_ids": [
             "NC-694-007-02",
             "NC-694-008-02",
@@ -317,7 +317,7 @@
       "dimensions": [
         {
           "surface": "canonical-financial-service",
-          "reason": "OBL-038: structural-contract tested at apps/api/src/whatsapp-channel-provider.test.ts:142 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
+          "reason": "OBL-038: structural-contract tested at apps/api/src/whatsapp-channel-provider.test.ts:190 with canonical production path apps/api/src/whatsapp-channel-provider.ts:12.",
           "control_ids": [
             "NC-694-003-02",
             "NC-694-007-03",
@@ -362,7 +362,7 @@
       "dimensions": [
         {
           "surface": "canonical-claims",
-          "reason": "OBL-041: documentation tested at apps/api/src/whatsapp-channel-provider.test.ts:212 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
+          "reason": "OBL-041: documentation tested at apps/api/src/whatsapp-channel-provider.test.ts:283 with canonical production path apps/api/src/whatsapp-channel-router.ts:143.",
           "control_ids": [
             "NC-694-034-02",
             "NC-694-041-01"

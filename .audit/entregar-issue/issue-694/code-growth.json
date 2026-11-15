@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
   "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "comparison_base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "policy": {
@@ -51,7 +51,7 @@
     {
       "path": "apps/api/src/whatsapp-channel-provider.ts",
       "lines_before": null,
-      "lines_after": 222
+      "lines_after": 234
     },
     {
       "path": "apps/api/src/whatsapp-channel-repository.ts",
@@ -67,7 +67,7 @@
       "path": "apps/api/src/whatsapp-channel-service.ts",
       "lines_before": null,
       "lines_after": 383,
-      "justification": "Canal provider-neutral centraliza somente despacho, escopo, revalidação e coordenação de consulta/captura; as operações de banco, vínculo e eventos foram extraídas para módulos próprios, mantendo a orquestração abaixo do hard limit."
+      "justification": "Canal provider-neutral centraliza somente despacho, escopo, revalidacao e coordenacao de consulta/captura; repositorios de vinculos/eventos e adapter Meta separados, mantendo a orquestracao abaixo do hard limit."
     },
     {
       "path": "apps/api/src/whatsapp-channel-types.ts",

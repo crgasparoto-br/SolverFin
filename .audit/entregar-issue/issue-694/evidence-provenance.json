@@ -1,36 +1,36 @@
 {
   "schema_version": 1,
-  "material_head_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+  "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
   "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "evidence": [
     {
       "evidence_id": "EVID-694-JUNIT",
       "kind": "behavioral",
       "path": "evidence/whatsapp-exact-head.xml",
-      "sha256": "8a67dd7a01e3658242c68879a6422ec35413c9837266014a6c062d8b189cac01",
-      "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+      "sha256": "a183d51c7e9d6c35966d4584448d5283f20a576c5be70a23cd513f2b241bdf77",
+      "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions #43553359254 / artifact 14097177606",
+      "producer": "GitHub Actions #43708326079 / artifact 14159825806",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-694-CI",
       "kind": "behavioral",
       "path": "evidence/ci-exact-sha-794.json",
-      "sha256": "d9a6fb2ef9e3eacd8c20f4be2616920b22b766c77bc58ff7c340d0fbb7d497ca",
-      "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+      "sha256": "ef17ae84feb03ffcecf0c8c10e05fb49e1bca9c57dbdf5f37ae4fe78563ddb5c",
+      "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions Repository CI #43553359254 / CRITICAL job 132320845537",
+      "producer": "GitHub Actions Repository CI #43708326079 / CRITICAL job 132794399314",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-694-REVIEW",
       "kind": "structural",
       "path": "evidence/obligation-review-worklist.json",
-      "sha256": "cca6ea54499794c427dd95ec1b5321a27fd1ac79dcc7b99706309e67c957e8f4",
-      "subject_sha": "26196dd2d536361dbf044192e41420aa02356b64",
+      "sha256": "69f3387a457f017308e3130134c2960b6a2bba80f7cd15b1a212d98aefe52758",
+      "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
       "freshness_policy": "exact-material-head",
-      "producer": "Internal issue-by-issue code + test review; not independent",
+      "producer": "Internal review of all 41 obligations at new material head; not independent. CI 43708326079.",
       "status": "passed"
     }
   ]
