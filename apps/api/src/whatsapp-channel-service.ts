@@ -5,6 +5,10 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
 import {
+  decideWhatsappFinancialConfirmation,
+  prepareWhatsappFinancialConfirmation,
+} from "./whatsapp-channel-confirmation.js";
+import {
   FinancialAssistantServiceError,
   getOrStartFinancialAssistantConversation,
   normalizeAndValidateFinancialAssistantMessage,
@@ -75,6 +79,8 @@ export interface ChannelServiceDependencies {
     eventId: string,
     link: ActiveChannelLink,
   ) => Promise<{ conversationId: string; answer: string; completed?: boolean }>;
+  prepareConfirmation: typeof prepareWhatsappFinancialConfirmation;
+  decideConfirmation: typeof decideWhatsappFinancialConfirmation;
   captureFinancial: (
     context: TenantContext,
     rawMessage: string,
@@ -131,6 +137,8 @@ const defaultDependencies: ChannelServiceDependencies = {
     }
     return { conversationId: view.conversation.id, answer: turn.safeResponse.answer };
   },
+  prepareConfirmation: prepareWhatsappFinancialConfirmation,
+  decideConfirmation: decideWhatsappFinancialConfirmation,
   captureFinancial: async (context, text, eventId, link) => {
     if (
       !(await isWhatsappLinkStillActive(link)) ||
@@ -251,6 +259,15 @@ async function decideChannelReply(
   if (!link) return { outcome: "awaiting_link", reply: UNLINKED_MESSAGE };
   const context = contextFromChannelLink(link);
 
+  if (/^(?:CONFIRMAR|REJEITAR|CANCELAR)(?:\s+|$)/i.test(text) && !/^CANCELAR$/i.test(text)) {
+    const decision = await deps.decideConfirmation(context, eventId, text, link);
+    return {
+      outcome: decision?.outcome ?? "confirmation_incomplete",
+      reply: decision?.reply ?? "Informe o comando completo e o código da proposta. Consulte o SolverFin para revisar.",
+      link,
+    };
+  }
+
   if (/^CANCELAR$/i.test(text)) {
     // This conversation is shared with the authenticated app. A channel-only
     // CANCELAR must never terminate the app user's financial assistant session.
@@ -267,11 +284,15 @@ async function decideChannelReply(
     if (captured === "consent_required") {
       return { outcome: "capture_incomplete", reply: CONSENT_MESSAGE, link };
     }
+    const confirmation =
+      captured.pendingReview && captured.suggestionId
+        ? await deps.prepareConfirmation(context, eventId, captured.suggestionId, link)
+        : null;
     return {
-      outcome: captured.pendingReview ? "capture_pending_review" : "capture_incomplete",
-      reply: captured.pendingReview
+      outcome: confirmation ? "confirmation_pending" : captured.pendingReview ? "capture_pending_review" : "capture_incomplete",
+      reply: confirmation ?? (captured.pendingReview
         ? CAPTURE_REVIEW_MESSAGE
-        : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado.",
+        : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado."),
       link,
       ...(captured.suggestionId ? { suggestionId: captured.suggestionId } : {}),
       ...(captured.importBatchId ? { importBatchId: captured.importBatchId } : {}),
@@ -303,6 +324,9 @@ async function decideChannelReply(
 
 function isFinancialOutcome(outcome: ChannelOutcome | null): boolean {
   return (
+    outcome === "confirmation_pending" ||
+    outcome === "confirmation_resolved" ||
+    outcome === "confirmation_incomplete" ||
     outcome === "query_complete" ||
     outcome === "query_incomplete" ||
     outcome === "capture_pending_review" ||
