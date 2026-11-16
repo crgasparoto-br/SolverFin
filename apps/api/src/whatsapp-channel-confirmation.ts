@@ -8,14 +8,22 @@ import {
 } from "./ai-review-queue-public-decision-service.js";
 import { query, withSharedTransaction, type QueryExecutor } from "./db.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
-import { type ActiveChannelLink, WhatsappChannelError } from "./whatsapp-channel-link-repository.js";
+import {
+  type ActiveChannelLink,
+  WhatsappChannelError,
+} from "./whatsapp-channel-link-repository.js";
 
 export const WHATSAPP_CONFIRMATION_TTL_MS = 15 * 60 * 1000;
 const TOKEN_PATTERN = /^[A-Za-z0-9_-]{12}$/;
 const ACTION_PATTERN = /^(CONFIRMAR|REJEITAR|CANCELAR)\s+([A-Za-z0-9_-]{12})$/i;
 
 type Decision = "confirm" | "reject" | "cancel";
-type ConfirmationState = "pending_confirmation" | "confirmed" | "rejected" | "cancelled" | "expired";
+type ConfirmationState =
+  | "pending_confirmation"
+  | "confirmed"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 
 interface ConfirmationRow {
   id: string;
@@ -103,10 +111,11 @@ function publicSummary(
   token: string,
   labels: { account?: string; category?: string } = {},
 ): string {
-  const currencyDigits = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: proposal.currency,
-  }).resolvedOptions().maximumFractionDigits ?? 2;
+  const currencyDigits =
+    new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: proposal.currency,
+    }).resolvedOptions().maximumFractionDigits ?? 2;
   const amount = new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: currencyDigits,
     maximumFractionDigits: currencyDigits,
@@ -140,7 +149,7 @@ async function currentSuggestion(
       ' b."originalFileName" from "AiSuggestion" s' +
       ' join "ImportBatch" b on b."id"=s."sourceEntityId"' +
       ' and b."organizationId"=s."organizationId" and b."financialProfileId"=s."financialProfileId"' +
-      ' and b."sourceKind"=\'BANK_MESSAGE\' and b."originalFileName"=\'bank-message-whatsapp\'' +
+      " and b.\"sourceKind\"='BANK_MESSAGE' and b.\"originalFileName\"='bank-message-whatsapp'" +
       ' where s."id"=$1 and s."organizationId"=$2 and s."financialProfileId"=$3',
     [suggestionId, context.organizationId, context.financialProfileId],
   );
@@ -177,11 +186,11 @@ async function lockAuthorizedLink(
       ' join "User" u on u."id"=l."userId" and u."status"=\'ACTIVE\'' +
       ' join "FinancialProfile" p on p."id"=l."financialProfileId"' +
       ' and p."organizationId"=l."organizationId" and p."ownerUserId"=l."userId"' +
-      ' and p."status"=\'ACTIVE\'' +
+      " and p.\"status\"='ACTIVE'" +
       ' where l."id"=$1 and l."provider"=\'meta_whatsapp\' and l."state"=\'active\'' +
       ' and l."accountId"=$2 and l."senderId"=$3 and l."userId"=$4' +
       ' and l."organizationId"=$5 and l."financialProfileId"=$6 and l."version"=$7' +
-      ' for share of l,u,p',
+      " for share of l,u,p",
     [
       link.id,
       link.accountId,
@@ -237,7 +246,7 @@ export async function prepareWhatsappFinancialConfirmation(
         ' ("id","linkId","userId","organizationId","financialProfileId",' +
         ' "sourceEventId","suggestionId","fingerprint","tokenHash","status",' +
         ' "expiresAt","createdAt","updatedAt","linkVersion")' +
-        ' values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,\'pending_confirmation\',$9,$10,$10,$11)' +
+        " values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,'pending_confirmation',$9,$10,$10,$11)" +
         ' on conflict ("sourceEventId","suggestionId") do nothing',
       [
         link.id,
@@ -315,19 +324,16 @@ export async function decideWhatsappFinancialConfirmation(
 
   return withSharedTransaction(async (executeQuery) => {
     if (!(await lockAuthorizedLink(executeQuery, link))) {
-      return { outcome: "confirmation_incomplete", reply: "Vincule este canal novamente no SolverFin." };
+      return {
+        outcome: "confirmation_incomplete",
+        reply: "Vincule este canal novamente no SolverFin.",
+      };
     }
     const rows = await executeQuery<ConfirmationRow>(
       'select * from "WhatsappChannelConfirmation"' +
         ' where "tokenHash"=$1 and "linkId"=$2 and "userId"=$3' +
         ' and "organizationId"=$4 and "financialProfileId"=$5 for update',
-      [
-        tokenHash,
-        link.id,
-        context.userId,
-        context.organizationId,
-        context.financialProfileId,
-      ],
+      [tokenHash, link.id, context.userId, context.organizationId, context.financialProfileId],
     );
     const current = rows[0];
     if (!current || current.linkVersion !== link.version) {
