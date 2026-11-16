@@ -19,7 +19,11 @@ test("resumo WhatsApp mascara identificadores sensíveis formatados", () => {
   for (const value of sensitive) {
     const result = redactWhatsappConfirmationLabel(value);
     assert.ok(result.length > 0, "o resumo deve manter um rótulo seguro");
-    assert.doesNotMatch(result, /(?:123|456|789|4111|98888|567890|550e8400|titular@|example\.invalid)/i, value);
+    assert.doesNotMatch(
+      result,
+      /(?:123|456|789|4111|98888|567890|550e8400|titular@|example\.invalid)/i,
+      value,
+    );
   }
 });
 

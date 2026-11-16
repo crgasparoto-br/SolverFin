@@ -104,10 +104,8 @@ export function redactWhatsappConfirmationLabel(value: string): string {
       /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
       "[identificador]",
     )
-    .replace(
-      /(?<![\p{L}\p{N}])\+?\d[\d\s()./-]{6,}\d(?![\p{L}\p{N}])/gu,
-      (candidate) =>
-        candidate.replace(/\D/g, "").length >= 8 ? "[identificador]" : candidate,
+    .replace(/(?<![\p{L}\p{N}])\+?\d[\d\s()./-]{6,}\d(?![\p{L}\p{N}])/gu, (candidate) =>
+      candidate.replace(/\D/g, "").length >= 8 ? "[identificador]" : candidate,
     )
     .replace(/\b\d{5,}\b/g, "****");
   return maskSensitiveText(redacted).replace(/\s+/g, " ").trim().slice(0, 80);
