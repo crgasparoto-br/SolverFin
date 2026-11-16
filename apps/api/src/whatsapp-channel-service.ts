@@ -277,7 +277,9 @@ async function decideChannelReply(
     const decision = await deps.decideConfirmation(context, eventId, text, link);
     return {
       outcome: decision?.outcome ?? "confirmation_incomplete",
-      reply: decision?.reply ?? "Informe o comando completo e o código da proposta. Consulte o SolverFin para revisar.",
+      reply:
+        decision?.reply ??
+        "Informe o comando completo e o código da proposta. Consulte o SolverFin para revisar.",
       link,
     };
   }
@@ -303,10 +305,16 @@ async function decideChannelReply(
         ? await deps.prepareConfirmation(context, eventId, captured.suggestionId, link)
         : null;
     return {
-      outcome: confirmation ? "confirmation_pending" : captured.pendingReview ? "capture_pending_review" : "capture_incomplete",
-      reply: confirmation ?? (captured.pendingReview
-        ? CAPTURE_REVIEW_MESSAGE
-        : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado."),
+      outcome: confirmation
+        ? "confirmation_pending"
+        : captured.pendingReview
+          ? "capture_pending_review"
+          : "capture_incomplete",
+      reply:
+        confirmation ??
+        (captured.pendingReview
+          ? CAPTURE_REVIEW_MESSAGE
+          : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado."),
       link,
       ...(captured.suggestionId ? { suggestionId: captured.suggestionId } : {}),
       ...(captured.importBatchId ? { importBatchId: captured.importBatchId } : {}),
