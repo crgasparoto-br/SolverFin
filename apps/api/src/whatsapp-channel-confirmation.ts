@@ -101,10 +101,14 @@ function publicSummary(
   >["proposal"],
   token: string,
 ): string {
+  const currencyDigits = new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: proposal.currency,
+  }).resolvedOptions().maximumFractionDigits;
   const amount = new Intl.NumberFormat("pt-BR", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(proposal.amountMinor / 100);
+    minimumFractionDigits: currencyDigits,
+    maximumFractionDigits: currencyDigits,
+  }).format(proposal.amountMinor / 10 ** currencyDigits);
   const description = safeDescription(proposal.description);
   const kind = proposal.kind === "income" ? "Receita" : "Despesa";
   return [
@@ -339,6 +343,9 @@ export async function decideWhatsappFinancialConfirmation(
           );
           transactionId =
             "transaction" in result && result.transaction ? result.transaction.id : null;
+          if (!transactionId) {
+            throw new WhatsappChannelError("WHATSAPP_CONFIRMATION_EFFECT_UNVERIFIED", 503);
+          }
         } else {
           await rejectAiReviewDecisionForContext(context, current.suggestionId, input);
         }
