@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
+  "subject_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
   "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "comparison_base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
   "policy": {
@@ -51,7 +51,7 @@
     {
       "path": "apps/api/src/whatsapp-channel-provider.ts",
       "lines_before": null,
-      "lines_after": 234
+      "lines_after": 237
     },
     {
       "path": "apps/api/src/whatsapp-channel-repository.ts",

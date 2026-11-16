@@ -2,7 +2,7 @@
   "schema_version": 3,
   "specification_snapshot": {
     "path": "/mnt/data/solverfin-794-work/checkout/.audit/entregar-issue/issue-694/specification-snapshot.json",
-    "sha256": "851490e98952ab91c5ba356b46daccbe9938bf7f086ece2d7d2cd790fcd24f12"
+    "sha256": "1f4fa431360a7055b60150a9223bc0d0ebd0266461acd3cce9dba28de108b226"
   },
   "primary_issue_source_id": "SRC-ISSUE-694",
   "obligations": [
@@ -23,7 +23,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43708326079. Observado: A tentativa de pagamento chega somente ao serviço de consulta read-only e nenhuma escrita financeira é invocada."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43868841042. Observado: A tentativa de pagamento chega somente ao serviço de consulta read-only e nenhuma escrita financeira é invocada."
     },
     {
       "id": "OBL-002",
@@ -40,7 +40,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:65; teste executado via CI 43708326079. Observado: Assinatura alterada do corpo bruto rejeita a entrada com 403 antes de qualquer despacho. Correção A-007/A-008 comprovada em testes exatos de WAMID Base64 e BSUID-only, incluindo webhook assinado e outbound recipient; JUnit 26/26 + integração PostgreSQL 131/131 no CI 43708326079."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:65; teste executado via CI 43868841042. Observado: Assinatura alterada do corpo bruto rejeita a entrada com 403 antes de qualquer despacho. Correção A-007/A-008 comprovada em testes exatos de WAMID Base64 e BSUID-only, incluindo webhook assinado e outbound recipient; JUnit 28/28 + integração PostgreSQL 131/131 no CI 43868841042."
     },
     {
       "id": "OBL-003",
@@ -59,7 +59,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:60, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:190; teste executado via CI 43708326079. Observado: O adapter fixa graph.facebook.com e rejeita URL, conta ou número de destino incompatível."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:60, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:212; teste executado via CI 43868841042. Observado: O adapter fixa graph.facebook.com e rejeita URL, conta ou número de destino incompatível."
     },
     {
       "id": "OBL-004",
@@ -76,7 +76,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-link-repository.ts:51, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:104; teste executado via CI 43708326079. Observado: Vínculo é criado somente após perfil explícito; código armazenado é hash e outro perfil não lê a associação."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-link-repository.ts:51, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:104; teste executado via CI 43868841042. Observado: Vínculo é criado somente após perfil explícito; código armazenado é hash e outro perfil não lê a associação."
     },
     {
       "id": "OBL-005",
@@ -95,7 +95,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:216; teste executado via CI 43708326079. Observado: A mesma consulta tenant-scoped não chama o Assistente duas vezes no replay do ID Meta."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:216; teste executado via CI 43868841042. Observado: A mesma consulta tenant-scoped não chama o Assistente duas vezes no replay do ID Meta."
     },
     {
       "id": "OBL-006",
@@ -112,7 +112,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:134, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43708326079. Observado: CAPTURAR usa apenas a Inbox canônica e produz sugestão pendente, sem chamada de lançamento final."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:134, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43868841042. Observado: CAPTURAR usa apenas a Inbox canônica e produz sugestão pendente, sem chamada de lançamento final."
     },
     {
       "id": "OBL-007",
@@ -129,7 +129,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:84, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43708326079. Observado: A releitura PostgreSQL preserva evento, ID de mensagem, vínculo, conversa e contexto persistidos."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:84, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43868841042. Observado: A releitura PostgreSQL preserva evento, ID de mensagem, vínculo, conversa e contexto persistidos."
     },
     {
       "id": "OBL-008",
@@ -149,7 +149,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:20, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43708326079. Observado: Após crash entre resposta persistida e envio, replay do mesmo evento envia uma única resposta sem recálculo."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:20, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43868841042. Observado: Após crash entre resposta persistida e envio, replay do mesmo evento envia uma única resposta sem recálculo."
     },
     {
       "id": "OBL-009",
@@ -168,7 +168,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:320, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:374; teste executado via CI 43708326079. Observado: Revogação entre persistência e outbound substitui resposta financeira pela mensagem pública genérica."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:320, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:374; teste executado via CI 43868841042. Observado: Revogação entre persistência e outbound substitui resposta financeira pela mensagem pública genérica."
     },
     {
       "id": "OBL-010",
@@ -185,7 +185,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:141, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43708326079. Observado: O fluxo reutiliza createBankMessageInboxWithAiForContext e FinancialAssistantService sem segundo motor."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:141, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43868841042. Observado: O fluxo reutiliza createBankMessageInboxWithAiForContext e FinancialAssistantService sem segundo motor."
     },
     {
       "id": "OBL-011",
@@ -205,7 +205,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:232, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43708326079. Observado: Entrada de intenção de pagamento permanece leitura ou orientação; não chama serviço de mutação."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:232, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43868841042. Observado: Entrada de intenção de pagamento permanece leitura ou orientação; não chama serviço de mutação."
     },
     {
       "id": "OBL-012",
@@ -224,7 +224,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43708326079. Observado: A resposta determinística é calculada pelo serviço canônico sob filtros; texto externo não cria saldo."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43868841042. Observado: A resposta determinística é calculada pelo serviço canônico sob filtros; texto externo não cria saldo."
     },
     {
       "id": "OBL-013",
@@ -244,7 +244,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43708326079. Observado: O caminho determinístico do Assistente usa a mesma fonte para respostas com IA indisponível."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:80; teste executado via CI 43868841042. Observado: O caminho determinístico do Assistente usa a mesma fonte para respostas com IA indisponível."
     },
     {
       "id": "OBL-014",
@@ -264,7 +264,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43708326079. Observado: Remetente sem vínculo recebe apenas orientação genérica, nunca saldo, perfil ou elegibilidade."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43868841042. Observado: Remetente sem vínculo recebe apenas orientação genérica, nunca saldo, perfil ou elegibilidade."
     },
     {
       "id": "OBL-015",
@@ -283,7 +283,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:171, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:203; teste executado via CI 43708326079. Observado: O mesmo providerMessageId deriva uma única chave, uma única linha de turno e um único envio."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:171, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:203; teste executado via CI 43868841042. Observado: O mesmo providerMessageId deriva uma única chave, uma única linha de turno e um único envio."
     },
     {
       "id": "OBL-016",
@@ -302,7 +302,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-router.ts:75, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43708326079. Observado: Uma tentativa sem sessão ou com perfil divergente é rejeitada sem criar vínculo."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-router.ts:75, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43868841042. Observado: Uma tentativa sem sessão ou com perfil divergente é rejeitada sem criar vínculo."
     },
     {
       "id": "OBL-017",
@@ -323,7 +323,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-link-repository.ts:214, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:257; teste executado via CI 43708326079. Observado: Vínculo revogado não se resolve, mesmo quando resposta de consulta já estava persistida."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-link-repository.ts:214, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:257; teste executado via CI 43868841042. Observado: Vínculo revogado não se resolve, mesmo quando resposta de consulta já estava persistida."
     },
     {
       "id": "OBL-018",
@@ -343,7 +343,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-router.ts:43, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:61; teste executado via CI 43708326079. Observado: Sem profileId ou com duplicidade/conflito query-body, HTTP 400 e zero registros na tabela."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-router.ts:43, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:61; teste executado via CI 43868841042. Observado: Sem profileId ou com duplicidade/conflito query-body, HTTP 400 e zero registros na tabela."
     },
     {
       "id": "OBL-019",
@@ -365,7 +365,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:356; teste executado via CI 43708326079. Observado: Consulta com vínculo revogado durante o processamento não envia a resposta privada antiga."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:356; teste executado via CI 43868841042. Observado: Consulta com vínculo revogado durante o processamento não envia a resposta privada antiga."
     },
     {
       "id": "OBL-020",
@@ -386,7 +386,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/bank-message-ai-inbox.ts:119, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:421; teste executado via CI 43708326079. Observado: Duas extrações concorrentes sobre o mesmo sourceHash não persistem sugestão duplicada."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/bank-message-ai-inbox.ts:119, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:421; teste executado via CI 43868841042. Observado: Duas extrações concorrentes sobre o mesmo sourceHash não persistem sugestão duplicada."
     },
     {
       "id": "OBL-021",
@@ -408,7 +408,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:44, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43708326079. Observado: A confirmação menciona revisão pendente e nenhum lançamento, inclusive quando extrator não produz sugestão."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:44, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43868841042. Observado: A confirmação menciona revisão pendente e nenhum lançamento, inclusive quando extrator não produz sugestão."
     },
     {
       "id": "OBL-022",
@@ -429,7 +429,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/bank-message-extraction-lease.ts:48, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:325; teste executado via CI 43708326079. Observado: A extração interrompida recupera somente por claim/replay; texto bruto não é gravado no journal."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/bank-message-extraction-lease.ts:48, controle/releitura apps/api/src/bank-message-ai-inbox.integration.test.ts:325; teste executado via CI 43868841042. Observado: A extração interrompida recupera somente por claim/replay; texto bruto não é gravado no journal."
     },
     {
       "id": "OBL-023",
@@ -449,7 +449,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-types.ts:1, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43708326079. Observado: Estados recebidos, processing, response_ready, sent, cancelled, expired e retry permanecem distintos no banco."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-types.ts:1, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43868841042. Observado: Estados recebidos, processing, response_ready, sent, cancelled, expired e retry permanecem distintos no banco."
     },
     {
       "id": "OBL-024",
@@ -470,7 +470,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:50, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:148; teste executado via CI 43708326079. Observado: O status response_ready e o token de claim são reconstituídos por releitura PostgreSQL."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:50, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:148; teste executado via CI 43868841042. Observado: O status response_ready e o token de claim são reconstituídos por releitura PostgreSQL."
     },
     {
       "id": "OBL-025",
@@ -489,7 +489,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:263, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43708326079. Observado: CAPTURAR entrega sugestão pendente e resultado capture_pending_review, não transação final."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:263, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43868841042. Observado: CAPTURAR entrega sugestão pendente e resultado capture_pending_review, não transação final."
     },
     {
       "id": "OBL-026",
@@ -509,7 +509,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:280, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43708326079. Observado: Pedido de pagamento é encaminhado ao Assistente somente leitura, sem função de escrita."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:280, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:337; teste executado via CI 43868841042. Observado: Pedido de pagamento é encaminhado ao Assistente somente leitura, sem função de escrita."
     },
     {
       "id": "OBL-027",
@@ -530,7 +530,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:177; teste executado via CI 43708326079. Observado: Consulta com BRL e período 2026-01 preserva filtros/período do serviço canônico; outra moeda não contamina o estado."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:99, controle/releitura apps/api/src/financial-assistant-service.integration.test.ts:177; teste executado via CI 43868841042. Observado: Consulta com BRL e período 2026-01 preserva filtros/período do serviço canônico; outra moeda não contamina o estado."
     },
     {
       "id": "OBL-028",
@@ -552,7 +552,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/bank-message-ai-inbox.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43708326079. Observado: Inbox mantém o resultado como sugestão PENDING_REVIEW e canal não aprova fato financeiro."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/bank-message-ai-inbox.ts:189, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:266; teste executado via CI 43868841042. Observado: Inbox mantém o resultado como sugestão PENDING_REVIEW e canal não aprova fato financeiro."
     },
     {
       "id": "OBL-029",
@@ -569,7 +569,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:30, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43708326079. Observado: Dois claims simultâneos da mesma chave obtêm exatamente um lease e um único envio."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:30, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:129; teste executado via CI 43868841042. Observado: Dois claims simultâneos da mesma chave obtêm exatamente um lease e um único envio."
     },
     {
       "id": "OBL-030",
@@ -588,7 +588,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:150, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43708326079. Observado: A resposta persistida é reenviada apenas uma vez após reentrada sem estado em memória do processo."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:150, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:392; teste executado via CI 43868841042. Observado: A resposta persistida é reenviada apenas uma vez após reentrada sem estado em memória do processo."
     },
     {
       "id": "OBL-031",
@@ -607,7 +607,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43708326079. Observado: Remetente estranho/não vinculado não recebe resposta privada nem o nome do perfil."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:250, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:320; teste executado via CI 43868841042. Observado: Remetente estranho/não vinculado não recebe resposta privada nem o nome do perfil."
     },
     {
       "id": "OBL-032",
@@ -624,7 +624,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:254, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:472; teste executado via CI 43708326079. Observado: CANCELAR encerra só o canal, expiração não gera efeitos e falha de envio 429 tem retry delimitado."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:254, controle/releitura apps/api/src/whatsapp-channel-service.test.ts:472; teste executado via CI 43868841042. Observado: CANCELAR encerra só o canal, expiração não gera efeitos e falha de envio 429 tem retry delimitado."
     },
     {
       "id": "OBL-033",
@@ -643,7 +643,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-event-repository.ts:222, controle/releitura apps/api/src/whatsapp-channel-retention.integration.test.ts:48; teste executado via CI 43708326079. Observado: Inicialização da API apaga replyText/senderId expirados mesmo com Meta desconfigurada."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-event-repository.ts:222, controle/releitura apps/api/src/whatsapp-channel-retention.integration.test.ts:48; teste executado via CI 43868841042. Observado: Inicialização da API apaga replyText/senderId expirados mesmo com Meta desconfigurada."
     },
     {
       "id": "OBL-034",
@@ -660,7 +660,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação docs/WHATSAPP_CHANNEL.md:27, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43708326079. Observado: Documentação vincula pareamento autenticado, retenção, expiração, idempotência e configuração de adapter a rotas testadas."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação docs/WHATSAPP_CHANNEL.md:27, controle/releitura apps/api/src/whatsapp-channel-management.integration.test.ts:52; teste executado via CI 43868841042. Observado: Documentação vincula pareamento autenticado, retenção, expiração, idempotência e configuração de adapter a rotas testadas."
     },
     {
       "id": "OBL-035",
@@ -680,7 +680,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:168; teste executado via CI 43708326079. Observado: O mesmo entrypoint e mesma chave após interrupção encerram o turno; os casos de concorrência/revogação são mantidos no mesmo CI."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-service.ts:185, controle/releitura apps/api/src/whatsapp-channel.integration.test.ts:168; teste executado via CI 43868841042. Observado: O mesmo entrypoint e mesma chave após interrupção encerram o turno; os casos de concorrência/revogação são mantidos no mesmo CI."
     },
     {
       "id": "OBL-036",
@@ -750,7 +750,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-provider.ts:12, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:190; teste executado via CI 43708326079. Observado: Port de saída recebe contrato interno e não permite que o remetente imponha URL de provider ou domínio financeiro alternativo."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-provider.ts:12, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:212; teste executado via CI 43868841042. Observado: Port de saída recebe contrato interno e não permite que o remetente imponha URL de provider ou domínio financeiro alternativo."
     },
     {
       "id": "OBL-039",
@@ -770,7 +770,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-provider.ts:42, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:283; teste executado via CI 43708326079. Observado: Webhook com HMAC inválido, mudança de conta e evento de status sem mensagem não produz consulta, replay legítimo mantém idempotência. O parser aceita identificadores WAMID com +/= e BSUID sem from; alvo de saída BSUID usa recipient, e telefone usa to, verificados no JUnit do CI 43708326079."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-provider.ts:42, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:305; teste executado via CI 43868841042. Observado: Webhook com HMAC inválido, mudança de conta e evento de status sem mensagem não produz consulta, replay legítimo mantém idempotência. O parser aceita identificadores WAMID com +/= e BSUID sem from; alvo de saída BSUID usa recipient, e telefone usa to, verificados no JUnit do CI 43868841042."
     },
     {
       "id": "OBL-040",
@@ -790,7 +790,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-provider.ts:170, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:190; teste executado via CI 43708326079. Observado: Segredo e bearer vêm somente do ambiente; o mock captura chamada Graph e verifica URL fixa sem credenciais persistidas."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-provider.ts:170, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:212; teste executado via CI 43868841042. Observado: Segredo e bearer vêm somente do ambiente; o mock captura chamada Graph e verifica URL fixa sem credenciais persistidas."
     },
     {
       "id": "OBL-041",
@@ -809,7 +809,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "Material SHA b4989703d28f2212d7e1a0a50226a34ce69ef110; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:283; teste executado via CI 43708326079. Observado: Adapter dedicado e entradas assinadas estão implementados, mas configuração/homologação Meta real seguem diferidas pela issue #795."
+      "rationale": "Material SHA 7d42d5a6ab91d637f5f688e2b644015a535ba948; implementação apps/api/src/whatsapp-channel-router.ts:143, controle/releitura apps/api/src/whatsapp-channel-provider.test.ts:305; teste executado via CI 43868841042. Observado: Adapter dedicado e entradas assinadas estão implementados, mas configuração/homologação Meta real seguem diferidas pela issue #795."
     }
   ],
   "source_coverage": [
@@ -919,7 +919,7 @@
           "apps/api/src/financial-assistant-service.integration.test.ts:80"
         ],
         "negative_control_evidence": [
-          "apps/api/src/whatsapp-channel-provider.test.ts:190"
+          "apps/api/src/whatsapp-channel-provider.test.ts:212"
         ]
       },
       {

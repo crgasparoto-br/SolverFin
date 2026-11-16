@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+  "status": "implementation-internal-ready-for-independent-audit",
+  "tech_ci": {
+    "run": 43868841042,
+    "status": "success",
+    "junit_cases": 28
+  },
+  "unresolved_external": [
+    "Meta/WABA end-to-end sandbox homologation tracked by issue 795"
+  ],
+  "independent_approval": false
+}

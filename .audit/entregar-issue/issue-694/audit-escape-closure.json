@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 694,
+    "pull_request_number": 794,
+    "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948"
+  },
+  "escapes": [
+    {
+      "subject": {
+        "repository": "crgasparoto-br/SolverFin",
+        "issue_number": 694,
+        "pull_request_number": 794,
+        "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948"
+      },
+      "escape_id": "A-009",
+      "escape_class": "optional-identity-field-present-empty-drops-valid-fallback",
+      "source_audit": {
+        "head_sha": "9a58cbb62efcb2bec374ed824571e6eebcb128bb",
+        "rejection_id": "audit-rejection:4f4ede13-3196-475a-b52e-3627394cd68e",
+        "finding_id": "A-009",
+        "audit_report_sha256": "2b04ec99c48ec8646cfe640d4ea8a7fa4552fd4b0db41a9b3a403c2977c1cc37"
+      },
+      "plausible_wrong_implementation": "Only accept omitted optional phone; reject empty or null even when a valid business scoped sender ID exists.",
+      "literal_case": {
+        "procedure": "Signed webhook with valid BSUID and from empty plus same with null must reach dispatcher; prior version silently returned HTTP 200 without delivery.",
+        "expected": "Dispatch to the BSUID for both withheld phone variants.",
+        "observed": "Exact material JUnit 28/28, parser and signed webhook controls green.",
+        "status": "passed",
+        "evidence": "evidence/whatsapp-exact-head.xml SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae"
+      },
+      "sibling_cases": [
+        {
+          "id": "BSUID-NULL",
+          "surface": "meta-parser",
+          "dimension": "withheld-phone-null-bsuid",
+          "status": "passed",
+          "evidence": "evidence/whatsapp-exact-head.xml SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae"
+        },
+        {
+          "id": "BSUID-CONFLICT",
+          "surface": "signed-public-webhook",
+          "dimension": "withheld-phone-null-bsuid",
+          "status": "passed",
+          "evidence": "evidence/whatsapp-exact-head.xml SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "public-boundary",
+          "surface": "meta-parser",
+          "dimension": "withheld-phone-empty-bsuid"
+        },
+        {
+          "risk_family": "public-boundary",
+          "surface": "signed-public-webhook",
+          "dimension": "withheld-phone-null-bsuid"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/api/src/whatsapp-channel-provider.ts",
+        "evidence": "resolveMetaSender treats null/empty optional phone as withheld only with valid BSUID"
+      },
+      "detection_change": {
+        "skill_or_gate": "apps/api/src/whatsapp-channel-provider.test.ts and signed webhook tests",
+        "control_id": "NC-694-002-03",
+        "evidence": "Exact-head JUnit artifact 14225979536 with 28 cases including parser and signed webhook cases"
+      },
+      "trigger_terms": [
+        "optional sender",
+        "present empty",
+        "nullable identity",
+        "business scoped sender"
+      ],
+      "required_risk_families": [
+        "public-boundary"
+      ],
+      "revalidated_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "status": "passed"
+    }
+  ]
+}

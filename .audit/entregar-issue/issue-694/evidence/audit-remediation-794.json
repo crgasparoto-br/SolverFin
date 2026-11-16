@@ -3,7 +3,7 @@
   "repository": "crgasparoto-br/SolverFin",
   "pr_number": 794,
   "issue_number": 694,
-  "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
+  "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
   "previous_audit_head_sha": "a8bc49c845191c98a40b45518e3ca3cc6ed9ba58",
   "review_role": "implementation-internal-not-independent",
   "findings": [
@@ -19,7 +19,7 @@
       ],
       "negative_control": "WAMID with +/= accepted, control newline/whitespace rejected",
       "evidence": [
-        "GitHub Actions #43708326079",
+        "GitHub Actions #43868841042",
         "whatsapp-exact-head.xml: Meta parser preserves base64 WAMIDs and rejects unsafe IDs"
       ],
       "independent_approval": false
@@ -39,8 +39,24 @@
       ],
       "negative_control": "BSUID-only from_user_id in signed HTTP webhook persists event and idempotent replay; malformed/mismatched BSUID denied, outbound recipient not to",
       "evidence": [
-        "GitHub Actions #43708326079",
+        "GitHub Actions #43868841042",
         "whatsapp-exact-head.xml: Meta webhook uses BSUID without phone and rejects ambiguous sender identity"
+      ],
+      "independent_approval": false
+    },
+    {
+      "finding_id": "A-009",
+      "state": "implemented-verified-internal",
+      "severity": "high",
+      "source": "Authenticated independent GitHub review on HEAD 9a58cbb6",
+      "old_failure": "Valid Meta BSUID with present empty/null optional phone silently dropped (HTTP 200).",
+      "remediation": [
+        "apps/api/src/whatsapp-channel-provider.ts",
+        "apps/api/src/whatsapp-channel-provider.test.ts",
+        "apps/api/src/whatsapp-channel.integration.test.ts"
+      ],
+      "evidence": [
+        "Actions CI 43868841042, JUnit 28 cases, SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae"
       ],
       "independent_approval": false
     }
@@ -48,5 +64,17 @@
   "limitations": [
     "External Meta/WABA homologation remains deferred under issue #795",
     "Next independent audit remains mandatory before merge"
+  ],
+  "previous_independent_rejection": {
+    "rejection_id": "audit-rejection:4f4ede13-3196-475a-b52e-3627394cd68e",
+    "source_review_node_id": "PRR_kwDOS7WJDc8AAAABYM7QmQ",
+    "state": "remediated-internal-not-approved-independently"
+  },
+  "recommendations": [
+    {
+      "recommendation_id": "REC-001",
+      "state": "implemented-verified-internal",
+      "evidence": "28-case exact-head JUnit recorded in current critical attack matrix"
+    }
   ]
 }

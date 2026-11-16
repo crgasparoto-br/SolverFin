@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
+  "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
   "review_role": "controller-internal-not-independent",
   "obligations": [
     {
@@ -11,8 +11,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:185",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:337",
       "observed": "A tentativa de pagamento chega somente ao serviço de consulta read-only e nenhuma escrita financeira é invocada.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -22,9 +22,9 @@
       "requirement_id": "REQ-694-002",
       "producer": "apps/api/src/whatsapp-channel-router.ts:143",
       "test": "apps/api/src/whatsapp-channel-provider.test.ts:65",
-      "observed": "Assinatura HMAC alterada bloqueia payload; WAMID com Base64, BSUID-only, outbound recipient e invalid IDs cobertos por JUnit 26/26 e PostgreSQL 131/131.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "observed": "Assinatura HMAC alterada bloqueia payload; WAMID com Base64, BSUID-only, outbound recipient e invalid IDs cobertos por JUnit 28/28 e PostgreSQL 131/131.",
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -33,10 +33,10 @@
       "source_line": 18,
       "requirement_id": "REQ-694-003",
       "producer": "apps/api/src/whatsapp-channel-service.ts:60",
-      "test": "apps/api/src/whatsapp-channel-provider.test.ts:190",
+      "test": "apps/api/src/whatsapp-channel-provider.test.ts:212",
       "observed": "O adapter fixa graph.facebook.com e rejeita URL, conta ou número de destino incompatível.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -47,8 +47,8 @@
       "producer": "apps/api/src/whatsapp-channel-link-repository.ts:51",
       "test": "apps/api/src/whatsapp-channel-management.integration.test.ts:104",
       "observed": "Vínculo é criado somente após perfil explícito; código armazenado é hash e outro perfil não lê a associação.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -59,8 +59,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:99",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:216",
       "observed": "A mesma consulta tenant-scoped não chama o Assistente duas vezes no replay do ID Meta.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -71,8 +71,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:134",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:266",
       "observed": "CAPTURAR usa apenas a Inbox canônica e produz sugestão pendente, sem chamada de lançamento final.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -83,8 +83,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:84",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:129",
       "observed": "A releitura PostgreSQL preserva evento, ID de mensagem, vínculo, conversa e contexto persistidos.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -95,8 +95,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:20",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:392",
       "observed": "Após crash entre resposta persistida e envio, replay do mesmo evento envia uma única resposta sem recálculo.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -107,8 +107,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:320",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:374",
       "observed": "Revogação entre persistência e outbound substitui resposta financeira pela mensagem pública genérica.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -119,8 +119,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:141",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:266",
       "observed": "O fluxo reutiliza createBankMessageInboxWithAiForContext e FinancialAssistantService sem segundo motor.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -131,8 +131,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:232",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:337",
       "observed": "Entrada de intenção de pagamento permanece leitura ou orientação; não chama serviço de mutação.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -143,8 +143,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:99",
       "test": "apps/api/src/financial-assistant-service.integration.test.ts:80",
       "observed": "A resposta determinística é calculada pelo serviço canônico sob filtros; texto externo não cria saldo.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "Repository CI CRITICAL 131 PostgreSQL files"
     },
     {
@@ -155,8 +155,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:99",
       "test": "apps/api/src/financial-assistant-service.integration.test.ts:80",
       "observed": "O caminho determinístico do Assistente usa a mesma fonte para respostas com IA indisponível.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "Repository CI CRITICAL 131 PostgreSQL files"
     },
     {
@@ -167,8 +167,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:250",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:320",
       "observed": "Remetente sem vínculo recebe apenas orientação genérica, nunca saldo, perfil ou elegibilidade.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -179,8 +179,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:171",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:203",
       "observed": "O mesmo providerMessageId deriva uma única chave, uma única linha de turno e um único envio.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -191,8 +191,8 @@
       "producer": "apps/api/src/whatsapp-channel-router.ts:75",
       "test": "apps/api/src/whatsapp-channel-management.integration.test.ts:52",
       "observed": "Uma tentativa sem sessão ou com perfil divergente é rejeitada sem criar vínculo.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -203,8 +203,8 @@
       "producer": "apps/api/src/whatsapp-channel-link-repository.ts:214",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:257",
       "observed": "Vínculo revogado não se resolve, mesmo quando resposta de consulta já estava persistida.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -215,8 +215,8 @@
       "producer": "apps/api/src/whatsapp-channel-router.ts:43",
       "test": "apps/api/src/whatsapp-channel-management.integration.test.ts:61",
       "observed": "Sem profileId ou com duplicidade/conflito query-body, HTTP 400 e zero registros na tabela.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -227,8 +227,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:189",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:356",
       "observed": "Consulta com vínculo revogado durante o processamento não envia a resposta privada antiga.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -239,8 +239,8 @@
       "producer": "apps/api/src/bank-message-ai-inbox.ts:119",
       "test": "apps/api/src/bank-message-ai-inbox.integration.test.ts:421",
       "observed": "Duas extrações concorrentes sobre o mesmo sourceHash não persistem sugestão duplicada.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "Repository CI CRITICAL 131 PostgreSQL files"
     },
     {
@@ -251,8 +251,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:44",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:266",
       "observed": "A confirmação menciona revisão pendente e nenhum lançamento, inclusive quando extrator não produz sugestão.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -263,8 +263,8 @@
       "producer": "apps/api/src/bank-message-extraction-lease.ts:48",
       "test": "apps/api/src/bank-message-ai-inbox.integration.test.ts:325",
       "observed": "A extração interrompida recupera somente por claim/replay; texto bruto não é gravado no journal.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "Repository CI CRITICAL 131 PostgreSQL files"
     },
     {
@@ -275,8 +275,8 @@
       "producer": "apps/api/src/whatsapp-channel-types.ts:1",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:129",
       "observed": "Estados recebidos, processing, response_ready, sent, cancelled, expired e retry permanecem distintos no banco.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -287,8 +287,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:50",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:148",
       "observed": "O status response_ready e o token de claim são reconstituídos por releitura PostgreSQL.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -299,8 +299,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:263",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:266",
       "observed": "CAPTURAR entrega sugestão pendente e resultado capture_pending_review, não transação final.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -311,8 +311,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:280",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:337",
       "observed": "Pedido de pagamento é encaminhado ao Assistente somente leitura, sem função de escrita.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -323,8 +323,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:99",
       "test": "apps/api/src/financial-assistant-service.integration.test.ts:177",
       "observed": "Consulta com BRL e período 2026-01 preserva filtros/período do serviço canônico; outra moeda não contamina o estado.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "Repository CI CRITICAL 131 PostgreSQL files"
     },
     {
@@ -335,8 +335,8 @@
       "producer": "apps/api/src/bank-message-ai-inbox.ts:189",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:266",
       "observed": "Inbox mantém o resultado como sugestão PENDING_REVIEW e canal não aprova fato financeiro.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -347,8 +347,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:30",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:129",
       "observed": "Dois claims simultâneos da mesma chave obtêm exatamente um lease e um único envio.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -359,8 +359,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:150",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:392",
       "observed": "A resposta persistida é reenviada apenas uma vez após reentrada sem estado em memória do processo.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -371,8 +371,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:250",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:320",
       "observed": "Remetente estranho/não vinculado não recebe resposta privada nem o nome do perfil.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -383,8 +383,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:254",
       "test": "apps/api/src/whatsapp-channel-service.test.ts:472",
       "observed": "CANCELAR encerra só o canal, expiração não gera efeitos e falha de envio 429 tem retry delimitado.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -395,8 +395,8 @@
       "producer": "apps/api/src/whatsapp-channel-event-repository.ts:222",
       "test": "apps/api/src/whatsapp-channel-retention.integration.test.ts:48",
       "observed": "Inicialização da API apaga replyText/senderId expirados mesmo com Meta desconfigurada.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -407,8 +407,8 @@
       "producer": "docs/WHATSAPP_CHANNEL.md:27",
       "test": "apps/api/src/whatsapp-channel-management.integration.test.ts:52",
       "observed": "Documentação vincula pareamento autenticado, retenção, expiração, idempotência e configuração de adapter a rotas testadas.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -419,8 +419,8 @@
       "producer": "apps/api/src/whatsapp-channel-service.ts:185",
       "test": "apps/api/src/whatsapp-channel.integration.test.ts:168",
       "observed": "O mesmo entrypoint e mesma chave após interrupção encerram o turno; os casos de concorrência/revogação são mantidos no mesmo CI.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -443,10 +443,10 @@
       "source_line": 122,
       "requirement_id": "REQ-694-038",
       "producer": "apps/api/src/whatsapp-channel-provider.ts:12",
-      "test": "apps/api/src/whatsapp-channel-provider.test.ts:190",
+      "test": "apps/api/src/whatsapp-channel-provider.test.ts:212",
       "observed": "Port de saída recebe contrato interno e não permite que o remetente imponha URL de provider ou domínio financeiro alternativo.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -455,10 +455,10 @@
       "source_line": 123,
       "requirement_id": "REQ-694-039",
       "producer": "apps/api/src/whatsapp-channel-provider.ts:42",
-      "test": "apps/api/src/whatsapp-channel-provider.test.ts:283",
+      "test": "apps/api/src/whatsapp-channel-provider.test.ts:305",
       "observed": "Webhook HMAC e formatos de identidade Meta atuais: WAMID com padding e from_user_id (BSUID) sem telefone, envio por recipient, revisão pelo CI exato.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -467,10 +467,10 @@
       "source_line": 124,
       "requirement_id": "REQ-694-040",
       "producer": "apps/api/src/whatsapp-channel-provider.ts:170",
-      "test": "apps/api/src/whatsapp-channel-provider.test.ts:190",
+      "test": "apps/api/src/whatsapp-channel-provider.test.ts:212",
       "observed": "Segredo e bearer vêm somente do ambiente; o mock captura chamada Graph e verifica URL fixa sem credenciais persistidas.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     },
     {
@@ -479,10 +479,10 @@
       "source_line": 128,
       "requirement_id": "REQ-694-041",
       "producer": "apps/api/src/whatsapp-channel-router.ts:143",
-      "test": "apps/api/src/whatsapp-channel-provider.test.ts:283",
+      "test": "apps/api/src/whatsapp-channel-provider.test.ts:305",
       "observed": "Adapter dedicado e entradas assinadas estão implementados, mas configuração/homologação Meta real seguem diferidas pela issue #795.",
-      "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
-      "run_id": 43708326079,
+      "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "run_id": 43868841042,
       "junit_or_ci": "whatsapp-exact-head.xml"
     }
   ]

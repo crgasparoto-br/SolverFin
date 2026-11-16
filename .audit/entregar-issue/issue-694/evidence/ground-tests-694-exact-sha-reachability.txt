@@ -1,6 +1,6 @@
-Authenticated GitHub Actions Repository CI run 43708326079, CRITICAL validation; 131 compiled PostgreSQL integration test files passed, with 26/26 exact-head WhatsApp JUnit cases and 0 failures.
-CI URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43708326079
-HEAD: b4989703d28f2212d7e1a0a50226a34ce69ef110
+Authenticated GitHub Actions Repository CI run 43868841042, CRITICAL validation; 131 compiled PostgreSQL integration test files passed, with 28/28 exact-head WhatsApp JUnit cases and 0 failures.
+CI URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43868841042
+HEAD: 7d42d5a6ab91d637f5f688e2b644015a535ba948
 COMMAND: npm run test:integration --workspace @solverfin/api
 EXIT_CODE: 0
 REACHED: apps/api/src/bank-message-ai-inbox.integration.test.ts
