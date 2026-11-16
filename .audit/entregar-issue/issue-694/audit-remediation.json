@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "contract_version": "2026-08-20.3",
+  "resolution_policy": "all-actionable-items",
+  "source": {
+    "rejection_id": "audit-rejection:4f4ede13-3196-475a-b52e-3627394cd68e",
+    "audit_report_sha256": "2b04ec99c48ec8646cfe640d4ea8a7fa4552fd4b0db41a9b3a403c2977c1cc37",
+    "audited_head_sha": "9a58cbb62efcb2bec374ed824571e6eebcb128bb",
+    "review_source": "GitHub authenticated review node PRR_kwDOS7WJDc8AAAABYM7QmQ"
+  },
+  "candidate_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+  "remediation_mode": "targeted-remediation",
+  "status": "closed",
+  "items": [
+    {
+      "source_kind": "finding",
+      "source_id": "A-009",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/api/src/whatsapp-channel-provider.ts",
+        "apps/api/src/whatsapp-channel-provider.test.ts",
+        "apps/api/src/whatsapp-channel.integration.test.ts"
+      ],
+      "evidence": [
+        "GitHub Actions Repository CI #43868841042 / JUnit artifact 14225979536 / SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae",
+        "Parser tests for from empty/null and negative invalid/conflict; signed public POST tests at HEAD with 28 passed cases."
+      ],
+      "validations": [
+        "7d42d5a6ab91d637f5f688e2b644015a535ba948: Meta parser accepts hidden phone with BSUID but rejects malformed senders = PASS",
+        "7d42d5a6ab91d637f5f688e2b644015a535ba948: Signed BSUID webhook accepts hidden phone and blocks malformed IDs = PASS",
+        "131 PostgreSQL integration files passed in CRITICAL job"
+      ]
+    },
+    {
+      "source_kind": "recommendation",
+      "source_id": "REC-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/issue-694/requirement-attack-matrix.json"
+      ],
+      "evidence": [
+        "Current exact-head JUnit includes 28 cases, SHA256 2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae",
+        "Old narrative 24/24 and 26/26 replaced with 28/28 in attack matrix and references."
+      ],
+      "validations": [
+        "Raw XML testcases counted with ElementTree from official Actions artifact; all passed; digest matches SHA256SUMS.",
+        "Material HEAD 7d42d5a6ab91d637f5f688e2b644015a535ba948; GitHub Actions run 43868841042 succeeded."
+      ]
+    }
+  ]
+}

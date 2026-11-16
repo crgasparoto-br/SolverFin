@@ -70,6 +70,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`AI_REVIEW_QUEUE.md`](./AI_REVIEW_QUEUE.md): fila de sugestoes revisaveis.
 - [`AI_SUGGESTION_PAYLOADS.md`](./AI_SUGGESTION_PAYLOADS.md): envelopes versionados e projecoes publicas das sugestoes.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato canonico do assistente financeiro conversacional.
+- [`WHATSAPP_CHANNEL.md`](./WHATSAPP_CHANNEL.md): canal Meta Cloud API, pareamento autenticado, consulta e captura revisavel (#694).
 - [`ai/extraction-schema.md`](./ai/extraction-schema.md): schema de extracao de lancamentos por IA.
 - [`ai/providers.md`](./ai/providers.md): providers substituiveis, configuracao segura, consentimento, timeout, retry e logs.
 - [`ai/assistant-and-insights.md`](./ai/assistant-and-insights.md): contratos funcionais do assistente e dos insights.

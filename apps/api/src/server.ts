@@ -10,6 +10,7 @@ import { assertExplicitRuntimeEnvironment } from "@solverfin/shared";
 
 import { handleAccountRemunerationApiRequest } from "./account-remuneration-router.js";
 import { startAccountRemunerationScheduler } from "./account-remuneration-scheduler.js";
+import { redactExpiredWhatsappState } from "./whatsapp-channel-repository.js";
 import { assertLocalAuthAllowed, auditSecurityEvent, isDemoAuthAllowed } from "./auth-service.js";
 import { handleCategorizationAwareAiReviewQueueApiRequest } from "./categorization-aware-ai-review-router.js";
 import { handleFinancialInsightQueueApiRequest } from "./financial-insight-queue-router.js";
@@ -19,6 +20,12 @@ import { handleCategoryLearningApiRequest } from "./category-learning-router.js"
 import { assertTrustedCognitoEnvironment } from "./cognito-config.js";
 import { buildApiErrorResponse, resolveCorrelationId } from "./errors.js";
 import { handleFinancialAssistantApiRequest } from "./financial-assistant-router.js";
+import {
+  handleWhatsappChannelManagementApiRequest,
+  handleWhatsappChannelWebhook,
+  readWhatsappRawBody,
+  WhatsappWebhookPath,
+} from "./whatsapp-channel-router.js";
 import { startOidcLoginAttemptScheduler } from "./oidc-attempt-scheduler.js";
 import { assertTrustedMutationOrigin } from "./request-origin.js";
 import { prepareRequestAuthenticationHeaders } from "./request-authentication.js";
@@ -77,6 +84,14 @@ server.listen(port, host, () => {
   console.log(`@solverfin/api listening on http://${host}:${port}`);
   startAccountRemunerationScheduler();
   startOidcLoginAttemptScheduler();
+  // Retention applies to persisted data even after the Meta integration is disabled.
+  const cleanWhatsappState = () => {
+    void redactExpiredWhatsappState().catch(() => {
+      console.warn("WhatsApp state cleanup deferred.");
+    });
+  };
+  cleanWhatsappState();
+  setInterval(cleanWhatsappState, 60 * 60 * 1000).unref();
 });
 
 async function handleRequest(request: IncomingMessage, response: ServerResponse): Promise<void> {
@@ -86,6 +101,21 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   const method = request.method ?? "GET";
 
   try {
+    if (url.pathname === WhatsappWebhookPath) {
+      // Meta signs the exact body bytes. Skip browser CSRF/session middleware for
+      // this dedicated provider-authenticated route, not for management APIs.
+      const rawBody = method === "POST" ? await readWhatsappRawBody(request) : Buffer.alloc(0);
+      const result = await handleWhatsappChannelWebhook({
+        method,
+        query: url.searchParams,
+        headers,
+        rawBody,
+      });
+      response.writeHead(result.statusCode, { "content-type": result.contentType });
+      response.end(result.body);
+      return;
+    }
+
     assertLocalAuthenticationRouteAllowed(method, url.pathname);
     const body = await readJsonBody(request, resolveMaxBodyBytes(url.pathname));
     assertTrustedMutationOrigin({ method, headers });
@@ -158,6 +188,13 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
 
     if (financialAssistantResult) {
       writeResponse(response, financialAssistantResult);
+      return;
+    }
+
+    const whatsappManagementResult = await handleWhatsappChannelManagementApiRequest(apiRequest);
+
+    if (whatsappManagementResult) {
+      writeResponse(response, whatsappManagementResult);
       return;
     }
 

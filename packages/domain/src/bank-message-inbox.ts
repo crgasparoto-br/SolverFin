@@ -15,7 +15,7 @@ import {
 } from "./tenant-authorization.js";
 import { buildStableImportHash } from "./imports.js";
 
-export type BankMessageInboxOrigin = "pasted" | "shared";
+export type BankMessageInboxOrigin = "pasted" | "shared" | "whatsapp";
 export type BankMessageInboxStatus = "pending" | "processed" | "error" | "discarded";
 
 export interface BankMessageInboxItem extends Traceable, TenantScoped {
@@ -102,7 +102,7 @@ export interface DiscardBankMessageInboxItemInput {
   reason?: string;
 }
 
-const allowedOrigins: readonly BankMessageInboxOrigin[] = ["pasted", "shared"];
+const allowedOrigins: readonly BankMessageInboxOrigin[] = ["pasted", "shared", "whatsapp"];
 const allowedStatuses: readonly BankMessageInboxStatus[] = [
   "pending",
   "processed",

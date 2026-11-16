@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+  "repository": "crgasparoto-br/SolverFin",
+  "issue_number": 694,
+  "pull_request_number": 794,
+  "evidence_type": "factual-run-not-semantic-approval",
+  "source": "github-actions-run",
+  "run_id": 43868841042,
+  "job_id": 133304647214,
+  "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43868841042",
+  "artifact_id": 14225979536,
+  "artifact_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/43868841042/artifacts/14225979536",
+  "artifact_digest_sha256": "ed3404df24ba55fbea7ad4da2f453cab515d6e4b6ad19f2c829999f8a1388e96",
+  "junit_path": "evidence/whatsapp-exact-head.xml",
+  "junit_sha256": "2c89abb86fe13c704c3bdf64b663bd593327c9ea99f8cf0808dc02c94bd028ae",
+  "tests": 28,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "junit_cases": [
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel-management.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel-retention.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": ".tmp-tests/api-integration/whatsapp-channel.integration.test.js",
+      "classname": "test"
+    },
+    {
+      "name": "Meta webhook verifies the exact byte buffer before parsing",
+      "classname": "test"
+    },
+    {
+      "name": "Meta GET challenge is allowed only with configured token and subscribe mode",
+      "classname": "test"
+    },
+    {
+      "name": "Meta parser ignores status updates and unrelated business accounts",
+      "classname": "test"
+    },
+    {
+      "name": "Meta parser preserves base64 WAMIDs and rejects unsafe IDs",
+      "classname": "test"
+    },
+    {
+      "name": "Meta webhook uses BSUID without phone and rejects ambiguous sender identity",
+      "classname": "test"
+    },
+    {
+      "name": "Meta parser accepts hidden phone with BSUID but rejects malformed senders",
+      "classname": "test"
+    },
+    {
+      "name": "Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL",
+      "classname": "test"
+    },
+    {
+      "name": "Meta unavailable, throttled and uncertain failures are distinguishable without leaking provider details",
+      "classname": "test"
+    },
+    {
+      "name": "Signed webhook dispatches messages only after signature; status-only delivery is acknowledged",
+      "classname": "test"
+    },
+    {
+      "name": "Signed BSUID webhook accepts hidden phone and blocks malformed IDs",
+      "classname": "test"
+    },
+    {
+      "name": "consulta delega ao assistente tenant-scoped e retry não envia resposta duplicada",
+      "classname": "test"
+    },
+    {
+      "name": "falha terminal do assistente encerra o evento com uma resposta segura",
+      "classname": "test"
+    },
+    {
+      "name": "pergunta maior que o contrato canônico recebe resposta terminal sem retry",
+      "classname": "test"
+    },
+    {
+      "name": "captura apenas gera sugestão pendente na Inbox, nunca um lançamento financeiro",
+      "classname": "test"
+    },
+    {
+      "name": "sem consentimento, captura não simula sugestão ou aprovação",
+      "classname": "test"
+    },
+    {
+      "name": "captura ainda em processamento mantém replay do mesmo evento sem confirmação falsa",
+      "classname": "test"
+    },
+    {
+      "name": "origem não vinculada e identidade de outro número não obtêm contexto privado",
+      "classname": "test"
+    },
+    {
+      "name": "intenção de pagamento permanece no assistente somente leitura, sem capturar ou escrever",
+      "classname": "test"
+    },
+    {
+      "name": "revogação durante processamento substitui resposta financeira por orientação segura",
+      "classname": "test"
+    },
+    {
+      "name": "revogação depois de persistir e antes do outbound bloqueia resposta antiga",
+      "classname": "test"
+    },
+    {
+      "name": "crash após persistência antes do envio: retry despacha a saída persistida sem recalcular",
+      "classname": "test"
+    },
+    {
+      "name": "duas mensagens concorrentes com o mesmo ID reivindicam no máximo uma execução",
+      "classname": "test"
+    },
+    {
+      "name": "429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia",
+      "classname": "test"
+    },
+    {
+      "name": "cancelamento e expiração não produzem mutações nem chamadas externas adicionais",
+      "classname": "test"
+    },
+    {
+      "name": "pairing pede confirmação no app sem revelar a validade do código",
+      "classname": "test"
+    }
+  ],
+  "ci_validation": {
+    "risk": "critical",
+    "postgres_test_files_passed": 131,
+    "format": "passed",
+    "lint": "passed",
+    "typecheck": "passed",
+    "prisma": "passed",
+    "build": "passed",
+    "merge_preview": "passed",
+    "delivery_v2_gate": "passed",
+    "repository_ci_gate": "passed"
+  },
+  "scope_limitations": [
+    "The 28-case JUnit covers the named WhatsApp tests, including empty/null phone BSUID, malformed/conflicting identity, signed public webhook and outbound.",
+    "The full CRITICAL job log records 131 compiled PostgreSQL integration files passed; JUnit 28 cases alone is not full application certification.",
+    "CI evidence is implementation-internal execution and does not constitute independent audit approval."
+  ]
+}
