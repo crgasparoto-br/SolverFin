@@ -447,7 +447,6 @@ model CardInstrument {
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   card             Card             @relation(fields: [cardId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Cascade)
   transactions     Transaction[]
-  whatsappConfirmations WhatsappChannelConfirmation[]
   recurrences      Recurrence[]
   installments     Installment[]
 
@@ -830,6 +829,7 @@ model AiSuggestion {
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   transactions     Transaction[]
+  whatsappConfirmations WhatsappChannelConfirmation[]
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, kind, sourceSuggestionId, payloadFingerprint, targetEntityId])
