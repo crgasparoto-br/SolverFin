@@ -401,7 +401,10 @@ async function main(): Promise<void> {
     assert.deepEqual(bsuidEvents, [{ senderId: bsuid, state: "sent", outcome: "query_complete" }]);
     // The signed public entrypoint must process BSUIDs when Meta sends an
     // explicitly withheld phone, while every distinct WAMID remains idempotent.
-    for (const [from, expectedQueries] of [["", 2], [null, 3]] as const) {
+    for (const [from, expectedQueries] of [
+      ["", 2],
+      [null, 3],
+    ] as const) {
       const hiddenPayload = JSON.parse(bsuidRaw.toString("utf8")) as {
         entry: { changes: { value: { messages: Record<string, unknown>[] } }[] }[];
       };
@@ -419,7 +422,9 @@ async function main(): Promise<void> {
          where "accountId"=$1 and "providerMessageId"=$2`,
         [accountId, hiddenMessageId],
       );
-      assert.deepEqual(hiddenEvents, [{ senderId: bsuid, state: "sent", outcome: "query_complete" }]);
+      assert.deepEqual(hiddenEvents, [
+        { senderId: bsuid, state: "sent", outcome: "query_complete" },
+      ]);
     }
     await revokeWhatsappLink(context, bsuidPairing.id);
     assert.equal(await resolveActiveWhatsappLink(accountId, bsuid), null);

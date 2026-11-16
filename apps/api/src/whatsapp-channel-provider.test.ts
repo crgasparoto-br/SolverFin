@@ -438,7 +438,10 @@ test("Signed BSUID webhook accepts hidden phone and blocks malformed IDs", async
       },
     );
   };
-  for (const [from, id] of [["", "wamid.empty"], [null, "wamid.null"]] as const) {
+  for (const [from, id] of [
+    ["", "wamid.empty"],
+    [null, "wamid.null"],
+  ] as const) {
     message.from = from;
     message.id = id;
     assert.equal((await deliver()).statusCode, 200);
