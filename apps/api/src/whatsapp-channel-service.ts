@@ -4,6 +4,7 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
+import { query } from "./db.js";
 import {
   decideWhatsappFinancialConfirmation,
   prepareWhatsappFinancialConfirmation,
@@ -146,9 +147,22 @@ const defaultDependencies: ChannelServiceDependencies = {
     ) {
       return "consent_required";
     }
+    // Resolve only an unambiguous account from the authorized profile.
+    // Never infer the account from provider text or pick among multiple accounts.
+    const available = await query<{ id: string }>(
+      `select "id" from "Account"
+       where "organizationId"=$1 and "financialProfileId"=$2 and "status"='ACTIVE'
+       order by "id" limit 2`,
+      [context.organizationId, context.financialProfileId],
+    );
     const item = await createBankMessageInboxWithAiForContext(
       context,
-      { origin: "whatsapp", text, consentAccepted: true },
+      {
+        origin: "whatsapp",
+        text,
+        consentAccepted: true,
+        ...(available.length === 1 ? { accountId: available[0]!.id } : {}),
+      },
       {
         correlationId: eventId,
         resolveConsent: async (current) =>
