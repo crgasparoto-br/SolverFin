@@ -80,12 +80,15 @@ function record(value: unknown): Record<string, unknown> | null {
 function resolveMetaSender(message: Record<string, unknown>): string | null {
   const { from, from_user_id: bsuid } = message;
   if (bsuid !== undefined && (typeof bsuid !== "string" || !BSUID.test(bsuid))) return null;
-  if (from !== undefined && (typeof from !== "string" || !isMetaSenderId(from))) return null;
+  // Meta can hide the phone as an empty or null `from`; the validated BSUID
+  // remains the only identity allowed in that case.
+  const phoneWithheld = from === undefined || from === null || from === "";
+  if (!phoneWithheld && (typeof from !== "string" || !isMetaSenderId(from))) return null;
   // Conflicting BSUIDs in the same message cannot be safely associated with a link.
   if (typeof from === "string" && BSUID.test(from) && bsuid !== undefined && from !== bsuid)
     return null;
   if (typeof bsuid === "string") return bsuid;
-  return typeof from === "string" ? from : null;
+  return typeof from === "string" && from !== "" ? from : null;
 }
 
 export function parseMetaInboundMessages(

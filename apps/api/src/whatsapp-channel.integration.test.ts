@@ -361,16 +361,16 @@ async function main(): Promise<void> {
         ],
       }),
     );
-    const handleBsuid = async () =>
+    const handleBsuid = async (rawBody: Buffer = bsuidRaw) =>
       handleWhatsappChannelWebhook(
         {
           method: "POST",
           query: new URLSearchParams(),
           headers: {
             "x-hub-signature-256":
-              "sha256=" + createHmac("sha256", secret).update(bsuidRaw).digest("hex"),
+              "sha256=" + createHmac("sha256", secret).update(rawBody).digest("hex"),
           },
-          rawBody: bsuidRaw,
+          rawBody,
         },
         {
           env: {
@@ -399,6 +399,28 @@ async function main(): Promise<void> {
       [accountId, bsuidMessageId],
     );
     assert.deepEqual(bsuidEvents, [{ senderId: bsuid, state: "sent", outcome: "query_complete" }]);
+    // The signed public entrypoint must process BSUIDs when Meta sends an
+    // explicitly withheld phone, while every distinct WAMID remains idempotent.
+    for (const [from, expectedQueries] of [["", 2], [null, 3]] as const) {
+      const hiddenPayload = JSON.parse(bsuidRaw.toString("utf8")) as {
+        entry: { changes: { value: { messages: Record<string, unknown>[] } }[] }[];
+      };
+      const hiddenMessage = hiddenPayload.entry[0]!.changes[0]!.value.messages[0]!;
+      const hiddenMessageId = "wamid." + randomUUID().replace(/-/g, "") + "==";
+      hiddenMessage.id = hiddenMessageId;
+      hiddenMessage.from = from;
+      const hiddenRaw = Buffer.from(JSON.stringify(hiddenPayload));
+      assert.equal((await handleBsuid(hiddenRaw)).statusCode, 200);
+      assert.equal((await handleBsuid(hiddenRaw)).statusCode, 200);
+      assert.equal(bsuidQueries, expectedQueries, "replay cannot query a second time");
+      assert.equal(bsuidReplies.length, expectedQueries, "replay cannot send another answer");
+      const hiddenEvents = await query<{ senderId: string; state: string; outcome: string }>(
+        `select "senderId","state","outcome" from "WhatsappChannelEvent"
+         where "accountId"=$1 and "providerMessageId"=$2`,
+        [accountId, hiddenMessageId],
+      );
+      assert.deepEqual(hiddenEvents, [{ senderId: bsuid, state: "sent", outcome: "query_complete" }]);
+    }
     await revokeWhatsappLink(context, bsuidPairing.id);
     assert.equal(await resolveActiveWhatsappLink(accountId, bsuid), null);
 

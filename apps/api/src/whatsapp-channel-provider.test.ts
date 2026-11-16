@@ -187,6 +187,28 @@ test("Meta webhook uses BSUID without phone and rejects ambiguous sender identit
   );
 });
 
+test("Meta parser accepts hidden phone with BSUID but rejects malformed senders", () => {
+  const bsuid = "BR.13491208655302741918";
+  const payload = webhookPayload();
+  const message = payload.entry[0]!.changes[0]!.value.messages[0]! as Record<string, unknown>;
+  message.from_user_id = bsuid;
+  for (const from of ["", null] as const) {
+    message.from = from;
+    const parsed = parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID);
+    assert.equal(parsed.length, 1, "hidden phone must not drop a valid BSUID event");
+    assert.equal(parsed[0]?.senderId, bsuid);
+  }
+  for (const from of [" ", "BR.DIFFERENT", 42] as const) {
+    message.from = from;
+    assert.deepEqual(parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+  }
+  message.from = null;
+  delete message.from_user_id;
+  assert.deepEqual(parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+  message.from_user_id = "BR.bad\\nvalue";
+  assert.deepEqual(parseMetaInboundMessages(payload, env.WHATSAPP_META_PHONE_NUMBER_ID), []);
+});
+
 test("Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL", async () => {
   const sent: { url: string; init: RequestInit }[] = [];
   const transport = async (url: string | URL | Request, init?: RequestInit) => {
@@ -389,4 +411,43 @@ test("Signed webhook dispatches messages only after signature; status-only deliv
   );
   assert.equal(bsuidResult.statusCode, 200);
   assert.equal(processed, 2, "signed BSUID-only event must reach the public dispatcher");
+});
+
+test("Signed BSUID webhook accepts hidden phone and blocks malformed IDs", async () => {
+  const bsuid = "BR.13491208655302741918";
+  const payload = webhookPayload();
+  const message = payload.entry[0]!.changes[0]!.value.messages[0]! as Record<string, unknown>;
+  message.from_user_id = bsuid;
+  const received: string[] = [];
+  const outbound: ChannelOutboundPort = {
+    async sendText() {
+      throw Error("unexpected send");
+    },
+  };
+  const deliver = async () => {
+    const rawBody = Buffer.from(JSON.stringify(payload));
+    return handleWhatsappChannelWebhook(
+      { method: "POST", query: new URLSearchParams(), headers: signedHeaders(rawBody), rawBody },
+      {
+        env,
+        outbound,
+        processMessage: async (item) => {
+          assert.equal(item.senderId, bsuid);
+          received.push(item.externalMessageId);
+        },
+      },
+    );
+  };
+  for (const [from, id] of [["", "wamid.empty"], [null, "wamid.null"]] as const) {
+    message.from = from;
+    message.id = id;
+    assert.equal((await deliver()).statusCode, 200);
+    assert.equal(received.at(-1), id);
+  }
+  assert.deepEqual(received, ["wamid.empty", "wamid.null"]);
+  for (const from of [" ", "BR.DIFFERENT", 42] as const) {
+    message.from = from;
+    assert.equal((await deliver()).statusCode, 200);
+    assert.equal(received.length, 2, "malformed identity must not reach the dispatcher");
+  }
 });
