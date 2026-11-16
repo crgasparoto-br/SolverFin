@@ -95,7 +95,7 @@ function isEligibleProposal(
 
 function safeDescription(value: string): string {
   return value
-    .replace(/[\u0000-\u001f\u007f]/g, " ")
+    .replace(/\p{Cc}/gu, " ")
     .replace(/https?:\/\/\S+/gi, "[link]")
     .replace(/\b\d{5,}\b/g, "****")
     .replace(/\s+/g, " ")
