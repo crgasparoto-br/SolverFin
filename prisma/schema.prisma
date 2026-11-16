@@ -1052,13 +1052,13 @@ model WhatsappChannelConfirmation {
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
 
-  link WhatsappChannelLink @relation(fields: [linkId], references: [id], onDelete: Restrict)
-  suggestion AiSuggestion @relation(fields: [suggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
-  sourceEvent WhatsappChannelEvent @relation("WhatsappConfirmationSource", fields: [sourceEventId], references: [id], onDelete: Restrict)
-  decisionEvent WhatsappChannelEvent? @relation("WhatsappConfirmationDecision", fields: [decisionEventId], references: [id], onDelete: Restrict)
-  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Restrict)
+  link WhatsappChannelLink @relation(fields: [linkId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_link_fkey")
+  suggestion AiSuggestion @relation(fields: [suggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict, map: "WhatsappChannelConfirmation_suggestion_fkey")
+  sourceEvent WhatsappChannelEvent @relation("WhatsappConfirmationSource", fields: [sourceEventId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_source_event_fkey")
+  decisionEvent WhatsappChannelEvent? @relation("WhatsappConfirmationDecision", fields: [decisionEventId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_decision_event_fkey")
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_transaction_fkey")
 
-  @@unique([sourceEventId, suggestionId])
-  @@index([linkId, status, expiresAt])
-  @@index([organizationId, financialProfileId, suggestionId])
+  @@unique([sourceEventId, suggestionId], map: "WhatsappChannelConfirmation_source_suggestion_key")
+  @@index([linkId, status, expiresAt], map: "WhatsappChannelConfirmation_link_status_expiry_idx")
+  @@index([organizationId, financialProfileId, suggestionId], map: "WhatsappChannelConfirmation_profile_suggestion_idx")
 }
