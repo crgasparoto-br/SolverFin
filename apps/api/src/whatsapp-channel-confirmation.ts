@@ -143,6 +143,27 @@ async function currentSuggestion(
   return rows[0];
 }
 
+async function haveAuthorizedResources(
+  executeQuery: QueryExecutor,
+  context: TenantContext,
+  proposal: { accountId?: string; categoryId?: string; currency: string },
+): Promise<boolean> {
+  if (!proposal.accountId) return false;
+  const accounts = await executeQuery<{ id: string }>(
+    'select "id" from "Account" where "id"=$1 and "organizationId"=$2' +
+      ' and "financialProfileId"=$3 and "status"=\'ACTIVE\' and "currency"=$4',
+    [proposal.accountId, context.organizationId, context.financialProfileId, proposal.currency],
+  );
+  if (accounts.length !== 1) return false;
+  if (!proposal.categoryId) return true;
+  const categories = await executeQuery<{ id: string }>(
+    'select "id" from "Category" where "id"=$1 and "organizationId"=$2' +
+      ' and "financialProfileId"=$3 and "status"=\'ACTIVE\'',
+    [proposal.categoryId, context.organizationId, context.financialProfileId],
+  );
+  return categories.length === 1;
+}
+
 async function lockAuthorizedLink(
   executeQuery: QueryExecutor,
   link: ActiveChannelLink,
@@ -192,7 +213,8 @@ export async function prepareWhatsappFinancialConfirmation(
       !suggestion ||
       suggestion.kind.toLowerCase() !== "transaction_extraction" ||
       suggestion.status.toLowerCase() !== "pending_review" ||
-      suggestion.fingerprint !== fingerprint
+      suggestion.fingerprint !== fingerprint ||
+      !(await haveAuthorizedResources(executeQuery, context, detail.payload.proposal))
     ) {
       return false;
     }
@@ -314,7 +336,8 @@ export async function decideWhatsappFinancialConfirmation(
         suggestion.fingerprint !== current.fingerprint ||
         !detail ||
         !isEligibleProposal(detail) ||
-        detail.payload.fingerprint !== current.fingerprint
+        detail.payload.fingerprint !== current.fingerprint ||
+        !(await haveAuthorizedResources(executeQuery, context, detail.payload.proposal))
       ) {
         await executeQuery(
           'update "WhatsappChannelConfirmation" set "status"=\'expired\',"resolvedAt"=$2,' +
