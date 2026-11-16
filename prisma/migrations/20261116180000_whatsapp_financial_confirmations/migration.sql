@@ -2,6 +2,7 @@
 CREATE TABLE "WhatsappChannelConfirmation" (
   "id" UUID NOT NULL PRIMARY KEY,
   "linkId" UUID NOT NULL,
+  "linkVersion" INTEGER NOT NULL DEFAULT 0,
   "userId" UUID NOT NULL,
   "organizationId" UUID NOT NULL,
   "financialProfileId" UUID NOT NULL,
@@ -21,6 +22,7 @@ CREATE TABLE "WhatsappChannelConfirmation" (
     'pending_confirmation','confirmed','rejected','cancelled','expired'
   )),
   CONSTRAINT "WhatsappChannelConfirmation_version_check" CHECK ("version" >= 0),
+  CONSTRAINT "WhatsappChannelConfirmation_link_version_check" CHECK ("linkVersion" >= 0),
   CONSTRAINT "WhatsappChannelConfirmation_link_fkey"
     FOREIGN KEY ("linkId") REFERENCES "WhatsappChannelLink"("id") ON DELETE RESTRICT,
   CONSTRAINT "WhatsappChannelConfirmation_suggestion_fkey"
