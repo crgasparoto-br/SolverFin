@@ -142,7 +142,8 @@ export async function replaceResponseAfterRevocation(id: string, now = new Date(
          "replyText"='Para continuar, vincule este canal novamente no SolverFin.',
          "version"="version"+1,"updatedAt"=$2
      where "id"=$1 and "state"='response_ready'
-       and "outcome" in ('query_complete','query_incomplete','capture_pending_review','capture_incomplete')`,
+       and "outcome" in ('query_complete','query_incomplete','capture_pending_review','capture_incomplete',
+       'confirmation_pending','confirmation_resolved','confirmation_incomplete')`,
     [id, now],
   );
 }
@@ -247,6 +248,16 @@ export async function redactExpiredWhatsappState(now = new Date()): Promise<void
      where ("expiresAt"<=$1 and ("senderId" is not null or "replyText" is not null
                or "state" not in ('expired','sent','send_unknown')))
         or ("state"='sending' and "leaseUntil"<=$1)`,
+    [now],
+  );
+}
+
+/** Expiry is a terminal no-effect decision; suggestions remain independently reviewable. */
+export async function expireWhatsappConfirmations(now = new Date()): Promise<void> {
+  await query(
+    `update "WhatsappChannelConfirmation"
+       set "status"='expired',"resolvedAt"=$1,"updatedAt"=$1
+     where "status"='pending_confirmation' and "expiresAt"<=$1`,
     [now],
   );
 }
