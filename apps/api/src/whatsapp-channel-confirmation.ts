@@ -128,11 +128,11 @@ async function currentSuggestion(
 ): Promise<CurrentSuggestion | undefined> {
   const rows = await executeQuery<CurrentSuggestion>(
     'select s."status",s."kind",s."sourceEntityId",' +
-      ' coalesce(s."payload"->>\\'fingerprint\\',s."payloadFingerprint") as "fingerprint",' +
+      ' coalesce(s."payload"->>\'fingerprint\',s."payloadFingerprint") as "fingerprint",' +
       ' b."originalFileName" from "AiSuggestion" s' +
       ' join "ImportBatch" b on b."id"=s."sourceEntityId"' +
       ' and b."organizationId"=s."organizationId" and b."financialProfileId"=s."financialProfileId"' +
-      ' and b."sourceKind"=\\'BANK_MESSAGE\\' and b."originalFileName"=\\'bank-message-whatsapp\\'' +
+      ' and b."sourceKind"=\'BANK_MESSAGE\' and b."originalFileName"=\'bank-message-whatsapp\'' +
       ' where s."id"=$1 and s."organizationId"=$2 and s."financialProfileId"=$3',
     [suggestionId, context.organizationId, context.financialProfileId],
   );
@@ -145,11 +145,11 @@ async function lockAuthorizedLink(
 ): Promise<boolean> {
   const rows = await executeQuery<{ id: string }>(
     'select l."id" from "WhatsappChannelLink" l' +
-      ' join "User" u on u."id"=l."userId" and u."status"=\\'ACTIVE\\'' +
+      ' join "User" u on u."id"=l."userId" and u."status"=\'ACTIVE\'' +
       ' join "FinancialProfile" p on p."id"=l."financialProfileId"' +
       ' and p."organizationId"=l."organizationId" and p."ownerUserId"=l."userId"' +
-      ' and p."status"=\\'ACTIVE\\'' +
-      ' where l."id"=$1 and l."provider"=\\'meta_whatsapp\\' and l."state"=\\'active\\'' +
+      ' and p."status"=\'ACTIVE\'' +
+      ' where l."id"=$1 and l."provider"=\'meta_whatsapp\' and l."state"=\'active\'' +
       ' and l."accountId"=$2 and l."senderId"=$3 and l."userId"=$4' +
       ' and l."organizationId"=$5 and l."financialProfileId"=$6 and l."version"=$7' +
       ' for share of l,u,p',
@@ -197,7 +197,7 @@ export async function prepareWhatsappFinancialConfirmation(
         ' ("id","linkId","userId","organizationId","financialProfileId",' +
         ' "sourceEventId","suggestionId","fingerprint","tokenHash","status",' +
         ' "expiresAt","createdAt","updatedAt")' +
-        ' values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,\\'pending_confirmation\\',$9,$10,$10)' +
+        ' values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,\'pending_confirmation\',$9,$10,$10)' +
         ' on conflict ("sourceEventId","suggestionId") do nothing',
       [
         link.id,
@@ -289,7 +289,7 @@ export async function decideWhatsappFinancialConfirmation(
     }
     if (current.expiresAt <= now) {
       await executeQuery(
-        'update "WhatsappChannelConfirmation" set "status"=\\'expired\\',"resolvedAt"=$2,' +
+        'update "WhatsappChannelConfirmation" set "status"=\'expired\',"resolvedAt"=$2,' +
           ' "decisionEventId"=$3,"updatedAt"=$2 where "id"=$1',
         [current.id, now, decisionEventId],
       );
@@ -313,7 +313,7 @@ export async function decideWhatsappFinancialConfirmation(
         detail.payload.fingerprint !== current.fingerprint
       ) {
         await executeQuery(
-          'update "WhatsappChannelConfirmation" set "status"=\\'expired\\',"resolvedAt"=$2,' +
+          'update "WhatsappChannelConfirmation" set "status"=\'expired\',"resolvedAt"=$2,' +
             ' "decisionEventId"=$3,"updatedAt"=$2 where "id"=$1',
           [current.id, now, decisionEventId],
         );
@@ -352,7 +352,7 @@ export async function decideWhatsappFinancialConfirmation(
           error.statusCode < 500;
         if (!controlled) throw error;
         await executeQuery(
-          'update "WhatsappChannelConfirmation" set "status"=\\'expired\\',"resolvedAt"=$2,' +
+          'update "WhatsappChannelConfirmation" set "status"=\'expired\',"resolvedAt"=$2,' +
             ' "decisionEventId"=$3,"updatedAt"=$2 where "id"=$1',
           [current.id, now, decisionEventId],
         );
@@ -365,7 +365,7 @@ export async function decideWhatsappFinancialConfirmation(
     await executeQuery(
       'update "WhatsappChannelConfirmation" set "status"=$2,"resolvedAt"=$3,' +
         ' "decisionEventId"=$4,"transactionId"=$5,"updatedAt"=$3' +
-        ' where "id"=$1 and "status"=\\'pending_confirmation\\'',
+        ' where "id"=$1 and "status"=\'pending_confirmation\'',
       [current.id, intendedStatus, now, decisionEventId, transactionId],
     );
     return {
