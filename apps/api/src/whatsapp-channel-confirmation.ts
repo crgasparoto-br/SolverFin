@@ -20,6 +20,7 @@ type ConfirmationState = "pending_confirmation" | "confirmed" | "rejected" | "ca
 interface ConfirmationRow {
   id: string;
   linkId: string;
+  linkVersion: number;
   userId: string;
   organizationId: string;
   financialProfileId: string;
@@ -194,6 +195,15 @@ async function lockAuthorizedLink(
   return rows.length === 1;
 }
 
+function sameScope(context: TenantContext, link: ActiveChannelLink): boolean {
+  return (
+    context.userId === link.userId &&
+    context.organizationId === link.organizationId &&
+    context.financialProfileId === link.financialProfileId &&
+    context.financialProfileKind === link.financialProfileKind
+  );
+}
+
 export async function prepareWhatsappFinancialConfirmation(
   context: TenantContext,
   sourceEventId: string,
@@ -202,6 +212,7 @@ export async function prepareWhatsappFinancialConfirmation(
   secret = process.env.WHATSAPP_META_APP_SECRET ?? "",
   now = new Date(),
 ): Promise<string | null> {
+  if (!sameScope(context, link)) return null;
   const detail = await getAiSuggestionPayloadForContext(context, suggestionId);
   if (!isEligibleProposal(detail)) return null;
   const token = confirmationToken(sourceEventId, suggestionId, secret);
@@ -225,8 +236,8 @@ export async function prepareWhatsappFinancialConfirmation(
       'insert into "WhatsappChannelConfirmation"' +
         ' ("id","linkId","userId","organizationId","financialProfileId",' +
         ' "sourceEventId","suggestionId","fingerprint","tokenHash","status",' +
-        ' "expiresAt","createdAt","updatedAt")' +
-        ' values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,\'pending_confirmation\',$9,$10,$10)' +
+        ' "expiresAt","createdAt","updatedAt","linkVersion")' +
+        ' values (gen_random_uuid(),$1,$2,$3,$4,$5,$6,$7,$8,\'pending_confirmation\',$9,$10,$10,$11)' +
         ' on conflict ("sourceEventId","suggestionId") do nothing',
       [
         link.id,
@@ -239,6 +250,7 @@ export async function prepareWhatsappFinancialConfirmation(
         hashToken(token),
         new Date(now.getTime() + WHATSAPP_CONFIRMATION_TTL_MS),
         now,
+        link.version,
       ],
     );
     const rows = await executeQuery<ConfirmationRow>(
@@ -257,6 +269,7 @@ export async function prepareWhatsappFinancialConfirmation(
     return (
       rows[0]?.status === "pending_confirmation" &&
       rows[0].fingerprint === fingerprint &&
+      rows[0].linkVersion === link.version &&
       rows[0].expiresAt > now
     );
   });
@@ -293,6 +306,12 @@ export async function decideWhatsappFinancialConfirmation(
         ? "reject"
         : "cancel";
   const tokenHash = hashToken(match[2]!);
+  if (!sameScope(context, link)) {
+    return {
+      outcome: "confirmation_incomplete",
+      reply: "Este código não pertence ao perfil ativo do canal.",
+    };
+  }
 
   return withSharedTransaction(async (executeQuery) => {
     if (!(await lockAuthorizedLink(executeQuery, link))) {
@@ -311,7 +330,7 @@ export async function decideWhatsappFinancialConfirmation(
       ],
     );
     const current = rows[0];
-    if (!current) {
+    if (!current || current.linkVersion !== link.version) {
       return {
         outcome: "confirmation_incomplete",
         reply: "Código não encontrado neste canal. Consulte as propostas pendentes no SolverFin.",
