@@ -15,6 +15,7 @@ import {
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
 import {
   acknowledgeWhatsappPairingCode,
+  claimWhatsappInboundEvent,
   confirmWhatsappPairing,
   createWhatsappPairing,
   resolveActiveWhatsappLink,
@@ -318,9 +319,13 @@ async function main(): Promise<void> {
 
     const expiredId = await createSuggestion("expired");
     const expiring = await sendProposal(expiredId);
+    // A decision is always correlated to an existing signed provider event.
+    // Register that event before exercising an artificial future TTL.
+    const expiredDecision = await claimWhatsappInboundEvent(incoming("CONFIRMAR " + expiring.code));
+    assert.ok(expiredDecision.token);
     const response = await decideWhatsappFinancialConfirmation(
       context,
-      randomUUID(),
+      expiredDecision.event.id,
       "CONFIRMAR " + expiring.code,
       link,
       new Date(Date.now() + WHATSAPP_CONFIRMATION_TTL_MS + 60_000),
