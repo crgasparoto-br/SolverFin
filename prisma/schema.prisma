@@ -1035,6 +1035,7 @@ model WhatsappChannelEvent {
 model WhatsappChannelConfirmation {
   id String @id @db.Uuid
   linkId String @db.Uuid
+  linkVersion Int @default(0)
   userId String @db.Uuid
   organizationId String @db.Uuid
   financialProfileId String @db.Uuid
