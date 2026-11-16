@@ -24,22 +24,28 @@ import { processInboundChannelMessage } from "./whatsapp-channel-service.js";
 const USER_ID = "11111111-1111-4111-8111-111111111111";
 const PROFILE_ID = "33333333-3333-4333-8333-333333333331";
 
-void main().catch((error: unknown) => {
-  console.error(error instanceof Error ? error.stack : "Unknown integration error");
-  process.exitCode = 1;
-}).finally(closePool);
+void main()
+  .catch((error: unknown) => {
+    console.error(error instanceof Error ? error.stack : "Unknown integration error");
+    process.exitCode = 1;
+  })
+  .finally(closePool);
 
 async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "PostgreSQL test database is required.");
-  const profile = (await query<{ organizationId: string }>(
-    'select "organizationId" from "FinancialProfile" where "id"=$1',
-    [PROFILE_ID],
-  ))[0];
+  const profile = (
+    await query<{ organizationId: string }>(
+      'select "organizationId" from "FinancialProfile" where "id"=$1',
+      [PROFILE_ID],
+    )
+  )[0];
   assert.ok(profile);
-  const account = (await query<{ id: string }>(
-    "select \"id\" from \"Account\" where \"financialProfileId\"=$1 and \"organizationId\"=$2 and \"status\"='ACTIVE' and \"currency\"='BRL' limit 1",
-    [PROFILE_ID, profile.organizationId],
-  ))[0];
+  const account = (
+    await query<{ id: string }>(
+      'select "id" from "Account" where "financialProfileId"=$1 and "organizationId"=$2 and "status"=\'ACTIVE\' and "currency"=\'BRL\' limit 1',
+      [PROFILE_ID, profile.organizationId],
+    )
+  )[0];
   assert.ok(account, "Active BRL account required in test seed");
   const context: TenantContext = {
     userId: USER_ID,
@@ -74,19 +80,21 @@ async function main(): Promise<void> {
     const link = await resolveActiveWhatsappLink(metaAccount, senderId);
     assert.ok(link);
     const createSuggestion = async (label: string): Promise<string> => {
-      const provider = new FakeAiProvider([{
-        text: "structured",
-        structured: {
-          amountMinor: 2570,
-          currency: "BRL",
-          occurredOn: "2026-11-16",
-          type: "expense",
-          merchant: "Loja Sintética",
-          confidence: 0.99,
-          source: "bank_message",
-          reasons: ["Fixture de teste"],
+      const provider = new FakeAiProvider([
+        {
+          text: "structured",
+          structured: {
+            amountMinor: 2570,
+            currency: "BRL",
+            occurredOn: "2026-11-16",
+            type: "expense",
+            merchant: "Loja Sintética",
+            confidence: 0.99,
+            source: "bank_message",
+            reasons: ["Fixture de teste"],
+          },
         },
-      }]);
+      ]);
       const selection: AiProviderSelection = {
         status: "ready",
         provider: provider as never,
@@ -114,7 +122,9 @@ async function main(): Promise<void> {
       assert.ok(intake.suggestion, "Canonical Inbox must persist a structured review item");
       return intake.suggestion.id;
     };
-    const sendProposal = async (suggestionId: string): Promise<{
+    const sendProposal = async (
+      suggestionId: string,
+    ): Promise<{
       text: string;
       code: string;
       inbound: ChannelInboundMessage;
@@ -149,7 +159,9 @@ async function main(): Promise<void> {
     await assertNoEffect(approvedSuggestion);
     const sentBeforeReplay = outboundTexts.length;
     await processInboundChannelMessage(source.inbound, outbound, {
-      captureFinancial: async () => { throw new Error("capture replay forbidden"); },
+      captureFinancial: async () => {
+        throw new Error("capture replay forbidden");
+      },
     });
     assert.equal(outboundTexts.length, sentBeforeReplay);
 
@@ -176,10 +188,16 @@ async function main(): Promise<void> {
     );
     assert.equal(approvedTransactions[0]?.count, 1);
     await processInboundChannelMessage(confirmA, outbound);
-    assert.equal((await query<{ count: number }>(
-      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
-      [approvedSuggestion],
-    ))[0]?.count, 1, "replay after restart must never create a second transaction");
+    assert.equal(
+      (
+        await query<{ count: number }>(
+          'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+          [approvedSuggestion],
+        )
+      )[0]?.count,
+      1,
+      "replay after restart must never create a second transaction",
+    );
 
     // Exact action and token required; rejection and cancellation never write Transaction.
     for (const action of ["REJEITAR", "CANCELAR"] as const) {
@@ -187,15 +205,25 @@ async function main(): Promise<void> {
       const prompt = await sendProposal(id);
       await processInboundChannelMessage(incoming(action + " " + prompt.code), outbound);
       await assertNoEffect(id);
-      assert.equal((await query<{ status: string }>(
-        'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
-        [id],
-      ))[0]?.status, action === "REJEITAR" ? "rejected" : "cancelled");
+      assert.equal(
+        (
+          await query<{ status: string }>(
+            'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+            [id],
+          )
+        )[0]?.status,
+        action === "REJEITAR" ? "rejected" : "cancelled",
+      );
       const expectedSuggestionStatus = action === "REJEITAR" ? "rejected" : "pending_review";
-      assert.equal((await query<{ status: string }>(
-        'select lower("status"::text) as "status" from "AiSuggestion" where "id"=$1',
-        [id],
-      ))[0]?.status, expectedSuggestionStatus);
+      assert.equal(
+        (
+          await query<{ status: string }>(
+            'select lower("status"::text) as "status" from "AiSuggestion" where "id"=$1',
+            [id],
+          )
+        )[0]?.status,
+        expectedSuggestionStatus,
+      );
     }
 
     const expiredId = await createSuggestion("expired");
@@ -209,10 +237,15 @@ async function main(): Promise<void> {
     );
     assert.equal(response?.outcome, "confirmation_incomplete");
     await assertNoEffect(expiredId);
-    assert.equal((await query<{ status: string }>(
-      'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
-      [expiredId],
-    ))[0]?.status, "expired");
+    assert.equal(
+      (
+        await query<{ status: string }>(
+          'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+          [expiredId],
+        )
+      )[0]?.status,
+      "expired",
+    );
 
     await revokeWhatsappLink(context, pairing.id);
     const revoked = await decideWhatsappFinancialConfirmation(
