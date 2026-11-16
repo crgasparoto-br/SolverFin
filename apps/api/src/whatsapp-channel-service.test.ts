@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import test from "node:test";
 
 import type { TenantContext } from "@solverfin/domain";
@@ -60,7 +61,7 @@ function makeActiveLink(): ActiveChannelLink {
 
 function makeEvent(input: ChannelInboundMessage): ChannelEventRow {
   return {
-    id: "55555555-5555-4555-8555-555555555555",
+    id: randomUUID(),
     provider: input.provider,
     accountId: input.accountId,
     providerMessageId: input.externalMessageId,
@@ -575,6 +576,12 @@ test("resposta ambígua e token inválido nunca chegam ao serviço de aprovaçã
     state.deps,
   );
   assert.equal(decisions, 1);
+  assert.notEqual(
+    state.events.get("wamid.ambiguous")?.id,
+    state.events.get("wamid.invalid-token")?.id,
+    "distinct provider messages must have distinct persisted event IDs",
+  );
+  assert.equal(state.sent.length, 2, "each distinct signed message has its own outbound");
   assert.match(state.sent[1] ?? "", /código da proposta/);
   assert.equal(state.captures.length, 0);
 });
