@@ -1,6 +1,6 @@
 # Canal WhatsApp Meta Cloud API — issue #694
 
-**Escopo:** primeira integração de consulta somente leitura e captura revisável. O canal **não realiza** criação, edição, baixa, conciliação, exclusão, aprovação de sugestão, pagamento ou qualquer mutação financeira.
+**Escopo:** integração de consulta somente leitura, captura revisável (#694) e confirmação explícita de propostas simples (#695). O canal não executa pagamentos, transferências, baixas, conciliações, edição, exclusão ou outras mutações. Confirmação e rejeição delegam à fila canônica de revisão; nenhum fluxo financeiro paralelo é permitido.
 
 ## Configuração operacional
 
@@ -80,3 +80,25 @@ Testar com números sandbox Meta e perfis isolados, incluindo remetente BSUID se
 - [Inbox de mensagens bancárias](BANK_MESSAGE_INBOX.md)
 - [Fila de revisão](AI_REVIEW_QUEUE.md)
 - [ADR 0011 — somente leitura](adr/0011-read-only-financial-assistant.md)
+
+## Confirmação explícita — issue #695
+
+O **WhatsApp não é uma sessão financeira nem um motor de lançamentos**. Quando o canal recebe `CAPTURAR <mensagem>`, a Inbox cria uma `transaction_extraction` pendente pelo pipeline da issue #694. Apenas se os campos essenciais estiverem completos, a sugestão pertencer ao mesmo perfil e houver uma conta explicitamente resolvida, o canal devolve um resumo estruturado com **tipo, valor, moeda, data e descrição mascarada**, acompanhado de três ações exatas:
+
+- `CONFIRMAR <codigo>`: revalida a proposta e chama `approveAiReviewDecisionForContext`, que é a mesma decisão da fila unificada; somente este serviço pode criar `Transaction`.
+- `REJEITAR <codigo>`: chama `rejectAiReviewDecisionForContext`; não cria lançamento.
+- `CANCELAR <codigo>`: cancela **a confirmação do canal**, preservando a sugestão para revisão autenticada; não cria lançamento.
+
+Um simples `sim`, uma mensagem sem código ou um código inválido **não confirma** nada. O código de 12 caracteres é derivado por HMAC do evento e da sugestão com segredo de servidor, e somente o hash contextual do código é persistido. Ele não concede autorização por si só. Nunca é usada a mensagem livre para reconstituir ou recalcular valores durante uma decisão.
+
+**Elegibilidade do primeiro corte:** apenas receita/despesa em conta (sem cartão, transferência ou parcelamento) com data, descrição, valor positivo, moeda e conta estruturados. Propostas incompletas continuam pendentes na Inbox e **não recebem confirmação pelo canal**; a revisão autenticada permanece disponível e necessária. A ausência/ambiguidade de conta nunca deve ser suprida por um palpite da IA.
+
+**Persistência:** a tabela `WhatsappChannelConfirmation` relaciona `sourceEventId`, `suggestionId`, versão do payload (fingerprint), vínculo, usuário, organização, perfil, token hash, estado, expiração, `decisionEventId` e `transactionId`. O prazo de decisão é **15 minutos**, sem extensão implícita por replay. A confirmação grava o resultado e o efeito canônico **na mesma transação PostgreSQL**; indisponibilidade/erro de efeito impede declaração de sucesso. Duas confirmações simultâneas competem pelo lock da proposta, de modo que só uma pode criar a transação. Reenvios do mesmo evento Meta não geram nova decisão ou saída lógica; nova mensagem com o mesmo código recebe desfecho idempotente.
+
+**Autorização:** todo evento usa o vínculo explicitamente ativado no SolverFin. Antes de qualquer confirmação, rejeição ou cancelamento, um lock transacional compartilhado revalida usuário ativo, perfil ativo e titular, organização, número oficial, remetente, ID e versão do vínculo. O repositório de sugestões valida organização/perfil e a origem `BANK_MESSAGE` do WhatsApp; toda decisão exige o fingerprint ainda vigente, em estado `PENDING_REVIEW`. A fila canônica continua responsável por validar os recursos financeiros. Um vínculo revogado, perfil alheio, sugestão alterada/resolvida ou token expirado não permite efeito. O outbound também é revalidado pela infraestrutura #694 para não divulgar resultado privado depois da revogação.
+
+**Estados da confirmação:** `pending_confirmation` → `confirmed | rejected | cancelled | expired`. Os estados terminais não podem voltar a ser pendentes. Expiração e cancelamento não alteram o fato financeiro; rejeição muda somente a sugestão via serviço da fila. O serviço de expurgo #694 também expira confirmações pendentes. Eventos de decisão mantêm correlação e versão; corpo do webhook, texto bancário bruto, código em claro e credenciais nunca são armazenados na tabela de confirmação, em logs nem em métricas.
+
+**Falhas:** falha antes do commit de aprovação reverte confirmação e efeito para retry do POST assinado original; falha depois do commit mantém confirmação/efeito durável. Se o envio ao provedor tiver resultado ambíguo, o outbound permanece `send_unknown` (não se reenvia cegamente); HTTP 429 comprovadamente não aceito usa retry seguro. Nenhuma nova infraestrutura de pagamento é ativada.
+
+A habilitação em produção continua dependente do app Meta dedicado, WABA/número, credenciais, webhook HTTPS e autorização operacional explicitada na issue #694. A presença do código não prova homologação em conta real.
