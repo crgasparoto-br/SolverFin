@@ -6,7 +6,7 @@ import {
   approveAiReviewDecisionForContext,
   rejectAiReviewDecisionForContext,
 } from "./ai-review-queue-public-decision-service.js";
-import { withSharedTransaction, type QueryExecutor } from "./db.js";
+import { query, withSharedTransaction, type QueryExecutor } from "./db.js";
 import { getAiSuggestionPayloadForContext } from "./repositories/ai-suggestion-payloads.js";
 import { type ActiveChannelLink, WhatsappChannelError } from "./whatsapp-channel-link-repository.js";
 
@@ -100,6 +100,7 @@ function publicSummary(
     { suggestionKind: "transaction_extraction" }
   >["proposal"],
   token: string,
+  labels: { account?: string; category?: string } = {},
 ): string {
   const currencyDigits = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -116,6 +117,8 @@ function publicSummary(
     kind + ": " + amount + " " + proposal.currency,
     "Data: " + proposal.occurredOn,
     "Descrição: " + description,
+    ...(labels.account ? ["Conta: " + safeDescription(labels.account)] : []),
+    ...(labels.category ? ["Categoria: " + safeDescription(labels.category)] : []),
     "",
     "Revise os dados. Para decidir, responda exatamente:",
     "CONFIRMAR " + token,
@@ -257,7 +260,21 @@ export async function prepareWhatsappFinancialConfirmation(
       rows[0].expiresAt > now
     );
   });
-  return persisted ? publicSummary(detail.payload.proposal, token) : null;
+  if (!persisted) return null;
+  const accountNames = await query<{ name: string }>(
+    'select "name" from "Account" where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3',
+    [detail.payload.proposal.accountId, context.organizationId, context.financialProfileId],
+  );
+  const categoryNames = detail.payload.proposal.categoryId
+    ? await query<{ name: string }>(
+        'select "name" from "Category" where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3',
+        [detail.payload.proposal.categoryId, context.organizationId, context.financialProfileId],
+      )
+    : [];
+  return publicSummary(detail.payload.proposal, token, {
+    ...(accountNames[0] ? { account: accountNames[0].name } : {}),
+    ...(categoryNames[0] ? { category: categoryNames[0].name } : {}),
+  });
 }
 
 export async function decideWhatsappFinancialConfirmation(
