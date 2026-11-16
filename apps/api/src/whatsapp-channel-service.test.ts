@@ -515,3 +515,92 @@ test("pairing pede confirmação no app sem revelar a validade do código", asyn
   assert.equal(state.events.get("wamid.pair")?.userId, null);
   assert.equal(state.queries.length, 0);
 });
+
+test("captura com proposta elegível persiste confirmação antes do outbound", async () => {
+  const state = fixture();
+  let prepared = false;
+  state.deps.prepareConfirmation = async (receivedContext, eventId, suggestionId, link) => {
+    assert.equal(receivedContext.financialProfileId, context.financialProfileId);
+    assert.equal(link.id, linkId);
+    assert.equal(suggestionId, "77777777-7777-4777-8777-777777777777");
+    assert.equal(eventId, state.events.get("wamid.proposal")?.id);
+    prepared = true;
+    return "Proposta pendente. CONFIRMAR ABCDEFGHIJKL";
+  };
+  state.outbound.sendText = async (request) => {
+    assert.equal(prepared, true, "must persist the proposal before sending");
+    state.sent.push(request.text);
+    return "wamid.proposal-outbound";
+  };
+  const inbound = message("CAPTURAR pagamento fictício 12,50", "wamid.proposal");
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "confirmation_pending");
+  assert.deepEqual(state.sent, ["Proposta pendente. CONFIRMAR ABCDEFGHIJKL"]);
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(state.sent.length, 1, "source replay must not request another approval");
+});
+
+test("decisão explícita vinculada não usa o assistente nem repete efeito no retry", async () => {
+  const state = fixture();
+  let decisions = 0;
+  state.deps.decideConfirmation = async (scope, _eventId, text, link) => {
+    decisions++;
+    assert.equal(scope.organizationId, context.organizationId);
+    assert.equal(link.id, linkId);
+    assert.equal(text, "CONFIRMAR ABCDEFGHIJKL");
+    return { outcome: "confirmation_resolved", reply: "Proposta confirmada." };
+  };
+  const inbound = message("CONFIRMAR ABCDEFGHIJKL", "wamid.confirm-001");
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(decisions, 1);
+  assert.equal(state.queries.length, 0);
+  assert.equal(state.captures.length, 0);
+  assert.equal(state.sent.length, 1);
+  assert.equal(state.events.get(inbound.externalMessageId)?.outcome, "confirmation_resolved");
+});
+
+test("resposta ambígua e token inválido nunca chegam ao serviço de aprovação", async () => {
+  const state = fixture();
+  let decisions = 0;
+  state.deps.decideConfirmation = async () => {
+    decisions++;
+    return null;
+  };
+  await processInboundChannelMessage(message("sim", "wamid.ambiguous"), state.outbound, state.deps);
+  assert.equal(decisions, 0);
+  await processInboundChannelMessage(
+    message("CONFIRMAR código-inválido", "wamid.invalid-token"),
+    state.outbound,
+    state.deps,
+  );
+  assert.equal(decisions, 1);
+  assert.match(state.sent[1] ?? "", /código da proposta/);
+  assert.equal(state.captures.length, 0);
+});
+
+test("revogação antes do envio de uma confirmação bloqueia qualquer retorno financeiro", async () => {
+  const state = fixture();
+  state.deps.decideConfirmation = async () => ({
+    outcome: "confirmation_resolved",
+    reply: "Lançamento confirmado e privado",
+  });
+  state.deps.finishInbound = async (input) => {
+    const event = state.events.get("wamid.revoked-confirm");
+    assert.ok(event);
+    event.state = "response_ready";
+    event.outcome = input.outcome;
+    event.replyText = input.reply;
+    event.linkId = input.link?.id ?? null;
+    event.userId = input.link?.userId ?? null;
+    event.organizationId = input.link?.organizationId ?? null;
+    event.financialProfileId = input.link?.financialProfileId ?? null;
+    state.link = null;
+  };
+  await processInboundChannelMessage(
+    message("CONFIRMAR ABCDEFGHIJKL", "wamid.revoked-confirm"),
+    state.outbound,
+    state.deps,
+  );
+  assert.doesNotMatch(state.sent.join(" "), /Lançamento confirmado/);
+});
