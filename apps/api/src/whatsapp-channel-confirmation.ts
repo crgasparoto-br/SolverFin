@@ -1,5 +1,6 @@
 import { createHash, createHmac } from "node:crypto";
 
+import { maskSensitiveText } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import {
@@ -93,14 +94,23 @@ function isEligibleProposal(
   );
 }
 
-function safeDescription(value: string): string {
-  return value
+/** Apply the canonical masker and redact formatted identifiers before WhatsApp outbound. */
+export function redactWhatsappConfirmationLabel(value: string): string {
+  const redacted = value
     .replace(/\p{Cc}/gu, " ")
     .replace(/https?:\/\/\S+/gi, "[link]")
-    .replace(/\b\d{5,}\b/g, "****")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 80);
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
+    .replace(
+      /\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\b/gi,
+      "[identificador]",
+    )
+    .replace(
+      /(?<![\p{L}\p{N}])\+?\d[\d\s()./-]{6,}\d(?![\p{L}\p{N}])/gu,
+      (candidate) =>
+        candidate.replace(/\D/g, "").length >= 8 ? "[identificador]" : candidate,
+    )
+    .replace(/\b\d{5,}\b/g, "****");
+  return maskSensitiveText(redacted).replace(/\s+/g, " ").trim().slice(0, 80);
 }
 
 function publicSummary(
@@ -120,15 +130,15 @@ function publicSummary(
     minimumFractionDigits: currencyDigits,
     maximumFractionDigits: currencyDigits,
   }).format(proposal.amountMinor / 10 ** currencyDigits);
-  const description = safeDescription(proposal.description);
+  const description = redactWhatsappConfirmationLabel(proposal.description);
   const kind = proposal.kind === "income" ? "Receita" : "Despesa";
   return [
     "Proposta de lançamento (ainda não criado):",
     kind + ": " + amount + " " + proposal.currency,
     "Data: " + proposal.occurredOn,
     "Descrição: " + description,
-    ...(labels.account ? ["Conta: " + safeDescription(labels.account)] : []),
-    ...(labels.category ? ["Categoria: " + safeDescription(labels.category)] : []),
+    ...(labels.account ? ["Conta: " + redactWhatsappConfirmationLabel(labels.account)] : []),
+    ...(labels.category ? ["Categoria: " + redactWhatsappConfirmationLabel(labels.category)] : []),
     "",
     "Revise os dados. Para decidir, responda exatamente:",
     "CONFIRMAR " + token,

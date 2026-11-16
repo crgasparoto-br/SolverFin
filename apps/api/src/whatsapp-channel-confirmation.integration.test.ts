@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 
 import { FakeAiProvider, type AiProviderSelection } from "@solverfin/ai";
@@ -188,6 +189,32 @@ async function main(): Promise<void> {
     );
     assert.equal(approvedTransactions[0]?.count, 1);
     await processInboundChannelMessage(confirmA, outbound);
+    // Exercise the same production entrypoint in a fresh Node runtime, not just
+    // another call using the first process's database pool or module cache.
+    const replayAfterRestart = spawnSync(
+      process.execPath,
+      [
+        "--input-type=module",
+        "--eval",
+        [
+          `import { processInboundChannelMessage } from ${JSON.stringify(new URL("./whatsapp-channel-service.js", import.meta.url).href)};`,
+          `import { closePool } from ${JSON.stringify(new URL("./db.js", import.meta.url).href)};`,
+          "const message = JSON.parse(process.argv[1]);",
+          "message.receivedAt = new Date(message.receivedAt);",
+          "try {",
+          "  await processInboundChannelMessage(message, {",
+          '    async sendText() { process.stdout.write("DUPLICATE_OUTBOUND"); return "unexpected"; },',
+          "  });",
+          "} finally {",
+          "  await closePool();",
+          "}",
+        ].join("\n"),
+        JSON.stringify(confirmA),
+      ],
+      { encoding: "utf8", timeout: 20_000 },
+    );
+    assert.equal(replayAfterRestart.status, 0, replayAfterRestart.stderr);
+    assert.equal(replayAfterRestart.stdout, "", "restart replay must not send outbound");
     assert.equal(
       (
         await query<{ count: number }>(
@@ -213,17 +240,27 @@ async function main(): Promise<void> {
       [uncertainEvent.externalMessageId],
     );
     assert.equal(unknownDelivery[0]?.state, "send_unknown");
-    assert.equal((await query<{ count: number }>(
-      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
-      [uncertainId],
-    ))[0]?.count, 1);
+    assert.equal(
+      (
+        await query<{ count: number }>(
+          'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+          [uncertainId],
+        )
+      )[0]?.count,
+      1,
+    );
     const outboundCount = outboundTexts.length;
     await processInboundChannelMessage(uncertainEvent, outbound);
     assert.equal(outboundTexts.length, outboundCount, "unknown Meta acceptance is not resent");
-    assert.equal((await query<{ count: number }>(
-      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
-      [uncertainId],
-    ))[0]?.count, 1);
+    assert.equal(
+      (
+        await query<{ count: number }>(
+          'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+          [uncertainId],
+        )
+      )[0]?.count,
+      1,
+    );
 
     // Conflicting concurrent actions serialize: confirmed XOR rejected, never both.
     const conflictId = await createSuggestion("confirm-reject-race");
@@ -232,15 +269,22 @@ async function main(): Promise<void> {
       processInboundChannelMessage(incoming("CONFIRMAR " + racePrompt.code), outbound),
       processInboundChannelMessage(incoming("REJEITAR " + racePrompt.code), outbound),
     ]);
-    const raceStatus = (await query<{ status: string }>(
-      'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
-      [conflictId],
-    ))[0]?.status;
+    const raceStatus = (
+      await query<{ status: string }>(
+        'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+        [conflictId],
+      )
+    )[0]?.status;
     assert.ok(raceStatus === "confirmed" || raceStatus === "rejected");
-    assert.equal((await query<{ count: number }>(
-      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
-      [conflictId],
-    ))[0]?.count, raceStatus === "confirmed" ? 1 : 0);
+    assert.equal(
+      (
+        await query<{ count: number }>(
+          'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+          [conflictId],
+        )
+      )[0]?.count,
+      raceStatus === "confirmed" ? 1 : 0,
+    );
     // Exact action and token required; rejection and cancellation never write Transaction.
     for (const action of ["REJEITAR", "CANCELAR"] as const) {
       const id = await createSuggestion(action);
