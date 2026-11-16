@@ -201,6 +201,12 @@ function fixture(): Fixture {
         answer: "Saldo determinístico em BRL: 15,00.",
       };
     },
+    async prepareConfirmation() {
+      return null;
+    },
+    async decideConfirmation() {
+      return null;
+    },
     async captureFinancial(_requestContext, rawMessage) {
       captures.push(rawMessage);
       return {
