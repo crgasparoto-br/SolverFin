@@ -199,6 +199,48 @@ async function main(): Promise<void> {
       "replay after restart must never create a second transaction",
     );
 
+    // Provider accepted the effect but its acknowledgement was lost: do not send twice.
+    const uncertainId = await createSuggestion("outbound-unknown");
+    const uncertainPrompt = await sendProposal(uncertainId);
+    const uncertainEvent = incoming("CONFIRMAR " + uncertainPrompt.code);
+    await processInboundChannelMessage(uncertainEvent, {
+      async sendText() {
+        throw new Error("simulated lost Meta acknowledgement after canonical commit");
+      },
+    });
+    const unknownDelivery = await query<{ state: string }>(
+      'select "state" from "WhatsappChannelEvent" where "providerMessageId"=$1',
+      [uncertainEvent.externalMessageId],
+    );
+    assert.equal(unknownDelivery[0]?.state, "send_unknown");
+    assert.equal((await query<{ count: number }>(
+      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+      [uncertainId],
+    ))[0]?.count, 1);
+    const outboundCount = outboundTexts.length;
+    await processInboundChannelMessage(uncertainEvent, outbound);
+    assert.equal(outboundTexts.length, outboundCount, "unknown Meta acceptance is not resent");
+    assert.equal((await query<{ count: number }>(
+      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+      [uncertainId],
+    ))[0]?.count, 1);
+
+    // Conflicting concurrent actions serialize: confirmed XOR rejected, never both.
+    const conflictId = await createSuggestion("confirm-reject-race");
+    const racePrompt = await sendProposal(conflictId);
+    await Promise.all([
+      processInboundChannelMessage(incoming("CONFIRMAR " + racePrompt.code), outbound),
+      processInboundChannelMessage(incoming("REJEITAR " + racePrompt.code), outbound),
+    ]);
+    const raceStatus = (await query<{ status: string }>(
+      'select "status" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+      [conflictId],
+    ))[0]?.status;
+    assert.ok(raceStatus === "confirmed" || raceStatus === "rejected");
+    assert.equal((await query<{ count: number }>(
+      'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+      [conflictId],
+    ))[0]?.count, raceStatus === "confirmed" ? 1 : 0);
     // Exact action and token required; rejection and cancellation never write Transaction.
     for (const action of ["REJEITAR", "CANCELAR"] as const) {
       const id = await createSuggestion(action);
