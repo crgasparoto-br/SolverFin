@@ -222,6 +222,12 @@ export async function withAuthorizedWhatsappOutbound<T>(
 /** Called by the scheduler; no pending processing is resumed without a signed POST replay. */
 export async function redactExpiredWhatsappState(now = new Date()): Promise<void> {
   await query(
+    `update "WhatsappChannelConfirmation"
+       set "status"='expired',"resolvedAt"=$1,"updatedAt"=$1
+     where "status"='pending_confirmation' and "expiresAt"<=$1`,
+    [now],
+  );
+  await query(
     `update "WhatsappChannelLink" set
        "state"='expired',"challengeHash"=null,"senderId"=null,
        "version"="version"+1,"updatedAt"=$1
@@ -248,16 +254,6 @@ export async function redactExpiredWhatsappState(now = new Date()): Promise<void
      where ("expiresAt"<=$1 and ("senderId" is not null or "replyText" is not null
                or "state" not in ('expired','sent','send_unknown')))
         or ("state"='sending' and "leaseUntil"<=$1)`,
-    [now],
-  );
-}
-
-/** Expiry is a terminal no-effect decision; suggestions remain independently reviewable. */
-export async function expireWhatsappConfirmations(now = new Date()): Promise<void> {
-  await query(
-    `update "WhatsappChannelConfirmation"
-       set "status"='expired',"resolvedAt"=$1,"updatedAt"=$1
-     where "status"='pending_confirmation' and "expiresAt"<=$1`,
     [now],
   );
 }
