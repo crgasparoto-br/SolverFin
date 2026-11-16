@@ -104,7 +104,7 @@ function publicSummary(
   const currencyDigits = new Intl.NumberFormat("pt-BR", {
     style: "currency",
     currency: proposal.currency,
-  }).resolvedOptions().maximumFractionDigits;
+  }).resolvedOptions().maximumFractionDigits ?? 2;
   const amount = new Intl.NumberFormat("pt-BR", {
     minimumFractionDigits: currencyDigits,
     maximumFractionDigits: currencyDigits,
