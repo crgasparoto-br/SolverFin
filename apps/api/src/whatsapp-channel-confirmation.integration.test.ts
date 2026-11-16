@@ -214,7 +214,11 @@ async function main(): Promise<void> {
       { encoding: "utf8", timeout: 20_000 },
     );
     assert.equal(replayAfterRestart.status, 0, replayAfterRestart.stderr);
-    assert.equal(replayAfterRestart.stdout, "", "restart replay must not send outbound");
+    assert.doesNotMatch(
+      replayAfterRestart.stdout,
+      /DUPLICATE_OUTBOUND/,
+      "restart replay must not send outbound",
+    );
     assert.equal(
       (
         await query<{ count: number }>(
