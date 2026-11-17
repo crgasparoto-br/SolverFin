@@ -228,12 +228,13 @@ class SoloCheckLifecycleTests(unittest.TestCase):
 
     def test_success_still_requires_final_revalidation(self):
         current = self.record()
-        completed = self.record(status="completed", conclusion="success")
         identity = {
             "pull_request": self.PR, "issue": 695, "base_ref": "develop",
             "base_sha": BASE, "head_sha": HEAD, "merge_preview_sha": "c" * 40,
             "issue_body_sha256": "d" * 64,
         }
+        completed = {**self.record(status="completed", conclusion="success"),
+                     "external_id": solo_checks.exact_external_id(identity, self.RUN)}
         with patch.object(solo_checks.session_runner, "api",
                           side_effect=[current, current, completed]) as api:
             calls = []
