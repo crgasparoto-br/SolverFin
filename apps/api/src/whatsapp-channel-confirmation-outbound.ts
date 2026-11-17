@@ -37,8 +37,8 @@ export async function renderWhatsappFinancialConfirmationReply(
   // response_ready means the provider has not accepted a previous outbound.
   // A sent/send_unknown event never reaches this method a second time.
   const updated = await query<{ id: string }>(
-    'update "WhatsappChannelConfirmation" c set "tokenHash"=$1,' +
-      ' "updatedAt"=case when c."tokenHash"=$1 then c."updatedAt" else $2 end' +
+    'update "WhatsappChannelConfirmation" c set "tokenHash"=$1::varchar(64),' +
+      ' "updatedAt"=$2' +
       ' where c."sourceEventId"=$3 and c."suggestionId"=$4 and c."linkId"=$5' +
       ' and c."userId"=$6 and c."organizationId"=$7 and c."financialProfileId"=$8' +
       ' and c."status"=\'pending_confirmation\' and c."expiresAt">$2' +
