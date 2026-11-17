@@ -19,6 +19,8 @@ export async function renderWhatsappFinancialConfirmationReply(
 ): Promise<string | null> {
   const template = event.replyText;
   if (
+    event.state !== "sending" ||
+    !event.leaseToken ||
     event.outcome !== "confirmation_pending" ||
     !template ||
     template.split(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER).length !== 4 ||
@@ -44,6 +46,9 @@ export async function renderWhatsappFinancialConfirmationReply(
       ' and c."status"=\'pending_confirmation\' and c."expiresAt">$2' +
       ' and exists (select 1 from "WhatsappChannelLink" l where l."id"=c."linkId"' +
       ' and l."version"=c."linkVersion" and l."state"=\'active\')' +
+      ' and exists (select 1 from "WhatsappChannelEvent" e where e."id"=c."sourceEventId"' +
+      ' and e."state"=\'sending\' and e."leaseToken"=$9' +
+      ' and e."outcome"=\'confirmation_pending\')' +
       ' returning c."id"',
     [
       tokenHash,
@@ -54,6 +59,7 @@ export async function renderWhatsappFinancialConfirmationReply(
       event.userId,
       event.organizationId,
       event.financialProfileId,
+      event.leaseToken,
     ],
   );
   if (updated.length !== 1) return null;

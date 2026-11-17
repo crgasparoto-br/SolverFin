@@ -15,6 +15,7 @@ import {
   WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
 } from "./whatsapp-channel-confirmation.js";
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
+import type { ChannelEventRow } from "./whatsapp-channel-types.js";
 import {
   acknowledgeWhatsappPairingCode,
   claimWhatsappInboundEvent,
@@ -198,6 +199,19 @@ async function main(): Promise<void> {
     assert.equal(persisted[0]?.status, "pending_confirmation");
     assert.notEqual(persisted[0]?.tokenHash, source.code);
     await assertNoEffect(approvedSuggestion);
+    // Two pending proposals must not be resolved by a generic answer or a missing code.
+    const secondPendingId = await createSuggestion("simultaneous-pending");
+    const secondPending = await sendProposal(secondPendingId);
+    assert.notEqual(source.code, secondPending.code);
+    await processInboundChannelMessage(incoming("sim"), outbound, {
+      queryFinancial: async () => ({
+        conversationId: randomUUID(),
+        answer: "Sem código, nenhuma proposta é confirmada.",
+      }),
+    });
+    await processInboundChannelMessage(incoming("CONFIRMAR"), outbound);
+    await assertNoEffect(approvedSuggestion);
+    await assertNoEffect(secondPendingId);
     const sentBeforeReplay = outboundTexts.length;
     await processInboundChannelMessage(source.inbound, outbound, {
       captureFinancial: async () => {
@@ -214,6 +228,15 @@ async function main(): Promise<void> {
       link,
     );
     assert.equal(wrong?.outcome, "confirmation_incomplete");
+    // A forged link scoped to another profile cannot inherit an otherwise valid code.
+    const otherProfileId = randomUUID();
+    const forgedScope = await decideWhatsappFinancialConfirmation(
+      { ...context, financialProfileId: otherProfileId },
+      randomUUID(),
+      "CONFIRMAR " + source.code,
+      { ...link, financialProfileId: otherProfileId },
+    );
+    assert.equal(forgedScope?.outcome, "confirmation_incomplete");
     await assertNoEffect(approvedSuggestion);
 
     // Concurrent decisions serialize on the durable confirmation row and canonical review lock.
@@ -228,6 +251,48 @@ async function main(): Promise<void> {
       [approvedSuggestion],
     );
     assert.equal(approvedTransactions[0]?.count, 1);
+    await assertNoEffect(secondPendingId);
+    // A stale outbound claim must never rotate a capability after provider acceptance.
+    const sentSourceEvent = (
+      await query<ChannelEventRow>(
+        'select * from "WhatsappChannelEvent" where "providerMessageId"=$1',
+        [source.inbound.externalMessageId],
+      )
+    )[0];
+    assert.ok(sentSourceEvent);
+    assert.equal(sentSourceEvent.state, "sent");
+    const oldHash = (
+      await query<{ tokenHash: string }>(
+        'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+        [approvedSuggestion],
+      )
+    )[0]?.tokenHash;
+    assert.equal(
+      await renderWhatsappFinancialConfirmationReply(
+        {
+          ...sentSourceEvent,
+          state: "sending",
+          leaseToken: randomUUID(),
+          replyText: source.text.replaceAll(
+            source.code,
+            WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
+          ),
+        },
+        secret + "-changed-after-send",
+      ),
+      null,
+      "SQL must reject a stale in-memory send claim after the provider accepted the message",
+    );
+    assert.equal(
+      (
+        await query<{ tokenHash: string }>(
+          'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+          [approvedSuggestion],
+        )
+      )[0]?.tokenHash,
+      oldHash,
+      "sent confirmation code hash must be immutable",
+    );
     await processInboundChannelMessage(confirmA, outbound);
     // Exercise the same production entrypoint in a fresh Node runtime, not just
     // another call using the first process's database pool or module cache.
@@ -284,6 +349,44 @@ async function main(): Promise<void> {
       [uncertainEvent.externalMessageId],
     );
     assert.equal(unknownDelivery[0]?.state, "send_unknown");
+    const unknownEvent = (
+      await query<ChannelEventRow>(
+        'select * from "WhatsappChannelEvent" where "providerMessageId"=$1',
+        [uncertainPrompt.inbound.externalMessageId],
+      )
+    )[0];
+    assert.ok(unknownEvent);
+    const hashBeforeUnknown = (
+      await query<{ tokenHash: string }>(
+        'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+        [uncertainId],
+      )
+    )[0]?.tokenHash;
+    assert.equal(
+      await renderWhatsappFinancialConfirmationReply(
+        {
+          ...unknownEvent,
+          state: "sending",
+          leaseToken: randomUUID(),
+          replyText: uncertainPrompt.text.replaceAll(
+            uncertainPrompt.code,
+            WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
+          ),
+        },
+        secret + "-changed-after-unknown",
+      ),
+      null,
+      "send_unknown must be protected against stale outbound claims",
+    );
+    assert.equal(
+      (
+        await query<{ tokenHash: string }>(
+          'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+          [uncertainId],
+        )
+      )[0]?.tokenHash,
+      hashBeforeUnknown,
+    );
     assert.equal(
       (
         await query<{ count: number }>(
