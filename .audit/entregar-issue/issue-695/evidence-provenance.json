@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "evidence": [
+    {
+      "evidence_id": "EVID-695-JUNIT",
+      "kind": "behavioral",
+      "path": "evidence/whatsapp-exact-head.xml",
+      "sha256": "ac4110e56ca71c6e2288e1db46933c248137639925ac932762068c155066e92b",
+      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions #44070478122 / artifact #14322971642, 34 JUnit cases",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-695-CI",
+      "kind": "behavioral",
+      "path": "evidence/ci-exact-sha-796.json",
+      "sha256": "bdff6d050b3c5f6fced8e54abca1845dd8d1274c177cef2a5596b528dfae60f6",
+      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions #44070478122 CRITICAL validation",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-695-REVIEW",
+      "kind": "structural",
+      "path": "evidence/obligation-review-worklist.json",
+      "sha256": "ffd05544fefb420af197fb93df4941a7207e7991d80ea411ed2db62b7871dc30",
+      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "freshness_policy": "exact-material-head",
+      "producer": "Controller code/evidence review at exact material HEAD, independent audit still pending",
+      "status": "passed"
+    }
+  ]
+}

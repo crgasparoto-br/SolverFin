@@ -3,117 +3,74 @@
   "status": "ready",
   "phase": "final",
   "completion": {
-    "issue_completion": "partial",
-    "deferred_obligation_ids": [
-      "OBL-036",
-      "OBL-037"
-    ],
-    "remaining_issue_ids": [
-      694
-    ],
-    "parent_issue_must_remain_open": true
+    "issue_completion": "complete",
+    "deferred_obligation_ids": [],
+    "remaining_issue_ids": [],
+    "parent_issue_must_remain_open": false
   },
-  "created_at": "2026-11-16T17:46:06.149204+00:00",
+  "created_at": "2026-11-17T13:08:55.709931+00:00",
   "identity": {
-    "head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
-    "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
-    "base_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
-    "merge_preview_sha": "ba8d8463514e8ee731494bfd9e7d9a344de8213c",
-    "material_merge_preview_sha": "ba8d8463514e8ee731494bfd9e7d9a344de8213c"
+    "head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+    "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+    "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+    "merge_preview_sha": "ec47ff88e6bd4d931171afe726837abe825c06bb",
+    "material_merge_preview_sha": "ec47ff88e6bd4d931171afe726837abe825c06bb"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 694,
-    "pull_request_number": 794,
+    "issue_number": 695,
+    "pull_request_number": 796,
     "work_item_kind": "issue",
-    "work_item_number": 694,
-    "pull_request": 794,
+    "work_item_number": 695,
+    "pull_request": 796,
     "base_ref": "develop",
-    "head_ref": "feat/694-whatsapp-channel"
+    "head_ref": "feat/issue-695-whatsapp-confirmation"
   },
   "scope": {
     "schema_version": 1,
-    "work_item_start_sha": "109fda7d41c1eaf6ea821d6704972766cb714a61",
-    "material_head_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+    "work_item_start_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+    "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
     "issue_changed_paths": [
-      ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-694/code-growth.json",
-      ".audit/entregar-issue/issue-694/codebase-grounding.json",
-      ".audit/entregar-issue/issue-694/evidence-provenance.json",
-      ".audit/entregar-issue/issue-694/evidence/audit-remediation-794.json",
-      ".audit/entregar-issue/issue-694/evidence/ci-exact-sha-794.json",
-      ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-      ".audit/entregar-issue/issue-694/evidence/obligation-review-worklist.json",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-SHA256SUMS",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-exact-head.xml",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-material-head.sha",
-      ".audit/entregar-issue/issue-694/inherited-controls.json",
-      ".audit/entregar-issue/issue-694/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-694/requirement-closure.json",
-      ".audit/entregar-issue/issue-694/risk-saturation.json",
-      ".audit/entregar-issue/issue-694/specification-snapshot.json",
-      ".audit/entregar-issue/issue-694/specification-sources/SRC-ISSUE-694.txt",
-      ".audit/entregar-issue/specification-snapshot.json",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-694.txt",
-      ".env.example",
-      ".github/workflows/delivery-v2-ci.yml",
-      "apps/api/src/bank-message-ai-inbox.integration.test.ts",
-      "apps/api/src/bank-message-ai-inbox.ts",
-      "apps/api/src/bank-message-extraction-lease.ts",
-      "apps/api/src/repositories/bank-message-inbox.ts",
-      "apps/api/src/server.ts",
+      "apps/api/src/whatsapp-channel-confirmation-outbound.ts",
+      "apps/api/src/whatsapp-channel-confirmation.integration.test.ts",
+      "apps/api/src/whatsapp-channel-confirmation.test.ts",
+      "apps/api/src/whatsapp-channel-confirmation.ts",
       "apps/api/src/whatsapp-channel-event-repository.ts",
-      "apps/api/src/whatsapp-channel-link-repository.ts",
-      "apps/api/src/whatsapp-channel-management.integration.test.ts",
-      "apps/api/src/whatsapp-channel-provider.test.ts",
-      "apps/api/src/whatsapp-channel-provider.ts",
-      "apps/api/src/whatsapp-channel-repository.ts",
-      "apps/api/src/whatsapp-channel-retention.integration.test.ts",
-      "apps/api/src/whatsapp-channel-router.ts",
       "apps/api/src/whatsapp-channel-service.test.ts",
       "apps/api/src/whatsapp-channel-service.ts",
       "apps/api/src/whatsapp-channel-types.ts",
-      "apps/api/src/whatsapp-channel.integration.test.ts",
-      "docs/README.md",
       "docs/WHATSAPP_CHANNEL.md",
-      "packages/domain/src/bank-message-inbox.ts",
-      "prisma/migrations/20261113160000_whatsapp_channel_foundation/migration.sql",
-      "prisma/migrations/20261115100000_whatsapp_bsuid_sender_capacity/migration.sql",
+      "prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql",
       "prisma/schema.prisma"
     ],
-    "issue_delta_sha256": "982369c9e1764edf3bc63f98d38fc50eb6ee3b26ef324d229a4cbaa441dd85a9"
+    "issue_delta_sha256": "7db78816bee6ebb58210db11b5c228db7eb149c810ca77fb2b3d0e04c385d2fa"
   },
   "certificate_commit_policy": {
     "mode": "result-only-child",
     "allowed_paths": [
       ".audit/entregar-issue/handoff-ready.json",
-      ".audit/entregar-issue/issue-694/audit-escape-closure.json",
-      ".audit/entregar-issue/issue-694/audit-remediation.json",
-      ".audit/entregar-issue/issue-694/audit-source-result.json",
-      ".audit/entregar-issue/issue-694/code-growth.json",
-      ".audit/entregar-issue/issue-694/codebase-grounding.json",
-      ".audit/entregar-issue/issue-694/evidence-provenance.json",
-      ".audit/entregar-issue/issue-694/evidence/audit-remediation-794.json",
-      ".audit/entregar-issue/issue-694/evidence/audit-remediation-current-794.json",
-      ".audit/entregar-issue/issue-694/evidence/audit-source-result-794.json",
-      ".audit/entregar-issue/issue-694/evidence/ci-exact-sha-794.json",
-      ".audit/entregar-issue/issue-694/evidence/ground-tests-694-exact-sha-reachability.txt",
-      ".audit/entregar-issue/issue-694/evidence/obligation-review-worklist.json",
-      ".audit/entregar-issue/issue-694/evidence/readiness-794.json",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-SHA256SUMS",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-exact-head.xml",
-      ".audit/entregar-issue/issue-694/evidence/whatsapp-material-head.sha",
-      ".audit/entregar-issue/issue-694/inherited-controls.json",
-      ".audit/entregar-issue/issue-694/learning-closure.json",
-      ".audit/entregar-issue/issue-694/requirement-attack-matrix.json",
-      ".audit/entregar-issue/issue-694/requirement-closure.json",
-      ".audit/entregar-issue/issue-694/risk-saturation.json",
-      ".audit/entregar-issue/issue-694/specification-snapshot.json"
+      ".audit/entregar-issue/issue-695/code-growth.json",
+      ".audit/entregar-issue/issue-695/codebase-grounding.json",
+      ".audit/entregar-issue/issue-695/evidence-provenance.json",
+      ".audit/entregar-issue/issue-695/evidence/ci-exact-sha-796.json",
+      ".audit/entregar-issue/issue-695/evidence/ground-tests-695-integration-reachability.txt",
+      ".audit/entregar-issue/issue-695/evidence/ground-tests-695-unit-reachability.txt",
+      ".audit/entregar-issue/issue-695/evidence/obligation-review-worklist.json",
+      ".audit/entregar-issue/issue-695/evidence/whatsapp-exact-head.xml",
+      ".audit/entregar-issue/issue-695/inherited-controls.json",
+      ".audit/entregar-issue/issue-695/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-695/requirement-attack-matrix.parts/part-000.b64",
+      ".audit/entregar-issue/issue-695/requirement-attack-matrix.parts/part-001.b64",
+      ".audit/entregar-issue/issue-695/requirement-closure.json",
+      ".audit/entregar-issue/issue-695/risk-saturation.json",
+      ".audit/entregar-issue/issue-695/specification-snapshot.json",
+      ".audit/entregar-issue/issue-695/specification-sources/SRC-ISSUE-695.txt",
+      ".audit/entregar-issue/specification-snapshot.json"
     ]
   },
   "contract_version": "2026-08-20.3",
   "evidence_profile": "critical",
-  "remediation_mode": "targeted-remediation",
+  "remediation_mode": null,
   "producer": {
     "skill": "entregar-issue",
     "skill_sha256": "1b1872db4640f75c6c26c49bcd6663aef42be5706fc46199f44a740385767e6a"
@@ -141,9 +98,9 @@
   "artifacts": {
     "specification_snapshot": {
       "name": "specification-snapshot.json",
-      "sha256": "1f4fa431360a7055b60150a9223bc0d0ebd0266461acd3cce9dba28de108b226",
-      "logical_sha256": "1f4fa431360a7055b60150a9223bc0d0ebd0266461acd3cce9dba28de108b226",
-      "logical_size": 657,
+      "sha256": "cfb94fb81eddf574ddcbc4933f0dc2d01153e1151b69863574cc44be3210ce41",
+      "logical_sha256": "cfb94fb81eddf574ddcbc4933f0dc2d01153e1151b69863574cc44be3210ce41",
+      "logical_size": 575,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -151,9 +108,9 @@
     },
     "requirement_closure": {
       "name": "requirement-closure.json",
-      "sha256": "a39aca4a70faf34e988c2435b9eef3116d866c2b40768729f6e33f49bce25dad",
-      "logical_sha256": "a39aca4a70faf34e988c2435b9eef3116d866c2b40768729f6e33f49bce25dad",
-      "logical_size": 54840,
+      "sha256": "9a1706dd2c2b58ef0e489b4affe39c30a6b5a6e0d1bcbe9685c43fd72b08ed51",
+      "logical_sha256": "9a1706dd2c2b58ef0e489b4affe39c30a6b5a6e0d1bcbe9685c43fd72b08ed51",
+      "logical_size": 48204,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -161,19 +118,36 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "50895cc33eb8b0a54bbcf9df5bc786d1b2b5b5544775d34d5a730e9dae7dae2a",
-      "logical_sha256": "50895cc33eb8b0a54bbcf9df5bc786d1b2b5b5544775d34d5a730e9dae7dae2a",
-      "logical_size": 369038,
+      "sha256": "9f07be0a9e74975a4344a4db4479a16b446097e91b51fc4696cd8bc6a128cddd",
+      "logical_sha256": "47fe3efb78b7c8a3af60d12fc9152c64f9013a079852683bf5f34db93c4d4785",
+      "logical_size": 264791,
       "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
+        "format": "base64-shards-v1",
+        "version": 1,
+        "compression": "gzip",
+        "encoded_size": 16932,
+        "decoded_size": 264791,
+        "decoded_sha256": "47fe3efb78b7c8a3af60d12fc9152c64f9013a079852683bf5f34db93c4d4785",
+        "encoded_sha256": "596bbf8a29c4ea9924f97f1468ec75a9c2b2513d9a30a164077916df5581cb36",
+        "parts": [
+          {
+            "path": "requirement-attack-matrix.parts/part-000.b64",
+            "size": 12288,
+            "sha256": "6e3ee9b5e05d6b68828b010fb7a831fdb24016c822a3676a38a52d58051e8f94"
+          },
+          {
+            "path": "requirement-attack-matrix.parts/part-001.b64",
+            "size": 4644,
+            "sha256": "aad22458df4a1496d6d8c99f6108ee8af8c84ca34bc4938b6da65e709b195da9"
+          }
+        ]
       }
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "6fe0ca8e69186fe74bbbd2a1286c31e04f0b36eb988c5f66bb52a1d1767e10fc",
-      "logical_sha256": "6fe0ca8e69186fe74bbbd2a1286c31e04f0b36eb988c5f66bb52a1d1767e10fc",
-      "logical_size": 11980,
+      "sha256": "5c609ac92245cb5cabffdaa78d31097b62e55e6a2f8988a09ab14bae89c697e3",
+      "logical_sha256": "5c609ac92245cb5cabffdaa78d31097b62e55e6a2f8988a09ab14bae89c697e3",
+      "logical_size": 9551,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -181,9 +155,9 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "639d8701e9a2633d89c1f9168a6bbbd8d1d1572350dd47c9ea4b6eadf14a8886",
-      "logical_sha256": "639d8701e9a2633d89c1f9168a6bbbd8d1d1572350dd47c9ea4b6eadf14a8886",
-      "logical_size": 180,
+      "sha256": "afa8d914a0273b25004a1415051fb9e90547587b280c22ea4446ef5433351c91",
+      "logical_sha256": "afa8d914a0273b25004a1415051fb9e90547587b280c22ea4446ef5433351c91",
+      "logical_size": 131,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -191,49 +165,9 @@
     },
     "evidence_provenance": {
       "name": "evidence-provenance.json",
-      "sha256": "dc94dc131676969778794b80021b25c7adc67dd0cd6786a936d5a326e79407a9",
-      "logical_sha256": "dc94dc131676969778794b80021b25c7adc67dd0cd6786a936d5a326e79407a9",
-      "logical_size": 1525,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_escape_closure": {
-      "name": "audit-escape-closure.json",
-      "sha256": "e966415ea0a22d8db84e1f65f49c504de4cdfa35a8db237395b583dc3c7617fe",
-      "logical_sha256": "e966415ea0a22d8db84e1f65f49c504de4cdfa35a8db237395b583dc3c7617fe",
-      "logical_size": 3394,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "learning_closure": {
-      "name": "learning-closure.json",
-      "sha256": "4d691378f8386fa1245ba3141ec9dadee5cb55e64a151299bca2a522260f4b89",
-      "logical_sha256": "4d691378f8386fa1245ba3141ec9dadee5cb55e64a151299bca2a522260f4b89",
-      "logical_size": 932,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_remediation": {
-      "name": "audit-remediation.json",
-      "sha256": "7c698f846c83dc4dab96a0d95f47093558e43a82c188d0ddd0b8168ec39bd1ee",
-      "logical_sha256": "7c698f846c83dc4dab96a0d95f47093558e43a82c188d0ddd0b8168ec39bd1ee",
-      "logical_size": 2487,
-      "artifact_transport": {
-        "format": "plain-json",
-        "version": 1
-      }
-    },
-    "audit_source_result": {
-      "name": "audit-source-result.json",
-      "sha256": "2b04ec99c48ec8646cfe640d4ea8a7fa4552fd4b0db41a9b3a403c2977c1cc37",
-      "logical_sha256": "2b04ec99c48ec8646cfe640d4ea8a7fa4552fd4b0db41a9b3a403c2977c1cc37",
-      "logical_size": 1361,
+      "sha256": "6113abc74def7262f11d9bfe162c0fae7d796efe343c529e73b6c2dfb43c70c3",
+      "logical_sha256": "6113abc74def7262f11d9bfe162c0fae7d796efe343c529e73b6c2dfb43c70c3",
+      "logical_size": 1501,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -241,9 +175,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "32cebd02694db7d4a4d396f85a50f64963f10e0055c5049ec4df024cbc0b61cd",
-      "logical_sha256": "32cebd02694db7d4a4d396f85a50f64963f10e0055c5049ec4df024cbc0b61cd",
-      "logical_size": 23457,
+      "sha256": "947879b8490f61dcd91d5bd0433391a740ea4a1b421e245a15708bd5bffbc997",
+      "logical_sha256": "947879b8490f61dcd91d5bd0433391a740ea4a1b421e245a15708bd5bffbc997",
+      "logical_size": 11419,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -251,9 +185,9 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "131faaf63567ea8711db5eb8e0d6e10acb53bf1447157198d5e41b22f2d76b42",
-      "logical_sha256": "131faaf63567ea8711db5eb8e0d6e10acb53bf1447157198d5e41b22f2d76b42",
-      "logical_size": 2305,
+      "sha256": "c723909f0302a4d9d9d23ae6b5d8601ca83ea91d2d3b73dc4149d7c737e514dc",
+      "logical_sha256": "c723909f0302a4d9d9d23ae6b5d8601ca83ea91d2d3b73dc4149d7c737e514dc",
+      "logical_size": 1527,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -270,8 +204,8 @@
     "source_locations": {
       "applicable": true,
       "status": "passed",
-      "checked": 985,
-      "subject_sha": "7d42d5a6ab91d637f5f688e2b644015a535ba948",
+      "checked": 814,
+      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
       "evidence_artifacts": [
         "requirement_closure",
         "requirement_attack_matrix",
@@ -280,5 +214,5 @@
       ]
     }
   },
-  "previous_independent_rejection": true
+  "previous_independent_rejection": false
 }

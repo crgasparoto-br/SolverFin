@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+  "independent_release_audit": "pending",
+  "canonical_issue": 695,
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "source_text": "Permitir que uma intenção de **criar lançamento** capturada no WhatsApp resulte em proposta estruturada e revisável que possa ser confirmada ou rejeitada pelo usuário, sem criar um segundo motor de mutação financeira.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "observed": "Confirmation calls the canonical review facade, not a second transaction writer; conflicting confirm/reject produces one effect at most.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-002",
+      "source_text": "Propostas de criação de `Transaction` representadas pelo contrato canônico de `transaction_extraction`/fila de revisão.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:76",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:86",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "observed": "Canonical BANK_MESSAGE suggestion remains PENDING_REVIEW until a scoped confirmation; card or transfer variants are excluded.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-003",
+      "source_text": "Apresentar no WhatsApp um resumo controlado da proposta e permitir **confirmar**, **rejeitar** ou **cancelar**.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:135",
+      "positive_test": "apps/api/src/whatsapp-channel-service.test.ts:527",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:575",
+      "observed": "Controlled prompt includes three exact actions; malformed tokens do not invoke approval.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-004",
+      "source_text": "Persistir correlação entre mensagem de origem, proposta, fingerprint/versão, decisão e efeito.",
+      "implementation": "prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql:1",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295",
+      "observed": "Persisted journal links event, suggestion, fingerprint, decision and transaction; replay in fresh process retains the unique effect.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-005",
+      "source_text": "Revalidar vínculo do canal, usuário, organização, perfil, proposta e fingerprint no momento da decisão.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:190",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492",
+      "observed": "Authorization is checked under shared lock at decision; a forged profile or revoked link is excluded.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-006",
+      "source_text": "Reutilizar exatamente o mesmo serviço transacional que a fila canônica usa para aplicar o efeito.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "observed": "Only approveAiReviewDecisionForContext creates financial Transaction; confirm/reject race cannot produce incompatible effects.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-007",
+      "source_text": "**must_reuse:** a proposta financeira é uma sugestão canônica pendente; confirmar pelo WhatsApp executa o mesmo contrato de aprovação da fila.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "observed": "Positive approval and negative reject/cancel use canonical AiSuggestion transitions.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-008",
+      "source_text": "**must_not_behave:** nenhuma resposta do canal pode criar efeito financeiro fora da transação/validações da fila canônica.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:335",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "observed": "Finance mutations remain within shared database transaction and canonical approval; rejected/cancelled scenarios create zero transactions.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-009",
+      "source_text": "**precedence:** autorização atual + fingerprint atual da proposta prevalecem sobre contexto antigo da conversa.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:379",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492",
+      "observed": "Current link version and pending fingerprint are revalidated; stale or revoked link cannot authorize the decision.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-010",
+      "source_text": "**must_be_single_source:** após a proposta estruturada existir, texto original/provider não é relido para decidir o efeito.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:151",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:575",
+      "observed": "Decision reads persisted structured suggestion/fingerprint, not raw provider text; generic sim never mutates finance.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-011",
+      "source_text": "Rejeição, cancelamento e expiração nunca geram efeito financeiro.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:407",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "observed": "REJEITAR, CANCELAR and expired code all leave zero Transaction rows.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-012",
+      "source_text": "Confirmação repetida ou concorrente converge para um único efeito ou para o estado já resolvido.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:335",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295",
+      "observed": "Concurrent confirmations and replay across a fresh Node process converge to one persisted Transaction.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-013",
+      "source_text": "Estados conceituais equivalentes a:",
+      "implementation": "prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql:14",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "observed": "Database state check constrains pending/confirmed/rejected/cancelled/expired; an invalid late decision expires.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-014",
+      "source_text": "A proposta canônica continua com seus estados próprios; o estado conversacional apenas correlaciona a decisão do canal e não substitui `AiSuggestion.status`.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:447",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "observed": "Channel cancellation changes journal state but preserves pending AiSuggestion; rejection changes canonical suggestion.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-015",
+      "source_text": "A mensagem enviada mostra somente campos públicos controlados necessários à decisão: tipo, valor/moeda, data, descrição segura e conta/categoria quando resolvidas.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:116",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.test.ts:6",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.test.ts:30",
+      "observed": "Structured summary redacts formatted personal identifiers and truncates free-form labels; raw bank text is not exposed.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-016",
+      "source_text": "A resposta do usuário resolve a proposta exata por reply/contexto/token de correlação; `sim` genérico não pode escolher entre várias pendências.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:319",
+      "positive_test": "apps/api/src/whatsapp-channel-service.test.ts:575",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241",
+      "observed": "Explicit code selects exact proposal; generic sim and invalid token never approve either of two pending proposals.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-017",
+      "source_text": "Confirmar delega ao serviço canônico de aprovação; rejeitar delega à rejeição canônica quando aplicável; cancelar encerra apenas o fluxo conversacional sem efeito.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "observed": "Approve/reject delegate to canonical service; cancel is only a journal state change.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-018",
+      "source_text": "Toda solicitação de confirmação possui TTL finito e documentado.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:17",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "observed": "TTL is exactly 15 minutes; expiry is persisted and no implicit replay extends it.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-019",
+      "source_text": "Resposta após expiração não aplica efeito e orienta iniciar uma nova proposta.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:368",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "observed": "Expired confirmation returns incomplete and preserves zero financial effect.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-020",
+      "source_text": "Novo comando financeiro durante uma confirmação pendente não reutiliza silenciosamente a proposta antiga; deve criar/correlacionar fluxo próprio ou pedir resolução explícita.",
+      "implementation": "apps/api/src/whatsapp-channel-service.ts:307",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:575",
+      "observed": "A new CAPTURAR event correlates to its own source/suggestion token; generic follow-up cannot select one of two pending proposals.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-021",
+      "source_text": "Confirmar e rejeitar concorrentes nunca podem produzir dois efeitos incompatíveis.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:335",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "observed": "Concurrent confirm/reject resolves exclusively to one channel status, with 0 or 1 matched Transaction.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-022",
+      "source_text": "[ ] Proposta fica pendente até confirmação explícita.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:240",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "observed": "Pending proposal persists before outbound; zero transactions exist until exact confirmation code.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-023",
+      "source_text": "[ ] O primeiro corte cobre criação de lançamento e não amplia silenciosamente para outras mutações.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:76",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:351",
+      "observed": "Eligibility excludes card/transfer/installments; unrelated payment text follows read-only assistant path.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-024",
+      "source_text": "[ ] Confirmação usa o mesmo serviço/fingerprint/validações da fila de revisão.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263",
+      "observed": "Canonical review approval with fingerprint under shared DB transaction and scoped account check creates one transaction.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-025",
+      "source_text": "[ ] Confirmação repetida ou após reinício não duplica lançamento.",
+      "implementation": "apps/api/src/whatsapp-channel-event-repository.ts:20",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281",
+      "observed": "Same provider event and restart in another Node process never duplicate effects or outbound.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-026",
+      "source_text": "[ ] Rejeição, cancelamento e expiração não geram efeito.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:379",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466",
+      "observed": "Rejection, cancellation and expiry do not create financial effects.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-027",
+      "source_text": "[ ] Autorização do canal, tenant/perfil e recursos é revalidada no momento da decisão.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:190",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492",
+      "observed": "Link, tenant/profile, active account/category, fingerprint and expiry all rechecked before effect.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-028",
+      "source_text": "[ ] Múltiplas propostas pendentes não podem ser resolvidas por resposta ambígua.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.ts:319",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:575",
+      "observed": "Two concurrent pending proposals with different codes cannot be chosen by ambiguous sim.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-029",
+      "source_text": "[ ] Auditoria/correlação permite ligar mensagem, proposta, decisão e efeito sem registrar texto bruto sensível.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation-outbound.ts:15",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:129",
+      "negative_test": "apps/api/src/whatsapp-channel-service.test.ts:626",
+      "observed": "No plaintext code persists in replyText; journal stores token hash and foreign keys, provider raw message never stored.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-030",
+      "source_text": "[ ] Testes cobrem retry, reinício, expiração, cancelamento, concorrência e isolamento.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:219",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "observed": "PostgreSQL integration covers concurrent decisions, restart, expiry, cancellation and cross-profile denial.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    },
+    {
+      "id": "OBL-031",
+      "source_text": "Executar caminho feliz, resposta inválida, cancelamento, expiração, mesma confirmação repetida, reinício + mesma chave no mesmo entrypoint, duas respostas concorrentes, falha antes/depois do efeito e tentativa cross-profile. Providers devem ser fakes; os testes validam o contrato financeiro real.",
+      "implementation": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "positive_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295",
+      "negative_test": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263",
+      "observed": "Executed integration harness uses fake Meta transport/provider but real canonical DB approvals and conflicting paths.",
+      "execution_source": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122"
+    }
+  ]
+}

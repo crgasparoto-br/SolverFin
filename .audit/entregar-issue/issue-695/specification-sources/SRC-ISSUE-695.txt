@@ -1,0 +1,95 @@
+Parent epic: #689
+
+Depende de #694 e do vínculo/autorização do canal estarem operacionais.
+
+## Objetivo
+
+Permitir que uma intenção de **criar lançamento** capturada no WhatsApp resulte em proposta estruturada e revisável que possa ser confirmada ou rejeitada pelo usuário, sem criar um segundo motor de mutação financeira.
+
+## Fontes canônicas
+
+- `docs/AI_REVIEW_QUEUE.md`
+- `docs/BANK_MESSAGE_INBOX.md`
+- `docs/adr/0011-read-only-financial-assistant.md`
+- `docs/IMPORTS.md`
+- contratos de transação, tenant/autorização e auditoria existentes
+
+## Escopo do primeiro corte
+
+- Propostas de criação de `Transaction` representadas pelo contrato canônico de `transaction_extraction`/fila de revisão.
+- Apresentar no WhatsApp um resumo controlado da proposta e permitir **confirmar**, **rejeitar** ou **cancelar**.
+- Persistir correlação entre mensagem de origem, proposta, fingerprint/versão, decisão e efeito.
+- Revalidar vínculo do canal, usuário, organização, perfil, proposta e fingerprint no momento da decisão.
+- Reutilizar exatamente o mesmo serviço transacional que a fila canônica usa para aplicar o efeito.
+
+## Fora de escopo
+
+- Pagamento de fatura, exclusão, edição arbitrária, conciliação, transferência de dinheiro externa ou outra mutação que ainda não possua proposta/revisão canônica equivalente.
+- Criar um novo modelo financeiro de “proposta WhatsApp”.
+- Confirmar por texto ambíguo quando houver mais de uma proposta pendente sem correlação inequívoca.
+- Provider de IA como autoridade para valor, conta, moeda, categoria, perfil ou autorização.
+- Execução silenciosa por timeout, ausência de resposta ou heurística.
+
+## Invariantes
+
+1. **must_reuse:** a proposta financeira é uma sugestão canônica pendente; confirmar pelo WhatsApp executa o mesmo contrato de aprovação da fila.
+2. **must_not_behave:** nenhuma resposta do canal pode criar efeito financeiro fora da transação/validações da fila canônica.
+3. **precedence:** autorização atual + fingerprint atual da proposta prevalecem sobre contexto antigo da conversa.
+4. **must_be_single_source:** após a proposta estruturada existir, texto original/provider não é relido para decidir o efeito.
+5. Rejeição, cancelamento e expiração nunca geram efeito financeiro.
+6. Confirmação repetida ou concorrente converge para um único efeito ou para o estado já resolvido.
+
+## Máquina de estados da confirmação
+
+Estados conceituais equivalentes a:
+
+- `pending_confirmation`;
+- `confirming`;
+- `confirmed`;
+- `rejected`;
+- `cancelled`;
+- `expired`.
+
+A proposta canônica continua com seus estados próprios; o estado conversacional apenas correlaciona a decisão do canal e não substitui `AiSuggestion.status`.
+
+## Fluxo
+
+1. Uma captura de #694 produz/identifica `transaction_extraction` pendente.
+2. O sistema persiste estado de confirmação, proposta/fingerprint e correlação **antes** de enviar o pedido de confirmação.
+3. A mensagem enviada mostra somente campos públicos controlados necessários à decisão: tipo, valor/moeda, data, descrição segura e conta/categoria quando resolvidas.
+4. A resposta do usuário resolve a proposta exata por reply/contexto/token de correlação; `sim` genérico não pode escolher entre várias pendências.
+5. Antes do efeito, revalidar vínculo, tenant/perfil, estado, expiração, fingerprint e elegibilidade dos recursos.
+6. Confirmar delega ao serviço canônico de aprovação; rejeitar delega à rejeição canônica quando aplicável; cancelar encerra apenas o fluxo conversacional sem efeito.
+7. Persistir o resultado antes de emitir a resposta final.
+8. Retry/replay do mesmo callback/mensagem retorna o resultado persistido sem duplicar lançamento nem outbound lógico.
+
+## Expiração e cancelamento
+
+- Toda solicitação de confirmação possui TTL finito e documentado.
+- Resposta após expiração não aplica efeito e orienta iniciar uma nova proposta.
+- Cancelamento é idempotente.
+- Novo comando financeiro durante uma confirmação pendente não reutiliza silenciosamente a proposta antiga; deve criar/correlacionar fluxo próprio ou pedir resolução explícita.
+
+## Falhas e concorrência
+
+- Falha antes da aprovação: proposta permanece sem efeito e pode ser repetida conforme estado.
+- Falha durante a aprovação: atomicidade da fila determina rollback/convergência; o canal não “compensa” criando outro lançamento.
+- Falha depois do efeito e antes da resposta: retry lê o estado persistido e responde sem repetir o efeito.
+- Duas confirmações concorrentes: uma decisão vence; a outra recebe estado idempotente/conflito controlado.
+- Confirmar e rejeitar concorrentes nunca podem produzir dois efeitos incompatíveis.
+
+## Critérios de aceite
+
+- [ ] Proposta fica pendente até confirmação explícita.
+- [ ] O primeiro corte cobre criação de lançamento e não amplia silenciosamente para outras mutações.
+- [ ] Confirmação usa o mesmo serviço/fingerprint/validações da fila de revisão.
+- [ ] Confirmação repetida ou após reinício não duplica lançamento.
+- [ ] Rejeição, cancelamento e expiração não geram efeito.
+- [ ] Autorização do canal, tenant/perfil e recursos é revalidada no momento da decisão.
+- [ ] Múltiplas propostas pendentes não podem ser resolvidas por resposta ambígua.
+- [ ] Auditoria/correlação permite ligar mensagem, proposta, decisão e efeito sem registrar texto bruto sensível.
+- [ ] Testes cobrem retry, reinício, expiração, cancelamento, concorrência e isolamento.
+
+## Considerações de testes
+
+Executar caminho feliz, resposta inválida, cancelamento, expiração, mesma confirmação repetida, reinício + mesma chave no mesmo entrypoint, duas respostas concorrentes, falha antes/depois do efeito e tentativa cross-profile. Providers devem ser fakes; os testes validam o contrato financeiro real.

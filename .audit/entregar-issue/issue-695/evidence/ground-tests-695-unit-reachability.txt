@@ -1,0 +1,8 @@
+HEAD: 511a6644b3563ebef958a577f4e055eaddd0ea67
+COMMAND: npm run test
+EXIT_CODE: 0
+GITHUB_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122
+CRITICAL_VALIDATION: success
+JOBCHECK: all unit and PostgreSQL integration scripts reached and passed
+REACHED: apps/api/src/whatsapp-channel-confirmation.test.ts
+REACHED: apps/api/src/whatsapp-channel-service.test.ts

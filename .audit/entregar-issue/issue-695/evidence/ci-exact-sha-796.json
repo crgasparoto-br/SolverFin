@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 695,
+  "pull_request": 796,
+  "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+  "repository_ci_run_id": 44070478122,
+  "repository_ci_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122",
+  "conclusion": "success",
+  "jobs": {
+    "CI risk": "success",
+    "Merge preview compatibility": "success",
+    "CRITICAL validation": "success",
+    "Delivery V2 gate": "success",
+    "Repository CI gate": "success"
+  },
+  "command_evidence": [
+    "npm run test",
+    "npm run test:integration --workspace @solverfin/api",
+    "npm run lint",
+    "npm run typecheck",
+    "npm run prisma:validate",
+    "npm run db:deploy",
+    "npm run build"
+  ],
+  "junit_artifact_id": 14322971642,
+  "junit_sha256": "ac4110e56ca71c6e2288e1db46933c248137639925ac932762068c155066e92b",
+  "junit_testcases": 34,
+  "junit_failures": 0
+}

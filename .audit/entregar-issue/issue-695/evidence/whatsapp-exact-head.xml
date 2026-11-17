@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel-management.integration.test.js" time="0.194692" classname="test"/>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel-retention.integration.test.js" time="2.739888" classname="test"/>
+	<testcase name=".tmp-tests/api-integration/whatsapp-channel.integration.test.js" time="0.322936" classname="test"/>
+	<testcase name="Meta webhook verifies the exact byte buffer before parsing" time="0.001682" classname="test"/>
+	<testcase name="Meta GET challenge is allowed only with configured token and subscribe mode" time="0.000280" classname="test"/>
+	<testcase name="Meta parser ignores status updates and unrelated business accounts" time="0.001168" classname="test"/>
+	<testcase name="Meta parser preserves base64 WAMIDs and rejects unsafe IDs" time="0.000392" classname="test"/>
+	<testcase name="Meta webhook uses BSUID without phone and rejects ambiguous sender identity" time="0.000311" classname="test"/>
+	<testcase name="Meta parser accepts hidden phone with BSUID but rejects malformed senders" time="0.000286" classname="test"/>
+	<testcase name="Meta outbound uses restricted HTTPS graph endpoint and no untrusted URL" time="0.018115" classname="test"/>
+	<testcase name="Meta unavailable, throttled and uncertain failures are distinguishable without leaking provider details" time="0.000966" classname="test"/>
+	<testcase name="Signed webhook dispatches messages only after signature; status-only delivery is acknowledged" time="0.001482" classname="test"/>
+	<testcase name="Signed BSUID webhook accepts hidden phone and blocks malformed IDs" time="0.001318" classname="test"/>
+	<testcase name="consulta delega ao assistente tenant-scoped e retry não envia resposta duplicada" time="0.003072" classname="test"/>
+	<testcase name="falha terminal do assistente encerra o evento com uma resposta segura" time="0.000582" classname="test"/>
+	<testcase name="pergunta maior que o contrato canônico recebe resposta terminal sem retry" time="0.000420" classname="test"/>
+	<testcase name="captura apenas gera sugestão pendente na Inbox, nunca um lançamento financeiro" time="0.000851" classname="test"/>
+	<testcase name="sem consentimento, captura não simula sugestão ou aprovação" time="0.000377" classname="test"/>
+	<testcase name="captura ainda em processamento mantém replay do mesmo evento sem confirmação falsa" time="0.000908" classname="test"/>
+	<testcase name="origem não vinculada e identidade de outro número não obtêm contexto privado" time="0.000427" classname="test"/>
+	<testcase name="intenção de pagamento permanece no assistente somente leitura, sem capturar ou escrever" time="0.000482" classname="test"/>
+	<testcase name="revogação durante processamento substitui resposta financeira por orientação segura" time="0.000749" classname="test"/>
+	<testcase name="revogação depois de persistir e antes do outbound bloqueia resposta antiga" time="0.000595" classname="test"/>
+	<testcase name="crash após persistência antes do envio: retry despacha a saída persistida sem recalcular" time="0.000287" classname="test"/>
+	<testcase name="duas mensagens concorrentes com o mesmo ID reivindicam no máximo uma execução" time="0.000399" classname="test"/>
+	<testcase name="429 permite retry de envio sem recalcular; timeout ambíguo nunca reenvia" time="0.000731" classname="test"/>
+	<testcase name="cancelamento e expiração não produzem mutações nem chamadas externas adicionais" time="0.000205" classname="test"/>
+	<testcase name="pairing pede confirmação no app sem revelar a validade do código" time="0.000198" classname="test"/>
+	<testcase name="captura com proposta elegível persiste confirmação antes do outbound" time="0.000381" classname="test"/>
+	<testcase name="decisão explícita vinculada não usa o assistente nem repete efeito no retry" time="0.000273" classname="test"/>
+	<testcase name="resposta ambígua e token inválido nunca chegam ao serviço de aprovação" time="0.000453" classname="test"/>
+	<testcase name="revogação antes do envio de uma confirmação bloqueia qualquer retorno financeiro" time="0.000277" classname="test"/>
+	<testcase name="resposta sem marcador nunca persiste capacidade em texto claro" time="0.000250" classname="test"/>
+	<testcase name="falha de reconstrução do código impede envio e não expõe marcador" time="0.000395" classname="test"/>
+	<!-- tests 34 -->
+	<!-- suites 0 -->
+	<!-- pass 34 -->
+	<!-- fail 0 -->
+	<!-- cancelled 0 -->
+	<!-- skipped 0 -->
+	<!-- todo 0 -->
+	<!-- duration_ms 3601.707488 -->
+</testsuites>

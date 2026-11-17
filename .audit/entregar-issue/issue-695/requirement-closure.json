@@ -1,0 +1,935 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": ".audit/entregar-issue/issue-695/specification-snapshot.json",
+    "sha256": "cfb94fb81eddf574ddcbc4933f0dc2d01153e1151b69863574cc44be3210ce41"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-695",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "bf545c1be37dd532f641f23785046e75855f2301ba13cafa3527b31c1173f01b",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 7,
+      "source_text": "Permitir que uma intenção de **criar lançamento** capturada no WhatsApp resulte em proposta estruturada e revisável que possa ser confirmada ou rejeitada pelo usuário, sem criar um segundo motor de mutação financeira.",
+      "flags": [
+        "negative",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:413; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; actual observed assertion: Confirmation calls the canonical review facade, not a second transaction writer; conflicting confirm/reject produces one effect at most. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "62ebf444618d56926684ca762565ad935111d89c882e32a5c3b029852f910b4a",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 19,
+      "source_text": "Propostas de criação de `Transaction` representadas pelo contrato canônico de `transaction_extraction`/fila de revisão.",
+      "flags": [
+        "atomicity",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:76; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:86; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; actual observed assertion: Canonical BANK_MESSAGE suggestion remains PENDING_REVIEW until a scoped confirmation; card or transfer variants are excluded. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "2b62ab829d7f5c3afb868e44953a3c8e7a41b76a99c911ff3934d5fcf5991dfe",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 20,
+      "source_text": "Apresentar no WhatsApp um resumo controlado da proposta e permitir **confirmar**, **rejeitar** ou **cancelar**.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:135; positive apps/api/src/whatsapp-channel-service.test.ts:527; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:575; actual observed assertion: Controlled prompt includes three exact actions; malformed tokens do not invoke approval. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "c20d283d093095d1242aa8851de5617f4c5e9c70922f1676c22dbce73b8c8772",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 21,
+      "source_text": "Persistir correlação entre mensagem de origem, proposta, fingerprint/versão, decisão e efeito.",
+      "flags": [
+        "freshness",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql:1; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295; actual observed assertion: Persisted journal links event, suggestion, fingerprint, decision and transaction; replay in fresh process retains the unique effect. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "add1c208026f9585a87d3684029b50cc2475011a782b97917cd10e21382db368",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 22,
+      "source_text": "Revalidar vínculo do canal, usuário, organização, perfil, proposta e fingerprint no momento da decisão.",
+      "flags": [
+        "reference-liveness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:190; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492; actual observed assertion: Authorization is checked under shared lock at decision; a forged profile or revoked link is excluded. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "40fa9c2a46359ab0411cb53c731e5da40ccdf8d1ab1a0f246499d7dcfa53c1e3",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 23,
+      "source_text": "Reutilizar exatamente o mesmo serviço transacional que a fila canônica usa para aplicar o efeito.",
+      "flags": [
+        "atomicity",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:413; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; actual observed assertion: Only approveAiReviewDecisionForContext creates financial Transaction; confirm/reject race cannot produce incompatible effects. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "563aad57a3e891b70d0f2d91e8b41c7cd6f14d0045d795173a518f9d0ecf0bd7",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 35,
+      "source_text": "**must_reuse:** a proposta financeira é uma sugestão canônica pendente; confirmar pelo WhatsApp executa o mesmo contrato de aprovação da fila.",
+      "flags": [
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:413; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; actual observed assertion: Positive approval and negative reject/cancel use canonical AiSuggestion transitions. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "c504f166ed191ba067a27d6b51edaf3cb6d3e80a7ea2114b4e0f81e5f99add2a",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 36,
+      "source_text": "**must_not_behave:** nenhuma resposta do canal pode criar efeito financeiro fora da transação/validações da fila canônica.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:335; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; actual observed assertion: Finance mutations remain within shared database transaction and canonical approval; rejected/cancelled scenarios create zero transactions. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "e40543c676cd924621a7fc64e5b9f5074f675b09f2427aaac9d56b87654731ac",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 37,
+      "source_text": "**precedence:** autorização atual + fingerprint atual da proposta prevalecem sobre contexto antigo da conversa.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:379; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492; actual observed assertion: Current link version and pending fingerprint are revalidated; stale or revoked link cannot authorize the decision. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "18c07c873fe046ac6a063078c28861259fb1013531ca0163404ca13697a70520",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 38,
+      "source_text": "**must_be_single_source:** após a proposta estruturada existir, texto original/provider não é relido para decidir o efeito.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:151; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:575; actual observed assertion: Decision reads persisted structured suggestion/fingerprint, not raw provider text; generic sim never mutates finance. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "3a02298513add49e046f59e1ec888f718e19058a2627e86a4ad6abe955cc2f88",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 39,
+      "source_text": "Rejeição, cancelamento e expiração nunca geram efeito financeiro.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:407; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; actual observed assertion: REJEITAR, CANCELAR and expired code all leave zero Transaction rows. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "ef962258eb01df0f505da96f0f69ec46a775c4ed4e5da9c3c9a0b86cdc83448e",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 40,
+      "source_text": "Confirmação repetida ou concorrente converge para um único efeito ou para o estado já resolvido.",
+      "flags": [
+        "atomicity",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:335; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295; actual observed assertion: Concurrent confirmations and replay across a fresh Node process converge to one persisted Transaction. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "45c565ec8ce6dabf1cedd53d80ae8fc7782750add54dde248aac5e94728cc0f8",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 44,
+      "source_text": "Estados conceituais equivalentes a:",
+      "flags": [
+        "exhaustive",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql:14; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; actual observed assertion: Database state check constrains pending/confirmed/rejected/cancelled/expired; an invalid late decision expires. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "de2648af99d3f9bcad3be3675de7f579f2fb0e066a0028725fef6a4f0e023e49",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 53,
+      "source_text": "A proposta canônica continua com seus estados próprios; o estado conversacional apenas correlaciona a decisão do canal e não substitui `AiSuggestion.status`.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:447; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; actual observed assertion: Channel cancellation changes journal state but preserves pending AiSuggestion; rejection changes canonical suggestion. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "dedcc926c7be903c1b71cbed8f446b984dd12059a9c2ea9eb0339242572d07de",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 59,
+      "source_text": "A mensagem enviada mostra somente campos públicos controlados necessários à decisão: tipo, valor/moeda, data, descrição segura e conta/categoria quando resolvidas.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-015"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:116; positive apps/api/src/whatsapp-channel-confirmation.test.ts:6; discriminating negative apps/api/src/whatsapp-channel-confirmation.test.ts:30; actual observed assertion: Structured summary redacts formatted personal identifiers and truncates free-form labels; raw bank text is not exposed. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "68e1cbbd6a7bb8252c5d7edfcede70449f1a141d7191ea0cfbfbbe5e59a3d35e",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 60,
+      "source_text": "A resposta do usuário resolve a proposta exata por reply/contexto/token de correlação; `sim` genérico não pode escolher entre várias pendências.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-016"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:319; positive apps/api/src/whatsapp-channel-service.test.ts:575; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241; actual observed assertion: Explicit code selects exact proposal; generic sim and invalid token never approve either of two pending proposals. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "c4542d980e6348bd85327d242b730c9478cecf61abcd30b4e3e2140ab929ed1b",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 62,
+      "source_text": "Confirmar delega ao serviço canônico de aprovação; rejeitar delega à rejeição canônica quando aplicável; cancelar encerra apenas o fluxo conversacional sem efeito.",
+      "flags": [
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:413; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; actual observed assertion: Approve/reject delegate to canonical service; cancel is only a journal state change. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "601a579255737577d0820124232ebd62f123ee5f86a8d5a50362a7cb58c38a8e",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 68,
+      "source_text": "Toda solicitação de confirmação possui TTL finito e documentado.",
+      "flags": [
+        "exhaustive",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:17; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; actual observed assertion: TTL is exactly 15 minutes; expiry is persisted and no implicit replay extends it. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "592b11ea076bdd1cb8d56e6fc66db254134972b5d7b3e086aee8788cf3b2458a",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 69,
+      "source_text": "Resposta após expiração não aplica efeito e orienta iniciar uma nova proposta.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-019"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:368; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; actual observed assertion: Expired confirmation returns incomplete and preserves zero financial effect. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "009e2fde2b06698938e65445122d336fd423956bbab464081fbb009c1fc92ca2",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 71,
+      "source_text": "Novo comando financeiro durante uma confirmação pendente não reutiliza silenciosamente a proposta antiga; deve criar/correlacionar fluxo próprio ou pedir resolução explícita.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-020"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-service.ts:307; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:575; actual observed assertion: A new CAPTURAR event correlates to its own source/suggestion token; generic follow-up cannot select one of two pending proposals. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-021",
+      "candidate_key": "4d4b2fce94aa636b0b96489ae1ed787d348c5515d46c9ca24f9cae9a6e591630",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 79,
+      "source_text": "Confirmar e rejeitar concorrentes nunca podem produzir dois efeitos incompatíveis.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-021"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:335; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; actual observed assertion: Concurrent confirm/reject resolves exclusively to one channel status, with 0 or 1 matched Transaction. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-022",
+      "candidate_key": "548759a9333ac1db336e3a8d4bf15d68d1ad7ee4fea21b43c0298ab6c1b66a7d",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 83,
+      "source_text": "[ ] Proposta fica pendente até confirmação explícita.",
+      "flags": [
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-022"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:240; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; actual observed assertion: Pending proposal persists before outbound; zero transactions exist until exact confirmation code. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-023",
+      "candidate_key": "c21f43d9634d1111ad06342507d51f81ddf8e48d67adb7f2a508d285d0ca6e97",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 84,
+      "source_text": "[ ] O primeiro corte cobre criação de lançamento e não amplia silenciosamente para outras mutações.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-023"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:76; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:351; actual observed assertion: Eligibility excludes card/transfer/installments; unrelated payment text follows read-only assistant path. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-024",
+      "candidate_key": "f87c76c09946cdfc4fe9b0607835614cae9bd188caa8f1e853f321464c458d42",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 85,
+      "source_text": "[ ] Confirmação usa o mesmo serviço/fingerprint/validações da fila de revisão.",
+      "flags": [
+        "aftermath",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-024"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:413; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263; actual observed assertion: Canonical review approval with fingerprint under shared DB transaction and scoped account check creates one transaction. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-025",
+      "candidate_key": "ed2c613339ff96bae141cabdc0a437dcb88059c6e06891074d09f0fcd1f9403e",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 86,
+      "source_text": "[ ] Confirmação repetida ou após reinício não duplica lançamento.",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-025"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-event-repository.ts:20; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281; actual observed assertion: Same provider event and restart in another Node process never duplicate effects or outbound. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-026",
+      "candidate_key": "a51433b9337bb80b0e4c04453cd8b79aa76203123f2a4d766952cecbe9b7cfb2",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 87,
+      "source_text": "[ ] Rejeição, cancelamento e expiração não geram efeito.",
+      "flags": [
+        "negative",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-026"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:379; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:466; actual observed assertion: Rejection, cancellation and expiry do not create financial effects. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-027",
+      "candidate_key": "9e3f98883f32422615a073eb07265165996646f70cd8a8014d9a67223bf2573d",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 88,
+      "source_text": "[ ] Autorização do canal, tenant/perfil e recursos é revalidada no momento da decisão.",
+      "flags": [
+        "reference-liveness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-027"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:190; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492; actual observed assertion: Link, tenant/profile, active account/category, fingerprint and expiry all rechecked before effect. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-028",
+      "candidate_key": "6a05a55cb6afd6e41a9e9aa09d33277b33a8e3066a7ab77b0ec4929b3e7020fe",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 89,
+      "source_text": "[ ] Múltiplas propostas pendentes não podem ser resolvidas por resposta ambígua.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-028"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.ts:319; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:575; actual observed assertion: Two concurrent pending proposals with different codes cannot be chosen by ambiguous sim. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-029",
+      "candidate_key": "be0d495a4f11a6a7f154ddd90c3c9525f92b8695272a5dd8fa8cd5606cc3015c",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 90,
+      "source_text": "[ ] Auditoria/correlação permite ligar mensagem, proposta, decisão e efeito sem registrar texto bruto sensível.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-029"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation-outbound.ts:15; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:129; discriminating negative apps/api/src/whatsapp-channel-service.test.ts:626; actual observed assertion: No plaintext code persists in replyText; journal stores token hash and foreign keys, provider raw message never stored. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-030",
+      "candidate_key": "e43d70ecee0ec935e7baf2e51fc8ba61cf3e6ccf965b5d596f79de8259db64e3",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 91,
+      "source_text": "[ ] Testes cobrem retry, reinício, expiração, cancelamento, concorrência e isolamento.",
+      "flags": [
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-030"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.integration.test.ts:219; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416; actual observed assertion: PostgreSQL integration covers concurrent decisions, restart, expiry, cancellation and cross-profile denial. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    },
+    {
+      "id": "OBL-031",
+      "candidate_key": "b802da276513144a990afa4b5781fb4d292c6a3b9011935e2115c17c00a7c541",
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "source_line": 95,
+      "source_text": "Executar caminho feliz, resposta inválida, cancelamento, expiração, mesma confirmação repetida, reinício + mesma chave no mesmo entrypoint, duas respostas concorrentes, falha antes/depois do efeito e tentativa cross-profile. Providers devem ser fakes; os testes validam o contrato financeiro real.",
+      "flags": [
+        "temporal",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-695-031"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67; producer apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; positive apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295; discriminating negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263; actual observed assertion: Executed integration harness uses fake Meta transport/provider but real canonical DB approvals and conflicting paths. CRITICAL CI run 44070478122 completed success, with npm test and PostgreSQL integration reached. The independent release audit is pending."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-695",
+      "source_sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "candidate_count": 31,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029",
+        "OBL-030",
+        "OBL-031"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Issue explicitly prohibits parallel finance engine, stale suggestion reuse and provider-derived decisions. These are structurally constrained at the canonical mutation boundary.",
+    "entries": [
+      {
+        "id": "SIC-695001",
+        "kind": "forbidden-implementation",
+        "requirement_ids": [
+          "REQ-695-001",
+          "REQ-695-006",
+          "REQ-695-008"
+        ],
+        "obligation_ids": [
+          "OBL-001",
+          "OBL-006",
+          "OBL-008"
+        ],
+        "plausible_wrong_implementation": "Create Transaction directly from WhatsApp instead of canonical AiSuggestion approval.",
+        "canonical_path": "apps/api/src/whatsapp-channel-confirmation.ts:413",
+        "competing_paths": [
+          "apps/api/src/whatsapp-channel-service.ts:307",
+          "apps/api/src/ai-review-queue-public-decision-service.ts:47"
+        ],
+        "evidence_ids": [
+          "EVID-695-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416"
+        ]
+      },
+      {
+        "id": "SIC-695002",
+        "kind": "structural",
+        "requirement_ids": [
+          "REQ-695-010",
+          "REQ-695-020"
+        ],
+        "obligation_ids": [
+          "OBL-010",
+          "OBL-020"
+        ],
+        "plausible_wrong_implementation": "Recompute Transaction from original provider text or attach new inbound CAPTURAR to an unrelated pending suggestion.",
+        "canonical_path": "apps/api/src/whatsapp-channel-confirmation.ts:151",
+        "competing_paths": [
+          "apps/api/src/whatsapp-channel-service.ts:307",
+          "apps/api/src/whatsapp-channel-event-repository.ts:20"
+        ],
+        "evidence_ids": [
+          "EVID-695-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:241"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-service.test.ts:575"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "Durable journal records source and decision events, version/fingerprint, link/profile and optional transaction for historical replay and result reconstruction.",
+    "entries": [
+      {
+        "id": "RMC-695001",
+        "contract_kind": "read-model",
+        "requirement_ids": [
+          "REQ-695-004",
+          "REQ-695-012",
+          "REQ-695-029"
+        ],
+        "required_fields": [
+          "sourceEventId",
+          "decisionEventId",
+          "suggestionId",
+          "fingerprint",
+          "linkVersion",
+          "transactionId",
+          "status"
+        ],
+        "producer_evidence": [
+          "apps/api/src/whatsapp-channel-confirmation.ts:255",
+          "apps/api/src/whatsapp-channel-confirmation.ts:447"
+        ],
+        "public_projection_evidence": [
+          "apps/api/src/whatsapp-channel-service.ts:287"
+        ],
+        "consumer_evidence": [
+          "apps/api/src/whatsapp-channel-confirmation.ts:342"
+        ],
+        "visible_surface_evidence": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:295"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Revalidations use the persisted suggestion fingerprint and canonical review service, not the original WhatsApp text or provider-derived financial fields.",
+    "entries": [
+      {
+        "id": "CSC-695001",
+        "semantic_field": "financial transaction values/account/tenant and fingerprint",
+        "canonical_source": "AiSuggestion.payload and canonical AiReviewQueue decision facade",
+        "alternative_sources": [
+          "original WhatsApp bank message",
+          "Meta provider text or sender phone number"
+        ],
+        "surfaces": [
+          "apps/api/src/whatsapp-channel-confirmation.ts:151",
+          "apps/api/src/whatsapp-channel-confirmation.ts:413",
+          "apps/api/src/whatsapp-channel-service.ts:307"
+        ],
+        "evidence_ids": [
+          "EVID-695-JUNIT"
+        ],
+        "scenario_ids": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:281"
+        ],
+        "negative_control_evidence": [
+          "apps/api/src/whatsapp-channel-service.test.ts:575"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "persisted structured suggestion for the active financialProfileId",
+          "alternative_values": [
+            "generic sim from same sender",
+            "different active financialProfileId on forged channel link"
+          ]
+        }
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Compared WhatsApp channel doc with AI_REVIEW_QUEUE and BANK_MESSAGE_INBOX canonical contracts, including deny rules for payments and Meta authorization.",
+    "old_contract_terms": [
+      "WhatsApp only supports read-only consultation and reviewable capture in issue #694"
+    ],
+    "new_contract_terms": [
+      "Confirm/reject canonical transaction_extraction via explicit token; payments and other mutations remain forbidden"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/WHATSAPP_CHANNEL.md",
+        "line": 3,
+        "text": "WhatsApp continues read-only consultation and canonical Inbox capture while explicit confirmation of simple proposals is now supported.",
+        "term": "Confirm/reject canonical transaction_extraction via explicit token",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "EVID-695-JUNIT"
+        ]
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "git grep -n WhatsApp docs/AI_REVIEW_QUEUE.md docs/BANK_MESSAGE_INBOX.md docs/WHATSAPP_CHANNEL.md docs/adr at exact material SHA; no conflicting live mutation policy."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": [
+      {
+        "path": "issue-695",
+        "line": 26,
+        "text": "Pagamento de fatura, exclusão, edição arbitrária, conciliação e transferência externa fora do escopo",
+        "disposition": "canonical-decision",
+        "decision_source_id": "SRC-ISSUE-695",
+        "rationale": "These explicit excluded mutations remain forbidden; the first cut uses only transaction_extraction confirmation and the independent release audit remains pending."
+      }
+    ]
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-695-001",
+      "REQ-695-002",
+      "REQ-695-003",
+      "REQ-695-004",
+      "REQ-695-005",
+      "REQ-695-006",
+      "REQ-695-007",
+      "REQ-695-008",
+      "REQ-695-009",
+      "REQ-695-010",
+      "REQ-695-011",
+      "REQ-695-012",
+      "REQ-695-013",
+      "REQ-695-014",
+      "REQ-695-015",
+      "REQ-695-016",
+      "REQ-695-017",
+      "REQ-695-018",
+      "REQ-695-019",
+      "REQ-695-020",
+      "REQ-695-021",
+      "REQ-695-022",
+      "REQ-695-023",
+      "REQ-695-024",
+      "REQ-695-025",
+      "REQ-695-026",
+      "REQ-695-027",
+      "REQ-695-028",
+      "REQ-695-029",
+      "REQ-695-030",
+      "REQ-695-031"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-021",
+      "OBL-022",
+      "OBL-023",
+      "OBL-024",
+      "OBL-025",
+      "OBL-026",
+      "OBL-027",
+      "OBL-028",
+      "OBL-029",
+      "OBL-030",
+      "OBL-031"
+    ],
+    "evidence": [
+      "evidence/whatsapp-exact-head.xml",
+      "evidence/ci-exact-sha-796.json",
+      "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231",
+      "apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416",
+      "apps/api/src/whatsapp-channel-confirmation.test.ts:6",
+      "apps/api/src/whatsapp-channel-service.test.ts:527",
+      "docs/WHATSAPP_CHANNEL.md:85"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

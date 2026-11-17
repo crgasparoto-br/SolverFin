@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-005-01",
+        "NC-695-009-01",
+        "NC-695-027-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "authorized-channel-link",
+          "reason": "Issue #695 OBL-027: Link, tenant/profile, active account/category, fingerprint and expiry all rechecked before effect. Observed at apps/api/src/whatsapp-channel-confirmation.ts:190; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492.",
+          "control_ids": [
+            "NC-695-005-01",
+            "NC-695-009-01",
+            "NC-695-027-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-005-03",
+        "NC-695-027-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "tenant-scope-isolation",
+          "reason": "Issue #695 OBL-027: Link, tenant/profile, active account/category, fingerprint and expiry all rechecked before effect. Observed at apps/api/src/whatsapp-channel-confirmation.ts:190; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492.",
+          "control_ids": [
+            "NC-695-005-03",
+            "NC-695-027-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-015-02",
+        "NC-695-029-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "signed-webhook",
+          "reason": "Issue #695 OBL-029: No plaintext code persists in replyText; journal stores token hash and foreign keys, provider raw message never stored. Observed at apps/api/src/whatsapp-channel-confirmation-outbound.ts:15; negative apps/api/src/whatsapp-channel-service.test.ts:626.",
+          "control_ids": [
+            "NC-695-015-02",
+            "NC-695-029-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-004-01",
+        "NC-695-005-02",
+        "NC-695-009-02",
+        "NC-695-027-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "stale-fingerprint-and-link",
+          "reason": "Issue #695 OBL-027: Link, tenant/profile, active account/category, fingerprint and expiry all rechecked before effect. Observed at apps/api/src/whatsapp-channel-confirmation.ts:190; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:492.",
+          "control_ids": [
+            "NC-695-004-01",
+            "NC-695-005-02",
+            "NC-695-009-02",
+            "NC-695-027-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-010-03",
+        "NC-695-019-01",
+        "NC-695-020-02",
+        "NC-695-025-02",
+        "NC-695-031-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "expiry-and-replay",
+          "reason": "Issue #695 OBL-031: Executed integration harness uses fake Meta transport/provider but real canonical DB approvals and conflicting paths. Observed at apps/api/src/whatsapp-channel-confirmation.integration.test.ts:231; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:263.",
+          "control_ids": [
+            "NC-695-010-03",
+            "NC-695-019-01",
+            "NC-695-020-02",
+            "NC-695-025-02",
+            "NC-695-031-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-030-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "competing-decisions",
+          "reason": "Issue #695 OBL-030: PostgreSQL integration covers concurrent decisions, restart, expiry, cancellation and cross-profile denial. Observed at apps/api/src/whatsapp-channel-confirmation.integration.test.ts:219; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416.",
+          "control_ids": [
+            "NC-695-030-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-025-01",
+        "NC-695-030-01",
+        "NC-695-031-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once.",
+          "control_ids": [
+            "NC-695-025-01",
+            "NC-695-030-01",
+            "NC-695-031-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-008-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "atomic-financial-write",
+          "reason": "Issue #695 OBL-008: Finance mutations remain within shared database transaction and canonical approval; rejected/cancelled scenarios create zero transactions. Observed at apps/api/src/whatsapp-channel-confirmation.ts:335; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:439.",
+          "control_ids": [
+            "NC-695-008-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-001-01",
+        "NC-695-006-01",
+        "NC-695-010-01",
+        "NC-695-010-02",
+        "NC-695-020-01",
+        "NC-695-030-02",
+        "NC-695-030-04",
+        "NC-695-030-T01",
+        "NC-695-030-T02",
+        "NC-695-030-T03",
+        "NC-695-030-T04",
+        "NC-695-030-T05",
+        "NC-695-030-T06"
+      ],
+      "dimensions": [
+        {
+          "surface": "canonical-financial-decision",
+          "reason": "Issue #695 OBL-030: PostgreSQL integration covers concurrent decisions, restart, expiry, cancellation and cross-profile denial. Observed at apps/api/src/whatsapp-channel-confirmation.integration.test.ts:219; negative apps/api/src/whatsapp-channel-confirmation.integration.test.ts:416.",
+          "control_ids": [
+            "NC-695-001-01",
+            "NC-695-006-01",
+            "NC-695-010-02",
+            "NC-695-020-01",
+            "NC-695-030-04"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "A calculation can look correctly partitioned while linked records carry incompatible semantic dimensions because the canonical write path never enforces their relation.",
+          "control_ids": [
+            "NC-695-010-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "specified-test-matrix",
+          "reason": "A subset of green tests can satisfy the happy path while explicitly required sibling scenarios remain unexecuted.",
+          "control_ids": [
+            "NC-695-030-02",
+            "NC-695-030-T01",
+            "NC-695-030-T02",
+            "NC-695-030-T03",
+            "NC-695-030-T04",
+            "NC-695-030-T05",
+            "NC-695-030-T06"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-695-003-01",
+        "NC-695-015-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "documentation-claims",
+          "reason": "Issue #695 OBL-015: Structured summary redacts formatted personal identifiers and truncates free-form labels; raw bank text is not exposed. Observed at apps/api/src/whatsapp-channel-confirmation.ts:116; negative apps/api/src/whatsapp-channel-confirmation.test.ts:30.",
+          "control_ids": [
+            "NC-695-003-01",
+            "NC-695-015-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}
