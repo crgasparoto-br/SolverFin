@@ -16,6 +16,9 @@ on:
       - "entregar-issue/**"
       - "tests/test_solverfin_solo_audit_bootstrap.py"
       - "tests/test_solverfin_solo_check_lifecycle.py"
+      - "tests/test_solverfin_solo_check_recovery.py"
+      - ".github/workflows/repair-legacy-solo-checks.yml"
+      - "scripts/repair_legacy_solo_checks.py"
 
 permissions:
   contents: read
@@ -43,3 +46,4 @@ jobs:
         run: |
           python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
           python -m unittest discover -s tests -p test_solverfin_solo_check_lifecycle.py -v
+          python -m unittest discover -s tests -p test_solverfin_solo_check_recovery.py -v
