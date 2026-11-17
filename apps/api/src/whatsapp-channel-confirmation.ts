@@ -13,7 +13,6 @@ import {
   type ActiveChannelLink,
   WhatsappChannelError,
 } from "./whatsapp-channel-link-repository.js";
-import type { ChannelEventRow } from "./whatsapp-channel-types.js";
 
 export const WHATSAPP_CONFIRMATION_TTL_MS = 15 * 60 * 1000;
 /** No plaintext confirmation code may be persisted in WhatsappChannelEvent.replyText. */
@@ -56,7 +55,7 @@ interface CurrentSuggestion {
  * A webhook retry after a crash can reconstruct the same prompt without storing
  * either a plaintext capability token or the original financial message.
  */
-function confirmationToken(eventId: string, suggestionId: string, secret: string): string {
+export function confirmationToken(eventId: string, suggestionId: string, secret: string): string {
   if (secret.length < 16) throw new WhatsappChannelError("WHATSAPP_CONFIRMATION_UNAVAILABLE", 503);
   return createHmac("sha256", secret)
     .update("solverfin-whatsapp-confirmation-v1:")
@@ -67,7 +66,7 @@ function confirmationToken(eventId: string, suggestionId: string, secret: string
     .slice(0, 12);
 }
 
-function hashToken(token: string): string {
+export function hashToken(token: string): string {
   return createHash("sha256")
     .update("solverfin-whatsapp-confirmation-token-v1:")
     .update(token)
@@ -308,60 +307,6 @@ export async function prepareWhatsappFinancialConfirmation(
     ...(accountNames[0] ? { account: accountNames[0].name } : {}),
     ...(categoryNames[0] ? { category: categoryNames[0].name } : {}),
   });
-}
-
-/**
- * The durable reply contains only a marker. Rehydrate the capability immediately
- * before outbound, after channel authorization, without persisting plaintext.
- * Re-key an unsent confirmation if the app secret rotated between preparation
- * and delivery. A sent confirmation retains its stored hash for later decisions.
- */
-export async function renderWhatsappFinancialConfirmationReply(
-  event: ChannelEventRow,
-  secret = process.env.WHATSAPP_META_APP_SECRET ?? "",
-  now = new Date(),
-): Promise<string | null> {
-  const template = event.replyText;
-  if (
-    event.outcome !== "confirmation_pending" ||
-    !template ||
-    template.split(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER).length !== 4 ||
-    !event.suggestionId ||
-    !event.linkId ||
-    !event.userId ||
-    !event.organizationId ||
-    !event.financialProfileId
-  ) {
-    return null;
-  }
-
-  const token = confirmationToken(event.id, event.suggestionId, secret);
-  const tokenHash = hashToken(token);
-  // Only an unexpired, still-pending proposal may have its hash re-keyed.
-  // response_ready means the provider has not accepted a previous outbound.
-  // A sent/send_unknown event never reaches this method a second time.
-  const updated = await query<{ id: string }>(
-    'update "WhatsappChannelConfirmation" c set "tokenHash"=$1,' +
-      ' "updatedAt"=case when c."tokenHash"=$1 then c."updatedAt" else $2 end' +
-      ' where c."sourceEventId"=$3 and c."suggestionId"=$4 and c."linkId"=$5' +
-      ' and c."userId"=$6 and c."organizationId"=$7 and c."financialProfileId"=$8' +
-      ' and c."status"=\'pending_confirmation\' and c."expiresAt">$2' +
-      ' and exists (select 1 from "WhatsappChannelLink" l where l."id"=c."linkId"' +
-      ' and l."version"=c."linkVersion" and l."state"=\'active\')' +
-      ' returning c."id"',
-    [
-      tokenHash,
-      now,
-      event.id,
-      event.suggestionId,
-      event.linkId,
-      event.userId,
-      event.organizationId,
-      event.financialProfileId,
-    ],
-  );
-  if (updated.length !== 1) return null;
-  return template.replaceAll(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER, token);
 }
 
 export async function decideWhatsappFinancialConfirmation(

@@ -7,10 +7,10 @@ import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
 import { closePool, query } from "./db.js";
+import { renderWhatsappFinancialConfirmationReply } from "./whatsapp-channel-confirmation-outbound.js";
 import {
   decideWhatsappFinancialConfirmation,
   prepareWhatsappFinancialConfirmation,
-  renderWhatsappFinancialConfirmationReply,
   WHATSAPP_CONFIRMATION_TTL_MS,
   WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
 } from "./whatsapp-channel-confirmation.js";
