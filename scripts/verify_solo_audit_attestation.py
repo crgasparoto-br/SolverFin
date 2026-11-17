@@ -126,10 +126,12 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
     except Exception as exc:
         receipt["blocker"] = type(exc).__name__
         if head and SHA_RE.fullmatch(head) and check_id is not None:
+            # A failure uses the provisional exact run/PR/HEAD binding even
+            # when partially resolved identity is malformed or stale.
             # Never silently hide a publication failure: an orphaned in-progress
             # check would otherwise outlive the failed Actions run.
             try:
-                publish_check(repo, head, number, check_id, run_id, "failure", receipt, identity=identity)
+                publish_check(repo, head, number, check_id, run_id, "failure", receipt)
             except Exception as publish_exc:
                 print(f"BLOCK: solo audit Check Run could not be finalized ({type(publish_exc).__name__})",
                       file=sys.stderr)
