@@ -73,6 +73,20 @@ def required_evidence(repo: str, identity: dict[str, Any]) -> list[int]:
     return sorted(item["id"] for item in matching if type(item.get("id")) is int)
 
 
+
+def check_details_match(check: dict[str, Any], repo: str, run_id: str, check_id: int) -> bool:
+    """Accept only trusted Actions run URL or GitHub's canonical URL for this check ID.
+
+    GitHub normalizes details_url to /runs/<check_id> in Check Runs responses.
+    The exact external_id, Actions app, name, head, and check ID are verified
+    independently; accepting a different run or check URL is never permitted.
+    """
+    url = check.get("details_url")
+    return url in {
+        f"https://github.com/{repo}/actions/runs/{run_id}",
+        f"https://github.com/{repo}/runs/{check_id}",
+    }
+
 def begin_check(repo: str, head: str, pr_number: int, run_id: str) -> int:
     provisional_id = provisional_external_id(pr_number, head, run_id)
     # Never adopt or reopen a pre-existing check based on mutable metadata: all
@@ -93,7 +107,7 @@ def begin_check(repo: str, head: str, pr_number: int, run_id: str) -> int:
     fail_closed = status in {"queued", "in_progress"} and conclusion is None
     require(result.get("head_sha") == head and result.get("name") == CHECK_NAME
             and result.get("external_id") == provisional_id
-            and result.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
+            and check_details_match(result, repo, run_id, result.get("id"))
             and (result.get("app") or {}).get("id") == APP_ID
             and type(result.get("id")) is int and result["id"] > 0 and fail_closed,
             "solo check did not enter a fail-closed state")
@@ -132,7 +146,7 @@ def publish_check(repo: str, head: str, pr_number: int, check_id: int | None,
         require(current.get("id") == check_id and current.get("head_sha") == head
                 and current.get("name") == CHECK_NAME
                 and current.get("external_id") in {provisional_id, target_id}
-                and current.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
+                and check_details_match(current, repo, run_id, check_id)
                 and (current.get("app") or {}).get("id") == APP_ID
                 and current.get("status") in {"queued", "in_progress"}
                 and current.get("conclusion") is None,
@@ -145,7 +159,7 @@ def publish_check(repo: str, head: str, pr_number: int, check_id: int | None,
     result = session_runner.api(f"/repos/{repo}/check-runs/{check_id}", method="PATCH", data=body)
     require(result.get("head_sha") == head and result.get("name") == CHECK_NAME
             and result.get("external_id") == target_id
-            and result.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
+            and check_details_match(result, repo, run_id, check_id)
             and (result.get("app") or {}).get("id") == APP_ID
             and result.get("status") == "completed" and result.get("conclusion") == conclusion,
             "solo Check Run publication was not confirmed as terminal")

@@ -168,6 +168,94 @@ class SolverFinTrustedChecks(unittest.TestCase):
         self.assertIn("github.ref_protected", text)
 
 
+
+class SoloCheckLifecycleTests(unittest.TestCase):
+    REPO = "crgasparoto-br/SolverFin"
+    RUN = "44091547097"
+    PR = 796
+    CHECK = 12345
+
+    def record(self, *, details_url=None, status="in_progress", conclusion=None,
+               check_id=None, external_id=None, head=HEAD):
+        check_id = self.CHECK if check_id is None else check_id
+        return {
+            "id": check_id,
+            "head_sha": head,
+            "name": solo_checks.CHECK_NAME,
+            "status": status,
+            "conclusion": conclusion,
+            "app": {"id": APP_ID},
+            "external_id": external_id or solo_checks.provisional_external_id(
+                self.PR, HEAD, self.RUN),
+            "details_url": details_url or
+                f"https://github.com/{self.REPO}/runs/{check_id}",
+        }
+
+    def test_begin_accepts_github_canonical_details_url(self):
+        with patch.object(solo_checks.session_runner, "api", return_value=self.record()) as api:
+            self.assertEqual(
+                solo_checks.begin_check(self.REPO, HEAD, self.PR, self.RUN), self.CHECK)
+            self.assertEqual(api.call_args.kwargs["method"], "POST")
+            self.assertEqual(api.call_args.kwargs["data"]["status"], "in_progress")
+
+    def test_failure_completes_exact_check_with_github_canonical_details_url(self):
+        current = self.record()
+        completed = self.record(status="completed", conclusion="failure")
+        with patch.object(solo_checks.session_runner, "api",
+                          side_effect=[current, completed]) as api:
+            solo_checks.publish_check(self.REPO, HEAD, self.PR, self.CHECK,
+                                      self.RUN, "failure", {"blocker": "ValueError"})
+            self.assertEqual(api.call_count, 2)
+            self.assertEqual(api.call_args.kwargs["method"], "PATCH")
+            self.assertEqual(api.call_args.kwargs["data"]["conclusion"], "failure")
+
+    def test_failure_rejects_foreign_check_or_url(self):
+        invalid = [
+            self.record(details_url=f"https://github.com/{self.REPO}/runs/888"),
+            self.record(details_url=f"https://github.com/{self.REPO}/actions/runs/123"),
+            self.record(head=BASE),
+            {**self.record(), "app": {"id": 42}},
+            {**self.record(), "external_id": "wrong-run"},
+        ]
+        for forged in invalid:
+            with self.subTest(forged=forged):
+                with patch.object(solo_checks.session_runner, "api",
+                                  return_value=forged) as api:
+                    with self.assertRaisesRegex(ValueError, "another PR/target or publisher"):
+                        solo_checks.publish_check(self.REPO, HEAD, self.PR, self.CHECK,
+                                                  self.RUN, "failure", {})
+                    self.assertEqual(api.call_count, 1)
+
+    def test_success_still_requires_final_revalidation(self):
+        current = self.record()
+        completed = self.record(status="completed", conclusion="success")
+        identity = {
+            "pull_request": self.PR, "issue": 695, "base_ref": "develop",
+            "base_sha": BASE, "head_sha": HEAD, "merge_preview_sha": "c" * 40,
+            "issue_body_sha256": "d" * 64,
+        }
+        with patch.object(solo_checks.session_runner, "api",
+                          side_effect=[current, current, completed]) as api:
+            calls = []
+            solo_checks.publish_check(
+                self.REPO, HEAD, self.PR, self.CHECK, self.RUN,
+                "success", {"head_sha": HEAD, "pull_request": self.PR},
+                identity=identity, before_patch=lambda: calls.append("validated"))
+            self.assertEqual(calls, ["validated"])
+            self.assertEqual(api.call_count, 3)
+            self.assertEqual(api.call_args.kwargs["data"]["conclusion"], "success")
+
+    def test_draft_is_deferred_without_creating_check(self):
+        import verify_solo_audit_attestation as controller
+        with (patch.object(controller.session_runner, "api",
+                           return_value={"head": {"sha": HEAD}, "draft": True}),
+              patch.object(controller, "begin_check") as create):
+            self.assertEqual(controller.evaluate_target(
+                self.REPO, self.PR, 695, BASE, self.RUN), 0)
+            create.assert_not_called()
+
+
+
 class SigningContract(unittest.TestCase):
     def setUp(self):
         self.private = Ed25519PrivateKey.generate()

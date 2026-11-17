@@ -12,7 +12,6 @@ import json
 import os
 import re
 import sys
-from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -94,6 +93,12 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
         live_head = (initial_pr.get("head") or {}).get("sha") if isinstance(initial_pr, dict) else None
         require(isinstance(live_head, str) and SHA_RE.fullmatch(live_head), "live PR HEAD is unavailable")
         head = live_head
+        # Drafts cannot receive an attestation. Do not create a pending Check Run
+        # for each CI completion or ordinary comment while the PR is a draft.
+        # ready_for_review triggers a fresh, authoritative validation.
+        if initial_pr.get("draft") is True:
+            print(f"PR #{number} is draft; solo audit attestation deferred.")
+            return 0
         check_id = begin_check(repo, head, number, run_id)
 
         identity, _ = current_target(repo, number, expected_issue, pr=initial_pr)
@@ -126,10 +131,17 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
         return 0
     except Exception as exc:
         receipt["blocker"] = type(exc).__name__
-        if head and SHA_RE.fullmatch(head):
-            # Do not mask the original failure or print response bodies/tokens.
-            with suppress(Exception):
+        if head and SHA_RE.fullmatch(head) and check_id is not None:
+            # Fail closed on the exact Check Run. Never silently discard failure
+            # publication errors: the workflow must expose an orphaned check.
+            try:
                 publish_check(repo, head, number, check_id, run_id, "failure", receipt, identity=identity)
+            except Exception as publication_error:
+                print(
+                    "BLOCK: solo audit failure Check Run could not be finalized "
+                    f"({type(publication_error).__name__})",
+                    file=sys.stderr,
+                )
         print(f"BLOCK: solo audit attestation validation failed ({type(exc).__name__})", file=sys.stderr)
         return 2
 
