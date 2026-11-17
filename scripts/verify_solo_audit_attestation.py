@@ -12,7 +12,6 @@ import json
 import os
 import re
 import sys
-from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -88,13 +87,15 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
     }
     head = ""
     check_id: int | None = None
+    created_check_ids: list[int] = []
     identity: dict[str, Any] | None = None
     try:
         initial_pr = session_runner.api(f"/repos/{repo}/pulls/{number}")
         live_head = (initial_pr.get("head") or {}).get("sha") if isinstance(initial_pr, dict) else None
         require(isinstance(live_head, str) and SHA_RE.fullmatch(live_head), "live PR HEAD is unavailable")
         head = live_head
-        check_id = begin_check(repo, head, number, run_id)
+        check_id = begin_check(repo, head, number, run_id,
+                               on_created=created_check_ids.append)
 
         identity, _ = current_target(repo, number, expected_issue, pr=initial_pr)
         require_unique_open_pr_head(repo, number, identity["head_sha"])
@@ -126,10 +127,17 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
         return 0
     except Exception as exc:
         receipt["blocker"] = type(exc).__name__
-        if head and SHA_RE.fullmatch(head):
-            # Do not mask the original failure or print response bodies/tokens.
-            with suppress(Exception):
-                publish_check(repo, head, number, check_id, run_id, "failure", receipt, identity=identity)
+        if check_id is None and created_check_ids:
+            check_id = created_check_ids[-1]
+        if head and SHA_RE.fullmatch(head) and check_id is not None:
+            # A terminal failure is mandatory. If GitHub rejects PATCH, surface
+            # the closure failure instead of silently reporting a finished gate.
+            try:
+                publish_check(repo, head, number, check_id, run_id, "failure", receipt,
+                              identity=identity)
+            except Exception as closure_exc:
+                print(f"BLOCK: solo Check Run {check_id} could not be finalized "
+                      f"({type(closure_exc).__name__})", file=sys.stderr)
         print(f"BLOCK: solo audit attestation validation failed ({type(exc).__name__})", file=sys.stderr)
         return 2
 

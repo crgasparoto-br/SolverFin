@@ -73,7 +73,21 @@ def required_evidence(repo: str, identity: dict[str, Any]) -> list[int]:
     return sorted(item["id"] for item in matching if type(item.get("id")) is int)
 
 
-def begin_check(repo: str, head: str, pr_number: int, run_id: str) -> int:
+def _trusted_details_url(repo: str, run_id: str, check_id: int, value: object) -> bool:
+    """GitHub may return its canonical check UI URL instead of the submitted Actions URL.
+
+    Match both exact trusted forms; do not accept prefixes, redirects, query strings,
+    arbitrary check IDs, or third-party hosts. Check Run ownership also requires the
+    GitHub Actions app, exact HEAD, name, and per-invocation external_id.
+    """
+    return isinstance(value, str) and value in {
+        f"https://github.com/{repo}/actions/runs/{run_id}",
+        f"https://github.com/{repo}/runs/{check_id}",
+    }
+
+
+def begin_check(repo: str, head: str, pr_number: int, run_id: str,
+                on_created: Callable[[int], None] | None = None) -> int:
     provisional_id = provisional_external_id(pr_number, head, run_id)
     # Never adopt or reopen a pre-existing check based on mutable metadata: all
     # workflows share the Actions app ID, so a candidate run could forge it.
@@ -89,15 +103,20 @@ def begin_check(repo: str, head: str, pr_number: int, run_id: str) -> int:
         },
     }
     result = session_runner.api(f"/repos/{repo}/check-runs", method="POST", data={**body, "head_sha": head})
+    created_id = result.get("id")
+    # Preserve the newly created ID even if a subsequent response assertion fails:
+    # the caller must attempt to publish a terminal failure, never lose the check.
+    if type(created_id) is int and created_id > 0 and on_created is not None:
+        on_created(created_id)
     status, conclusion = result.get("status"), result.get("conclusion")
     fail_closed = status in {"queued", "in_progress"} and conclusion is None
     require(result.get("head_sha") == head and result.get("name") == CHECK_NAME
             and result.get("external_id") == provisional_id
-            and result.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
-            and (result.get("app") or {}).get("id") == APP_ID
-            and type(result.get("id")) is int and result["id"] > 0 and fail_closed,
+            and type(created_id) is int and created_id > 0
+            and _trusted_details_url(repo, run_id, created_id, result.get("details_url"))
+            and (result.get("app") or {}).get("id") == APP_ID and fail_closed,
             "solo check did not enter a fail-closed state")
-    return result["id"]
+    return created_id
 
 
 def publish_check(repo: str, head: str, pr_number: int, check_id: int | None,
@@ -132,7 +151,7 @@ def publish_check(repo: str, head: str, pr_number: int, check_id: int | None,
         require(current.get("id") == check_id and current.get("head_sha") == head
                 and current.get("name") == CHECK_NAME
                 and current.get("external_id") in {provisional_id, target_id}
-                and current.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
+                and _trusted_details_url(repo, run_id, check_id, current.get("details_url"))
                 and (current.get("app") or {}).get("id") == APP_ID
                 and current.get("status") in {"queued", "in_progress"}
                 and current.get("conclusion") is None,
@@ -145,7 +164,8 @@ def publish_check(repo: str, head: str, pr_number: int, check_id: int | None,
     result = session_runner.api(f"/repos/{repo}/check-runs/{check_id}", method="PATCH", data=body)
     require(result.get("head_sha") == head and result.get("name") == CHECK_NAME
             and result.get("external_id") == target_id
-            and result.get("details_url") == f"https://github.com/{repo}/actions/runs/{run_id}"
+            and result.get("id") == check_id
+            and _trusted_details_url(repo, run_id, check_id, result.get("details_url"))
             and (result.get("app") or {}).get("id") == APP_ID
             and result.get("status") == "completed" and result.get("conclusion") == conclusion,
             "solo Check Run publication was not confirmed as terminal")

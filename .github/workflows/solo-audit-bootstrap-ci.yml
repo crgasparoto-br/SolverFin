@@ -15,6 +15,7 @@ on:
       - "auditar-issue/**"
       - "entregar-issue/**"
       - "tests/test_solverfin_solo_audit_bootstrap.py"
+      - "tests/test_solverfin_solo_check_lifecycle.py"
 
 permissions:
   contents: read
@@ -39,4 +40,6 @@ jobs:
       - name: Compile imported official audit modules
         run: python -m compileall -q scripts/solo_audit_*.py scripts/verify_solo_audit_attestation.py scripts/verify_independent_pr_audit.py scripts/verify_session_review.py scripts/session_review_github.py auditar-issue/scripts entregar-issue/scripts
       - name: Execute SolverFin fail-closed check contract tests
-        run: python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
+        run: |
+          python -m unittest discover -s tests -p test_solverfin_solo_audit_bootstrap.py -v
+          python -m unittest discover -s tests -p test_solverfin_solo_check_lifecycle.py -v
