@@ -18,6 +18,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "entregar-issue" / "scripts"))
 import solo_audit_check_runs as solo_checks
 import solo_audit_github as solo_github
+import verify_solo_audit_attestation as solo_gate
 sys.path.insert(0, str(ROOT / "auditar-issue" / "scripts"))
 from audit_signature import sign_report, verify_report
 import verify_independent_pr_audit as trusted_checks
@@ -259,6 +260,59 @@ class SoloCheckRunLifecycle(unittest.TestCase):
                     self.run_id, "failure", {},
                 )
             self.assertEqual(api.call_count, 1)
+
+
+
+    def test_draft_pr_failure_is_closed_with_provisional_identity(self):
+        # current_target rejects drafts; the source-owned check must still end
+        # as failure without relying on partially constructed signed identity.
+        with (patch.object(solo_gate.session_runner, "api",
+                           return_value={"head": {"sha": HEAD}}),
+              patch.object(solo_gate, "begin_check", return_value=self.check_id),
+              patch.object(solo_gate, "current_target",
+                           side_effect=ValueError("draft PR")),
+              patch.object(solo_gate, "publish_check") as publish):
+            result = solo_gate.evaluate_target(self.repo, self.pr, None, BASE, self.run_id)
+        self.assertEqual(result, 2)
+        self.assertEqual(publish.call_count, 1)
+        args, kwargs = publish.call_args
+        self.assertEqual(args[:5], (self.repo, HEAD, self.pr, self.check_id, self.run_id))
+        self.assertEqual(args[5], "failure")
+        self.assertNotIn("identity", kwargs)
+
+    def test_failed_success_publication_falls_back_to_provisional_failure(self):
+        # Even if an exact identity cannot be encoded or success publication
+        # fails, the fallback may only publish a failure, never an approval.
+        identity = {"issue": 797, "base_ref": "develop", "base_sha": BASE,
+                    "head_sha": HEAD, "merge_preview_sha": "c" * 40,
+                    "issue_body_sha256": "d" * 64}
+        calls = []
+
+        def publish(*args, **kwargs):
+            calls.append((args, kwargs))
+            if args[5] == "success":
+                raise ValueError("unencodable exact identity")
+
+        with (patch.object(solo_gate.session_runner, "api",
+                           return_value={"head": {"sha": HEAD}}),
+              patch.object(solo_gate, "begin_check", return_value=self.check_id),
+              patch.object(solo_gate, "current_target", return_value=(identity, {})),
+              patch.object(solo_gate, "require_unique_open_pr_head"),
+              patch.object(solo_gate, "load_config", return_value=object()),
+              patch.object(solo_gate, "verify_execution_source", return_value={}),
+              patch.object(solo_gate, "report_comment", return_value=(
+                  {"comment": {}, "snapshot": {}, "raw_report": b""},
+                  {"issue": 797, "pull_request": self.pr}, b"",
+              )),
+              patch.object(solo_gate, "validate_signed_report", return_value="sha"),
+              patch.object(solo_gate, "required_evidence", return_value=[]),
+              patch.object(solo_gate, "final_revalidation"),
+              patch.object(solo_gate, "publish_check", side_effect=publish)):
+            self.assertEqual(solo_gate.evaluate_target(
+                self.repo, self.pr, None, BASE, self.run_id
+            ), 2)
+        self.assertEqual([call[0][5] for call in calls], ["success", "failure"])
+        self.assertNotIn("identity", calls[-1][1])
 
 
 class SigningContract(unittest.TestCase):
