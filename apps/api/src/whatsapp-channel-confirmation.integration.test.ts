@@ -203,12 +203,13 @@ async function main(): Promise<void> {
       )[0];
       assert.ok(event);
       assert.equal(event.state, eventState);
-      const hash = async () => (
-        await query<{ tokenHash: string }>(
-          'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
-          [suggestionId],
-        )
-      )[0]?.tokenHash;
+      const hash = async () =>
+        (
+          await query<{ tokenHash: string }>(
+            'select "tokenHash" from "WhatsappChannelConfirmation" where "suggestionId"=$1',
+            [suggestionId],
+          )
+        )[0]?.tokenHash;
       const before = await hash();
       assert.ok(before);
       assert.equal(
