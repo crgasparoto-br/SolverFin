@@ -168,6 +168,99 @@ class SolverFinTrustedChecks(unittest.TestCase):
         self.assertIn("github.ref_protected", text)
 
 
+
+class SoloCheckRunLifecycle(unittest.TestCase):
+    """Regression coverage for GitHub's canonical Check Run details URL."""
+
+    def setUp(self):
+        self.repo = "crgasparoto-br/SolverFin"
+        self.head = HEAD
+        self.pr = 796
+        self.run_id = "44091547097"
+        self.check_id = 134067878879
+        self.provisional = solo_checks.provisional_external_id(
+            self.pr, self.head, self.run_id
+        )
+
+    def check_payload(self, url):
+        return {
+            "id": self.check_id, "name": solo_checks.CHECK_NAME,
+            "head_sha": self.head, "external_id": self.provisional,
+            "details_url": url, "status": "in_progress", "conclusion": None,
+            "app": {"id": APP_ID},
+        }
+
+    def test_begin_accepts_canonical_github_check_url(self):
+        canonical_url = f"https://github.com/{self.repo}/runs/{self.check_id}"
+        with patch.object(solo_checks.session_runner, "api",
+                          return_value=self.check_payload(canonical_url)) as api:
+            self.assertEqual(
+                solo_checks.begin_check(self.repo, self.head, self.pr, self.run_id),
+                self.check_id,
+            )
+            self.assertEqual(api.call_args.kwargs["method"], "POST")
+
+    def test_begin_accepts_original_actions_url(self):
+        url = f"https://github.com/{self.repo}/actions/runs/{self.run_id}"
+        with patch.object(solo_checks.session_runner, "api",
+                          return_value=self.check_payload(url)):
+            self.assertEqual(
+                solo_checks.begin_check(self.repo, self.head, self.pr, self.run_id),
+                self.check_id,
+            )
+
+    def test_begin_rejects_wrong_check_id_url_and_wrong_app(self):
+        invalid = self.check_payload(
+            f"https://github.com/{self.repo}/runs/{self.check_id + 1}"
+        )
+        with patch.object(solo_checks.session_runner, "api", return_value=invalid):
+            with self.assertRaisesRegex(ValueError, "fail-closed state"):
+                solo_checks.begin_check(self.repo, self.head, self.pr, self.run_id)
+        invalid["details_url"] = f"https://github.com/{self.repo}/runs/{self.check_id}"
+        invalid["app"]["id"] = 42
+        with patch.object(solo_checks.session_runner, "api", return_value=invalid):
+            with self.assertRaises(ValueError):
+                solo_checks.begin_check(self.repo, self.head, self.pr, self.run_id)
+
+    def test_failed_attestation_completes_same_authenticated_check(self):
+        canonical = f"https://github.com/{self.repo}/runs/{self.check_id}"
+        original = self.check_payload(canonical)
+        completed = {
+            **original, "status": "completed", "conclusion": "failure",
+        }
+        writes = []
+
+        def github_api(path, *, method="GET", data=None):
+            if method == "GET":
+                self.assertTrue(path.endswith(f"/check-runs/{self.check_id}"))
+                return original
+            self.assertEqual(method, "PATCH")
+            self.assertEqual(path, f"/repos/{self.repo}/check-runs/{self.check_id}")
+            self.assertEqual(data["status"], "completed")
+            self.assertEqual(data["conclusion"], "failure")
+            self.assertEqual(data["external_id"], self.provisional)
+            writes.append(data)
+            return completed
+
+        with patch.object(solo_checks.session_runner, "api", side_effect=github_api):
+            solo_checks.publish_check(
+                self.repo, self.head, self.pr, self.check_id,
+                self.run_id, "failure", {"blocker": "ValueError"},
+            )
+        self.assertEqual(len(writes), 1)
+
+    def test_publish_refuses_foreign_url_without_mutating_check(self):
+        original = self.check_payload("https://github.com/other/repo/runs/123")
+        with patch.object(solo_checks.session_runner, "api",
+                          return_value=original) as api:
+            with self.assertRaisesRegex(ValueError, "belongs to another"):
+                solo_checks.publish_check(
+                    self.repo, self.head, self.pr, self.check_id,
+                    self.run_id, "failure", {},
+                )
+            self.assertEqual(api.call_count, 1)
+
+
 class SigningContract(unittest.TestCase):
     def setUp(self):
         self.private = Ed25519PrivateKey.generate()

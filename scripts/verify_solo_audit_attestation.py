@@ -12,7 +12,6 @@ import json
 import os
 import re
 import sys
-from contextlib import suppress
 from pathlib import Path
 from typing import Any
 
@@ -126,10 +125,14 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
         return 0
     except Exception as exc:
         receipt["blocker"] = type(exc).__name__
-        if head and SHA_RE.fullmatch(head):
-            # Do not mask the original failure or print response bodies/tokens.
-            with suppress(Exception):
+        if head and SHA_RE.fullmatch(head) and check_id is not None:
+            # Never silently hide a publication failure: an orphaned in-progress
+            # check would otherwise outlive the failed Actions run.
+            try:
                 publish_check(repo, head, number, check_id, run_id, "failure", receipt, identity=identity)
+            except Exception as publish_exc:
+                print(f"BLOCK: solo audit Check Run could not be finalized ({type(publish_exc).__name__})",
+                      file=sys.stderr)
         print(f"BLOCK: solo audit attestation validation failed ({type(exc).__name__})", file=sys.stderr)
         return 2
 
