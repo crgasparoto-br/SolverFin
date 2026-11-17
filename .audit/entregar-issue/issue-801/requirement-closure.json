@@ -1,0 +1,144 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": "/mnt/data/solverfin-802-audit/checkout/.audit/entregar-issue/issue-801/specification-snapshot.json",
+    "sha256": "a1908393d37d28310e990fbfeb719d0d7fe018e1ceb33317e06ed660facae61c"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-801",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "96de69f0fb0419dc7cf851c5da03514ba6a80b1ddc169f47b3b032f7420824d6",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "source_line": 7,
+      "source_text": "Aceitar somente as duas URLs canônicas exatas, com verificação de id/check, `external_id`, HEAD e app GitHub Actions; rejeitar URLs forjadas, prefixos e queries.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-1/3: scripts/solo_audit_check_runs.py:76-171 protects trusted URL, exact identity and failure-only state; tests/test_solverfin_solo_check_lifecycle.py:43-104 pass locally (38/38) and bootstrap CI 44105399096 passed exact material 69fcdfba4b7ff55b44aeb11e62577ca36187492f."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "aa2807cd11f2c56e7424a7b6a78a71c1ee99ee13eebfa513685f4b3c3883a85f",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "source_line": 8,
+      "source_text": "Capturar ID do Check Run recém-criado mesmo se a validação posterior falhar e tentar marcar `completed/failure`.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-2: scripts/solo_audit_check_runs.py:80-109 captures newly created check id; tests/test_solverfin_solo_check_lifecycle.py:61-67 and tests/test_solverfin_solo_check_lifecycle.py:112-127 prove fallback and closure errors; same exact head and CI."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "5ab6a2a0b8f021f2df1e61d647d529a11849f2aa7235883277a6597bc008fbdf",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "source_line": 12,
+      "source_text": "Preservar `develop` como base, sem merge antes da auditoria independente.",
+      "flags": [
+        "negative",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-6: PR #802 is based on develop, remains draft and is not merged. Protected develop repair workflow executes only on authenticated push after separate approval; tests/test_solverfin_solo_check_recovery.py:89-102 deny unprotected branch."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "candidate_count": 3,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "No structural, canonical-path, precedence, dependency-independence, or forbidden-implementation obligation was detected.",
+    "entries": [],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "not-applicable",
+    "applicability_reason": "Issue changes GitHub Check Run control and recovery, not an application read-model API or persisted business projection.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "GitHub authenticated REST check/run IDs and exact commit SHA are authoritative; candidate payload and comment content cannot override identity.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Workflow and script comments document fail-only legacy repair and absence of independent approval; checked changed workflows and tests against policy.",
+    "old_contract_terms": [],
+    "new_contract_terms": [
+      "Canonical GitHub Check Run URLs",
+      "Recovery publishes failure only"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "Review scripts/verify_independent_pr_audit.py and protected .github/workflows/solo-audit-attestation.yml: native independent gate remains intact and separate from solo assurance."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-801-001",
+      "REQ-801-002",
+      "REQ-801-003"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003"
+    ],
+    "evidence": [
+      "evidence/obligation-review-worklist.json",
+      "evidence/solo-bootstrap-38.xml",
+      "evidence/ci-exact-sha-802.json",
+      "tests/test_solverfin_solo_check_lifecycle.py:40-132",
+      "tests/test_solverfin_solo_check_recovery.py:30-103"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

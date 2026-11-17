@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "issue": 801,
+  "created_at": "2026-11-17T16:44:21.641900+00:00",
+  "primary_source_id": "SRC-ISSUE-801",
+  "sources": [
+    {
+      "id": "SRC-ISSUE-801",
+      "kind": "issue-body",
+      "path": "specification-sources/SRC-ISSUE-801.txt",
+      "locator": "/mnt/data/solverfin-802-audit/work/issue-801/SRC-ISSUE-801.txt",
+      "sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 16
+    }
+  ]
+}

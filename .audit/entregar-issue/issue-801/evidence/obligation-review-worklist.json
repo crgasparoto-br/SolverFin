@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "issue": 801,
+  "pull_request": 802,
+  "head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "caveat": "Manual inventory includes 6 issue acceptance bullets; canonical extractor recognizes 3. CI green and internal evidence do not represent independent auditor approval.",
+  "acceptance_criteria": [
+    {
+      "id": "AC-801-1",
+      "issue_line": 7,
+      "text": "Restrict both canonical URL forms and verify app, check, external ID, SHA; deny spoofed URLs.",
+      "source": "scripts/solo_audit_check_runs.py:76",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:48"
+    },
+    {
+      "id": "AC-801-2",
+      "issue_line": 8,
+      "text": "Retain newly-created ID on failure and terminate it as failure.",
+      "source": "scripts/solo_audit_check_runs.py:88",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:59"
+    },
+    {
+      "id": "AC-801-3",
+      "issue_line": 9,
+      "text": "Surface closure errors and never claim approval.",
+      "source": "scripts/verify_solo_audit_attestation.py:131",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:118"
+    },
+    {
+      "id": "AC-801-4",
+      "issue_line": 10,
+      "text": "Execute positive, negative, regression tests in bootstrap CI.",
+      "source": ".github/workflows/solo-audit-bootstrap-ci.yml:35",
+      "negative": "tests/test_solverfin_solo_audit_bootstrap.py:1"
+    },
+    {
+      "id": "AC-801-5",
+      "issue_line": 11,
+      "text": "Authenticated recovery of known orphaned checks without retrying failed jobs.",
+      "source": "scripts/repair_legacy_solo_checks.py:98",
+      "negative": "tests/test_solverfin_solo_check_recovery.py:36"
+    },
+    {
+      "id": "AC-801-6",
+      "issue_line": 12,
+      "text": "Develop base, no merge ahead of genuinely separate review.",
+      "source": ".github/workflows/repair-legacy-solo-checks.yml:7",
+      "negative": "tests/test_solverfin_solo_check_recovery.py:90"
+    }
+  ]
+}

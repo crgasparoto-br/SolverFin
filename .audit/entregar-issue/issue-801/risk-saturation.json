@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-001-03",
+        "NC-801-001-04",
+        "NC-801-003-03",
+        "NC-801-003-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "protected-ref-authority",
+          "reason": "Only repository-owned GitHub Actions running at protected develop can patch the allowlisted historical checks.",
+          "control_ids": [
+            "NC-801-003-03"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "request-target-override",
+          "reason": "An untrusted API response must not override the trusted check target ID selected by the controller.",
+          "control_ids": [
+            "NC-801-001-04"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "session-target-binding",
+          "reason": "Check and run provenance must include exact PR 796 identity and GitHub Actions app before any PATCH.",
+          "control_ids": [
+            "NC-801-001-03",
+            "NC-801-003-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-001-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "untrusted-details-url",
+          "reason": "Untrusted URL text must never be used as an authority for a check write.",
+          "control_ids": [
+            "NC-801-001-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-003-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "merge-approval-boundary",
+          "reason": "Historical repair executes only after trusted code arrives on protected develop and never invents reviewer approval.",
+          "control_ids": [
+            "NC-801-003-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-002-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "terminal-check-write",
+          "reason": "The original check must reach an explicit completed/failure state after controller exceptions.",
+          "control_ids": [
+            "NC-801-002-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-002-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "replay-finalization-boundary",
+          "reason": "Do not reopen an unrelated or previously completed Check Run while attempting failure closure.",
+          "control_ids": [
+            "NC-801-002-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-003-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "audit-status-language",
+          "reason": "Workflow and issue notes must identify the separate independent audit and not claim one from bootstrap CI.",
+          "control_ids": [
+            "NC-801-003-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

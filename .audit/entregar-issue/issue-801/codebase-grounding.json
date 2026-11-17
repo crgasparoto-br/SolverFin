@@ -1,0 +1,157 @@
+{
+  "schema_version": 2,
+  "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "creations": [
+    {
+      "path": "scripts/repair_legacy_solo_checks.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "existing solo audit check writer GitHub Actions bootstrap and single-operator recovery",
+          "existing Check Run update and workflow protected branches"
+        ],
+        "scope": "git grep / git diff in scripts, tests, .github/workflows at base SHA b51feb003c4fe14155e447c9a9f34853784fee2d",
+        "candidates": [
+          {
+            "path": "scripts/solo_audit_check_runs.py",
+            "reason_not_reused": "Historic fail-only repair needs standalone deny-only entrypoint; existing publisher modifies checks during verification, not authenticated recovery."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Historic fail-only repair needs standalone deny-only entrypoint; existing publisher modifies checks during verification, not authenticated recovery."
+    },
+    {
+      "path": "tests/test_solverfin_solo_check_lifecycle.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "existing solo audit check writer GitHub Actions bootstrap and single-operator recovery",
+          "existing Check Run update and workflow protected branches"
+        ],
+        "scope": "git grep / git diff in scripts, tests, .github/workflows at base SHA b51feb003c4fe14155e447c9a9f34853784fee2d",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "reason_not_reused": "Separate tests isolate URL normalization and check lifecycle from signature validation."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Separate tests isolate URL normalization and check lifecycle from signature validation."
+    },
+    {
+      "path": "tests/test_solverfin_solo_check_recovery.py",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "existing solo audit check writer GitHub Actions bootstrap and single-operator recovery",
+          "existing Check Run update and workflow protected branches"
+        ],
+        "scope": "git grep / git diff in scripts, tests, .github/workflows at base SHA b51feb003c4fe14155e447c9a9f34853784fee2d",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "reason_not_reused": "Added recovery-specific attack cases for the exact historical allowlist."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Added recovery-specific attack cases for the exact historical allowlist."
+    },
+    {
+      "path": ".github/workflows/repair-legacy-solo-checks.yml",
+      "kind": "config",
+      "search": {
+        "queries": [
+          "existing solo audit check writer GitHub Actions bootstrap and single-operator recovery",
+          "existing Check Run update and workflow protected branches"
+        ],
+        "scope": "git grep / git diff in scripts, tests, .github/workflows at base SHA b51feb003c4fe14155e447c9a9f34853784fee2d",
+        "candidates": [
+          {
+            "path": ".github/workflows/solo-audit-attestation.yml",
+            "reason_not_reused": "Legacy repair requires one-time trusted protected-branch execution, not broadening the existing audit controller."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Legacy repair requires one-time trusted protected-branch execution, not broadening the existing audit controller."
+    }
+  ],
+  "references": [],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "tests/test_solverfin_solo_check_lifecycle.py",
+      "operation": "added",
+      "scenario": "Normalized check URL, spoofing, retained IDs and explicit terminal failure on exception.",
+      "requirement": "Issue #801 original six acceptance criteria, including protected-branch authorization and failure-only recovery.",
+      "search": {
+        "queries": [
+          "find existing Ed25519 check publisher and bootstrap tests"
+        ],
+        "scope": "base scripts/solo_audit_check_runs.py, tests/test_solverfin_solo_audit_bootstrap.py and .github/workflows",
+        "runner": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "case": "Original signature and exact run identity contract",
+            "oracle": "Signed report identity and trusted workflow checks remain unchanged",
+            "comparison": "New test classes target creation/closure failure and repair cases absent in original suite"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Security invariant requires distinct adversarial cases for GitHub API response normalization and fail-only recovery.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
+        "exit_code": 0,
+        "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+        "reached_tests": [
+          "tests/test_solverfin_solo_check_lifecycle.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-801/evidence/ground-tests-801-reachability.txt",
+        "evidence_sha256": "c2a0fa6f1fbdf75fff8ebdb2c49ceb0a53cea2a2b1d7b452c6ab2d30099a31e3"
+      }
+    },
+    {
+      "path": "tests/test_solverfin_solo_check_recovery.py",
+      "operation": "added",
+      "scenario": "Authenticated allowlisted six-check recovery, reject mutated IDs/contexts and write failure only.",
+      "requirement": "Issue #801 original six acceptance criteria, including protected-branch authorization and failure-only recovery.",
+      "search": {
+        "queries": [
+          "find existing Ed25519 check publisher and bootstrap tests"
+        ],
+        "scope": "base scripts/solo_audit_check_runs.py, tests/test_solverfin_solo_audit_bootstrap.py and .github/workflows",
+        "runner": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
+        "candidates": [
+          {
+            "path": "tests/test_solverfin_solo_audit_bootstrap.py",
+            "case": "Original signature and exact run identity contract",
+            "oracle": "Signed report identity and trusted workflow checks remain unchanged",
+            "comparison": "New test classes target creation/closure failure and repair cases absent in original suite"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Security invariant requires distinct adversarial cases for GitHub API response normalization and fail-only recovery.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
+        "exit_code": 0,
+        "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+        "reached_tests": [
+          "tests/test_solverfin_solo_check_recovery.py"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-801/evidence/ground-tests-801-reachability.txt",
+        "evidence_sha256": "c2a0fa6f1fbdf75fff8ebdb2c49ceb0a53cea2a2b1d7b452c6ab2d30099a31e3"
+      }
+    }
+  ]
+}
