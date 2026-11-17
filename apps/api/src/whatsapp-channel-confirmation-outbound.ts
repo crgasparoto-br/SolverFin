@@ -59,4 +59,3 @@ export async function renderWhatsappFinancialConfirmationReply(
   if (updated.length !== 1) return null;
   return template.replaceAll(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER, token);
 }
-
