@@ -8,6 +8,8 @@ import { query } from "./db.js";
 import {
   decideWhatsappFinancialConfirmation,
   prepareWhatsappFinancialConfirmation,
+  renderWhatsappFinancialConfirmationReply,
+  WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
 } from "./whatsapp-channel-confirmation.js";
 import {
   FinancialAssistantServiceError,
@@ -82,6 +84,7 @@ export interface ChannelServiceDependencies {
   ) => Promise<{ conversationId: string; answer: string; completed?: boolean }>;
   prepareConfirmation: typeof prepareWhatsappFinancialConfirmation;
   decideConfirmation: typeof decideWhatsappFinancialConfirmation;
+  renderConfirmation: typeof renderWhatsappFinancialConfirmationReply;
   captureFinancial: (
     context: TenantContext,
     rawMessage: string,
@@ -140,6 +143,7 @@ const defaultDependencies: ChannelServiceDependencies = {
   },
   prepareConfirmation: prepareWhatsappFinancialConfirmation,
   decideConfirmation: decideWhatsappFinancialConfirmation,
+  renderConfirmation: renderWhatsappFinancialConfirmationReply,
   captureFinancial: async (context, text, eventId, link) => {
     if (
       !(await isWhatsappLinkStillActive(link)) ||
@@ -230,6 +234,13 @@ export async function processInboundChannelMessage(
     reply = await decideChannelReply(message, claim.event.id, dependencies);
     if (reply.link && !(await dependencies.isLinkActive(reply.link))) {
       reply = { outcome: "awaiting_link", reply: REVOKED_MESSAGE };
+    }
+    // The database must never see a plaintext confirmation capability.
+    if (
+      reply.outcome === "confirmation_pending" &&
+      !reply.reply.includes(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER)
+    ) {
+      throw new WhatsappChannelError("WHATSAPP_CONFIRMATION_TEMPLATE_INVALID", 503);
     }
     await dependencies.finishInbound({
       eventId: claim.event.id,
@@ -406,10 +417,18 @@ export async function deliverPersistedChannelReply(
   }
 
   try {
+    const renderedText =
+      claimed.event.outcome === "confirmation_pending"
+        ? await dependencies.renderConfirmation(claimed.event)
+        : body;
+    if (!renderedText || renderedText.includes(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER)) {
+      await dependencies.settleOutbound(event.id, claimed.token, "send_unknown", null);
+      return;
+    }
     const payload = {
       accountId: claimed.event.accountId,
       recipientId: to,
-      text: body,
+      text: renderedText,
     };
     const outboundId = authorizationLink
       ? await dependencies.authorizeSend(authorizationLink, () => outbound.sendText(payload))

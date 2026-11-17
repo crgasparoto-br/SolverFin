@@ -4,6 +4,8 @@ import test from "node:test";
 
 import type { TenantContext } from "@solverfin/domain";
 
+import { WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER } from "./whatsapp-channel-confirmation.js";
+
 import {
   ChannelProviderError,
   type ChannelInboundMessage,
@@ -207,6 +209,12 @@ function fixture(): Fixture {
     },
     async decideConfirmation() {
       return null;
+    },
+    async renderConfirmation(event) {
+      return (
+        event.replyText?.replaceAll(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER, "ABCDEFGHIJKL") ??
+        null
+      );
     },
     async captureFinancial(_requestContext, rawMessage) {
       captures.push(rawMessage);
@@ -526,10 +534,14 @@ test("captura com proposta elegível persiste confirmação antes do outbound", 
     assert.equal(suggestionId, "77777777-7777-4777-8777-777777777777");
     assert.equal(eventId, state.events.get("wamid.proposal")?.id);
     prepared = true;
-    return "Proposta pendente. CONFIRMAR ABCDEFGHIJKL";
+    return "Proposta pendente. CONFIRMAR " + WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER;
   };
   state.outbound.sendText = async (request) => {
     assert.equal(prepared, true, "must persist the proposal before sending");
+    assert.equal(
+      state.events.get("wamid.proposal")?.replyText,
+      "Proposta pendente. CONFIRMAR " + WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
+    );
     state.sent.push(request.text);
     return "wamid.proposal-outbound";
   };
@@ -610,4 +622,25 @@ test("revogação antes do envio de uma confirmação bloqueia qualquer retorno 
     state.deps,
   );
   assert.doesNotMatch(state.sent.join(" "), /Lançamento confirmado/);
+});
+
+test("resposta sem marcador nunca persiste capacidade em texto claro", async () => {
+  const state = fixture();
+  state.deps.prepareConfirmation = async () => "Proposta. CONFIRMAR ABCDEFGHIJKL";
+  const inbound = message("CAPTURAR valor fictício", "wamid.unsafe-template");
+  await assert.rejects(() => processInboundChannelMessage(inbound, state.outbound, state.deps));
+  assert.equal(state.sent.length, 0);
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "failure_retryable");
+  assert.equal(state.events.get(inbound.externalMessageId)?.replyText, null);
+});
+
+test("falha de reconstrução do código impede envio e não expõe marcador", async () => {
+  const state = fixture();
+  state.deps.prepareConfirmation = async () =>
+    "Proposta. CONFIRMAR " + WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER;
+  state.deps.renderConfirmation = async () => null;
+  const inbound = message("CAPTURAR valor fictício", "wamid.no-code");
+  await processInboundChannelMessage(inbound, state.outbound, state.deps);
+  assert.equal(state.sent.length, 0);
+  assert.equal(state.events.get(inbound.externalMessageId)?.state, "send_unknown");
 });

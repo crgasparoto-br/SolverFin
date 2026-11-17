@@ -10,7 +10,9 @@ import { closePool, query } from "./db.js";
 import {
   decideWhatsappFinancialConfirmation,
   prepareWhatsappFinancialConfirmation,
+  renderWhatsappFinancialConfirmationReply,
   WHATSAPP_CONFIRMATION_TTL_MS,
+  WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
 } from "./whatsapp-channel-confirmation.js";
 import type { ChannelInboundMessage, ChannelOutboundPort } from "./whatsapp-channel-provider.js";
 import {
@@ -126,6 +128,8 @@ async function main(): Promise<void> {
     };
     const sendProposal = async (
       suggestionId: string,
+      preparationSecret = secret,
+      deliverySecret = secret,
     ): Promise<{
       text: string;
       code: string;
@@ -135,7 +139,42 @@ async function main(): Promise<void> {
       await processInboundChannelMessage(source, outbound, {
         captureFinancial: async () => ({ pendingReview: true, suggestionId }),
         prepareConfirmation: (authorized, eventId, selectedId, activeLink) =>
-          prepareWhatsappFinancialConfirmation(authorized, eventId, selectedId, activeLink, secret),
+          prepareWhatsappFinancialConfirmation(
+            authorized,
+            eventId,
+            selectedId,
+            activeLink,
+            preparationSecret,
+          ),
+        renderConfirmation: async (event) => {
+          const stored = await query<{ replyText: string | null }>(
+            'select "replyText" from "WhatsappChannelEvent" where "id"=$1',
+            [event.id],
+          );
+          const durableText = stored[0]?.replyText ?? "";
+          assert.ok(
+            durableText.includes(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER),
+            "pending outbound must store only the marker, never the plaintext code",
+          );
+          assert.doesNotMatch(durableText, /CONFIRMAR [A-Za-z0-9_-]{12}/);
+          const before = await query<{ tokenHash: string }>(
+            'select "tokenHash" from "WhatsappChannelConfirmation" where "sourceEventId"=$1',
+            [event.id],
+          );
+          const rendered = await renderWhatsappFinancialConfirmationReply(event, deliverySecret);
+          const after = await query<{ tokenHash: string }>(
+            'select "tokenHash" from "WhatsappChannelConfirmation" where "sourceEventId"=$1',
+            [event.id],
+          );
+          if (preparationSecret !== deliverySecret) {
+            assert.notEqual(
+              before[0]?.tokenHash,
+              after[0]?.tokenHash,
+              "an unsent proposal must be re-keyed when the app secret rotates",
+            );
+          }
+          return rendered;
+        },
       });
       const text = outboundTexts.at(-1) ?? "";
       const code = /CONFIRMAR ([A-Za-z0-9_-]{12})/.exec(text)?.[1];
@@ -265,6 +304,22 @@ async function main(): Promise<void> {
         )
       )[0]?.count,
       1,
+    );
+
+    // Rotate the HMAC secret after preparation but before the first outbound.
+    // The re-keyed token must be valid, and no capability is stored in cleartext.
+    const rotatedId = await createSuggestion("rotated-secret-before-send");
+    const rotated = await sendProposal(rotatedId, secret, secret + "-rotated");
+    await processInboundChannelMessage(incoming("CONFIRMAR " + rotated.code), outbound);
+    assert.equal(
+      (
+        await query<{ count: number }>(
+          'select count(*)::int as "count" from "Transaction" where "aiSuggestionId"=$1',
+          [rotatedId],
+        )
+      )[0]?.count,
+      1,
+      "confirmation after pre-send secret rotation must use the re-keyed token",
     );
 
     // Conflicting concurrent actions serialize: confirmed XOR rejected, never both.
