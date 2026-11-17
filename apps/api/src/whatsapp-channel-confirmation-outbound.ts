@@ -48,7 +48,7 @@ export async function renderWhatsappFinancialConfirmationReply(
       ' and l."version"=c."linkVersion" and l."state"=\'active\')' +
       ' and exists (select 1 from "WhatsappChannelEvent" e where e."id"=c."sourceEventId"' +
       ' and e."state"=\'sending\' and e."leaseToken"=$9' +
-      ' and e."outcome"=\'confirmation_pending\')' +
+      " and e.\"outcome\"='confirmation_pending')" +
       ' returning c."id"',
     [
       tokenHash,
