@@ -345,7 +345,7 @@ export async function renderWhatsappFinancialConfirmationReply(
       ' "updatedAt"=case when c."tokenHash"=$1 then c."updatedAt" else $2 end' +
       ' where c."sourceEventId"=$3 and c."suggestionId"=$4 and c."linkId"=$5' +
       ' and c."userId"=$6 and c."organizationId"=$7 and c."financialProfileId"=$8' +
-      " and c.\"status\"='pending_confirmation' and c.\"expiresAt\">$2" +
+      ' and c."status"=\'pending_confirmation\' and c."expiresAt">$2' +
       ' and exists (select 1 from "WhatsappChannelLink" l where l."id"=c."linkId"' +
       ' and l."version"=c."linkVersion" and l."state"=\'active\')' +
       ' returning c."id"',

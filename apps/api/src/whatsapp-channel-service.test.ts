@@ -212,8 +212,7 @@ function fixture(): Fixture {
     },
     async renderConfirmation(event) {
       return (
-        event.replyText?.replaceAll(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER, "ABCDEFGHIJKL") ??
-        null
+        event.replyText?.replaceAll(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER, "ABCDEFGHIJKL") ?? null
       );
     },
     async captureFinancial(_requestContext, rawMessage) {
