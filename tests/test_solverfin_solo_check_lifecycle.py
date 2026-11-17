@@ -35,6 +35,12 @@ def check_record(*, status="in_progress", conclusion=None, details=CHECK_URL,
 
 
 class SoloCheckLifecycleTests(unittest.TestCase):
+    def test_workflow_ignores_unrelated_comments_but_revalidates_signed_edits(self):
+        workflow = (ROOT / ".github/workflows/solo-audit-attestation.yml").read_text()
+        self.assertIn("startsWith(github.event.comment.body, 'SOLVERIT_EXTERNAL_AUDIT_JSON:')", workflow)
+        self.assertIn("startsWith(github.event.changes.body.from, 'SOLVERIT_EXTERNAL_AUDIT_JSON:')", workflow)
+        self.assertIn("github.event.issue.pull_request", workflow)
+
     def test_accept_github_canonical_check_url_and_exact_actions_run_url(self):
         for url in (CHECK_URL, URL):
             with self.subTest(url=url):
