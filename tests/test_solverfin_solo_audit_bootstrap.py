@@ -298,7 +298,9 @@ class SoloCheckRunLifecycle(unittest.TestCase):
               patch.object(solo_gate, "begin_check", return_value=self.check_id),
               patch.object(solo_gate, "current_target", return_value=(identity, {})),
               patch.object(solo_gate, "require_unique_open_pr_head"),
-              patch.object(solo_gate, "load_config", return_value=object()),
+              patch.object(solo_gate, "load_config", return_value=type(
+                  "TrustedConfigStub", (), {"fingerprint": "test-fingerprint"}
+              )()),
               patch.object(solo_gate, "verify_execution_source", return_value={}),
               patch.object(solo_gate, "report_comment", return_value=(
                   {"comment": {}, "snapshot": {}, "raw_report": b""},
