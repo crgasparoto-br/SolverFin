@@ -63,3 +63,18 @@ não ocupa largura visual. **Cancelar e Salvar lançamento** formam um grupo
 horizontal indivisível; os ícones de status podem passar para a linha anterior
 em telas muito estreitas, sem empilhar os botões de ação. Cancelar fecha
 o modal sem enviar o formulário.
+
+### Evolução posterior do rodapé — #747 / PR #749 (30/10/2026)
+
+A implementação posterior de **Salvar e continuar**, integrada pela PR #749,
+substitui **somente** a geometria de dois botões descrita acima: em **novo** e
+**clonar**, as ações distintas são **Cancelar**, **Salvar e continuar** e
+**Salvar lançamento**. Em **editar**, permanecem **Cancelar** e **Salvar
+lançamento**, sem Salvar e continuar. No desktop e em 390 px, o par secundário
+ocupa a primeira linha e Salvar lançamento vem abaixo na criação/clonagem;
+no mobile de 320 px, as ações podem ocupar linhas consecutivas, preservando
+os nomes, a ordem, os alvos mínimos de 44 px e a contenção integral no diálogo.
+A decisão histórica de centralizar o modal, preservar status, foco e
+contratos financeiros **não foi revogada**. O contrato efetivo é validado
+por `scripts/statement-visual/statement-contextual-assertions.mjs` e pela
+validação Chrome no SHA de cada entrega.

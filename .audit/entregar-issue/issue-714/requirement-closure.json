@@ -1,0 +1,750 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": ".audit/entregar-issue/issue-714/specification-snapshot.json",
+    "sha256": "288400758b2e1c1517d4faf796b9df93b44416efa9aefa3e407215d49978c508"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-714",
+  "obligations": [
+    {
+      "candidate_key": "08ed6eff203edafad506660e64c3997746c46cc35a0d7abe844057533689c102",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 4,
+      "source_text": "**APROVADA a alternativa prospectiva** para a pendencia F-714-06/A-760002: dispensar a exigencia de **certificacao retroativa** da PR historica #713, substituindo-a por auditoria tecnica abrangente e rastreavel do **baseline integrado** e da PR #760 no seu SHA exato, conduzida em conversa revisora **realmente separada** daquela usada para implementar/corrigir.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "freshness"
+      ],
+      "id": "OBL-023",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "auditoria tecnica abrangente e rastreavel do **baseline integrado** e da PR #760 no seu SHA exato, conduzida em conversa revisora **realmente separada** daquela usada para implementar/corrigir.",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*APROVADA a alternativa prospectiva** para a pendencia F-714-06/A-760002: dispensar a exigencia de **certificacao retroativa** da PR historica #713, substituindo-a por",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "90f20c5150bff9822f50cb8dc2c600b5fd0379ab84391e3c00506b1f41b4e483",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 6,
+      "source_text": "**Garantia adotada para operador unico:** `operator-attested-session-review`, `third_party_identity_proven=false`, `separate-context-declared-not-cryptographically-proven`. O proprietario aceitou expressamente esta equivalencia *prospectiva* como caminho de fechamento de F-714-06, mas nao declarou que existiram dois auditores humanos nem que a PR #713 teve revisao historica; nenhuma certificacao/review retroativa sera fabricada.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "atomicity",
+        "review-surface"
+      ],
+      "id": "OBL-024",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "como caminho de fechamento de F-714-06",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Garantia adotada para operador unico:** `operator-attested-session-review`, `third_party_identity_proven=false`, `separate-context-declared-not-cryptographically-proven`. O proprietario aceitou expressamente esta equivalencia *prospectiva* , mas nao declarou que existiram dois auditores humanos nem que a PR #713 teve revisao historica; nenhuma certificacao/review retroativa sera fabricada",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "b17323ad6b0313f6d9e98db6b8ac5a2daa4499c4f7923ae7f64a03768423fbe6",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 8,
+      "source_text": "**Condicoes inalteradas:** manter provas positivas/negativas/regressao, identidade exact-SHA, checks e validacao independente na conversa revisora, recibo confiavel e testes operacionais, integracao segura dos workflows em `develop` e na branch default `main`, sem remover `Delivery V2 gate` nem protecoes. `mode=disabled` ate bootstrap seguro. Autorizados os merges *que passarem nos gates*, com read-back; nao autoriza bypass nem merge da #760 com parecer reprovado.",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-025",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "checks e validacao independente na conversa revisora, recibo confiavel e testes operacionais",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Condicoes inalteradas:** manter provas positivas/negativas/regressao, identidade exact-SHA, , integracao segura dos workflows em `develop` e na branch default `main`, sem remover `Delivery V2 gate` nem protecoes. `mode=disabled` ate bootstrap seguro. Autorizados os merges *que passarem nos gates*, com read-back; nao autoriza bypass nem merge da #760 com parecer reprovado",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "candidate_key": "bfb31bc25ff2bd4c73a3a2252aad675afe7ba9a6d35629602482e94507ebfa37",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 10,
+      "source_text": "**Fonte do estado atual:** [forensica da #714](https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6768198568) e [dependencias M2 da #762](https://github.com/crgasparoto-br/SolverFin/issues/762#issuecomment-6768228225). Os itens historicos devem ser explicitamente `superseded-by-prospective-review`, nao `passed`.",
+      "flags": [
+        "freshness"
+      ],
+      "id": "OBL-026",
+      "disposition": "deferred",
+      "requirement_ids": [],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "Os itens historicos devem ser explicitamente `superseded-by-prospective-review`, nao `passed`.",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Fonte do estado atual:** [forensica da #714](https://github.com/crgasparoto-br/SolverFin/issues/714#issuecomment-6768198568) e [dependencias M2 da #762](https://github.com/crgasparoto-br/SolverFin/issues/762#issuecomment-6768228225)",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "Issue #714 accepted the prospective single-operator model on 2026-11-10; substantive independent review and required-check operational validation remain open under issue #762. This is not a passed retroactive audit. Do not close #714 or merge #760 before genuine separate-session attestation, positive/negative/revocation checks and ruleset read-back."
+    },
+    {
+      "id": "OBL-001",
+      "candidate_key": "82f5decd1514e036c656443bb4c1ac68bfddf1b7e0cec01c55bc83afbeb5a11a",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 18,
+      "source_text": "SHA material funcional: `07fb199284a7f0bab38148f33d85331aa18403d0`; filho de handoff: `16fca4cb1048ef62c004d0fbf12702cc8a768560` (ambos na ancestralidade da `develop`).",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material historico 07fb199 e filho 16fca4 registrados na Issue 714; PR 713 foi integrada em develop como b50ee442. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "24a9b74854f06f18c630314b4b939e91bf5a1eeb8a953e2efd05da45ee895b60",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 19,
+      "source_text": "Repository CI [#38768319333](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319333) e Chrome visual [#38768319363](https://github.com/crgasparoto-br/SolverFin/actions/runs/38768319363): `completed/success` no SHA do handoff. Nao afirmar que essas execucoes validaram um novo build pos-merge.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Repository CI 38768319333 e Chrome 38768319363 green no SHA historico 16fca4, sem transportar resultado para o HEAD atual. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "a6df3d0428d0340ac436336907b2521ad679a0c64667caa40a950bd03529d4d1",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 20,
+      "source_text": "**Auditoria independente final: ainda nao comprovada nesta rodada.** O parecer tecnico anterior foi inconclusivo quanto a reproducao integral do preflight oficial; o historico de reviews da PR nao registrava revisao formal. Merge nao equivale a aprovacao tecnica.",
+      "flags": [
+        "exhaustive",
+        "review-surface"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-714-003"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "*Auditoria independente final: ainda nao comprovada nesta rodada.**",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "O parecer tecnico anterior foi inconclusivo quanto a reproducao integral do preflight oficial; o historico de reviews da PR nao registrava revisao formal. Merge nao equivale a aprovacao tecnica",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "f2166587c3f212495bc84f007bd3b38633c3ef36ed01b5b308e1702ed86182e9",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 21,
+      "source_text": "Aprovacao visual do produto em 14/10 permanece valida. As subissues #715–#719 podem referenciar o SHA integrado como baseline de codigo, mas isso **nao** representa liberacao tecnica independente nem implementacao delas.",
+      "flags": [
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Aceite visual 14/10 preservado; docs/GOLDEN_STATEMENT.md separa baseline de execucao e propagacao #715 a #719. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "d38d3cff288f5538d0fd4f528f3812b3dfaa9de6fbd603f36d989213da940d7a",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 33,
+      "source_text": "O usuário aprovou a Golden Screen do Extrato em 14/10/2026; o aceite **visual/de produto não deve ser reaberto automaticamente** por critérios da propagação. Restam verificações técnicas/documentais específicas do Extrato, que não incluem redesenhar outras telas. Manter rastreabilidade do material exato aprovado na #702.",
+      "flags": [
+        "negative",
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue 702 #issuecomment-6181511794 preserva aceite visual sem reabrir homologacao na entrega de documentacao. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "b520d0d6eda5c430e2338e5bd8a2cb50801232f5de70ce63fd79add5f79f621c",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 36,
+      "source_text": "Consolidar na #702 o registro do aceite visual, SHA de referência, evidências Chrome e decisão de modais de novo/editar/clonar **centralizados**.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issue 702 e docs/GOLDEN_STATEMENT.md registram SHA 366e020, evidencias Chrome e modais centralizados. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "6ac01d8efba8bebd262c6f57a188798010cb5c95ced0bb79c23dce1c4f163893",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 37,
+      "source_text": "Conferir documentação canônica do Extrato e reconciliar descrições antigas dos cards com a regra vigente de transferências.",
+      "flags": [
+        "freshness",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "docs/GOLDEN_STATEMENT.md secao Composicao e ADR 0018 explicitam conta individual, Todas e cambio; teste de mutacoes 714 passou 25/25. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "b225fa0b7669ff1cb6eebe77d676d63e2023c77b9be185c570eb212190ced877",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 38,
+      "source_text": "Concluir auditoria técnica independente da PR #713 no HEAD real, com CI e validação visual terminal.",
+      "flags": [],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-714-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "Concluir auditoria técnica independente da PR #713 no HEAD real",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "com CI e validação visual terminal",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "911948516b192260d68ef818737b948ab55739236e7bb7e90bf4f3864913d38f",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 39,
+      "source_text": "Produzir/validar o handoff certificado correto para #702/#713 se exigido pelo fluxo `crgasparoto-br/skill`; não reutilizar certificado herdado de #706/#707.",
+      "flags": [
+        "negative",
+        "isolation",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Pacote da #714/PR 760 deve substituir herdado #728/PR 759; checagem negativa confirma foreign target; novo handoff sujeito a builder oficial. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "cffc4dacaa50e49f09cafa7c10c86efd1c487fd9727813a06247497778d3a436",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 40,
+      "source_text": "Após integração regular na `develop`, registrar o commit exato e a versão da referência para as demais subissues.",
+      "flags": [
+        "exhaustive",
+        "temporal",
+        "freshness",
+        "aftermath"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Issues 714/702 publicam marcos de merges PR 713 b50ee442 e PR 721 8a56d2f na develop. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "95bedb7842f241a0a2ffd0e8f8ea33dccda2e3ae872b4a4d546d4c9602e2ee72",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 46,
+      "source_text": "**Duas aprovações distintas:** aceite visual do produto já registrado na #702; validação técnica/handoff independente ainda deve ser comprovada. Não reabrir o aceite visual por tarefas de propagação, mas verificar regressões no SHA final.",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "docs/GOLDEN_STATEMENT.md separa aceite de produto, CI Chrome, certificacao exact-SHA e parecer independente; regra nao confunde marcos. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "db3a1a4727d2fd46d441a7f77493c7dd3e0074532d7648927e13f43d25bfbb35",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 48,
+      "source_text": "**Validação exact-SHA:** o material atual tem dois workflows verdes, mas `.audit/entregar-issue/handoff-ready.json` segue idêntico à base e pertence a #706/#707; gerar certificado próprio segundo `crgasparoto-br/skill` e revalidar a identidade atual depois. Se o material SHA mudar, repetir os gates aplicáveis.",
+      "flags": [
+        "temporal",
+        "reference-liveness",
+        "freshness",
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "CI do material anterior 41893142725 e Chrome anterior 41893142688 terminal success no SHA historico 7e40a600; esses runs nao certificam o novo merge SHA 5612b772. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "8d98121b0ff98da38fcdc54dccdc218f98e31c96df0c17305ad61b66b9a6cad3",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 53,
+      "source_text": "[ ] O documento canônico não afirma que transferências são excluídas dos cards individuais; um leitor consegue distinguir individual, `Todas` e câmbio apenas com a documentação versionada.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Secao Composicao documenta entradas com transferencias recebidas e saidas com enviadas, Todas sem inflar internas, cambio por perna selecionada; teste negativo novo detecta contradicoes. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "c03f9824d5f80620812b36386532d2a639052db659262dbae250a73d7ec6f826",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 54,
+      "source_text": "[ ] O relatório de fechamento distingue aprovação visual do produto, CI automático, auditoria independente e certificado de entrega sem equivalências indevidas.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md declara estado parcial, distingue CI, aceite visual e auditoria; sem equivalencia de green com approval. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "22087b9f217ff6d8534ecd3b643a5b217894b0eafb7d471208af6ee871eb06a4",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 55,
+      "source_text": "[ ] O documento de referência mostra a Golden Screen aprovada, não um candidato antigo como estado vigente.",
+      "flags": [
+        "negative",
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-015"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "docs/GOLDEN_STATEMENT.md inicia como Golden Screen aprovada, cita PR 703 apenas como marco historico e nao como candidato vigente. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "429e8a1572585d66fd8c4b50ba7f365834fb032497d99f59fd21590c8e81d73a",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 56,
+      "source_text": "[ ] Nenhum documento ou PR declara que a propagação foi implementada por concluir a #714.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-016"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "docs/GOLDEN_STATEMENT.md e epica 702 distinguem propagacao #715 a #719 como escopo separado desta entrega. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "f44dcfe59179b64d319543eb00c52763bbbd6b450bda95c0757955186a39fe61",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 59,
+      "source_text": "[ ] Aceite visual do usuário e sua evidência estão registrados, sem confundi-los com auditoria técnica.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Aceite de produto 14/10 e link de comentario na 702 registrados; auditoria de codigo/documentacao separada. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "97092c8d737f18e0c837f55722049efad5123b88c1f2c285fe187fdd855aab1d",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 60,
+      "source_text": "[ ] Regra documentada: nas contas individuais, transferências entram nos cards de entradas/saídas; na visão `Todas`, transferências internas na mesma moeda não inflam totais, mas transferências cambiais permanecem conforme moeda selecionada.",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "ADR 0018 e GOLDEN_STATEMENT.md secao Composicao reconciliam moeda individual, Todas e cambio; 4 mutacoes negativas sao detectadas no teste 714. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "ab557c15368fa837d8f6fe8903919229f1d20a5e4fc0a34bffe964de4f274267",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 61,
+      "source_text": "[ ] Formulários do Extrato (novo, editar e clonar) seguem centralizados conforme decisão posterior ao mockup.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-019"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AGENTS.md exige dialog central e GOLDEN_STATEMENT.md fixa novo/editar/clonar; Chrome 41893142688 validou rota /lancamentos e responsividade. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "fc541e0933e28fee89f618ba0681c503582a657a30bdecec8162402bf3c03563",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 62,
+      "source_text": "[ ] Documentação canônica consistente com comportamento testado, sem descrições contraditórias.",
+      "flags": [
+        "observable",
+        "negative",
+        "atomicity"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-020"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Golden, ADR 0018 e ENTRY_FILL_RULES reconciliados para #747 Salvar e continuar, mantendo transferencia; 25 testes documentais passaram. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    },
+    {
+      "id": "OBL-021",
+      "candidate_key": "bfd6d459b019b2015d8758ab3427f90e0aa2a2d6bca2b2332fec2d804fb65de7",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 63,
+      "source_text": "[ ] PR #713 auditada no material atual, CI/evidência no mesmo SHA e handoff correto quando aplicável.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "deferred",
+      "requirement_ids": [
+        "REQ-714-021"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": {
+        "decision_source_id": "SRC-ISSUE-714",
+        "decision_source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+        "decision_locator": "[ ] PR #713 auditada no material atual",
+        "target_issue": 714,
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "CI/evidência no mesmo SHA e handoff correto quando aplicável",
+          "rationale": "Prospective governance decision accepted explicitly in issue #714 on 2026-11-10; the materialized baseline and scope are authenticated by Git. The unwaived separate-session verdict and trusted exact-SHA receipt remain deferred to issue #762. This does not claim a historic independent approval or bypass required checks."
+        }
+      },
+      "rationale": "A revisao tecnica independente para a PR 713 e o encerramento da #714 so podem ocorrer em contexto realmente separado, depois de CI, Chrome e certificado current-target exact-SHA. GOVERNANCE 2026-11-10: historical #713 review is superseded prospectively, not passed retrospectively; independent session review and trusted receipt on PR #760 material remain mandatory, #714/#702 open."
+    },
+    {
+      "id": "OBL-022",
+      "candidate_key": "51d05b69ae70e80fa08d2500ae3862122a2912007690c8de3b4b6470949f2c28",
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "source_line": 64,
+      "source_text": "[ ] Marco de referência para propagação publicado na épica.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-714-022"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Epic 702 registra 14/10, SHA e PRs integradas; separa Fase 0 e propagacao por superficie. Provas: https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142725; https://github.com/crgasparoto-br/SolverFin/actions/runs/41893142688; node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs (26 passed)."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-714",
+      "source_sha256": "43f5cf4ea9cb1662958682d8632d9e81e149b1638ae49bb7a24b1544b675ee07",
+      "candidate_count": 26,
+      "obligation_ids": [
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [],
+  "observable_assertions": [],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Identidade do handoff e regra de fonte canonica sao exigidas pela OBL-009; a composicao de cards deve rejeitar transferencia incorreta.",
+    "entries": [
+      {
+        "id": "SIC-001",
+        "kind": "canonical-path-parity",
+        "requirement_ids": [
+          "REQ-714-009"
+        ],
+        "obligation_ids": [
+          "OBL-009"
+        ],
+        "plausible_wrong_implementation": "Reutilizar o certificado ready herdado da Issue 728 PR 759 para a Issue 714 PR 760 permitiria um falso selo verde sem validacao current-target.",
+        "canonical_path": ".audit/entregar-issue/handoff-ready.json",
+        "competing_paths": [
+          ".audit/entregar-issue/issue-728/specification-snapshot.json"
+        ],
+        "evidence_ids": [
+          "EVID-714-FOREIGN-HANDOFF"
+        ],
+        "scenario_ids": [
+          "NEG-714-HANDOFF-FOREIGN"
+        ],
+        "negative_control_evidence": [
+          "Git blob fa127b7a9b135621ac4716bffe20e193d1da0882 identical at base and head; subject #728 PR #759 not #714 PR #760."
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "Somente links e hashes historicos de merges PR713/PR721; nao ha novo read model, API, esquema ou historico persistido pela PR760.",
+    "entries": [],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "Golden, ADR 0018, ENTRY_FILL_RULES e epica 702 consultados, preservando a decisao posterior #747 e transferencia multiconta.",
+    "entries": [],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Documento canonicamente aprovado sem rótulo de candidato, cards em conta individual e Todas reconciliados com ADR, novo rodape #747 sem contradicao.",
+    "old_contract_terms": [
+      "candidato da PR 703",
+      "sem transferencias nos cards individuais",
+      "somente dois botoes novo/clone"
+    ],
+    "new_contract_terms": [
+      "Golden Screen aprovada",
+      "transferencias por perspectiva individual/Todas/cambio",
+      "novo/clonar com tres acoes #747"
+    ],
+    "occurrences": [],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "docs/GOLDEN_STATEMENT.md",
+      "docs/adr/0018-golden-statement-consolidated-by-currency.md",
+      "docs/ENTRY_FILL_RULES.md",
+      "docs/DESIGN_SYSTEM.md",
+      "AGENTS.md",
+      "docs/audits/ISSUE_714_CLOSEOUT_LEDGER.md"
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-714-001",
+      "REQ-714-002",
+      "REQ-714-003",
+      "REQ-714-004",
+      "REQ-714-005",
+      "REQ-714-006",
+      "REQ-714-007",
+      "REQ-714-008",
+      "REQ-714-009",
+      "REQ-714-010",
+      "REQ-714-011",
+      "REQ-714-012",
+      "REQ-714-013",
+      "REQ-714-014",
+      "REQ-714-015",
+      "REQ-714-016",
+      "REQ-714-017",
+      "REQ-714-018",
+      "REQ-714-019",
+      "REQ-714-020",
+      "REQ-714-021",
+      "REQ-714-022"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-022"
+    ],
+    "evidence": [
+      "git diff current-develop..material-head: 20 paths (4 documentation/test + 16 historical audit artifacts), no finance/API/CSS changes",
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/43123358506 CRITICAL green exact-SHA",
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/43123358510 Chrome pass exact-SHA",
+      "node --test scripts/statement-visual/issue-714-documentation-contract.test.mjs: 25 passed; removal and 4 transfer adversarial mutations fail",
+      "get_pr_info #760 Draft and independent reviews [] do not substitute independent approval"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

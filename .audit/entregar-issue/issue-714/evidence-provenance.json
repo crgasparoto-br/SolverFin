@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+  "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+  "evidence": [
+    {
+      "evidence_id": "EV-714-DOC-LOG",
+      "kind": "documentation",
+      "path": "evidence/issue-714-test-reach.log",
+      "sha256": "a05f75489bb4a276a8f7266e3d95f89ab6e6660c7a3d471e06352130402e2d85",
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+      "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+      "freshness_policy": "exact-material-head",
+      "producer": "Node node:test (27 documentation and 153 statement tests) and Python (16 source mutation/restoration controls) executed against authenticated Git bundle at 47db0619b42d52f209506618a35f221ca2290c7a",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EV-714-MATERIAL-LOG",
+      "kind": "structural",
+      "path": "evidence/governance-material-controls.log",
+      "sha256": "f1560e08c157e1979ce989199e9fc660662459ce43e4fb50526df8bb460ebb53",
+      "subject_sha": "47db0619b42d52f209506618a35f221ca2290c7a",
+      "base_sha": "a34bc5fcfff4b36302a8c08e861ea0ebf2676631",
+      "freshness_policy": "exact-material-head",
+      "producer": "Node node:test (27 documentation and 153 statement tests) and Python (16 source mutation/restoration controls) executed against authenticated Git bundle at 47db0619b42d52f209506618a35f221ca2290c7a",
+      "status": "passed"
+    }
+  ]
+}

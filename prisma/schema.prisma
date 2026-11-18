@@ -208,6 +208,7 @@ enum AuditEntityKind {
   PAYABLE_RECEIVABLE
   AI_SUGGESTION
   ATTACHMENT
+  FINANCIAL_NOTIFICATION
 }
 
 enum LinkedEntityKind {
@@ -241,6 +242,10 @@ model User {
   ownedProfiles       FinancialProfile[]   @relation("FinancialProfileOwner")
   applicationSessions ApplicationSession[]
   securityAuditEvents SecurityAuditEvent[]
+  financialNotifications FinancialNotification[] @relation("FinancialNotificationRecipient")
+  financialNotificationPreferences FinancialNotificationPreference[] @relation("FinancialNotificationPreferenceRecipient")
+  whatsappChannelLinks WhatsappChannelLink[]
+  whatsappChannelEvents WhatsappChannelEvent[]
 
   @@unique([externalAuthProvider, externalAuthSubject])
   @@index([status])
@@ -341,6 +346,10 @@ model FinancialProfile {
   aiSuggestions               AiSuggestion[]
   attachments                 Attachment[]
   auditLogs                   AuditLogEntry[]
+  financialNotifications      FinancialNotification[]
+  financialNotificationPreferences FinancialNotificationPreference[]
+  whatsappChannelLinks WhatsappChannelLink[]
+  whatsappChannelEvents WhatsappChannelEvent[]
   transactionGroups           TransactionGroup[]
   installmentCreationRequests InstallmentCreationRequest[]
   transactionCreationRequests TransactionCreationRequest[]
@@ -880,4 +889,139 @@ model AuditLogEntry {
   @@index([organizationId, financialProfileId, occurredAt])
   @@index([organizationId, financialProfileId, entityKind, entityId])
   @@index([organizationId, financialProfileId, correlationId])
+}
+
+ 
+/// Immutable event fact + mutable per-recipient read state. Never store provider copy here.
+model FinancialNotification {
+  id                 String    @id @default(uuid()) @db.Uuid
+  organizationId     String    @db.Uuid
+  financialProfileId String    @db.Uuid
+  recipientUserId    String    @db.Uuid
+  eventType          String    @db.VarChar(96)
+  fingerprint        String    @db.VarChar(71)
+  facts              Json
+  resourceKind       String?   @db.VarChar(32)
+  resourceId         String?   @db.Uuid
+  occurredAt         DateTime @db.Timestamptz(3)
+  inAppVisible       Boolean  @default(true)
+  readAt             DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotification_profile_fkey")
+  recipient User @relation("FinancialNotificationRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotification_recipient_fkey")
+  deliveries FinancialNotificationDelivery[]
+
+  @@unique([id, organizationId, financialProfileId, recipientUserId], map: "FinancialNotification_scoped_id_key")
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, fingerprint], map: "FinancialNotification_dedup_key")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, occurredAt, id], map: "FinancialNotification_feed_idx")
+  @@index([organizationId, financialProfileId, recipientUserId, inAppVisible, readAt], map: "FinancialNotification_read_idx")
+}
+
+/// A missing preference means in-app enabled and all external channels disabled.
+model FinancialNotificationPreference {
+  id                 String   @id @default(uuid()) @db.Uuid
+  organizationId     String   @db.Uuid
+  financialProfileId String   @db.Uuid
+  recipientUserId    String   @db.Uuid
+  eventType          String   @db.VarChar(96)
+  channel            String   @db.VarChar(16)
+  enabled            Boolean
+  createdAt          DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime @updatedAt @db.Timestamptz(3)
+
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict, map: "FinancialNotificationPreference_profile_fkey")
+  recipient User @relation("FinancialNotificationPreferenceRecipient", fields: [recipientUserId], references: [id], onDelete: Restrict, map: "FinancialNotificationPreference_recipient_fkey")
+
+  @@unique([organizationId, financialProfileId, recipientUserId, eventType, channel], map: "FinancialNotificationPreference_scoped_key")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationPreference_list_idx")
+}
+
+/// Durable claim/retry record; never changes or recomputes the financial source.
+model FinancialNotificationDelivery {
+  id                 String    @id @default(uuid()) @db.Uuid
+  organizationId     String    @db.Uuid
+  financialProfileId String    @db.Uuid
+  recipientUserId    String    @db.Uuid
+  notificationId     String    @db.Uuid
+  channel            String    @db.VarChar(16)
+  state              String    @default("pending") @db.VarChar(20)
+  attempts           Int       @default(0)
+  nextAttemptAt      DateTime  @default(now()) @db.Timestamptz(3)
+  leaseToken         String?   @db.Uuid
+  lockedUntil        DateTime? @db.Timestamptz(3)
+  lastErrorCode      String?   @db.VarChar(60)
+  deliveredAt        DateTime? @db.Timestamptz(3)
+  createdAt          DateTime  @default(now()) @db.Timestamptz(3)
+  updatedAt          DateTime  @updatedAt @db.Timestamptz(3)
+
+  notification FinancialNotification @relation(fields: [notificationId, organizationId, financialProfileId, recipientUserId], references: [id, organizationId, financialProfileId, recipientUserId], onDelete: Restrict, map: "FinancialNotificationDelivery_fkey")
+
+  @@unique([notificationId, channel], map: "FinancialNotificationDelivery_notification_channel_key")
+  @@index([channel, state, nextAttemptAt], map: "FinancialNotificationDelivery_retry_idx")
+  @@index([organizationId, financialProfileId, recipientUserId], map: "FinancialNotificationDelivery_scope_idx")
+}
+
+/// Durable channel pairing. A raw pairing secret is never persisted.
+model WhatsappChannelLink {
+  id String @id @db.Uuid
+  provider String @default("meta_whatsapp") @db.VarChar(32)
+  accountId String @db.VarChar(64)
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  financialProfileId String @db.Uuid
+  senderId String? @db.VarChar(160)
+  challengeHash String? @db.VarChar(64)
+  state String @default("pending") @db.VarChar(28)
+  version Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  confirmedAt DateTime? @db.Timestamptz(3)
+  revokedAt DateTime? @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  events WhatsappChannelEvent[]
+
+  @@index([userId, organizationId, financialProfileId, state], map: "WhatsappChannelLink_context_idx")
+  @@index([state, expiresAt], map: "WhatsappChannelLink_cleanup_idx")
+}
+
+/// Provider-event idempotency and outbound journal; inbound raw text never lives here.
+model WhatsappChannelEvent {
+  id String @id @db.Uuid
+  provider String @db.VarChar(32)
+  accountId String @db.VarChar(64)
+  providerMessageId String @db.VarChar(200)
+  senderId String? @db.VarChar(160)
+  linkId String? @db.Uuid
+  userId String? @db.Uuid
+  organizationId String? @db.Uuid
+  financialProfileId String? @db.Uuid
+  assistantConversationId String? @db.Uuid
+  suggestionId String? @db.Uuid
+  importBatchId String? @db.Uuid
+  state String @default("received") @db.VarChar(28)
+  outcome String? @db.VarChar(40)
+  version Int @default(0)
+  attempts Int @default(0)
+  leaseToken String? @db.Uuid
+  leaseUntil DateTime? @db.Timestamptz(3)
+  replyText String? @db.Text
+  outboundProviderMessageId String? @db.VarChar(200)
+  expiresAt DateTime @db.Timestamptz(3)
+  receivedAt DateTime @db.Timestamptz(3)
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
+  financialProfile FinancialProfile? @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
+  link WhatsappChannelLink? @relation(fields: [linkId], references: [id], onDelete: Restrict)
+
+  @@unique([provider, accountId, providerMessageId], map: "WhatsappChannelEvent_provider_message_key")
+  @@index([expiresAt, state], map: "WhatsappChannelEvent_expiry_idx")
+  @@index([provider, accountId, senderId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_sender_idx")
+  @@index([linkId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_link_idx")
 }

@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
+  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "comparison_base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "scripts/repair_legacy_solo_checks.py",
+      "lines_before": null,
+      "lines_after": 130
+    },
+    {
+      "path": "scripts/solo_audit_check_runs.py",
+      "lines_before": 151,
+      "lines_after": 171
+    },
+    {
+      "path": "scripts/verify_solo_audit_attestation.py",
+      "lines_before": 177,
+      "lines_after": 192
+    }
+  ],
+  "blocking_files": []
+}

@@ -25,6 +25,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`product/INTERFACE_INVENTORY.md`](./product/INTERFACE_INVENTORY.md): inventario navegavel usado como baseline de interface no fechamento da Fase 2.
 - [`REPORTS.md`](./REPORTS.md): visoes, filtros, calculos e estados da area de Relatorios.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato funcional, persistencia, privacidade, concorrencia e UX do assistente somente leitura.
+- [`FINANCIAL_NOTIFICATIONS.md`](./FINANCIAL_NOTIFICATIONS.md): eventos versionados, Inbox de notificacoes, preferencia por canal e outbox duravel (#693).
 - [`WEB_MAINTENANCE_COVERAGE.md`](./WEB_MAINTENANCE_COVERAGE.md): cobertura esperada de manutencao web.
 
 ## Arquitetura, seguranca e operacao
@@ -69,6 +70,7 @@ Arquivos historicos de geracao de backlog nao fazem parte da documentacao viva. 
 - [`AI_REVIEW_QUEUE.md`](./AI_REVIEW_QUEUE.md): fila de sugestoes revisaveis.
 - [`AI_SUGGESTION_PAYLOADS.md`](./AI_SUGGESTION_PAYLOADS.md): envelopes versionados e projecoes publicas das sugestoes.
 - [`FINANCIAL_ASSISTANT.md`](./FINANCIAL_ASSISTANT.md): contrato canonico do assistente financeiro conversacional.
+- [`WHATSAPP_CHANNEL.md`](./WHATSAPP_CHANNEL.md): canal Meta Cloud API, pareamento autenticado, consulta e captura revisavel (#694).
 - [`ai/extraction-schema.md`](./ai/extraction-schema.md): schema de extracao de lancamentos por IA.
 - [`ai/providers.md`](./ai/providers.md): providers substituiveis, configuracao segura, consentimento, timeout, retry e logs.
 - [`ai/assistant-and-insights.md`](./ai/assistant-and-insights.md): contratos funcionais do assistente e dos insights.

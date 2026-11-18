@@ -3,6 +3,7 @@ import {
   inspectQueueStatus,
   waitForCurrentEvidence,
   waitForConflictState,
+  waitForQueueRefresh,
   restoreHarness,
   waitForReviewCard,
   escapeJs,
@@ -384,6 +385,9 @@ async function validateStates(cdp, suggestionId) {
   retry.recovered = retry.clicked && recovered;
 
   await setQueueMode(cdp, "baseline", 180);
+  // The refresh may re-render the selected card and invalidate an in-flight click.
+  // Wait for its completion before exercising the 409 conflict transition.
+  await waitForQueueRefresh(cdp);
   await waitForCurrentEvidence(cdp);
   await evaluate(
     cdp,

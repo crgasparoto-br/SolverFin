@@ -1,0 +1,172 @@
+TAP version 13
+# Subtest: issue 714 documentary contract contains 22 distinct checks
+ok 1 - issue 714 documentary contract contains 22 distinct checks
+  ---
+  duration_ms: 1.247348
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: approved-heading rejects omission and restores
+ok 2 - issue 714 documentation: approved-heading rejects omission and restores
+  ---
+  duration_ms: 0.5737
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: product-acceptance-date rejects omission and restores
+ok 3 - issue 714 documentation: product-acceptance-date rejects omission and restores
+  ---
+  duration_ms: 0.123433
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: approved-product-material rejects omission and restores
+ok 4 - issue 714 documentation: approved-product-material rejects omission and restores
+  ---
+  duration_ms: 1.475286
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: integrated-pr-713 rejects omission and restores
+ok 5 - issue 714 documentation: integrated-pr-713 rejects omission and restores
+  ---
+  duration_ms: 0.365391
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: integrated-pr-721 rejects omission and restores
+ok 6 - issue 714 documentation: integrated-pr-721 rejects omission and restores
+  ---
+  duration_ms: 0.079057
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: functional-material-713 rejects omission and restores
+ok 7 - issue 714 documentation: functional-material-713 rejects omission and restores
+  ---
+  duration_ms: 0.127739
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: responsive-material-721 rejects omission and restores
+ok 8 - issue 714 documentation: responsive-material-721 rejects omission and restores
+  ---
+  duration_ms: 0.075142
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: centered-dialogs rejects omission and restores
+ok 9 - issue 714 documentation: centered-dialogs rejects omission and restores
+  ---
+  duration_ms: 0.505629
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: new-entry-dialog rejects omission and restores
+ok 10 - issue 714 documentation: new-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 0.345322
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: edit-entry-dialog rejects omission and restores
+ok 11 - issue 714 documentation: edit-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 0.358271
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: clone-entry-dialog rejects omission and restores
+ok 12 - issue 714 documentation: clone-entry-dialog rejects omission and restores
+  ---
+  duration_ms: 0.160217
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: individual-account-transfers rejects omission and restores
+ok 13 - issue 714 documentation: individual-account-transfers rejects omission and restores
+  ---
+  duration_ms: 0.155651
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: all-accounts-currency-filter rejects omission and restores
+ok 14 - issue 714 documentation: all-accounts-currency-filter rejects omission and restores
+  ---
+  duration_ms: 0.64085
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: internal-transfers rejects omission and restores
+ok 15 - issue 714 documentation: internal-transfers rejects omission and restores
+  ---
+  duration_ms: 0.244782
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: exchange-transfers rejects omission and restores
+ok 16 - issue 714 documentation: exchange-transfers rejects omission and restores
+  ---
+  duration_ms: 0.285393
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: independent-review-remains-distinct rejects omission and restores
+ok 17 - issue 714 documentation: independent-review-remains-distinct rejects omission and restores
+  ---
+  duration_ms: 0.214769
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: exact-sha-certification rejects omission and restores
+ok 18 - issue 714 documentation: exact-sha-certification rejects omission and restores
+  ---
+  duration_ms: 0.150753
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
+ok 19 - issue 714 documentation: visual-acceptance-is-not-technical rejects omission and restores
+  ---
+  duration_ms: 0.15519
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: propagation-not-automatic rejects omission and restores
+ok 20 - issue 714 documentation: propagation-not-automatic rejects omission and restores
+  ---
+  duration_ms: 0.144875
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: epic-traceability rejects omission and restores
+ok 21 - issue 714 documentation: epic-traceability rejects omission and restores
+  ---
+  duration_ms: 0.140569
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: touch-target-44px rejects omission and restores
+ok 22 - issue 714 documentation: touch-target-44px rejects omission and restores
+  ---
+  duration_ms: 0.14818
+  type: 'test'
+  ...
+# Subtest: issue 714 documentation: design-system-reference rejects omission and restores
+ok 23 - issue 714 documentation: design-system-reference rejects omission and restores
+  ---
+  duration_ms: 0.059909
+  type: 'test'
+  ...
+# Subtest: issue 714: the \#747 footer supersession stays explicit and testable
+ok 24 - issue 714: the \#747 footer supersession stays explicit and testable
+  ---
+  duration_ms: 0.212425
+  type: 'test'
+  ...
+# Subtest: issue 714: current card contract rejects contradictory individual/all/FX mutations
+ok 25 - issue 714: current card contract rejects contradictory individual/all/FX mutations
+  ---
+  duration_ms: 1.728661
+  type: 'test'
+  ...
+# Subtest: issue 714: prospective assurance is documented without retroactive approval
+ok 26 - issue 714: prospective assurance is documented without retroactive approval
+  ---
+  duration_ms: 0.665867
+  type: 'test'
+  ...
+# Subtest: issue 714: current inventory rejects stale 22-obligation closure
+ok 27 - issue 714: current inventory rejects stale 22-obligation closure
+  ---
+  duration_ms: 2.349551
+  type: 'test'
+  ...
+1..27
+# tests 27
+# suites 0
+# pass 27
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 97.356198

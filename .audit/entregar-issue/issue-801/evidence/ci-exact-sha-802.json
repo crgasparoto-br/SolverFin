@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "pull_request": 802,
+  "material_head_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
+  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "observed_by": "Authenticated GitHub Actions connector: exact material HEAD and completed workflow job results, 2026-11-18",
+  "ci": [
+    {
+      "name": "Repository CI",
+      "run_id": 44346216644,
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44346216644"
+    },
+    {
+      "name": "Solo audit bootstrap verification",
+      "run_id": 44346216755,
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44346216755"
+    },
+    {
+      "name": "Delivery audit workspace",
+      "run_id": 44346216735,
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44346216735"
+    },
+    {
+      "name": "Session review evidence (exact SHA)",
+      "run_id": 44346216701,
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44346216701"
+    }
+  ],
+  "not_claimed": "All material CI runs completed success. The certified-handoff verifier must revalidate the new result-only child; independent review and legacy production recovery remain separate gates."
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "repository": "crgasparoto-br/SolverFin",
+  "pr_number": 794,
+  "issue_number": 694,
+  "head_sha": "9a58cbb62efcb2bec374ed824571e6eebcb128bb",
+  "material_head_sha": "b4989703d28f2212d7e1a0a50226a34ce69ef110",
+  "rejection_id": "audit-rejection:4f4ede13-3196-475a-b52e-3627394cd68e",
+  "source_kind": "github-independent-review-normalized",
+  "source_review": {
+    "state": "COMMENTED",
+    "submitted_at": "2026-11-16T11:20:28Z",
+    "pr_url": "https://github.com/crgasparoto-br/SolverFin/pull/794",
+    "review_node_id": "PRR_kwDOS7WJDc8AAAABYM7QmQ"
+  },
+  "findings": [
+    {
+      "id": "A-009",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "requirement_ids": [
+        "REQ-694-002",
+        "REQ-694-039"
+      ],
+      "failure": "Meta webhook dropped BSUID messages with from empty or null while replying HTTP 200."
+    }
+  ],
+  "recommendations": [
+    {
+      "id": "REC-001",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "description": "Replace stale test-count assertions in requirement-attack-matrix.json with exact JUnit count."
+    }
+  ],
+  "normalization_notice": "Fact extraction from authenticated GitHub review, not a claim of a new independent review or a signed external audit."
+}

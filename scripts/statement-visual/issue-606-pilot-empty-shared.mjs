@@ -50,9 +50,14 @@ export async function runPilotEmptyState({
       await setViewport(browser.cdp, width, height);
       await navigate(browser.cdp, `${baseUrl}${route}`);
       await sleep(350);
-      const measurements = await evaluate(
-        browser.cdp,
-        `(() => {
+      // The Dashboard may initially return a short-lived loading screen while
+      // its API calls finish. Observe the final state before judging empty copy;
+      // keep the same exact-text assertions and fail when content never arrives.
+      let measurements;
+      for (let attempt = 0; attempt < 50; attempt += 1) {
+        measurements = await evaluate(
+          browser.cdp,
+          `(() => {
           const expected = ${JSON.stringify(expectedTexts)};
           const text = document.body.textContent || '';
           const root = document.documentElement;
@@ -66,8 +71,11 @@ export async function runPilotEmptyState({
             viewportWidth: window.innerWidth,
             navigationHeight: sidebar?.getBoundingClientRect().height ?? null,
           };
-        })()`,
-      );
+          })()`,
+        );
+        if (measurements.missingTexts.length === 0) break;
+        await sleep(150);
+      }
       const screenshotName = `${artifactStem}-${width}.png`;
       await screenshot(browser.cdp, join(outputDir, screenshotName));
       assert.deepEqual(

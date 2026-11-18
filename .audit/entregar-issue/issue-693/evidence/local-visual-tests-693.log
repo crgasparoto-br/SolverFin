@@ -1,0 +1,13 @@
+PROVENANCE: faithful secondary transcript from authenticated GitHub Actions CRITICAL job 131936500718, material M3 3adc4c7787d869b3a6ea637c527c6898db2ff687, not full stdout.
+COMMAND: node --test scripts/statement-visual/*.test.mjs
+EXIT_CODE: 0
+TAP version 13
+1..157
+# tests 157
+# suites 0
+# pass 157
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+RUN_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/43440378283

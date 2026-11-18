@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "classification": "implementation-only",
+  "source_event": {
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:4f4ede13-3196-475a-b52e-3627394cd68e",
+    "finding_ids": [
+      "A-009"
+    ],
+    "audit_report_sha256": "2b04ec99c48ec8646cfe640d4ea8a7fa4552fd4b0db41a9b3a403c2977c1cc37",
+    "head_sha": "9a58cbb62efcb2bec374ed824571e6eebcb128bb"
+  },
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "One local Meta adapter optional-field normalization error was already covered by existing input-parser audit guidance; material code and exact-input negative cases have been fixed at the same boundary, without introducing a new generic skill rule."
+  },
+  "local_regressions": [
+    "apps/api/src/whatsapp-channel-provider.test.ts:190",
+    "apps/api/src/whatsapp-channel-provider.test.ts:416",
+    "GitHub Actions 43868841042: JUnit 28/28"
+  ]
+}

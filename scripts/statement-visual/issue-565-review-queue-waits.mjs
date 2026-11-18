@@ -35,6 +35,19 @@ export async function inspectQueueStatus(cdp, expectedText) {
   );
 }
 
+/** Await a completed refresh, not a fixed delay that can race with selection rendering. */
+export async function waitForQueueRefresh(cdp, timeout = 6_000) {
+  const started = Date.now();
+  while (Date.now() - started < timeout) {
+    const status = await inspectQueueStatus(cdp, "Fila atualizada.").catch(() => ({
+      visible: false,
+    }));
+    if (status.visible) return;
+    await sleep(100);
+  }
+  throw new Error("Review queue refresh did not finish before conflict validation.");
+}
+
 export async function waitForCurrentEvidence(cdp, timeout = 4_000) {
   const started = Date.now();
   while (Date.now() - started < timeout) {

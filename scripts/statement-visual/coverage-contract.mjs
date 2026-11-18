@@ -370,6 +370,7 @@ const simpleScenarios = [
   ["ai-review-queue", "scripts/statement-visual/issue-565-ai-review-queue.mjs", "/inbox", "A6", "review", "responsive", "review-flow", "ai-review"],
   ["ai-review-queue-states", "scripts/statement-visual/issue-565-ai-review-queue-states.mjs", "/inbox", "A6", "alternate", "responsive", "state-render", "ai-review-states"],
   ["financial-insights", "scripts/statement-visual/issue-567-financial-insights.mjs", "/lancamentos", "A2", "insights", "responsive", "drilldown", "financial-insights"],
+  ["notifications-693", "scripts/statement-visual/issue-693-notifications.mjs", "/notificacoes", "support", "empty", "desktop-mobile", "toggle-preferences", "notification-empty"],
   ["financial-assistant", "scripts/statement-visual/issue-568-financial-assistant.mjs", "/assistente", "support", "normal", "desktop-mobile", "keyboard-focus", "assistant"],
   ["financial-assistant-cancel", "scripts/statement-visual/issue-568-financial-assistant-cancel-inflight.mjs", "/assistente", "support", "processing", "responsive", "cancel", "assistant-inflight"],
   ["financial-assistant-zoom", "scripts/statement-visual/issue-568-financial-assistant-zoom-200-reflow.mjs", "/assistente", "support", "normal", "zoom-200-reflow", "reflow-overflow", "assistant-long-content"],

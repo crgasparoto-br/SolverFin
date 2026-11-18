@@ -8,6 +8,7 @@ export type ShellRouteId =
   | "budgets"
   | "assistant"
   | "inbox"
+  | "notifications"
   | "reports"
   | "settings"
   | "adminInstitutions"
@@ -123,6 +124,16 @@ export const solverFinShellRoutes = [
     path: "/inbox",
     label: "Inbox",
     description: "Revise mensagens, importações e sugestões antes de confirmar.",
+    navigationGroup: "review",
+    requiresAuthentication: true,
+    requiresFinancialProfile: true,
+    status: "available",
+  },
+  {
+    id: "notifications",
+    path: "/notificacoes",
+    label: "Notificações",
+    description: "Acompanhe avisos financeiros verificáveis e escolha os canais.",
     navigationGroup: "review",
     requiresAuthentication: true,
     requiresFinancialProfile: true,
