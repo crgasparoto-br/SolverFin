@@ -1,46 +1,56 @@
 {
   "schema_version": 1,
-  "material_head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+  "material_head_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
   "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
   "evidence": [
     {
       "evidence_id": "EVID-801-PYTEST",
       "kind": "behavioral",
-      "path": "evidence/solo-bootstrap-40.xml",
-      "sha256": "99d1b03b644e7b9d4fa607fa3762592150312d60623d17d5767c8af883355ae1",
-      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+      "path": "evidence/solo-bootstrap-41.xml",
+      "sha256": "79aa05f51b37511c1a6dab95e58475661e8ee5b6cd8dfb219105dcfeb5a36084",
+      "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
       "freshness_policy": "exact-material-head",
-      "producer": "Local pytest 9.0.2: 40 passing tests and 45 passing subtests for material HEAD d4532edd01cfdcc9293b50ae89632de74b9927e5",
+      "producer": "Local pytest 9.x at exact material SHA: 41 passing tests, 45 passing subtests; GitHub bootstrap run 44346216755 confirms 23+12+6 cases",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-801-CI",
       "kind": "behavioral",
       "path": "evidence/ci-exact-sha-802.json",
-      "sha256": "9c4427a13c345fdc494b7e279bbadde9079d0836c4c6add2417b9cd21ca5750b",
-      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+      "sha256": "6a587d43ad87994725bc805e761df92df9b23b27a1546b319f4702febcbf9686",
+      "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
       "freshness_policy": "exact-material-head",
-      "producer": "Authenticated GitHub Actions Repository CI 44320606149, Solo audit bootstrap 44320605854, export 44320605844, session evidence 44320605918 at exact material SHA",
+      "producer": "Authenticated GitHub Actions: Repository CI 44346216644, Solo bootstrap 44346216755, Delivery workspace 44346216735, Session review evidence 44346216701 at exact material SHA",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-801-REVIEW",
       "kind": "structural",
       "path": "evidence/obligation-review-worklist.json",
-      "sha256": "5b57ad9976d3fb1a575de48faf3a5174bf2686cae01832e715a2607b9186fd4e",
-      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+      "sha256": "04c0a5b650b7a85529e50adb5409d8b0dc4d07e3112bb1609d46145dc0ada100",
+      "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
       "freshness_policy": "exact-material-head",
-      "producer": "Producer pre-audit; not independent",
+      "producer": "Producer internal worklist with six canonical obligations and audit finding A-001; not an independent review",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-801-REACH",
       "kind": "behavioral",
       "path": "evidence/ground-tests-801-reachability.txt",
-      "sha256": "4158a3a5b0e8e098cfb1e74f4912dda39bb61a79ea54cc82735beb824fbe0815",
-      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+      "sha256": "40c63b49bfdced55c9424e51ff6059aee8a816f7d3a38149c080035d8add1dbe",
+      "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
       "freshness_policy": "exact-material-head",
-      "producer": "Local exact-head pytest execution and exact-head bootstrap CI",
+      "producer": "Exact material local pytest 41 passed and GitHub bootstrap run 44346216755 success",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-801-SECRET",
+      "kind": "behavioral",
+      "path": "evidence/closure-secret-negative.txt",
+      "sha256": "7623fc7afa478e5b260fa75a3adad7e4637ed7b041979557beddbe63436d4e34",
+      "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
+      "freshness_policy": "exact-material-head",
+      "producer": "Local adversarial injection of synthetic secret into publish_check RuntimeError, asserted stderr excludes value",
       "status": "passed"
     }
   ]

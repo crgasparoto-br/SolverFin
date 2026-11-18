@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+  "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
   "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
   "creations": [
     {
@@ -86,7 +86,7 @@
     {
       "path": "tests/test_solverfin_solo_check_lifecycle.py",
       "operation": "added",
-      "scenario": "Canonical check URL, spoofing, durable close as failure, draft skip, retained ID and provisional fallback after partial identity.",
+      "scenario": "Canonical check URL, spoofing, durable close as failure, draft skip, retained ID and provisional fallback after partial identity. Six normative acceptance lines are now extracted in a regression test of the actual issue source.",
       "requirement": "Issue #801 original six acceptance criteria, including protected-branch authorization and failure-only recovery.",
       "search": {
         "queries": [
@@ -104,18 +104,18 @@
         ]
       },
       "decision": "new-test-required",
-      "justification": "Separate tests verify six observed orphan cases and the unique preventions adopted from PRs #798 and #799.",
+      "justification": "Separate tests verify six observed orphan cases and the unique preventions adopted from PRs #798 and #799. The new extractor regression protects against a misleading green handoff that omits acceptance bullets.",
       "disposition": "keep",
       "verification": {
         "status": "passed",
         "command": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
         "exit_code": 0,
-        "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+        "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
         "reached_tests": [
           "tests/test_solverfin_solo_check_lifecycle.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-801/evidence/ground-tests-801-reachability.txt",
-        "evidence_sha256": "4158a3a5b0e8e098cfb1e74f4912dda39bb61a79ea54cc82735beb824fbe0815"
+        "evidence_sha256": "40c63b49bfdced55c9424e51ff6059aee8a816f7d3a38149c080035d8add1dbe"
       }
     },
     {
@@ -145,12 +145,12 @@
         "status": "passed",
         "command": "python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py",
         "exit_code": 0,
-        "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+        "subject_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
         "reached_tests": [
           "tests/test_solverfin_solo_check_recovery.py"
         ],
         "evidence_path": ".audit/entregar-issue/issue-801/evidence/ground-tests-801-reachability.txt",
-        "evidence_sha256": "4158a3a5b0e8e098cfb1e74f4912dda39bb61a79ea54cc82735beb824fbe0815"
+        "evidence_sha256": "40c63b49bfdced55c9424e51ff6059aee8a816f7d3a38149c080035d8add1dbe"
       }
     }
   ]

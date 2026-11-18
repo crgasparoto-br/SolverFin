@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+  "head_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
   "families": [
     {
       "family": "authorization",
@@ -9,15 +9,18 @@
       "control_ids": [
         "NC-801-001-03",
         "NC-801-001-04",
-        "NC-801-003-03",
-        "NC-801-003-04"
+        "NC-801-005-01",
+        "NC-801-005-02",
+        "NC-801-006-03",
+        "NC-801-006-04"
       ],
       "dimensions": [
         {
           "surface": "protected-ref-authority",
           "reason": "Only repository-owned GitHub Actions running at protected develop can patch the allowlisted historical checks.",
           "control_ids": [
-            "NC-801-003-03"
+            "NC-801-005-01",
+            "NC-801-006-03"
           ],
           "status": "passed"
         },
@@ -34,7 +37,8 @@
           "reason": "Check and run provenance must include exact PR 796 identity and GitHub Actions app before any PATCH.",
           "control_ids": [
             "NC-801-001-03",
-            "NC-801-003-04"
+            "NC-801-005-02",
+            "NC-801-006-04"
           ],
           "status": "passed"
         }
@@ -54,9 +58,18 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-801-001-02"
+        "NC-801-001-02",
+        "NC-801-003-02"
       ],
       "dimensions": [
+        {
+          "surface": "credential-safe-error-channel",
+          "reason": "Exception messages can contain secrets and must not be printed.",
+          "control_ids": [
+            "NC-801-003-02"
+          ],
+          "status": "passed"
+        },
         {
           "surface": "untrusted-details-url",
           "reason": "Untrusted URL text must never be used as an authority for a check write.",
@@ -81,23 +94,32 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-801-003-01",
-        "NC-801-003-05"
+        "NC-801-005-06",
+        "NC-801-006-01",
+        "NC-801-006-05"
       ],
       "dimensions": [
         {
-          "surface": "merge-approval-boundary",
-          "reason": "Historical repair executes only after trusted code arrives on protected develop and never invents reviewer approval.",
+          "surface": "draft-no-new-check",
+          "reason": "Draft PR event sequence must not leave a Check Run in progress before the ready_for_review transition.",
           "control_ids": [
-            "NC-801-003-01"
+            "NC-801-006-05"
           ],
           "status": "passed"
         },
         {
-          "surface": "draft-no-new-check",
-          "reason": "tests/test_solverfin_solo_check_lifecycle.py:101-110 covers draft and avoids spurious pending checks",
+          "surface": "merge-approval-boundary",
+          "reason": "Historical repair executes only after trusted code arrives on protected develop and never invents reviewer approval.",
           "control_ids": [
-            "NC-801-003-05"
+            "NC-801-006-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "original-run-failure-precondition",
+          "reason": "Only historical runs already completed failure can be used to close orphan checks.",
+          "control_ids": [
+            "NC-801-005-06"
           ],
           "status": "passed"
         }
@@ -136,9 +158,18 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-801-002-03"
+        "NC-801-002-03",
+        "NC-801-005-03"
       ],
       "dimensions": [
+        {
+          "surface": "recovery-repeat-idempotency",
+          "reason": "An already completed failure must not be reopened.",
+          "control_ids": [
+            "NC-801-005-03"
+          ],
+          "status": "passed"
+        },
         {
           "surface": "replay-finalization-boundary",
           "reason": "Do not reopen an unrelated or previously completed Check Run while attempting failure closure.",
@@ -168,25 +199,58 @@
     },
     {
       "family": "structural-contract",
-      "applicable": false,
-      "reason": "No current contract or diff signal requires this family.",
-      "control_ids": [],
-      "dimensions": [],
-      "status": "not-applicable"
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-801-004-02",
+        "NC-801-004-03",
+        "NC-801-004-04"
+      ],
+      "dimensions": [
+        {
+          "surface": "specified-test-matrix",
+          "reason": "Distinct positive, negative and regression cases must be exercised by the bootstrap workflow.",
+          "control_ids": [
+            "NC-801-004-02",
+            "NC-801-004-03",
+            "NC-801-004-04"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
     },
     {
       "family": "documentation",
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-801-003-02"
+        "NC-801-003-03",
+        "NC-801-005-05",
+        "NC-801-006-02"
       ],
       "dimensions": [
         {
           "surface": "audit-status-language",
           "reason": "Workflow and issue notes must identify the separate independent audit and not claim one from bootstrap CI.",
           "control_ids": [
-            "NC-801-003-02"
+            "NC-801-006-02"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "authenticated-recovery-procedure",
+          "reason": "The workflow and PR document safe protected-branch and manual retry scope.",
+          "control_ids": [
+            "NC-801-005-05"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "no-false-approval",
+          "reason": "The blocked run must not claim independent approval or silently pass.",
+          "control_ids": [
+            "NC-801-003-03"
           ],
           "status": "passed"
         }

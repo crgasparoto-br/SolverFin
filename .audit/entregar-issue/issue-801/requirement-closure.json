@@ -1,8 +1,8 @@
 {
   "schema_version": 3,
   "specification_snapshot": {
-    "path": "/mnt/data/solverfin-802-audit/checkout/.audit/entregar-issue/issue-801/specification-snapshot.json",
-    "sha256": "a1908393d37d28310e990fbfeb719d0d7fe018e1ceb33317e06ed660facae61c"
+    "path": "/mnt/data/solverfin802-work/repo/.audit/entregar-issue/issue-801/specification-snapshot.json",
+    "sha256": "abc809d995adddfb4122f7810856a7ab1ec96b786133552ac1e785bbe6655e74"
   },
   "primary_issue_source_id": "SRC-ISSUE-801",
   "obligations": [
@@ -10,7 +10,7 @@
       "id": "OBL-001",
       "candidate_key": "96de69f0fb0419dc7cf851c5da03514ba6a80b1ddc169f47b3b032f7420824d6",
       "source_id": "SRC-ISSUE-801",
-      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
       "source_line": 7,
       "source_text": "Aceitar somente as duas URLs canônicas exatas, com verificação de id/check, `external_id`, HEAD e app GitHub Actions; rejeitar URLs forjadas, prefixos e queries.",
       "flags": [
@@ -29,7 +29,7 @@
       "id": "OBL-002",
       "candidate_key": "aa2807cd11f2c56e7424a7b6a78a71c1ee99ee13eebfa513685f4b3c3883a85f",
       "source_id": "SRC-ISSUE-801",
-      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
       "source_line": 8,
       "source_text": "Capturar ID do Check Run recém-criado mesmo se a validação posterior falhar e tentar marcar `completed/failure`.",
       "flags": [],
@@ -44,14 +44,13 @@
     },
     {
       "id": "OBL-003",
-      "candidate_key": "5ab6a2a0b8f021f2df1e61d647d529a11849f2aa7235883277a6597bc008fbdf",
+      "candidate_key": "5b6d4bb1d8003de360c2519acf5a2daff7465ec2d2c67f85cbb019a039e25e06",
       "source_id": "SRC-ISSUE-801",
-      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
-      "source_line": 12,
-      "source_text": "Preservar `develop` como base, sem merge antes da auditoria independente.",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
+      "source_line": 9,
+      "source_text": "Não silenciar falhas de fechamento: emitir erro explícito, sem aprovação artificial ou credencial exposta.",
       "flags": [
-        "negative",
-        "temporal"
+        "negative"
       ],
       "disposition": "covered",
       "requirement_ids": [
@@ -60,18 +59,77 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "PR #802 targets develop; status ready for review but unmerged. Protected develop repair is fail-only; tests/test_solverfin_solo_check_recovery.py:85-103 and draft skip tests/test_solverfin_solo_check_lifecycle.py:101-110 pass on d4532edd01cfdcc9293b50ae89632de74b9927e5."
+      "rationale": "AC-801-3: verify_solo_audit_attestation.py:133-153 emits explicit BLOCK and class-only closure errors; test_solverfin_solo_check_lifecycle.py:148-157 verifies an injected PATCH failure reaches stderr without exposing credentials. The terminal failure path remains denial-only."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "a78ea9d56721a85609ae3eb9305f79af04292714a04c7e6ab3efa9e0292e700a",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
+      "source_line": 10,
+      "source_text": "Cobrir cenários positivos, negativos e regressão por testes acionados pelo workflow de bootstrap.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-4: .github/workflows/solo-audit-bootstrap-ci.yml:43-49 invokes three suites (positive, negative and regression) at the exact candidate HEAD; the new test validates the six normative issue items against the canonical extractor."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "a3a05a0248db8af8e5bbc6b5a64db3fb88cc9ffe5842b1bada44cbf1b5e0fb67",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
+      "source_line": 11,
+      "source_text": "Identificar os checks órfãos existentes e documentar procedimento de remediação autenticado; não reexecutar workflows defeituosos como paliativo.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-5: scripts/repair_legacy_solo_checks.py:22-129 allowlists six exact check/run ID pairs and validates GitHub Actions identity, trusted failure, protected develop; tests/test_solverfin_solo_check_recovery.py:35-102 cover negative/idempotent/positive cases. Production recovery is post-merge only, without workflow retry."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "5ab6a2a0b8f021f2df1e61d647d529a11849f2aa7235883277a6597bc008fbdf",
+      "source_id": "SRC-ISSUE-801",
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
+      "source_line": 12,
+      "source_text": "Preservar `develop` como base, sem merge antes da auditoria independente.",
+      "flags": [
+        "negative",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-801-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "AC-801-6: PR #802 targets protected develop, remains unmerged; scripts/repair_legacy_solo_checks.py and workflow restrict repair to protected develop, never claiming independent approval. Existing RecoveryTests prove branch and result constraints."
     }
   ],
   "source_coverage": [
     {
       "source_id": "SRC-ISSUE-801",
-      "source_sha256": "33f297c23a378c02458360a9ab252fe767b5cba490bcd08d128116443430076e",
-      "candidate_count": 3,
+      "source_sha256": "575da9bdeea691a2113de2d5b1e8e511a69870133c4f31c75979e529f52bddec",
+      "candidate_count": 6,
       "obligation_ids": [
         "OBL-001",
         "OBL-002",
-        "OBL-003"
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006"
       ],
       "unmapped_candidate_keys": []
     }
@@ -110,7 +168,9 @@
     "unresolved_contradictions": [],
     "searched_outside_diff": true,
     "search_evidence": [
-      "Review scripts/verify_independent_pr_audit.py and protected .github/workflows/solo-audit-attestation.yml: native independent gate remains intact and separate from solo assurance."
+      "scripts/repair_legacy_solo_checks.py:22-129 preserves protected develop and fail-only terminal result",
+      ".github/workflows/solo-audit-attestation.yml:1-75 rejects unsigned/unrelated comments",
+      "PR #802 updated recovery procedure; no claim of independent approval"
     ]
   },
   "scope_reduction_review": {
@@ -122,20 +182,26 @@
     "requirement_ids": [
       "REQ-801-001",
       "REQ-801-002",
-      "REQ-801-003"
+      "REQ-801-003",
+      "REQ-801-004",
+      "REQ-801-005",
+      "REQ-801-006"
     ],
     "obligation_ids": [
       "OBL-001",
       "OBL-002",
-      "OBL-003"
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006"
     ],
     "evidence": [
       "evidence/obligation-review-worklist.json",
-      "evidence/solo-bootstrap-40.xml",
-      "evidence/ci-exact-sha-802.json",
-      "tests/test_solverfin_solo_check_lifecycle.py:40-132",
+      "evidence/solo-bootstrap-40.xml (historical; superseded on new SHA)",
+      "tests/test_solverfin_solo_check_lifecycle.py:42-183 (including acceptance list regression)",
       "tests/test_solverfin_solo_check_recovery.py:30-103",
-      "tests/test_solverfin_solo_check_lifecycle.py:101-126"
+      ".github/workflows/solo-audit-bootstrap-ci.yml:38-49",
+      "scripts/verify_solo_audit_attestation.py:88-156"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

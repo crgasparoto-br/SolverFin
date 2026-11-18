@@ -2,8 +2,8 @@
   "schema_version": 1,
   "issue": 801,
   "pull_request": 802,
-  "head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
-  "caveat": "The six issue acceptance bullets, PR #798 and PR #799 controls were reconciled; canonical extractor maps 3 normative items. Local 40 passing tests and green CI do not confer independent approval.",
+  "head_sha": "b89cce9da5d7818e1eb5cf538ed141d44a5b441f",
+  "caveat": "All six issue acceptance bullets now map to six canonical obligations after normalizing the issue heading. 41 passing tests and exact-head green CI are technical evidence, not an independent approval.",
   "acceptance_criteria": [
     {
       "id": "AC-801-1",
@@ -30,8 +30,8 @@
       "id": "AC-801-4",
       "issue_line": 10,
       "text": "Execute positive, negative, regression tests in bootstrap CI.",
-      "source": ".github/workflows/solo-audit-bootstrap-ci.yml:35",
-      "negative": "tests/test_solverfin_solo_audit_bootstrap.py:1"
+      "source": ".github/workflows/solo-audit-bootstrap-ci.yml:45-49",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:158-186"
     },
     {
       "id": "AC-801-5",
@@ -54,14 +54,21 @@
       "control": "Partial exact identity cannot block a terminal fail-only Check Run update",
       "source": "scripts/verify_solo_audit_attestation.py:140-144",
       "negative": "tests/test_solverfin_solo_check_lifecycle.py:112-126",
-      "status": "passed locally"
+      "status": "passed at exact material HEAD in local pytest and Actions"
     },
     {
       "source_pr": 799,
       "control": "Draft PR never creates a Check Run; ready_for_review still triggers the workflow",
       "source": "scripts/verify_solo_audit_attestation.py:97-101",
       "negative": "tests/test_solverfin_solo_check_lifecycle.py:101-110",
-      "status": "passed locally"
+      "status": "passed at exact material HEAD in local pytest and Actions"
     }
-  ]
+  ],
+  "rejection_tracking": {
+    "source": "ChatGPT audit discussion 2026-11-18 (not an authenticated GitHub independent review)",
+    "finding_id": "A-001",
+    "root_cause": "Noncanonical heading omitted three issue criteria from producer candidate extraction",
+    "remediation": "Normalize issue heading, rerun canonical extraction, bind six obligations, validate adversarial controls and exact-SHA handoff",
+    "status": "implemented; awaiting independent re-audit"
+  }
 }

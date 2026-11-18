@@ -1,9 +1,10 @@
-Local pytest at authenticated material HEAD d4532edd01cfdcc9293b50ae89632de74b9927e5: 40 passed, 45 subtests passed.
-HEAD: d4532edd01cfdcc9293b50ae89632de74b9927e5
+Local pytest at authenticated material HEAD b89cce9da5d7818e1eb5cf538ed141d44a5b441f: 41 passed, 45 subtests passed.
+HEAD: b89cce9da5d7818e1eb5cf538ed141d44a5b441f
 COMMAND: python -m pytest -q tests/test_solverfin_solo_audit_bootstrap.py tests/test_solverfin_solo_check_lifecycle.py tests/test_solverfin_solo_check_recovery.py
 EXIT_CODE: 0
 REACHED: tests/test_solverfin_solo_audit_bootstrap.py
 REACHED: tests/test_solverfin_solo_check_lifecycle.py
 REACHED: tests/test_solverfin_solo_check_recovery.py
-GitHub Actions Solo audit bootstrap verification run 44320605854: completed success at material HEAD.
+GitHub Actions Solo audit bootstrap verification run 44346216755: completed success at material HEAD (23 + 12 + 6 tests).
+GitHub Actions Repository CI run 44346216644: completed success at exact material HEAD.
 This verifies mocked check-write behavior; historical Check Runs not patched in production.
