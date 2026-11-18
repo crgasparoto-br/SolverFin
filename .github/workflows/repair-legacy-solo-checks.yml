@@ -1,0 +1,32 @@
+# One-time, deny-only repair of checks left pending by the prior solo publisher.
+# The protected-branch push after this fix is merged runs the same verified code.
+name: Repair legacy solo Ed25519 Check Runs
+on:
+  push:
+    branches: [develop]
+    paths:
+      - ".github/workflows/repair-legacy-solo-checks.yml"
+      - "scripts/repair_legacy_solo_checks.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  checks: write
+
+jobs:
+  repair:
+    if: github.ref == 'refs/heads/develop' && github.ref_protected
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout protected workflow source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.workflow_sha }}
+          persist-credentials: false
+      - name: Repair only authenticated failed checks
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/repair_legacy_solo_checks.py

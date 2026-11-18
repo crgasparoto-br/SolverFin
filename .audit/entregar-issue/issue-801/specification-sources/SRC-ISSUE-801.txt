@@ -1,0 +1,16 @@
+## Contexto e evidência
+A PR #796 (HEAD `f279cb3af14e7e14d3c295f085e6e3f969f1f164`) acumulou seis Check Runs `Verify solo audit attestation (exact SHA)` em `in_progress`, apesar dos runs Actions associados terem terminado com `failure` (runs 44090082816, 44090141712, 44090433659, 44090481927, 44091437545, 44091547097).
+
+O endpoint GitHub Check Runs normaliza o `details_url` para `https://github.com/<repo>/runs/<check_id>`, enquanto o código exigia a URL originalmente submetida `/actions/runs/<run_id>`. A comparação falhava na abertura e na publicação do check, e o tratamento de exceção suprimia a falha de finalização.
+
+## Critérios de aceite
+- Aceitar somente as duas URLs canônicas exatas, com verificação de id/check, `external_id`, HEAD e app GitHub Actions; rejeitar URLs forjadas, prefixos e queries.
+- Capturar ID do Check Run recém-criado mesmo se a validação posterior falhar e tentar marcar `completed/failure`.
+- Não silenciar falhas de fechamento: emitir erro explícito, sem aprovação artificial ou credencial exposta.
+- Cobrir cenários positivos, negativos e regressão por testes acionados pelo workflow de bootstrap.
+- Identificar os checks órfãos existentes e documentar procedimento de remediação autenticado; não reexecutar workflows defeituosos como paliativo.
+- Preservar `develop` como base, sem merge antes da auditoria independente.
+
+## Referências
+- PR afetada: #796
+- Causa e correção candidata na branch `fix/solo-ed25519-check-run-lifecycle-20261117`.
