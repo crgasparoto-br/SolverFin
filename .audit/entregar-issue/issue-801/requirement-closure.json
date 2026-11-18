@@ -23,7 +23,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "AC-801-1/3: scripts/solo_audit_check_runs.py:76-171 protects trusted URL, exact identity and failure-only state; tests/test_solverfin_solo_check_lifecycle.py:43-104 pass locally (38/38) and bootstrap CI 44105399096 passed exact material 69fcdfba4b7ff55b44aeb11e62577ca36187492f."
+      "rationale": "AC-801-1/3: scripts/solo_audit_check_runs.py:76-171 protects trusted URL, exact identity and failure-only state; tests/test_solverfin_solo_check_lifecycle.py:43-104 pass locally (40/40) and bootstrap CI 44320605854 passed exact material d4532edd01cfdcc9293b50ae89632de74b9927e5."
     },
     {
       "id": "OBL-002",
@@ -40,7 +40,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "AC-801-2: scripts/solo_audit_check_runs.py:80-109 captures newly created check id; tests/test_solverfin_solo_check_lifecycle.py:61-67 and tests/test_solverfin_solo_check_lifecycle.py:112-127 prove fallback and closure errors; same exact head and CI."
+      "rationale": "AC-801-2: preserve created Check Run ID and publish provisional failure even when exact identity is incomplete; tests/test_solverfin_solo_check_lifecycle.py:112-126 and tests/test_solverfin_solo_check_lifecycle.py:128-145 pass on immutable material SHA d4532edd01cfdcc9293b50ae89632de74b9927e5."
     },
     {
       "id": "OBL-003",
@@ -60,7 +60,7 @@
       "inventory_ids": [],
       "assertion_ids": [],
       "scope_decision": null,
-      "rationale": "AC-801-6: PR #802 is based on develop, remains draft and is not merged. Protected develop repair workflow executes only on authenticated push after separate approval; tests/test_solverfin_solo_check_recovery.py:89-102 deny unprotected branch."
+      "rationale": "PR #802 targets develop; status ready for review but unmerged. Protected develop repair is fail-only; tests/test_solverfin_solo_check_recovery.py:85-103 and draft skip tests/test_solverfin_solo_check_lifecycle.py:101-110 pass on d4532edd01cfdcc9293b50ae89632de74b9927e5."
     }
   ],
   "source_coverage": [
@@ -131,10 +131,11 @@
     ],
     "evidence": [
       "evidence/obligation-review-worklist.json",
-      "evidence/solo-bootstrap-38.xml",
+      "evidence/solo-bootstrap-40.xml",
       "evidence/ci-exact-sha-802.json",
       "tests/test_solverfin_solo_check_lifecycle.py:40-132",
-      "tests/test_solverfin_solo_check_recovery.py:30-103"
+      "tests/test_solverfin_solo_check_recovery.py:30-103",
+      "tests/test_solverfin_solo_check_lifecycle.py:101-126"
     ],
     "rederived_without_pr_description": true,
     "reviewed_user_visible_semantics": true,

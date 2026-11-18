@@ -1,34 +1,34 @@
 {
   "schema_version": 1,
-  "material_head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "material_head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
   "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
   "evidence": [
     {
       "evidence_id": "EVID-801-PYTEST",
       "kind": "behavioral",
-      "path": "evidence/solo-bootstrap-38.xml",
-      "sha256": "07337533f816b81d6d3cf80c8744cef3e036f4fc276318458ecedb8a2f1f9193",
-      "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+      "path": "evidence/solo-bootstrap-40.xml",
+      "sha256": "99d1b03b644e7b9d4fa607fa3762592150312d60623d17d5767c8af883355ae1",
+      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
       "freshness_policy": "exact-material-head",
-      "producer": "Local pytest test runner for material HEAD 69fcdfba4b7ff55b44aeb11e62577ca36187492f: 38 pass, 45 subtests",
+      "producer": "Local pytest 9.0.2: 40 passing tests and 45 passing subtests for material HEAD d4532edd01cfdcc9293b50ae89632de74b9927e5",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-801-CI",
       "kind": "behavioral",
       "path": "evidence/ci-exact-sha-802.json",
-      "sha256": "e6fe3e06d9bd20b7f10c57af97797c137125642bb6ac4ffb86acd0fd4bb43e6e",
-      "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+      "sha256": "9c4427a13c345fdc494b7e279bbadde9079d0836c4c6add2417b9cd21ca5750b",
+      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions Repository CI 44105398918 and bootstrap 44105399096",
+      "producer": "Authenticated GitHub Actions Repository CI 44320606149, Solo audit bootstrap 44320605854, export 44320605844, session evidence 44320605918 at exact material SHA",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-801-REVIEW",
       "kind": "structural",
       "path": "evidence/obligation-review-worklist.json",
-      "sha256": "11bbcfa48977af49f98f7ff2cfa1837476faf8f6b745ef86b19400e4c0db8594",
-      "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+      "sha256": "5b57ad9976d3fb1a575de48faf3a5174bf2686cae01832e715a2607b9186fd4e",
+      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
       "freshness_policy": "exact-material-head",
       "producer": "Producer pre-audit; not independent",
       "status": "passed"
@@ -37,8 +37,8 @@
       "evidence_id": "EVID-801-REACH",
       "kind": "behavioral",
       "path": "evidence/ground-tests-801-reachability.txt",
-      "sha256": "c2a0fa6f1fbdf75fff8ebdb2c49ceb0a53cea2a2b1d7b452c6ab2d30099a31e3",
-      "subject_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+      "sha256": "4158a3a5b0e8e098cfb1e74f4912dda39bb61a79ea54cc82735beb824fbe0815",
+      "subject_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
       "freshness_policy": "exact-material-head",
       "producer": "Local exact-head pytest execution and exact-head bootstrap CI",
       "status": "passed"

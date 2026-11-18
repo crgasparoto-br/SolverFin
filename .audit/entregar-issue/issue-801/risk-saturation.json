@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
   "families": [
     {
       "family": "authorization",
@@ -81,7 +81,8 @@
       "applicable": true,
       "reason": "Derived from requirement attack matrix.",
       "control_ids": [
-        "NC-801-003-01"
+        "NC-801-003-01",
+        "NC-801-003-05"
       ],
       "dimensions": [
         {
@@ -89,6 +90,14 @@
           "reason": "Historical repair executes only after trusted code arrives on protected develop and never invents reviewer approval.",
           "control_ids": [
             "NC-801-003-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "draft-no-new-check",
+          "reason": "tests/test_solverfin_solo_check_lifecycle.py:101-110 covers draft and avoids spurious pending checks",
+          "control_ids": [
+            "NC-801-003-05"
           ],
           "status": "passed"
         }

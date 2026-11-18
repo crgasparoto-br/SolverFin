@@ -2,28 +2,34 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "pull_request": 802,
-  "material_head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
+  "material_head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
   "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
   "observed_by": "GitHub Actions connector; exact commit workflow runs and jobs",
   "ci": [
     {
       "name": "Repository CI",
-      "run_id": 44105398918,
+      "run_id": 44320606149,
       "conclusion": "success",
-      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44105398918"
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44320606149"
     },
     {
       "name": "Solo audit bootstrap verification",
-      "run_id": 44105399096,
+      "run_id": 44320605854,
       "conclusion": "success",
-      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44105399096"
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44320605854"
     },
     {
       "name": "Delivery audit workspace",
-      "run_id": 44105398968,
+      "run_id": 44320605844,
       "conclusion": "success",
-      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44105398968"
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44320605844"
+    },
+    {
+      "name": "Session review evidence (exact SHA)",
+      "run_id": 44320605918,
+      "conclusion": "success",
+      "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44320605918"
     }
   ],
-  "not_claimed": "Provenance, certified handoff, external independent reviewer and legacy repair are separate requirements."
+  "not_claimed": "Technical CI and producer evidence are green; independent review, certified-handoff verification of a future result-only commit, and legacy production recovery remain distinct obligations."
 }

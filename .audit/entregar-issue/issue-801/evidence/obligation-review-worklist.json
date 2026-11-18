@@ -2,8 +2,8 @@
   "schema_version": 1,
   "issue": 801,
   "pull_request": 802,
-  "head_sha": "69fcdfba4b7ff55b44aeb11e62577ca36187492f",
-  "caveat": "Manual inventory includes 6 issue acceptance bullets; canonical extractor recognizes 3. CI green and internal evidence do not represent independent auditor approval.",
+  "head_sha": "d4532edd01cfdcc9293b50ae89632de74b9927e5",
+  "caveat": "The six issue acceptance bullets, PR #798 and PR #799 controls were reconciled; canonical extractor maps 3 normative items. Local 40 passing tests and green CI do not confer independent approval.",
   "acceptance_criteria": [
     {
       "id": "AC-801-1",
@@ -17,7 +17,7 @@
       "issue_line": 8,
       "text": "Retain newly-created ID on failure and terminate it as failure.",
       "source": "scripts/solo_audit_check_runs.py:88",
-      "negative": "tests/test_solverfin_solo_check_lifecycle.py:59"
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:112 (partial identity fallback)"
     },
     {
       "id": "AC-801-3",
@@ -43,9 +43,25 @@
     {
       "id": "AC-801-6",
       "issue_line": 12,
-      "text": "Develop base, no merge ahead of genuinely separate review.",
+      "text": "Keep develop as target; candidate is ready for independent review but not merged.",
       "source": ".github/workflows/repair-legacy-solo-checks.yml:7",
       "negative": "tests/test_solverfin_solo_check_recovery.py:90"
+    }
+  ],
+  "consolidated_pr_controls": [
+    {
+      "source_pr": 798,
+      "control": "Partial exact identity cannot block a terminal fail-only Check Run update",
+      "source": "scripts/verify_solo_audit_attestation.py:140-144",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:112-126",
+      "status": "passed locally"
+    },
+    {
+      "source_pr": 799,
+      "control": "Draft PR never creates a Check Run; ready_for_review still triggers the workflow",
+      "source": "scripts/verify_solo_audit_attestation.py:97-101",
+      "negative": "tests/test_solverfin_solo_check_lifecycle.py:101-110",
+      "status": "passed locally"
     }
   ]
 }
