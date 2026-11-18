@@ -98,6 +98,33 @@ class SoloCheckLifecycleTests(unittest.TestCase):
                         checks.publish_check(REPO, HEAD, PR, ID, RUN, "failure", {})
                 self.assertEqual(api.call_count, 1)
 
+    def test_draft_pr_does_not_create_solo_check(self):
+        with (patch.object(controller.session_runner, "api", return_value={
+                  "head": {"sha": HEAD}, "draft": True,
+              }) as api,
+              patch.object(controller, "begin_check") as begin,
+              patch.object(controller, "publish_check") as publish):
+            self.assertEqual(controller.evaluate_target(REPO, PR, None, "b" * 40, RUN), 0)
+        api.assert_called_once_with(f"/repos/{REPO}/pulls/{PR}")
+        begin.assert_not_called()
+        publish.assert_not_called()
+
+    def test_partial_exact_identity_still_closes_with_provisional_failure(self):
+        partial = {"head_sha": HEAD, "issue": 801}
+        with (patch.object(controller.session_runner, "api", return_value={
+                  "head": {"sha": HEAD}, "draft": False,
+              }),
+              patch.object(controller, "begin_check", return_value=ID),
+              patch.object(controller, "current_target", return_value=(partial, {})),
+              patch.object(controller, "require_unique_open_pr_head",
+                           side_effect=ValueError("revoked or ambiguous PR")),
+              patch.object(controller, "publish_check") as publish):
+            self.assertEqual(controller.evaluate_target(REPO, PR, None, "b" * 40, RUN), 2)
+        publish.assert_called_once()
+        args, kwargs = publish.call_args
+        self.assertEqual(args[:6], (REPO, HEAD, PR, ID, RUN, "failure"))
+        self.assertNotIn("identity", kwargs)
+
     def test_controller_failure_after_create_completes_check_not_orphan(self):
         calls = []
         def api(path, *, method="GET", data=None):

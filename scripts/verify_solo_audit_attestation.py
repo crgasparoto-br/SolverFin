@@ -94,6 +94,11 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
         live_head = (initial_pr.get("head") or {}).get("sha") if isinstance(initial_pr, dict) else None
         require(isinstance(live_head, str) and SHA_RE.fullmatch(live_head), "live PR HEAD is unavailable")
         head = live_head
+        # Drafts cannot be attested. Do not leave a pending check for each
+        # workflow completion; ready_for_review will revalidate the PR.
+        if initial_pr.get("draft") is True:
+            print(f"PR #{number} is draft; solo audit attestation deferred.")
+            return 0
         check_id = begin_check(repo, head, number, run_id,
                                on_created=created_check_ids.append)
 
@@ -133,8 +138,10 @@ def evaluate_target(repo: str, number: int, expected_issue: int | None,
             # A terminal failure is mandatory. If GitHub rejects PATCH, surface
             # the closure failure instead of silently reporting a finished gate.
             try:
-                publish_check(repo, head, number, check_id, run_id, "failure", receipt,
-                              identity=identity)
+                # A partial/malformed exact identity must never prevent a
+                # terminal failure. The provisional ID still binds run, PR,
+                # and HEAD to this same authenticated Check Run.
+                publish_check(repo, head, number, check_id, run_id, "failure", receipt)
             except Exception as closure_exc:
                 print(f"BLOCK: solo Check Run {check_id} could not be finalized "
                       f"({type(closure_exc).__name__})", file=sys.stderr)
