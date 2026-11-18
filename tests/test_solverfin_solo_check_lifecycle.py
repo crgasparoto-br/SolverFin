@@ -155,5 +155,36 @@ class SoloCheckLifecycleTests(unittest.TestCase):
         self.assertIn("could not be finalized (RuntimeError)", output.getvalue())
 
 
+    def test_all_six_issue_801_acceptance_criteria_are_extracted(self):
+        """Regression: an unrecognized heading silently dropped three requirements."""
+        import hashlib
+        import json
+        from tempfile import TemporaryDirectory
+
+        from specification import extract_candidates
+
+        issue_source = (ROOT / ".audit/entregar-issue/issue-801/specification-sources/"
+                        "SRC-ISSUE-801.txt").read_text(encoding="utf-8")
+        with TemporaryDirectory() as directory:
+            tmp = Path(directory)
+            source = tmp / "SRC-ISSUE-801.txt"
+            source.write_text(issue_source, encoding="utf-8")
+            snapshot = tmp / "specification-snapshot.json"
+            snapshot.write_text(json.dumps({
+                "schema_version": 1,
+                "primary_source_id": "SRC-ISSUE-801",
+                "sources": [{
+                    "id": "SRC-ISSUE-801", "kind": "issue-body",
+                    "path": source.name,
+                    "sha256": hashlib.sha256(source.read_bytes()).hexdigest(),
+                    "textual": True,
+                }],
+            }), encoding="utf-8")
+            errors = []
+            _, _, candidates = extract_candidates(snapshot, errors)
+        self.assertFalse(errors, errors)
+        self.assertEqual([c["source_line"] for c in candidates], [7, 8, 9, 10, 11, 12])
+
+
 if __name__ == "__main__":
     unittest.main()
