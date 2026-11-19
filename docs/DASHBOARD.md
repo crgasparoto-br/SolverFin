@@ -58,6 +58,7 @@ validação em Chrome nas resoluções **1366×768, 390×844 e 320×740**.
 Além da regressão histórica #724, o job publica imagens
 `issue-811-approved-mockup-multi-currency-<width>.png` e
 `issue-811-approved-mockup-long-content-<width>.png`
+e as correspondentes capturas de página inteira `issue-811-approved-mockup-<state>-<width>-full.png`
 em `statement-visual-evidence-<SHA>`, incluindo relatórios de
 ordem das regiões, 3 colunas de KPIs no desktop, pares de widgets,
 2 KPIs iniciais por moeda no mobile, linha temporal, overflow e foco.
