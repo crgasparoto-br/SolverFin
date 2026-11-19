@@ -163,6 +163,7 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Resultado do mês/);
       assert.match(html, /Contas a pagar/);
       assert.match(html, /Gastos nos cartões/);
+      assert.match(html, /data-kpi="cards"[\s\S]*?R\$\s*550,00/);
       assert.match(html, /Saldo mínimo projetado/);
       assert.match(html, /data-kpi="free"/);
       assert.match(html, /class="dashboard-currency-filter"/);
