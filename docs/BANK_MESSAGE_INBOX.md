@@ -8,6 +8,25 @@ Nenhuma mensagem recebida cria lançamento final. Toda sugestão permanece em `P
 
 Depois que uma `transaction_extraction` estruturada é criada, sua origem deixa de importar para o detector de duplicidade/conciliação: regra local e provider usam exatamente o mesmo motor determinístico generalizado da Inbox.
 
+## Navegação da Inbox na interface
+
+A rota `/inbox` organiza as tarefas em quatro abas acessíveis e mutuamente exclusivas:
+
+- **Revisões:** fila de sugestões, filtros, evidência selecionada e decisões explícitas.
+- **Importações:** extratos CSV/OFX, lotes, correção de linhas e envio de arquivos.
+- **Mensagens:** mensagens recebidas e ação contextual **Registrar mensagem**.
+- **Insights:** fila de insights financeiros, estados e ações de acompanhamento.
+
+A aba ativa também pode ser definida por `?tab=reviews|imports|messages|insights`. O parâmetro
+`importBatchId` abre a aba de importações quando nenhuma aba explícita é informada.
+O link histórico `/inbox#financial-insights` abre diretamente **Insights** no navegador;
+filtros de período, `profileId` e paginação de insights permanecem preservados.
+
+A troca de abas não remove componentes da árvore DOM, evitando descartar o estado em edição.
+Conteúdo de abas inativas fica oculto, inclusive para tecnologias assistivas; somente
+evidências visíveis podem autorizar uma decisão financeira. A criação de mensagem e a importação
+continuam sujeitas às regras de consentimento, confirmação e validação existentes.
+
 ## Contrato de entrada
 
 `POST /api/bank-message-inbox`
