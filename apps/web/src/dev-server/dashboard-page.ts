@@ -33,6 +33,7 @@ import { renderDashboardFinancialInsights } from "./financial-insight-queue-view
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dashboardStyles } from "./dashboard-styles.js";
+import { renderDashboardOverview, type DashboardOverview } from "./dashboard-overview-view.js";
 
 const DASHBOARD_LOADING_GRACE_MS = 75;
 const DASHBOARD_LOAD_MAX_LIFETIME_MS = 30_000;
@@ -43,8 +44,8 @@ interface DashboardLoadEntry {
 
 const dashboardLoads = new Map<string, DashboardLoadEntry>();
 
-export async function renderDashboardPage(token: string): Promise<string> {
-  const entry = dashboardLoadEntry(token);
+export async function renderDashboardPage(token: string, url?: URL): Promise<string> {
+  const entry = dashboardLoadEntry(token, url?.searchParams.get("purchaseOn"));
   const outcome = await Promise.race([
     entry.promise.then((input) => ({ state: "ready" as const, input })),
     loadingGrace().then(() => ({ state: "loading" as const })),
@@ -54,12 +55,13 @@ export async function renderDashboardPage(token: string): Promise<string> {
     return renderDashboard(presentDashboardLoading());
   }
 
-  dashboardLoads.delete(token);
+  dashboardLoads.delete(token + ":" + (url?.searchParams.get("purchaseOn") ?? "today"));
   return renderDashboard(presentDashboard(outcome.input));
 }
 
-function dashboardLoadEntry(token: string): DashboardLoadEntry {
-  const pending = dashboardLoads.get(token);
+function dashboardLoadEntry(token: string, purchaseOn?: string | null): DashboardLoadEntry {
+  const key = token + ":" + (purchaseOn ?? "today");
+  const pending = dashboardLoads.get(key);
   if (pending) return pending;
 
   const promise = Promise.all([
@@ -68,19 +70,21 @@ function dashboardLoadEntry(token: string): DashboardLoadEntry {
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
     apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
     apiGet<FinancialInsightQueueApiPage>(token, DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE),
-  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights]) => ({
+    apiGet<DashboardOverview>(token, `/api/dashboard-overview${purchaseOn ? "?purchaseOn=" + encodeURIComponent(purchaseOn) : ""}`),
+  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights, overview]) => ({
     summary,
     cashFlowProjection,
     pendingReview,
     openInvoices,
     financialInsights,
+    overview,
     filters: {},
   }));
   const entry: DashboardLoadEntry = { promise };
-  dashboardLoads.set(token, entry);
+  dashboardLoads.set(key, entry);
 
   const cleanup = setTimeout(() => {
-    if (dashboardLoads.get(token) === entry) dashboardLoads.delete(token);
+    if (dashboardLoads.get(key) === entry) dashboardLoads.delete(key);
   }, DASHBOARD_LOAD_MAX_LIFETIME_MS);
   cleanup.unref?.();
 
@@ -172,6 +176,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
       </div>
     </section>
     ${renderSupportingCurrencySummaries(content.currencySummaries)}
+    ${renderDashboardOverview(content.overview)}
     ${renderCashFlowProjection(content.cashFlowProjection)}
     ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     ${renderDecisionModules(content.decisionModules)}
