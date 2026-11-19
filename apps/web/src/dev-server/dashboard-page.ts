@@ -45,7 +45,7 @@ interface DashboardLoadEntry {
 const dashboardLoads = new Map<string, DashboardLoadEntry>();
 
 export async function renderDashboardPage(token: string, url?: URL): Promise<string> {
-  const entry = dashboardLoadEntry(token, url?.searchParams.get("purchaseOn"));
+  const entry = dashboardLoadEntry(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency"));
   const outcome = await Promise.race([
     entry.promise.then((input) => ({ state: "ready" as const, input })),
     loadingGrace().then(() => ({ state: "loading" as const })),
@@ -55,12 +55,16 @@ export async function renderDashboardPage(token: string, url?: URL): Promise<str
     return renderDashboard(presentDashboardLoading());
   }
 
-  dashboardLoads.delete(token + ":" + (url?.searchParams.get("purchaseOn") ?? "today"));
+  dashboardLoads.delete(dashboardLoadKey(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency")));
   return renderDashboard(presentDashboard(outcome.input));
 }
 
-function dashboardLoadEntry(token: string, purchaseOn?: string | null): DashboardLoadEntry {
-  const key = token + ":" + (purchaseOn ?? "today");
+function dashboardLoadKey(token: string, purchaseOn?: string | null, currency?: string | null): string {
+  return token + ":" + (purchaseOn ?? "today") + ":" + (currency ?? "all");
+}
+
+function dashboardLoadEntry(token: string, purchaseOn?: string | null, currency?: string | null): DashboardLoadEntry {
+  const key = dashboardLoadKey(token, purchaseOn, currency);
   const pending = dashboardLoads.get(key);
   if (pending) return pending;
 
@@ -82,7 +86,7 @@ function dashboardLoadEntry(token: string, purchaseOn?: string | null): Dashboar
       openInvoices,
       financialInsights,
       overview,
-      filters: {},
+      filters: { ...(currency ? { currency } : {}), ...(purchaseOn ? { purchaseOn } : {}) },
     }),
   );
   const entry: DashboardLoadEntry = { promise };
