@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
+  "comparison_base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation-outbound.ts",
+      "lines_before": null,
+      "lines_after": 67
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "lines_before": null,
+      "lines_after": 463,
+      "justification": "Dedicated 463-line channel-only confirmation state machine and scoped transactional decision journal. Reuses canonical AiSuggestion approval/rejection and isolates 61-line outbound code rendering; further splitting would disperse the shared state invariants without reducing coupling."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-event-repository.ts",
+      "lines_before": 258,
+      "lines_after": 265
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-service.ts",
+      "lines_before": 383,
+      "lines_after": 448
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-types.ts",
+      "lines_before": 49,
+      "lines_after": 52
+    }
+  ],
+  "blocking_files": []
+}

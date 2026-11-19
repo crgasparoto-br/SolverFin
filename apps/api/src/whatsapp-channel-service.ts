@@ -4,6 +4,13 @@ import { createAiProviderFromEnvironment } from "@solverfin/ai";
 import type { TenantContext } from "@solverfin/domain";
 
 import { createBankMessageInboxWithAiForContext } from "./bank-message-ai-inbox.js";
+import { query } from "./db.js";
+import { renderWhatsappFinancialConfirmationReply } from "./whatsapp-channel-confirmation-outbound.js";
+import {
+  decideWhatsappFinancialConfirmation,
+  prepareWhatsappFinancialConfirmation,
+  WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER,
+} from "./whatsapp-channel-confirmation.js";
 import {
   FinancialAssistantServiceError,
   getOrStartFinancialAssistantConversation,
@@ -75,6 +82,9 @@ export interface ChannelServiceDependencies {
     eventId: string,
     link: ActiveChannelLink,
   ) => Promise<{ conversationId: string; answer: string; completed?: boolean }>;
+  prepareConfirmation: typeof prepareWhatsappFinancialConfirmation;
+  decideConfirmation: typeof decideWhatsappFinancialConfirmation;
+  renderConfirmation: typeof renderWhatsappFinancialConfirmationReply;
   captureFinancial: (
     context: TenantContext,
     rawMessage: string,
@@ -131,6 +141,9 @@ const defaultDependencies: ChannelServiceDependencies = {
     }
     return { conversationId: view.conversation.id, answer: turn.safeResponse.answer };
   },
+  prepareConfirmation: prepareWhatsappFinancialConfirmation,
+  decideConfirmation: decideWhatsappFinancialConfirmation,
+  renderConfirmation: renderWhatsappFinancialConfirmationReply,
   captureFinancial: async (context, text, eventId, link) => {
     if (
       !(await isWhatsappLinkStillActive(link)) ||
@@ -138,9 +151,22 @@ const defaultDependencies: ChannelServiceDependencies = {
     ) {
       return "consent_required";
     }
+    // Resolve only an unambiguous account from the authorized profile.
+    // Never infer the account from provider text or pick among multiple accounts.
+    const available = await query<{ id: string }>(
+      `select "id" from "Account"
+       where "organizationId"=$1 and "financialProfileId"=$2 and "status"='ACTIVE'
+       order by "id" limit 2`,
+      [context.organizationId, context.financialProfileId],
+    );
     const item = await createBankMessageInboxWithAiForContext(
       context,
-      { origin: "whatsapp", text, consentAccepted: true },
+      {
+        origin: "whatsapp",
+        text,
+        consentAccepted: true,
+        ...(available.length === 1 ? { accountId: available[0]!.id } : {}),
+      },
       {
         correlationId: eventId,
         resolveConsent: async (current) =>
@@ -209,6 +235,13 @@ export async function processInboundChannelMessage(
     if (reply.link && !(await dependencies.isLinkActive(reply.link))) {
       reply = { outcome: "awaiting_link", reply: REVOKED_MESSAGE };
     }
+    // The database must never see a plaintext confirmation capability.
+    if (
+      reply.outcome === "confirmation_pending" &&
+      !reply.reply.includes(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER)
+    ) {
+      throw new WhatsappChannelError("WHATSAPP_CONFIRMATION_TEMPLATE_INVALID", 503);
+    }
     await dependencies.finishInbound({
       eventId: claim.event.id,
       token: claim.token,
@@ -251,6 +284,17 @@ async function decideChannelReply(
   if (!link) return { outcome: "awaiting_link", reply: UNLINKED_MESSAGE };
   const context = contextFromChannelLink(link);
 
+  if (/^(?:CONFIRMAR|REJEITAR|CANCELAR)(?:\s+|$)/i.test(text) && !/^CANCELAR$/i.test(text)) {
+    const decision = await deps.decideConfirmation(context, eventId, text, link);
+    return {
+      outcome: decision?.outcome ?? "confirmation_incomplete",
+      reply:
+        decision?.reply ??
+        "Informe o comando completo e o código da proposta. Consulte o SolverFin para revisar.",
+      link,
+    };
+  }
+
   if (/^CANCELAR$/i.test(text)) {
     // This conversation is shared with the authenticated app. A channel-only
     // CANCELAR must never terminate the app user's financial assistant session.
@@ -267,11 +311,21 @@ async function decideChannelReply(
     if (captured === "consent_required") {
       return { outcome: "capture_incomplete", reply: CONSENT_MESSAGE, link };
     }
+    const confirmation =
+      captured.pendingReview && captured.suggestionId
+        ? await deps.prepareConfirmation(context, eventId, captured.suggestionId, link)
+        : null;
     return {
-      outcome: captured.pendingReview ? "capture_pending_review" : "capture_incomplete",
-      reply: captured.pendingReview
-        ? CAPTURE_REVIEW_MESSAGE
-        : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado.",
+      outcome: confirmation
+        ? "confirmation_pending"
+        : captured.pendingReview
+          ? "capture_pending_review"
+          : "capture_incomplete",
+      reply:
+        confirmation ??
+        (captured.pendingReview
+          ? CAPTURE_REVIEW_MESSAGE
+          : "Recebi o pedido, mas não há sugestão estruturada para revisar. Confira a Inbox do SolverFin; nenhum lançamento foi criado."),
       link,
       ...(captured.suggestionId ? { suggestionId: captured.suggestionId } : {}),
       ...(captured.importBatchId ? { importBatchId: captured.importBatchId } : {}),
@@ -303,6 +357,9 @@ async function decideChannelReply(
 
 function isFinancialOutcome(outcome: ChannelOutcome | null): boolean {
   return (
+    outcome === "confirmation_pending" ||
+    outcome === "confirmation_resolved" ||
+    outcome === "confirmation_incomplete" ||
     outcome === "query_complete" ||
     outcome === "query_incomplete" ||
     outcome === "capture_pending_review" ||
@@ -360,10 +417,18 @@ export async function deliverPersistedChannelReply(
   }
 
   try {
+    const renderedText =
+      claimed.event.outcome === "confirmation_pending"
+        ? await dependencies.renderConfirmation(claimed.event)
+        : body;
+    if (!renderedText || renderedText.includes(WHATSAPP_CONFIRMATION_TOKEN_PLACEHOLDER)) {
+      await dependencies.settleOutbound(event.id, claimed.token, "send_unknown", null);
+      return;
+    }
     const payload = {
       accountId: claimed.event.accountId,
       recipientId: to,
-      text: body,
+      text: renderedText,
     };
     const outboundId = authorizationLink
       ? await dependencies.authorizeSend(authorizationLink, () => outbound.sendText(payload))

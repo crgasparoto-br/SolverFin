@@ -1,6 +1,6 @@
 # Canal WhatsApp Meta Cloud API — issue #694
 
-**Escopo:** primeira integração de consulta somente leitura e captura revisável. O canal **não realiza** criação, edição, baixa, conciliação, exclusão, aprovação de sugestão, pagamento ou qualquer mutação financeira.
+**Escopo:** integração de consulta somente leitura, captura revisável (#694) e confirmação explícita de propostas simples (#695). O canal não executa pagamentos, transferências, baixas, conciliações, edição, exclusão ou outras mutações. Confirmação e rejeição delegam à fila canônica de revisão; nenhum fluxo financeiro paralelo é permitido.
 
 ## Configuração operacional
 
@@ -40,7 +40,7 @@ O consentimento de extração de mensagem bancária é exclusivo do SolverFin: `
 ## Comandos do canal
 
 - Perguntas financeiras em linguagem natural, ou `CONSULTAR <pergunta>`: delegadas ao `FinancialAssistantService` existente, com dados determinísticos por perfil/período/moeda. O resultado fora de escopo não executa comandos financeiros.
-- `CAPTURAR <texto de notificação bancária>`: delega à **mesma** `createBankMessageInboxWithAiForContext` e seu parser determinístico/IA opcional; persiste `ImportBatch` do tipo `BANK_MESSAGE` (origem `whatsapp`) e, quando a extração é válida, uma `AiSuggestion` de `TRANSACTION_EXTRACTION` em `PENDING_REVIEW`. A aprovação/edição ocorre **exclusivamente** na Inbox/fila de revisão autenticada.
+- `CAPTURAR <texto de notificação bancária>`: delega à **mesma** `createBankMessageInboxWithAiForContext` e seu parser determinístico/IA opcional; persiste `ImportBatch` do tipo `BANK_MESSAGE` (origem `whatsapp`) e, quando a extração é válida, uma `AiSuggestion` de `TRANSACTION_EXTRACTION` em `PENDING_REVIEW`. A edição de campos continua na Inbox/fila autenticada. Propostas completas podem ser confirmadas ou rejeitadas por comandos explícitos no WhatsApp, sempre delegando ao mesmo serviço de revisão canônica, conforme a seção da issue 695.
 - `CANCELAR`: registra o desfecho `cancelled` do pedido recebido pelo canal, sem cancelar a conversa do Assistente compartilhada com a interface web nem alterar lançamentos. O encerramento da conversa canônica permanece no aplicativo autenticado.
 - Outros formatos, mensagens sem texto e conta não vinculada: apenas resposta operacional segura. A mensagem nunca vira instrução SQL ou mutação automática.
 
@@ -80,3 +80,29 @@ Testar com números sandbox Meta e perfis isolados, incluindo remetente BSUID se
 - [Inbox de mensagens bancárias](BANK_MESSAGE_INBOX.md)
 - [Fila de revisão](AI_REVIEW_QUEUE.md)
 - [ADR 0011 — somente leitura](adr/0011-read-only-financial-assistant.md)
+
+## Confirmação explícita — issue #695
+
+O **WhatsApp não é uma sessão financeira nem um motor de lançamentos**. Quando o canal recebe `CAPTURAR <mensagem>`, a Inbox cria uma `transaction_extraction` pendente pelo pipeline da issue #694. Apenas se os campos essenciais estiverem completos, a sugestão pertencer ao mesmo perfil e houver uma conta explicitamente resolvida, o canal devolve um resumo estruturado com **tipo, valor, moeda, data e descrição mascarada**, acompanhado de três ações exatas:
+
+- `CONFIRMAR <codigo>`: revalida a proposta e chama `approveAiReviewDecisionForContext`, que é a mesma decisão da fila unificada; somente este serviço pode criar `Transaction`.
+- `REJEITAR <codigo>`: chama `rejectAiReviewDecisionForContext`; não cria lançamento.
+- `CANCELAR <codigo>`: cancela **a confirmação do canal**, preservando a sugestão para revisão autenticada; não cria lançamento.
+
+Um simples `sim`, uma mensagem sem código ou um código inválido **não confirma** nada. O código de 12 caracteres é derivado por HMAC do evento e da sugestão com segredo de servidor, e somente o hash contextual do código é persistido. Ele não concede autorização por si só. Nunca é usada a mensagem livre para reconstituir ou recalcular valores durante uma decisão.
+
+**Proteção do código no reenvio:** `WhatsappChannelEvent.replyText` persiste somente um marcador de código, nunca o código de confirmação em claro. Depois de revalidar o vínculo e reivindicar o outbound, o servidor reconstrói o código com o segredo e o par evento/sugestão, conferindo o estado e prazo da confirmação no banco. Se o segredo mudar **antes do primeiro envio**, o hash de uma confirmação ainda pendente é atualizado atomicamente antes de construir a mensagem externa; o código antigo não é enviado. Após envio aceito ou de resultado ambíguo, não ocorre reenvio ou troca de código, e a decisão posterior usa o hash já persistido, inclusive após rotação do segredo. A reconstituição exige também o estado `sending` e a lease corrente do evento verificados no PostgreSQL, impedindo a reindexação por snapshots de envio obsoletos. Segredo ausente, confirmação inválida ou reconstrução insegura bloqueiam o envio em vez de vazar o marcador ou emitir código inutilizável.
+
+**Elegibilidade do primeiro corte:** apenas receita/despesa em conta (sem cartão, transferência ou parcelamento) com data, descrição, valor positivo, moeda e conta estruturados. Propostas incompletas continuam pendentes na Inbox e **não recebem confirmação pelo canal**; a revisão autenticada permanece disponível e necessária. Se houver exatamente uma conta ativa no perfil vinculado, o backend pode resolvê-la deterministicamente; com várias contas, não faz escolha por heurística nem por sugestão da IA.
+
+**Persistência:** a tabela `WhatsappChannelConfirmation` relaciona `sourceEventId`, `suggestionId`, versão do payload (fingerprint), vínculo, usuário, organização, perfil, token hash, estado, expiração, `decisionEventId` e `transactionId`. O prazo de decisão é **15 minutos**, sem extensão implícita por replay. A confirmação grava o resultado e o efeito canônico **na mesma transação PostgreSQL**; indisponibilidade/erro de efeito impede declaração de sucesso. Duas confirmações simultâneas competem pelo lock da proposta, de modo que só uma pode criar a transação. Reenvios do mesmo evento Meta não geram nova decisão ou saída lógica; nova mensagem com o mesmo código recebe desfecho idempotente.
+
+**Autorização:** todo evento usa o vínculo explicitamente ativado no SolverFin. Antes de qualquer confirmação, rejeição ou cancelamento, um lock transacional compartilhado revalida usuário ativo, perfil ativo e titular, organização, número oficial, remetente, ID e versão do vínculo. O repositório de sugestões valida organização/perfil e a origem `BANK_MESSAGE` do WhatsApp; toda decisão exige o fingerprint ainda vigente, em estado `PENDING_REVIEW`. A fila canônica continua responsável por validar os recursos financeiros. Um vínculo revogado, perfil alheio, sugestão alterada/resolvida ou token expirado não permite efeito. O outbound também é revalidado pela infraestrutura #694 para não divulgar resultado privado depois da revogação.
+
+**Privacidade do resumo:** os textos livres de descrição, conta e categoria são redigidos novamente na fronteira de saída; CPF, CNPJ, cartões, telefones, identificadores numéricos formatados, e-mails, UUIDs e links são mascarados, além da minimização já aplicada à Inbox. Os valores estruturados de lançamento continuam vindo exclusivamente da sugestão canônica.
+
+**Estados da confirmação:** `pending_confirmation` → `confirmed | rejected | cancelled | expired`. Os estados terminais não podem voltar a ser pendentes. Expiração e cancelamento não alteram o fato financeiro; rejeição muda somente a sugestão via serviço da fila. O serviço de expurgo #694 também expira confirmações pendentes. Eventos de decisão mantêm correlação e versão; corpo do webhook, texto bancário bruto, código em claro e credenciais nunca são armazenados na tabela de confirmação, em logs nem em métricas.
+
+**Falhas:** falha antes do commit de aprovação reverte confirmação e efeito para retry do POST assinado original; falha depois do commit mantém confirmação/efeito durável. Se o envio ao provedor tiver resultado ambíguo, o outbound permanece `send_unknown` (não se reenvia cegamente); HTTP 429 comprovadamente não aceito usa retry seguro. Nenhuma nova infraestrutura de pagamento é ativada.
+
+A habilitação em produção continua dependente do app Meta dedicado, WABA/número, credenciais, webhook HTTPS e autorização operacional explicitada na issue #694. A presença do código não prova homologação em conta real.
