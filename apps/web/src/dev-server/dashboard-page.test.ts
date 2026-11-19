@@ -43,7 +43,11 @@ describe("dev-server dashboard page", () => {
           horizonDays: 30,
           from: "2026-07-02",
           to: "2026-07-31",
-          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000, points: [
+            { date: "2026-07-02", closingBalanceMinor: 490000 },
+            { date: "2026-07-03", closingBalanceMinor: 485000 },
+            { date: "2026-07-31", closingBalanceMinor: 480000 },
+          ] }],
           freeToSpend: {
             referenceDate: "2026-07-01",
             horizonDays: 30,
@@ -122,6 +126,8 @@ describe("dev-server dashboard page", () => {
       );
       assert.match(html, /Compromissos previstos em BRL/);
       assert.match(html, /Projeção de caixa — 30 dias/);
+      assert.match(html, /class="dashboard-projection-chart"/);
+      assert.match(html, /polyline points=/);
       assert.match(html, /Saldo projetado no fim do horizonte/);
       assert.match(html, /R\$\s*4\.800,00/);
       assert.match(html, /Livre para gastar hoje/);
