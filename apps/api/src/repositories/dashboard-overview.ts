@@ -72,7 +72,7 @@ interface AccountRow {
 interface CardRow {
   id: string;
   name: string;
-  currency: string;
+  currency: string | null;
   status: string;
   closingDay: number;
   dueDay: number;
@@ -126,7 +126,7 @@ export function rankCardsForPurchase(
       return {
         id: card.id,
         name: card.name,
-        currency: card.currency.toUpperCase(),
+        currency: card.currency?.toUpperCase() ?? "Não informada",
         closingOn: invoice.periodEndOn,
         dueOn: invoice.dueOn,
         daysUntilPayment,
@@ -288,15 +288,22 @@ export async function buildDashboardOverview(
   const cardNames = new Map(cards.map((card) => [card.id, card]));
   const spends = spending.filter((row) => cardNames.has(row.cardId));
   const cardSpending = cards
-    .map((card) => ({
-      id: card.id,
-      name: card.name,
-      currency: card.currency,
-      spentMinor: addSafeMoneyMinor(
-        spends.filter((row) => row.cardId === card.id).map((row) => row.total),
-        "dashboard card spending",
-      ),
-    }))
+    .flatMap((card) => {
+      const currencies = card.currency
+        ? [card.currency]
+        : [...new Set(spends.filter((row) => row.cardId === card.id).map((row) => row.currency))];
+      return currencies.map((currency) => ({
+        id: card.id,
+        name: card.name,
+        currency,
+        spentMinor: addSafeMoneyMinor(
+          spends
+            .filter((row) => row.cardId === card.id && row.currency === currency)
+            .map((row) => row.total),
+          "dashboard card spending",
+        ),
+      }));
+    })
     .sort((a, b) => b.spentMinor - a.spentMinor || a.name.localeCompare(b.name));
   const seenTotals = new Set<string>();
   const payableTotals: DashboardPayableTotal[] = [];
