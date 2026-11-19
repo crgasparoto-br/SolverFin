@@ -118,12 +118,13 @@ function renderCardAdvice(data: DashboardOverview): string {
 
 function payableHref(bill: DashboardOverview["payables"][number]): string {
   if (bill.source === "invoice") {
-    return bill.cardId
-      ? `/cartoes?cardId=${encodeURIComponent(bill.cardId)}&invoiceId=${encodeURIComponent(bill.id)}`
-      : "/cartoes";
+    if (!bill.cardId) return "/cartoes";
+    const params = new URLSearchParams({ cardId: bill.cardId, invoiceId: bill.id });
+    return `/cartoes?${params.toString()}`;
   }
-  const month = encodeURIComponent(bill.dueOn.slice(0, 7));
-  return `/lancamentos?month=${month}${bill.accountId ? "&accountId=" + encodeURIComponent(bill.accountId) : ""}`;
+  const params = new URLSearchParams({ month: bill.dueOn.slice(0, 7) });
+  if (bill.accountId) params.set("accountId", bill.accountId);
+  return `/lancamentos?${params.toString()}`;
 }
 
 function renderPayables(data: DashboardOverview): string {
