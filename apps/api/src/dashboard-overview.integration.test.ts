@@ -78,10 +78,7 @@ async function main(): Promise<void> {
     10_000,
     "planned transactions and credit purchases do not affect bank cash",
   );
-  assert.equal(
-    beforePayment.cardSpending.find((row) => row.id === card.id)?.spentMinor,
-    7_000,
-  );
+  assert.equal(beforePayment.cardSpending.find((row) => row.id === card.id)?.spentMinor, 7_000);
 
   await closeInvoiceForContext(CONTEXT, purchase.invoice.id);
   await payInvoiceForContext(CONTEXT, purchase.invoice.id, account.id, {
