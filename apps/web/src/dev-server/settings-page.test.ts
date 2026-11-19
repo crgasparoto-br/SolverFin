@@ -248,10 +248,10 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
   };
 
   await withFetch(responses, async () => {
-    for (const [filter, expected, excluded] of [
-      ["todas", ["Mercado &amp; Casa", "Regra inativa", "Estado futuro"], []],
-      ["ativas", ["Mercado &amp; Casa"], ["Regra inativa", "Estado futuro"]],
-      ["inativas", ["Regra inativa"], ["Mercado &amp; Casa", "Estado futuro"]],
+    for (const [filter, expected] of [
+      ["todas", ["Mercado &amp; Casa", "Regra inativa", "Estado futuro"]],
+      ["ativas", ["Mercado &amp; Casa"]],
+      ["inativas", ["Regra inativa"]],
     ] as const) {
       const query = filter === "todas" ? "" : "&filter=" + filter;
       const html = await renderSettingsPage(
@@ -271,18 +271,14 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
         (scope.match(/class="maintenance-item rule-item"/g) ?? []).length,
         expected.length,
       );
-      const rows = [
-        ...scope.matchAll(/<article class="maintenance-item rule-item">([\s\S]*?)<\/article>/g),
-      ].map((match) => match[1]);
-      for (const title of expected) {
-        assert.ok(
-          rows.some((row) => row?.includes(title)),
-          `${filter}: regra ausente: ${title}`,
-        );
-      }
-      for (const title of excluded) {
-        assert.ok(!rows.some((row) => row?.includes(title)), `${filter}: regra indevida: ${title}`);
-      }
+      const rowTitles = [
+        ...scope.matchAll(/<div class="item-title-line">\s*<strong>([^<]*)<\/strong>/g),
+      ].map((match) => match[1] ?? "");
+      assert.deepEqual(
+        rowTitles,
+        expected,
+        `${filter}: o filtro deve preservar a ordem e excluir regras com outro status`,
+      );
       assert.match(scope, /<details class="rule-disclosure">/);
       assert.match(
         scope,
