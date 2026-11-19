@@ -55,7 +55,7 @@ describe("Inbox subject tabs", () => {
       const callbacks = new Map<string, (event: MockEvent) => void>();
       return {
         dataset: { inboxTab: id },
-        attributes: { "aria-selected": id === "reviews" ? "true" : "false" },
+        attributes: { "aria-selected": id === "reviews" ? "true" : "false" } as Record<string, string>,
         tabIndex: id === "reviews" ? 0 : -1,
         addEventListener(name, handler) { callbacks.set(name, handler); },
         setAttribute(name, value) { this.attributes[name] = value; },
@@ -96,23 +96,23 @@ describe("Inbox subject tabs", () => {
       requestAnimationFrame: (fn: () => void) => fn(),
     });
 
-    tabs[1].click();
+    tabs[1]!.click();
     assert.equal(panels.get("imports")?.hidden, false);
     assert.equal(panels.get("reviews")?.hidden, true);
-    assert.equal(tabs[1].attributes["aria-selected"], "true");
-    assert.equal(tabs[1].tabIndex, 0);
+    assert.equal(tabs[1]!.attributes["aria-selected"], "true");
+    assert.equal(tabs[1]!.tabIndex, 0);
     assert.equal(new URL(href).searchParams.get("profileId"), "profile-a");
     assert.equal(new URL(href).searchParams.get("lineStart"), "2026-11-01");
     assert.equal(new URL(href).searchParams.get("tab"), "imports");
 
-    tabs[1].fire("keydown", "ArrowRight");
+    tabs[1]!.fire("keydown", "ArrowRight");
     assert.equal(prevented, true);
     assert.equal(focused, "messages");
     assert.equal(panels.get("messages")?.hidden, false);
-    tabs[2].fire("keydown", "End");
+    tabs[2]!.fire("keydown", "End");
     assert.equal(focused, "insights");
     assert.equal(panels.get("insights")?.hidden, false);
-    tabs[3].fire("keydown", "Home");
+    tabs[3]!.fire("keydown", "Home");
     assert.equal(focused, "reviews");
     assert.equal(panels.get("reviews")?.hidden, false);
 
