@@ -59,6 +59,16 @@ describe("dashboard recommended card", () => {
     assert.deepEqual(ranked, []);
   });
 
+  it("preserves the best due-date advice for legacy cards with no known currency", () => {
+    const ranked = rankCardsForPurchase(
+      [{ ...card("legacy", 13, 18), currency: null }],
+      "2026-11-19",
+    );
+    assert.equal(ranked[0]?.daysUntilPayment, 29);
+    assert.equal(ranked[0]?.recommended, true);
+    assert.equal(ranked[0]?.currency, "Não informada");
+  });
+
   it("identifies ties without inventing a unique winner", () => {
     const ranked = rankCardsForPurchase([card("zeta", 12, 19), card("alfa", 12, 19)], "2026-11-19");
     assert.deepEqual(
