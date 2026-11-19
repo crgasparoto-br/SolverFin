@@ -57,6 +57,7 @@ interface AutomationRuleRecord {
 }
 
 type SettingsSection = "profiles" | "rules";
+type RuleListFilter = "todas" | "ativas" | "inativas";
 type DependencyState<T> = { ok: true; items: T[] } | { ok: false; error: string };
 
 const SETTINGS_PATH = "/configuracoes";
@@ -88,6 +89,7 @@ export async function renderSettingsPage(
           categories.ok
             ? { ok: true, items: categories.data.categories }
             : { ok: false, error: categories.error },
+          resolveRulesListFilter(url),
         ),
       ),
     );
@@ -103,6 +105,11 @@ export async function renderSettingsPage(
 
 export function resolveSettingsSection(url: URL): SettingsSection {
   return url.searchParams.get("section") === "rules" ? "rules" : "profiles";
+}
+
+export function resolveRulesListFilter(url: URL): RuleListFilter {
+  const requested = url.searchParams.get("filter");
+  return requested === "ativas" || requested === "inativas" ? requested : "todas";
 }
 
 export function parseAutomationRuleAmountMinorInput(value: string): number | undefined | null {
@@ -203,36 +210,63 @@ function renderRulesSection(
   rules: { ok: true; data: { rules: AutomationRuleRecord[] } } | { ok: false; error: string },
   accounts: DependencyState<AccountRecord>,
   categories: DependencyState<CategoryRecord>,
+  filter: RuleListFilter,
 ): string {
   const automationRules = rules.ok ? rules.data.rules : [];
+  const activeCount = automationRules.filter((rule) => rule.status === "active").length;
+  const inactiveCount = automationRules.filter((rule) => rule.status === "inactive").length;
+  const visibleRules = automationRules.filter(
+    (rule) =>
+      filter === "todas" ||
+      (filter === "ativas" && rule.status === "active") ||
+      (filter === "inativas" && rule.status === "inactive"),
+  );
+  const filters = [
+    { value: "todas", label: "Todas", count: automationRules.length },
+    { value: "ativas", label: "Ativas", count: activeCount },
+    { value: "inativas", label: "Inativas", count: inactiveCount },
+  ] as const;
 
   return `
     <section class="settings-section" data-settings-scope="rules" aria-labelledby="rules-section-title">
       <header class="settings-section-heading">
         <div>
           <h2 id="rules-section-title">Regras automáticas</h2>
-          <p class="muted">Configure os critérios que geram sugestões para revisão.</p>
+          <p class="muted">Organize sugestões a partir de condições que você define.</p>
         </div>
         <button type="button" class="sf-button sf-button-primary" data-open-dialog="new-automation-rule-dialog" data-sf-dialog-open="new-automation-rule-dialog" title="Criar nova regra automática">${icon("plus", 14)} Nova regra</button>
       </header>
-      <p class="settings-priority-note">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
+      <div class="settings-rule-guidance">
+        ${icon("info", 16)}
+        <p class="settings-priority-note">Números maiores são aplicados primeiro; em empate, vence a regra criada antes.</p>
+      </div>
       <div class="settings-collection-heading">
         <h3>Regras configuradas</h3>
         ${rules.ok ? `<span>${automationRules.length} regras</span>` : ""}
       </div>
       ${
         rules.ok
-          ? `<div class="rows maintenance-rows">
-             ${
-               automationRules
-                 .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
-                 .join("") ||
-               renderEmptyState(
-                 "Nenhuma regra automática.",
-                 "Use Nova regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
-               )
-             }
-           </div>`
+          ? `
+            <nav class="settings-rule-filters" aria-label="Filtrar regras por situação">
+              ${filters
+                .map(
+                  (item) => `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
+                )
+                .join("")}
+            </nav>
+            <p class="settings-rule-filter-hint">O filtro organiza apenas a lista. Aplicar regras considera as regras ativas, independentemente do filtro.</p>
+            <div class="rows maintenance-rows">
+              ${
+                visibleRules.map((rule) => renderAutomationRuleRow(rule, accounts, categories)).join("") ||
+                (automationRules.length === 0
+                  ? renderEmptyState(
+                      "Nenhuma regra automática.",
+                      "Use Nova regra para sugerir categoria, conta ou status a partir de descrições, tipos e valores.",
+                    )
+                  : `<div class="empty-state settings-rule-filter-empty"><strong>Nenhuma regra ${filter === "ativas" ? "ativa" : "inativa"}.</strong><p class="muted">Não há regras nesta situação. <a class="sf-focus-ring" href="${SETTINGS_PATH}?section=rules">Ver todas as regras</a>.</p></div>`)
+              }
+            </div>
+          `
           : renderLoadError(
               "Não foi possível carregar as regras automáticas.",
               rules.error,
@@ -432,34 +466,47 @@ function renderAutomationRuleRow(
   categories: DependencyState<CategoryRecord>,
 ): string {
   const isActive = rule.status === "active";
+  const conditions = describeConditions(rule.conditions, accounts);
+  const actions = describeActions(rule.actions, accounts, categories);
+  const moreConditions = conditions.length > 1 ? ` (+${conditions.length - 1} critérios)` : "";
+  const moreActions = actions.length > 1 ? ` (+${actions.length - 1} ações)` : "";
 
   return `
     <article class="maintenance-item rule-item">
-      <div class="rule-summary">
-        <div class="item-title-line">
-          <strong>${escapeHtml(rule.name)}</strong>
-          ${renderAutomationStatusBadge(rule.status)}
+      <div class="rule-row-heading">
+        <div class="rule-summary">
+          <div class="item-title-line">
+            <strong>${escapeHtml(rule.name)}</strong>
+            ${renderAutomationStatusBadge(rule.status)}
+          </div>
+          <span class="rule-priority" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
         </div>
-        <span class="rule-priority" aria-label="Prioridade ${escapeHtml(String(rule.priority))}">Prioridade ${escapeHtml(String(rule.priority))}</span>
+        ${
+          isActive
+            ? `<div class="item-actions rule-actions">
+                 <button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-success="Regra inativada. Atualizando..." data-api-confirm="Inativar esta regra automática?" aria-label="Inativar regra ${escapeHtml(rule.name)}" title="Inativar regra">${icon("archive", 14)}</button>
+               </div>`
+            : ""
+        }
       </div>
-      <div class="rule-detail-grid">
-        <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
-          <h3>Condições</h3>
-          ${renderRuleList(describeConditions(rule.conditions, accounts))}
-        </section>
-        <section class="rule-detail" aria-label="Ações sugeridas pela regra ${escapeHtml(rule.name)}">
-          <h3>Ações sugeridas</h3>
-          ${renderRuleList(describeActions(rule.actions, accounts, categories))}
-        </section>
+      <div class="rule-quick-facts">
+        <p><span>Quando</span> ${escapeHtml(conditions[0] ?? "Condição não informada")}${moreConditions}</p>
+        <p><span>Então</span> ${escapeHtml(actions[0] ?? "Ação não informada")}${moreActions}</p>
       </div>
-      ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
-      ${
-        isActive
-          ? `<div class="item-actions rule-actions">
-             <button type="button" class="icon-button danger-icon-button" data-api-action data-api-method="POST" data-api-path="/api/automation-rules/${escapeHtml(rule.id)}/archive" data-api-success="Regra inativada. Atualizando..." data-api-confirm="Inativar esta regra automática?" aria-label="Inativar regra ${escapeHtml(rule.name)}" title="Inativar regra">${icon("archive", 14)}</button>
-           </div>`
-          : ""
-      }
+      <details class="rule-disclosure">
+        <summary class="rule-detail-trigger sf-focus-ring"><span>Ver condições e ações</span>${icon("chevron-down", 16)}</summary>
+        <div class="rule-detail-grid">
+          <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
+            <h3>Condições</h3>
+            ${renderRuleList(conditions)}
+          </section>
+          <section class="rule-detail" aria-label="Ações sugeridas pela regra ${escapeHtml(rule.name)}">
+            <h3>Ações sugeridas</h3>
+            ${renderRuleList(actions)}
+          </section>
+        </div>
+        ${rule.explanation ? `<p class="rule-explanation"><strong>Explicação:</strong> ${escapeHtml(rule.explanation)}</p>` : ""}
+      </details>
     </article>
   `;
 }
