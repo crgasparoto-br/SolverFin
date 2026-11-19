@@ -221,7 +221,9 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 
   const selectedCurrency = input.summary.data.currencyBlocks.some(
     (block) => block.currency === input.filters.currency,
-  ) ? input.filters.currency : undefined;
+  )
+    ? input.filters.currency
+    : undefined;
   return successScreen(context, {
     ...(selectedCurrency ? { selectedCurrency } : {}),
     ...(input.filters.purchaseOn ? { purchaseOn: input.filters.purchaseOn } : {}),

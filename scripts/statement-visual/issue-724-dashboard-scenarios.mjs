@@ -78,15 +78,30 @@ try {
       );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Mixed currencies in a summary");
       assert.equal(measurements.mockupOrderValid, true, "Approved mockup region order drifted");
-      assert.equal(measurements.operationalRowsOrdered, true, "Approved bill/card/analysis pairing drifted");
+      assert.equal(
+        measurements.operationalRowsOrdered,
+        true,
+        "Approved bill/card/analysis pairing drifted",
+      );
       assert.equal(measurements.hasWideProjection, true, "Full-width cash-flow region missing");
       if (state !== "partial") {
-        assert.equal(measurements.widgetRowPairing, true, "Widgets must pair on desktop and stack on mobile");
-        assert.equal(measurements.hasDashboardCharts, true, "Cash-flow and consumption charts must render");
+        assert.equal(
+          measurements.widgetRowPairing,
+          true,
+          "Widgets must pair on desktop and stack on mobile",
+        );
+        assert.equal(
+          measurements.hasDashboardCharts,
+          true,
+          "Cash-flow and consumption charts must render",
+        );
       }
       if (width <= 390) {
-        assert.equal(measurements.visiblePrimaryCount, state.startsWith("multi-currency") ? 4 : 2,
-          "Only balance and free-to-spend may appear before actions on mobile");
+        assert.equal(
+          measurements.visiblePrimaryCount,
+          state.startsWith("multi-currency") ? 4 : 2,
+          "Only balance and free-to-spend may appear before actions on mobile",
+        );
       } else if (width === 1366) {
         assert.equal(measurements.desktopKpiColumns, 3, "Desktop mockup requires 3 KPI columns");
       }
@@ -128,7 +143,10 @@ try {
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     if (state === "multi-currency" || state === "long-content") {
-      await screenshot(browser.cdp, join(outputDir, "issue-811-approved-mockup-" + state + "-" + width + ".png"));
+      await screenshot(
+        browser.cdp,
+        join(outputDir, "issue-811-approved-mockup-" + state + "-" + width + ".png"),
+      );
     }
     const item = { width, height, screenshot: stem + ".png", measurements };
     if (state === "error" && width <= 390) {
@@ -219,80 +237,170 @@ async function renderScenario(variant) {
       return response({
         currencyBlocks: blocks,
         recentItems: [
-          { description: variant === "long-content" ? "QA " + "Descrição extensa de compromisso financeiro ".repeat(8) : "Compra no mercado",
-            kind:"expense", amountMinor:2500, currency:"BRL", occurredOn:"2026-07-12", status:"posted" },
-          { description:"Salário", kind:"income", amountMinor:25000, currency:"BRL", occurredOn:"2026-07-01", status:"posted" },
+          {
+            description:
+              variant === "long-content"
+                ? "QA " + "Descrição extensa de compromisso financeiro ".repeat(8)
+                : "Compra no mercado",
+            kind: "expense",
+            amountMinor: 2500,
+            currency: "BRL",
+            occurredOn: "2026-07-12",
+            status: "posted",
+          },
+          {
+            description: "Salário",
+            kind: "income",
+            amountMinor: 25000,
+            currency: "BRL",
+            occurredOn: "2026-07-01",
+            status: "posted",
+          },
         ],
       });
     }
     if (path === "/api/cash-flow-projection") {
       const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
       return response({
-        referenceDate: "2026-07-01", horizonDays: 30,
-        from: "2026-07-02", to: "2026-07-31",
+        referenceDate: "2026-07-01",
+        horizonDays: 30,
+        from: "2026-07-02",
+        to: "2026-07-31",
         currencyBlocks: currencies.map((currency) => ({
-          currency, closingBalanceMinor: 10200,
+          currency,
+          closingBalanceMinor: 10200,
           points: Array.from({ length: 30 }, (_, index) => ({
             date: "2026-07-" + String(index + 2).padStart(2, "0"),
             closingBalanceMinor: 17000 - index * 240 + (index % 5) * 140,
           })),
         })),
         freeToSpend: {
-          referenceDate: "2026-07-01", horizonDays: 30,
+          referenceDate: "2026-07-01",
+          horizonDays: 30,
           currencyBlocks: currencies.map((currency) => ({
-            currency, status: "available", minimumProjectedBalanceMinor: 9800,
-            minimumBalanceOn: "2026-07-25", freeToSpendMinor: 9000, projectedDeficitMinor: 0,
+            currency,
+            status: "available",
+            minimumProjectedBalanceMinor: 9800,
+            minimumBalanceOn: "2026-07-25",
+            freeToSpendMinor: 9000,
+            projectedDeficitMinor: 0,
           })),
         },
       });
     }
     if (path === "/api/dashboard-overview") {
       if (variant === "partial") {
-        return response({error: {message:"Complemento temporariamente indisponível"}}, 503);
+        return response({ error: { message: "Complemento temporariamente indisponível" } }, 503);
       }
       const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
       return response({
-        referenceDate: "2026-07-01", purchaseToday: "2026-07-01",
-        purchaseOn: "2026-07-01", periodStartOn: "2026-07-01", periodEndOn: "2026-07-31",
+        referenceDate: "2026-07-01",
+        purchaseToday: "2026-07-01",
+        purchaseOn: "2026-07-01",
+        periodStartOn: "2026-07-01",
+        periodEndOn: "2026-07-31",
         accountBalances: currencies.flatMap((currency) => [
-          { id:"visual-cash-" + currency,
-            name: variant === "long-content"
-              ? "Conta corrente com nome muito longo ".repeat(4)
-              : "Conta Principal " + currency,
-            kind:"checking", currency, balanceMinor:123450 },
-          { id:"visual-reserve-" + currency, name:"Reserva " + currency,
-            kind:"investment", currency, balanceMinor:150000 },
+          {
+            id: "visual-cash-" + currency,
+            name:
+              variant === "long-content"
+                ? "Conta corrente com nome muito longo ".repeat(4)
+                : "Conta Principal " + currency,
+            kind: "checking",
+            currency,
+            balanceMinor: 123450,
+          },
+          {
+            id: "visual-reserve-" + currency,
+            name: "Reserva " + currency,
+            kind: "investment",
+            currency,
+            balanceMinor: 150000,
+          },
         ]),
         cardSpending: currencies.flatMap((currency) => [
-          { id:"card-a-" + currency, name:"Cartão Principal " + currency, currency, spentMinor:78000 },
-          { id:"card-b-" + currency, name:"Cartão Reserva " + currency, currency, spentMinor:24000 },
+          {
+            id: "card-a-" + currency,
+            name: "Cartão Principal " + currency,
+            currency,
+            spentMinor: 78000,
+          },
+          {
+            id: "card-b-" + currency,
+            name: "Cartão Reserva " + currency,
+            currency,
+            spentMinor: 24000,
+          },
         ]),
-        cardSpendingTotals: currencies.map((currency) =>
-          ({ currency, amountMinor:102000, count:2 })),
+        cardSpendingTotals: currencies.map((currency) => ({
+          currency,
+          amountMinor: 102000,
+          count: 2,
+        })),
         cardAdvice: [
-          { id:"card-a-BRL", name:"Cartão Principal BRL", currency:"BRL",
-            closingOn:"2026-07-18", dueOn:"2026-08-18", daysUntilPayment:48, recommended:true },
-          { id:"card-b-BRL", name:"Cartão Reserva BRL", currency:"BRL",
-            closingOn:"2026-07-10", dueOn:"2026-08-10", daysUntilPayment:40, recommended:false },
+          {
+            id: "card-a-BRL",
+            name: "Cartão Principal BRL",
+            currency: "BRL",
+            closingOn: "2026-07-18",
+            dueOn: "2026-08-18",
+            daysUntilPayment: 48,
+            recommended: true,
+          },
+          {
+            id: "card-b-BRL",
+            name: "Cartão Reserva BRL",
+            currency: "BRL",
+            closingOn: "2026-07-10",
+            dueOn: "2026-08-10",
+            daysUntilPayment: 40,
+            recommended: false,
+          },
         ],
         payables: currencies.flatMap((currency) => [
-          { id:"payable-" + currency, source:"transaction", description:"Conta de energia " + currency,
-            currency, dueOn:"2026-07-04", amountMinor:12000, overdue:false, accountId:"visual-cash-" + currency },
-          { id:"invoice-" + currency, source:"invoice", description:"Fatura cartão " + currency,
-            currency, dueOn:"2026-07-18", amountMinor:34000, overdue:false, cardId:"card-a-" + currency },
+          {
+            id: "payable-" + currency,
+            source: "transaction",
+            description: "Conta de energia " + currency,
+            currency,
+            dueOn: "2026-07-04",
+            amountMinor: 12000,
+            overdue: false,
+            accountId: "visual-cash-" + currency,
+          },
+          {
+            id: "invoice-" + currency,
+            source: "invoice",
+            description: "Fatura cartão " + currency,
+            currency,
+            dueOn: "2026-07-18",
+            amountMinor: 34000,
+            overdue: false,
+            cardId: "card-a-" + currency,
+          },
         ]),
-        payableTotals: currencies.map((currency) =>
-          ({ currency, amountMinor:46000, overdueMinor:0, count:2 })),
+        payableTotals: currencies.map((currency) => ({
+          currency,
+          amountMinor: 46000,
+          overdueMinor: 0,
+          count: 2,
+        })),
         categoryExpenses: currencies.flatMap((currency) =>
-          ["Alimentação","Moradia","Transporte","Saúde"].map((category,index) => ({
-            currency, category, amountMinor:[36000,23000,11000,6500][index],
-          }))
+          ["Alimentação", "Moradia", "Transporte", "Saúde"].map((category, index) => ({
+            currency,
+            category,
+            amountMinor: [36000, 23000, 11000, 6500][index],
+          })),
         ),
         monthlyTrend: currencies.flatMap((currency) =>
-          ["2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"].map((month,index) => ({
-            currency, month, incomeMinor:120000 + index * 11500,
-            expensesMinor:80000 + (index % 3) * 8500,
-          }))
+          ["2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"].map(
+            (month, index) => ({
+              currency,
+              month,
+              incomeMinor: 120000 + index * 11500,
+              expensesMinor: 80000 + (index % 3) * 8500,
+            }),
+          ),
         ),
       });
     }
@@ -368,11 +476,25 @@ function inspectDashboard() {
   };
   const supporting = document.querySelector(".dashboard-supporting-section");
   const region = (name) => document.querySelector('[data-dashboard-region="' + name + '"]');
-  const order = ["overview", "kpis", "alerts", "cash-flow", "bills-and-accounts",
-    "credit-cards", "analysis", "activity", "additional"].map(region);
-  const mockupOrderValid = order.every((element, index) =>
-    element && (index === 0 || Boolean(order[index - 1].compareDocumentPosition(element) &
-      Node.DOCUMENT_POSITION_FOLLOWING)));
+  const order = [
+    "overview",
+    "kpis",
+    "alerts",
+    "cash-flow",
+    "bills-and-accounts",
+    "credit-cards",
+    "analysis",
+    "activity",
+    "additional",
+  ].map(region);
+  const mockupOrderValid = order.every(
+    (element, index) =>
+      element &&
+      (index === 0 ||
+        Boolean(
+          order[index - 1].compareDocumentPosition(element) & Node.DOCUMENT_POSITION_FOLLOWING,
+        )),
+  );
   const pairs = [
     ["dashboard-payables", "dashboard-accounts"],
     ["dashboard-credit-cards", "dashboard-best-card"],
@@ -386,8 +508,8 @@ function inspectDashboard() {
       ? b.top >= a.bottom - 1
       : Math.abs(a.top - b.top) <= 2 && b.left >= a.right - 2;
   });
-  const isVisible = (element) => element && element.getClientRects().length > 0 &&
-    getComputedStyle(element).display !== "none";
+  const isVisible = (element) =>
+    element && element.getClientRects().length > 0 && getComputedStyle(element).display !== "none";
   const dashboardKpiGrid = document.querySelector(".currency-summary .sf-summary-grid");
   const desktopKpiColumns = dashboardKpiGrid
     ? getComputedStyle(dashboardKpiGrid).gridTemplateColumns.split(" ").filter(Boolean).length
@@ -403,17 +525,30 @@ function inspectDashboard() {
     currencyCount: summaries.length,
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
-    visiblePrimaryCount: [...document.querySelectorAll(".currency-summary .dashboard-metric")].filter(isVisible).length,
+    visiblePrimaryCount: [
+      ...document.querySelectorAll(".currency-summary .dashboard-metric"),
+    ].filter(isVisible).length,
     desktopKpiColumns,
     mockupOrderValid,
-    operationalRowsOrdered: Boolean(region("bills-and-accounts") && region("credit-cards")
-      && region("analysis") && region("bills-and-accounts").compareDocumentPosition(region("credit-cards"))
-      & Node.DOCUMENT_POSITION_FOLLOWING),
+    operationalRowsOrdered: Boolean(
+      region("bills-and-accounts") &&
+      region("credit-cards") &&
+      region("analysis") &&
+      region("bills-and-accounts").compareDocumentPosition(region("credit-cards")) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ),
     widgetRowPairing,
-    hasWideProjection: Boolean(region("cash-flow") && getComputedStyle(
-      region("cash-flow").querySelector(".cash-flow-dashboard-grid")).gridTemplateColumns.split(" ").length === 1),
-    hasDashboardCharts: Boolean(document.querySelector(".dashboard-projection-chart polyline")
-      && document.querySelector(".dashboard-card-spend-bars") && document.querySelector(".dashboard-trend-columns")),
+    hasWideProjection: Boolean(
+      region("cash-flow") &&
+      getComputedStyle(
+        region("cash-flow").querySelector(".cash-flow-dashboard-grid"),
+      ).gridTemplateColumns.split(" ").length === 1,
+    ),
+    hasDashboardCharts: Boolean(
+      document.querySelector(".dashboard-projection-chart polyline") &&
+      document.querySelector(".dashboard-card-spend-bars") &&
+      document.querySelector(".dashboard-trend-columns"),
+    ),
     hasNextActions: Boolean(action),
     actionVisibleInFirstViewport:
       withinFirstFold(firstActionLabel) && withinFirstFold(firstActionLink),
@@ -431,11 +566,13 @@ function inspectDashboard() {
     ),
     primaryValuesOnOneLine: [
       ...document.querySelectorAll(".currency-summary .sf-metric-card-value"),
-    ].filter(isVisible).every((value) => {
-      const range = document.createRange();
-      range.selectNodeContents(value);
-      return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
-    }),
+    ]
+      .filter(isVisible)
+      .every((value) => {
+        const range = document.createRange();
+        range.selectNodeContents(value);
+        return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
+      }),
     supportingAfterActions: Boolean(
       action &&
       supporting &&

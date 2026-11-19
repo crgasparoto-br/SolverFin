@@ -219,7 +219,8 @@ describe("dev-server dashboard page", () => {
       assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 10);
       assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 3);
       assert.ok(
-        html.indexOf('data-dashboard-region="alerts"') < html.indexOf('class="dashboard-supporting-section"'),
+        html.indexOf('data-dashboard-region="alerts"') <
+          html.indexOf('class="dashboard-supporting-section"'),
       );
       assert.match(html, /\.dashboard-metric \.sf-metric-card \{ display: grid;/);
       assert.match(html, /text-align: left; white-space: nowrap;/);
@@ -243,13 +244,19 @@ describe("dev-server dashboard page", () => {
 
       assert.match(html, /class="sf-page-container dashboard-page"/);
       assert.match(html, /class="sf-page-header"/);
-      assert.match(html, /class="dashboard-primary-currencies" data-dashboard-region="kpis"\s+data-multicurrency="false"/);
+      assert.match(
+        html,
+        /class="dashboard-primary-currencies" data-dashboard-region="kpis"\s+data-multicurrency="false"/,
+      );
       assert.match(html, /class="sf-summary-grid"/);
       assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /class="evidence-detail"/);
       assert.match(html, /@media \(max-width: 760px\)/);
       assert.match(html, /\.metric-drilldown:focus-visible/);
-      assert.match(html, /dashboard-primary-currencies \.currency-summary \.sf-summary-grid \{ display: grid;/);
+      assert.match(
+        html,
+        /dashboard-primary-currencies \.currency-summary \.sf-summary-grid \{ display: grid;/,
+      );
       assert.match(html, /data-kpi="result"/);
     } finally {
       globalThis.fetch = originalFetch;
@@ -393,9 +400,15 @@ function assertCockpitHierarchy(html: string): void {
     'class="dashboard-evidence-index"',
   ];
   const positions = order.map((marker) => html.indexOf(marker));
-  assert.ok(positions.every((position) => position >= 0), "Todas as regiões do mockup devem existir");
+  assert.ok(
+    positions.every((position) => position >= 0),
+    "Todas as regiões do mockup devem existir",
+  );
   for (let index = 1; index < positions.length; index += 1) {
-    assert.ok(positions[index]! > positions[index - 1]!, "Ordem do mockup violada: " + order[index]);
+    assert.ok(
+      positions[index]! > positions[index - 1]!,
+      "Ordem do mockup violada: " + order[index],
+    );
   }
   const alert = positions[2]!;
   assert.ok(

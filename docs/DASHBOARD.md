@@ -19,7 +19,6 @@ O Dashboard funciona como cockpit financeiro orientado à decisão. Ele deve res
 
 Nenhum total combina moedas diferentes. Cada bloco de indicadores preserva a moeda de origem e valores monetários continuam representados pelo contrato `Money` (`amountMinor + currency`).
 
-
 ## Layout de aceite: mockups aprovados em 19/11/2026 — issue #811
 
 A proposta visual aprovada na conversa, item **4. Proposta de reorganização visual**,
@@ -29,21 +28,21 @@ mas seu par de KPIs e sua disposição de módulos **não substituem** o mockup 
 
 ### Desktop — distribuição obrigatória
 
-| Ordem | Posição | Conteúdo |
-| --- | --- | --- |
-| 1 | Cabeçalho + grade de 3 colunas × 2 linhas por moeda | **Visão geral financeira**, período/mês corrente, filtro de moeda, qualidade, KPIs **Saldo das contas**, **Livre para gastar**, **Resultado do mês**, **Contas a pagar**, **Gastos nos cartões**, **Saldo mínimo projetado** |
-| 2 | Faixa operacional | **Próximas ações e alertas financeiros**, com links reais antes dos gráficos |
-| 3 | Faixa larga | **Fluxo de caixa projetado**, gráfico de linha diária por moeda, saldo final e déficit |
-| 4 | Duas colunas | **Contas a pagar** à esquerda; **Saldo por conta corrente** à direita |
-| 5 | Duas colunas | **Gastos por cartão** à esquerda (barras comparativas); **Melhor cartão para comprar hoje** à direita (fechamento, vencimento, dias e simulação) |
-| 6 | Duas colunas | **Despesas por categoria** (barras horizontais) e **Evolução financeira** (colunas mensais) |
-| 7 | Duas colunas | **Últimos lançamentos** e **Insights financeiros** |
-| 8 | Detalhes recolhidos | Indicadores adicionais, ferramentas de decisão e índice das evidências por moeda |
+| Ordem | Posição                                             | Conteúdo                                                                                                                                                                                                                     |
+| ----- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Cabeçalho + grade de 3 colunas × 2 linhas por moeda | **Visão geral financeira**, período/mês corrente, filtro de moeda, qualidade, KPIs **Saldo das contas**, **Livre para gastar**, **Resultado do mês**, **Contas a pagar**, **Gastos nos cartões**, **Saldo mínimo projetado** |
+| 2     | Faixa operacional                                   | **Próximas ações e alertas financeiros**, com links reais antes dos gráficos                                                                                                                                                 |
+| 3     | Faixa larga                                         | **Fluxo de caixa projetado**, gráfico de linha diária por moeda, saldo final e déficit                                                                                                                                       |
+| 4     | Duas colunas                                        | **Contas a pagar** à esquerda; **Saldo por conta corrente** à direita                                                                                                                                                        |
+| 5     | Duas colunas                                        | **Gastos por cartão** à esquerda (barras comparativas); **Melhor cartão para comprar hoje** à direita (fechamento, vencimento, dias e simulação)                                                                             |
+| 6     | Duas colunas                                        | **Despesas por categoria** (barras horizontais) e **Evolução financeira** (colunas mensais)                                                                                                                                  |
+| 7     | Duas colunas                                        | **Últimos lançamentos** e **Insights financeiros**                                                                                                                                                                           |
+| 8     | Detalhes recolhidos                                 | Indicadores adicionais, ferramentas de decisão e índice das evidências por moeda                                                                                                                                             |
 
 ### Mobile — prioridade da dobra
 
 Na largura de 390 e 320 px somente **Saldo das contas** e **Livre para gastar**
-aparecem como KPIs *antes* das próximas ações. O primeiro título e respectivo
+aparecem como KPIs _antes_ das próximas ações. O primeiro título e respectivo
 link de ação precisam caber completamente na dobra inicial mesmo com duas moedas.
 Os outros quatro KPIs de cada moeda são exibidos **depois** das ações.
 Os pares de widgets refluem para coluna única, preservando a ordem da tabela.

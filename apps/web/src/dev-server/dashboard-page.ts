@@ -45,7 +45,11 @@ interface DashboardLoadEntry {
 const dashboardLoads = new Map<string, DashboardLoadEntry>();
 
 export async function renderDashboardPage(token: string, url?: URL): Promise<string> {
-  const entry = dashboardLoadEntry(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency"));
+  const entry = dashboardLoadEntry(
+    token,
+    url?.searchParams.get("purchaseOn"),
+    url?.searchParams.get("currency"),
+  );
   const outcome = await Promise.race([
     entry.promise.then((input) => ({ state: "ready" as const, input })),
     loadingGrace().then(() => ({ state: "loading" as const })),
@@ -55,15 +59,25 @@ export async function renderDashboardPage(token: string, url?: URL): Promise<str
     return renderDashboard(presentDashboardLoading());
   }
 
-  dashboardLoads.delete(dashboardLoadKey(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency")));
+  dashboardLoads.delete(
+    dashboardLoadKey(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency")),
+  );
   return renderDashboard(presentDashboard(outcome.input));
 }
 
-function dashboardLoadKey(token: string, purchaseOn?: string | null, currency?: string | null): string {
+function dashboardLoadKey(
+  token: string,
+  purchaseOn?: string | null,
+  currency?: string | null,
+): string {
   return token + ":" + (purchaseOn ?? "today") + ":" + (currency ?? "all");
 }
 
-function dashboardLoadEntry(token: string, purchaseOn?: string | null, currency?: string | null): DashboardLoadEntry {
+function dashboardLoadEntry(
+  token: string,
+  purchaseOn?: string | null,
+  currency?: string | null,
+): DashboardLoadEntry {
   const key = dashboardLoadKey(token, purchaseOn, currency);
   const pending = dashboardLoads.get(key);
   if (pending) return pending;
@@ -156,7 +170,6 @@ function renderDashboard(model: DashboardScreenViewModel): string {
   }
 }
 
-
 function renderDashboardContent(content: DashboardContentViewModel): string {
   const blocks = content.selectedCurrency
     ? content.currencySummaries.filter((block) => block.currency === content.selectedCurrency)
@@ -177,7 +190,8 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
           title: "Visão geral financeira",
-          description: "Posição atual, resultado do mês e decisões financeiras sem misturar moedas.",
+          description:
+            "Posição atual, resultado do mês e decisões financeiras sem misturar moedas.",
         })}
       </div>
       <div class="dashboard-header-controls">
@@ -221,9 +235,14 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <div class="section-heading">
           <div><p class="eyebrow">Análise prática</p><h2>Insights financeiros</h2></div>
         </div>
-        ${content.financialInsights
-          ? renderDashboardFinancialInsights(content.financialInsights)
-          : renderEmptyState({title:"Nenhum insight disponível.",description:"A análise financeira será exibida quando houver dados suficientes."})}
+        ${
+          content.financialInsights
+            ? renderDashboardFinancialInsights(content.financialInsights)
+            : renderEmptyState({
+                title: "Nenhum insight disponível.",
+                description: "A análise financeira será exibida quando houver dados suficientes.",
+              })
+        }
       </div>
     </section>
     <details class="dashboard-additional-tools" data-dashboard-region="additional">
@@ -245,10 +264,14 @@ function filterDashboardOverview(
     ...overview,
     accountBalances: overview.accountBalances.filter((item) => item.currency === selectedCurrency),
     cardSpending: overview.cardSpending.filter((item) => item.currency === selectedCurrency),
-    cardSpendingTotals: overview.cardSpendingTotals?.filter((item) => item.currency === selectedCurrency),
+    cardSpendingTotals: overview.cardSpendingTotals?.filter(
+      (item) => item.currency === selectedCurrency,
+    ),
     payables: overview.payables.filter((item) => item.currency === selectedCurrency),
     payableTotals: overview.payableTotals.filter((item) => item.currency === selectedCurrency),
-    categoryExpenses: overview.categoryExpenses.filter((item) => item.currency === selectedCurrency),
+    categoryExpenses: overview.categoryExpenses.filter(
+      (item) => item.currency === selectedCurrency,
+    ),
     monthlyTrend: overview.monthlyTrend.filter((item) => item.currency === selectedCurrency),
   };
 }
@@ -262,9 +285,12 @@ function renderCurrencyFilter(
     <label for="dashboard-currency">Moeda dos valores</label>
     <select id="dashboard-currency" name="currency">
       <option value="">Todas</option>
-      ${blocks.map((block) =>
-        `<option value="${escapeHtml(block.currency)}"${selectedCurrency === block.currency ? " selected" : ""}>${escapeHtml(block.currency)}</option>`
-      ).join("")}
+      ${blocks
+        .map(
+          (block) =>
+            `<option value="${escapeHtml(block.currency)}"${selectedCurrency === block.currency ? " selected" : ""}>${escapeHtml(block.currency)}</option>`,
+        )
+        .join("")}
     </select>
     ${purchaseOn ? `<input type="hidden" name="purchaseOn" value="${escapeHtml(purchaseOn)}">` : ""}
     <button type="submit" class="button-link secondary-link">Aplicar</button>
@@ -302,19 +328,61 @@ function renderDashboardKpis(
   const missing = "Indisponível";
   const money = (amount: number): string => formatMinorCurrency(amount, { currency });
   const secondary = [
-    renderKpiCard("Resultado do mês", money(variation.amount.amountMinor), "Receitas menos despesas realizadas", variation.href, variation.linkLabel, "result"),
-    renderKpiCard("Contas a pagar", overview ? money(payables?.amountMinor ?? 0) : missing, "Pendentes e vencidas até o fim do mês", "#dashboard-payables", "Ver contas a pagar", "payables"),
-    renderKpiCard("Gastos nos cartões", overview ? money(spending?.amountMinor ?? 0) : missing, "Compras realizadas no mês, sem duplicar a fatura", "#dashboard-credit-cards", "Ver gastos por cartão", "cards"),
-    renderKpiCard("Saldo mínimo projetado", projected?.freeToSpend.status === "available"
-      ? money(projected.freeToSpend.minimumBalance.amountMinor) : missing,
-      "Menor posição de caixa nos próximos 30 dias", forecastHref, "Ver projeção de caixa", "minimum"),
+    renderKpiCard(
+      "Resultado do mês",
+      money(variation.amount.amountMinor),
+      "Receitas menos despesas realizadas",
+      variation.href,
+      variation.linkLabel,
+      "result",
+    ),
+    renderKpiCard(
+      "Contas a pagar",
+      overview ? money(payables?.amountMinor ?? 0) : missing,
+      "Pendentes e vencidas até o fim do mês",
+      "#dashboard-payables",
+      "Ver contas a pagar",
+      "payables",
+    ),
+    renderKpiCard(
+      "Gastos nos cartões",
+      overview ? money(spending?.amountMinor ?? 0) : missing,
+      "Compras realizadas no mês, sem duplicar a fatura",
+      "#dashboard-credit-cards",
+      "Ver gastos por cartão",
+      "cards",
+    ),
+    renderKpiCard(
+      "Saldo mínimo projetado",
+      projected?.freeToSpend.status === "available"
+        ? money(projected.freeToSpend.minimumBalance.amountMinor)
+        : missing,
+      "Menor posição de caixa nos próximos 30 dias",
+      forecastHref,
+      "Ver projeção de caixa",
+      "minimum",
+    ),
   ];
   if (secondaryOnly) return secondary.join("");
   return [
-    renderKpiCard("Saldo das contas", money(available.amount.amountMinor), "Posição atual por moeda", available.href, available.linkLabel, "balance"),
-    renderKpiCard("Livre para gastar", projected?.freeToSpend.status === "available"
-      ? money(projected.freeToSpend.amount.amountMinor) : missing,
-      "Disponibilidade conservadora para 30 dias", forecastHref, "Ver disponibilidade de caixa", "free"),
+    renderKpiCard(
+      "Saldo das contas",
+      money(available.amount.amountMinor),
+      "Posição atual por moeda",
+      available.href,
+      available.linkLabel,
+      "balance",
+    ),
+    renderKpiCard(
+      "Livre para gastar",
+      projected?.freeToSpend.status === "available"
+        ? money(projected.freeToSpend.amount.amountMinor)
+        : missing,
+      "Disponibilidade conservadora para 30 dias",
+      forecastHref,
+      "Ver disponibilidade de caixa",
+      "free",
+    ),
     ...secondary,
   ].join("");
 }
@@ -326,10 +394,14 @@ function renderMobileAdditionalKpis(
 ): string {
   return `<section class="dashboard-mobile-additional" aria-label="Outros indicadores financeiros">
     <h2>Outros indicadores do mês</h2>
-    ${blocks.map((block) => `<div class="dashboard-mobile-kpi-group">
+    ${blocks
+      .map(
+        (block) => `<div class="dashboard-mobile-kpi-group">
       <strong class="dashboard-mobile-currency">${escapeHtml(block.currency)}</strong>
       <div class="dashboard-kpi-grid">${renderDashboardKpis(block, projection, overview, true)}</div>
-    </div>`).join("")}
+    </div>`,
+      )
+      .join("")}
   </section>`;
 }
 
@@ -344,7 +416,6 @@ function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewMo
     .join("")}</nav>`;
 }
 
-
 function renderCurrencySummaries(
   blocks: readonly DashboardCurrencySummaryViewModel[],
   projection?: DashboardCashFlowProjectionViewModel,
@@ -357,7 +428,8 @@ function renderCurrencySummaries(
     });
   }
   const sections = blocks
-    .map((block) => `<section id="currency-${escapeHtml(block.currency)}"
+    .map(
+      (block) => `<section id="currency-${escapeHtml(block.currency)}"
       class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
       <div class="section-heading currency-heading">
         <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
@@ -365,7 +437,8 @@ function renderCurrencySummaries(
       ${renderSummaryGrid({
         childrenHtml: renderDashboardKpis(block, projection, overview),
       })}
-    </section>`)
+    </section>`,
+    )
     .join("");
   return `<div class="dashboard-primary-currencies" data-dashboard-region="kpis"
     data-multicurrency="${blocks.length > 1}">${sections}</div>`;
@@ -452,7 +525,7 @@ function renderCashFlowProjection(
       aria-labelledby="dashboard-cash-flow-title">
       <div class="section-heading"><div><p class="eyebrow">Horizonte de 30 dias</p>
         <h2 id="dashboard-cash-flow-title">Fluxo de caixa projetado</h2></div></div>
-      ${renderEmptyState({title:"Projeção indisponível.",description:"Não há dados suficientes para montar a série de caixa neste momento."})}
+      ${renderEmptyState({ title: "Projeção indisponível.", description: "Não há dados suficientes para montar a série de caixa neste momento." })}
     </section>`;
   }
   return `<section class="panel cash-flow-section dashboard-flow-wide" data-dashboard-region="cash-flow"
@@ -464,12 +537,16 @@ function renderCashFlowProjection(
         Séries independentes por moeda; valores previstos não são saldo disponível.</p>
     </div></div>
     <div class="cash-flow-dashboard-grid">
-      ${projection.currencies.map((item) => renderCard({
-        title: item.currency,
-        className: "cash-flow-dashboard-card",
-        bodyHtml: renderCashFlowDecisionMetrics(item),
-        footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
-      })).join("")}
+      ${projection.currencies
+        .map((item) =>
+          renderCard({
+            title: item.currency,
+            className: "cash-flow-dashboard-card",
+            bodyHtml: renderCashFlowDecisionMetrics(item),
+            footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
+          }),
+        )
+        .join("")}
     </div>
   </section>`;
 }
@@ -515,7 +592,8 @@ function renderCashFlowDecisionMetrics(
 function renderProjectionChart(
   points: readonly { date: string; balance: { amountMinor: number; currency: string } }[],
 ): string {
-  if (points.length < 2) return `<p class="muted dashboard-chart-empty">Série diária insuficiente para exibir o gráfico de fluxo de caixa.</p>`;
+  if (points.length < 2)
+    return `<p class="muted dashboard-chart-empty">Série diária insuficiente para exibir o gráfico de fluxo de caixa.</p>`;
   const amounts = points.map((point) => point.balance.amountMinor);
   const minimum = Math.min(...amounts);
   const maximum = Math.max(...amounts);
