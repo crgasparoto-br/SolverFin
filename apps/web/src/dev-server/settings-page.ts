@@ -250,7 +250,7 @@ function renderRulesSection(
             <nav class="settings-rule-filters" aria-label="Filtrar regras por situação">
               ${filters
                 .map(
-                  (item) => `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
+                  (item) => `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&amp;filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
                 )
                 .join("")}
             </nav>
