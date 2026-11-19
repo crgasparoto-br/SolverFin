@@ -274,7 +274,7 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
       for (const title of expected) assert.ok(scope.includes(title), title);
       for (const title of excluded) assert.ok(!scope.includes(title), title);
       assert.match(scope, /<details class="rule-disclosure">/);
-      assert.match(scope, /<summary class="rule-detail-trigger sf-focus-ring">/);
+      assert.match(scope, /<summary class="rule-detail-trigger sf-focus-ring" aria-label="Ver condições e ações da regra/);
       assert.match(scope, /Ver condições e ações/);
       assert.match(scope, /data-api-path="\/api\/automation-rules\/apply"/);
       assert.match(scope, /data-api-confirm="Executar regras sobre sugestões pendentes\?"/);
