@@ -52,7 +52,7 @@ globalThis.fetch = (async (input: string | URL | Request) => {
             id: "00000000-0000-4000-8000-000000000809",
             occurredAt: "2026-11-18T12:00:00.000Z",
             readAt: "2026-11-19T13:00:00.000Z",
-            facts: { code: "insight_available", severity: "info" },
+            facts: { code: "insight_available", severity: "info", effectiveOn: "<svg/onload=alert(1)>" },
           },
         ],
         total: 22,
@@ -82,6 +82,8 @@ try {
   assert.ok(received.includes("Marcar não lida"));
   assert.ok(received.includes("123,45"), "Original USD currency minor-unit value is kept");
   assert.ok(received.includes("Referência: 2026-11-30"));
+  assert.ok(received.includes("&lt;svg/onload=alert(1)&gt;"));
+  assert.ok(!received.includes("<svg/onload="), "Untrusted reference must be escaped");
   assert.ok(received.includes('data-notification-target="' + entryId + '"'));
   assert.ok(!received.includes('class="notifications-section notifications-preferences"'));
   assert.ok(!received.includes('data-preference-event="'), "Inactive preferences are not mounted");

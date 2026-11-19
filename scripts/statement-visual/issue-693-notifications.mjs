@@ -31,6 +31,7 @@ try {
   for (const [width, height] of [
     [1366, 900],
     [390, 844],
+    [320, 740],
   ]) {
     await setViewport(browser.cdp, width, height);
     await navigate(browser.cdp, `${baseUrl}/notificacoes`);
