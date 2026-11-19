@@ -264,9 +264,13 @@ function filterDashboardOverview(
     ...overview,
     accountBalances: overview.accountBalances.filter((item) => item.currency === selectedCurrency),
     cardSpending: overview.cardSpending.filter((item) => item.currency === selectedCurrency),
-    cardSpendingTotals: overview.cardSpendingTotals?.filter(
-      (item) => item.currency === selectedCurrency,
-    ),
+    ...(overview.cardSpendingTotals
+      ? {
+          cardSpendingTotals: overview.cardSpendingTotals.filter(
+            (item) => item.currency === selectedCurrency,
+          ),
+        }
+      : {}),
     payables: overview.payables.filter((item) => item.currency === selectedCurrency),
     payableTotals: overview.payableTotals.filter((item) => item.currency === selectedCurrency),
     categoryExpenses: overview.categoryExpenses.filter(
