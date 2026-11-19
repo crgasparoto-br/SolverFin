@@ -40,7 +40,6 @@ describe("dev-server dashboard page", () => {
         assert.equal(url.searchParams.get("horizonDays"), "30");
         return jsonResponse({
           referenceDate: "2026-07-01",
-          purchaseToday: "2026-07-01",
           horizonDays: 30,
           from: "2026-07-02",
           to: "2026-07-31",
@@ -75,6 +74,7 @@ describe("dev-server dashboard page", () => {
       if (url.pathname === "/api/dashboard-overview") {
         return jsonResponse({
           referenceDate: "2026-07-01",
+          purchaseToday: "2026-07-01",
           purchaseOn: "2026-07-01",
           periodStartOn: "2026-07-01",
           periodEndOn: "2026-07-31",
