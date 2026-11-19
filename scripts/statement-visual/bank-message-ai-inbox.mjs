@@ -70,15 +70,18 @@ try {
   );
   // A legacy message action must be operable after selecting the contextual tab.
   // The hidden Messages panel remains in the DOM but is intentionally not visible.
-  const messageTabOpened = await evaluate(browser.cdp, `(() => {
+  const messageTabOpened = await evaluate(
+    browser.cdp,
+    `(() => {
     const tab = document.getElementById('inbox-tab-messages');
     const panel = document.getElementById('inbox-panel-messages');
     if (!tab || !panel || !panel.hidden) return false;
     tab.click();
     return tab.getAttribute('aria-selected') === 'true' &&
       !panel.hidden && document.getElementById('inbox-panel-reviews')?.hidden === true;
-  })()`);
-  assert.equal(messageTabOpened, true, 'Messages tab must reveal the bank-message retry workflow');
+  })()`,
+  );
+  assert.equal(messageTabOpened, true, "Messages tab must reveal the bank-message retry workflow");
 
   const desktop = await inspectInboxState(browser.cdp, 1366, 900);
   assertInboxState(desktop, "desktop");
