@@ -46,11 +46,15 @@ function ruleListFilterFallsBackToAll(): void {
     );
   }
   assert.equal(
-    resolveRulesListFilter(new URL("https://example.test/configuracoes?section=rules&filter=ativas")),
+    resolveRulesListFilter(
+      new URL("https://example.test/configuracoes?section=rules&filter=ativas"),
+    ),
     "ativas",
   );
   assert.equal(
-    resolveRulesListFilter(new URL("https://example.test/configuracoes?section=rules&filter=inativas")),
+    resolveRulesListFilter(
+      new URL("https://example.test/configuracoes?section=rules&filter=inativas"),
+    ),
     "inativas",
   );
 }
@@ -263,7 +267,10 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
       assert.match(scope, /href="\/configuracoes\?section=rules&amp;filter=ativas"/);
       assert.match(scope, /href="\/configuracoes\?section=rules&amp;filter=inativas"/);
       assert.match(scope, /O filtro organiza apenas a lista/);
-      assert.equal((scope.match(/class="maintenance-item rule-item"/g) ?? []).length, expected.length);
+      assert.equal(
+        (scope.match(/class="maintenance-item rule-item"/g) ?? []).length,
+        expected.length,
+      );
       for (const title of expected) assert.ok(scope.includes(title), title);
       for (const title of excluded) assert.ok(!scope.includes(title), title);
       assert.match(scope, /<details class="rule-disclosure">/);
@@ -272,7 +279,10 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
       assert.match(scope, /data-api-path="\/api\/automation-rules\/apply"/);
       assert.match(scope, /data-api-confirm="Executar regras sobre sugestões pendentes\?"/);
       assert.doesNotMatch(scope, /status_futuro|<script>alert\(1\)<\/script>/);
-      assert.match(html, /<fieldset class="settings-rule-fieldset">\s*<legend>Identificação<\/legend>/);
+      assert.match(
+        html,
+        /<fieldset class="settings-rule-fieldset">\s*<legend>Identificação<\/legend>/,
+      );
       assert.match(html, /<legend>Quando aplicar<\/legend>/);
       assert.match(html, /<legend>O que sugerir<\/legend>/);
       assert.match(html, /name="amountMinMinor" type="text" inputmode="decimal"/);
@@ -285,12 +295,13 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
         assert.match(scope, /href="\/configuracoes\?section=rules" aria-current="page"/);
         assert.match(scope, /Ativas <span>1<\/span>/);
         assert.match(scope, /Inativas <span>1<\/span>/);
-        assert.equal((scope.match(/data-api-path="\/api\/automation-rules\/rule-active\/archive"/g) ?? []).length, 1);
-      } else {
-        assert.match(
-          scope,
-          new RegExp('filter=' + filter + '" aria-current="page"'),
+        assert.equal(
+          (scope.match(/data-api-path="\/api\/automation-rules\/rule-active\/archive"/g) ?? [])
+            .length,
+          1,
         );
+      } else {
+        assert.match(scope, new RegExp("filter=" + filter + '" aria-current="page"'));
       }
     }
 
@@ -307,7 +318,16 @@ async function rulesFilteredEmptyStateIsNotAnApiError(): Promise<void> {
   await withFetch(
     {
       "/api/automation-rules?status=all": {
-        rules: [{ id: "only-active", name: "Somente ativa", status: "active", priority: 3, conditions: {}, actions: {} }],
+        rules: [
+          {
+            id: "only-active",
+            name: "Somente ativa",
+            status: "active",
+            priority: 3,
+            conditions: {},
+            actions: {},
+          },
+        ],
       },
       "/api/accounts": { accounts: [] },
       "/api/categories": { categories: [] },
