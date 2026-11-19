@@ -55,13 +55,31 @@ describe("Inbox subject tabs", () => {
       const callbacks = new Map<string, (event: MockEvent) => void>();
       return {
         dataset: { inboxTab: id },
-        attributes: { "aria-selected": id === "reviews" ? "true" : "false" } as Record<string, string>,
+        attributes: { "aria-selected": id === "reviews" ? "true" : "false" } as Record<
+          string,
+          string
+        >,
         tabIndex: id === "reviews" ? 0 : -1,
-        addEventListener(name, handler) { callbacks.set(name, handler); },
-        setAttribute(name, value) { this.attributes[name] = value; },
-        focus() { focused = id; },
-        click() { callbacks.get("click")?.({ key: "", preventDefault() {} }); },
-        fire(name, key) { callbacks.get(name)?.({ key, preventDefault() { prevented = true; } }); },
+        addEventListener(name, handler) {
+          callbacks.set(name, handler);
+        },
+        setAttribute(name, value) {
+          this.attributes[name] = value;
+        },
+        focus() {
+          focused = id;
+        },
+        click() {
+          callbacks.get("click")?.({ key: "", preventDefault() {} });
+        },
+        fire(name, key) {
+          callbacks.get(name)?.({
+            key,
+            preventDefault() {
+              prevented = true;
+            },
+          });
+        },
       };
     });
     let focused = "";
@@ -78,18 +96,24 @@ describe("Inbox subject tabs", () => {
               : panels.get("insights")?.hidden
                 ? panels.get("insights")
                 : null,
-          scrollIntoView() { scrolls += 1; },
+          scrollIntoView() {
+            scrolls += 1;
+          },
         },
       ],
     ]);
     const window = {
-      get location() { return new URL(href); },
+      get location() {
+        return new URL(href);
+      },
       history: {
         pushState(_state: unknown, _title: string, path: string) {
           href = new URL(path, href).href;
         },
       },
-      addEventListener(name: string, handler: () => void) { listeners.set(name, handler); },
+      addEventListener(name: string, handler: () => void) {
+        listeners.set(name, handler);
+      },
     };
     const document = {
       querySelector: () => ({ querySelectorAll: () => tabs }),
