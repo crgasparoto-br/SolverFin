@@ -56,14 +56,19 @@ describe("Inbox review archetype", () => {
 
   it("applies Golden Screen neutral tabs, contextual actions, focus and touch targets", () => {
     const html = renderInboxReviewArchetype({
-      messageActionHtml: '<button type="button" data-open-dialog="new-inbox-message-dialog">Registrar</button>',
-      importActionHtml: '<button type="button" data-open-dialog="csv-import-dialog">Importar</button>',
+      messageActionHtml:
+        '<button type="button" data-open-dialog="new-inbox-message-dialog">Registrar</button>',
+      importActionHtml:
+        '<button type="button" data-open-dialog="csv-import-dialog">Importar</button>',
       suggestionsHtml: "<section>Fila</section>",
       messagesHtml: "<section>Mensagens</section>",
       evidenceHtml: "<section>Importações</section>",
     });
     const css = inboxReviewArchetypeStyles();
-    assert.equal((html.match(/data-inbox-tab="(?:reviews|imports|messages|insights)"/g) ?? []).length, 4);
+    assert.equal(
+      (html.match(/data-inbox-tab="(?:reviews|imports|messages|insights)"/g) ?? []).length,
+      4,
+    );
     assert.equal((html.match(/role="tabpanel"/g) ?? []).length, 4);
     assert.equal((html.match(/class="inbox-tab-panel"/g) ?? []).length, 4);
     assert.match(html, /aria-selected="true" tabindex="0">Revisões/);
@@ -87,7 +92,10 @@ describe("Inbox review archetype", () => {
     assert.match(css, /\.inbox-tab-list \.inbox-tab\.sf-tab:focus-visible/);
     assert.match(css, /--sf-shadow-focus/);
     assert.match(css, /--sf-density-interactive-target-min/);
-    assert.match(css, /\.ai-review-dialog :is\(select, \.secondary-button\):active:not\(:disabled\)/);
+    assert.match(
+      css,
+      /\.ai-review-dialog :is\(select, \.secondary-button\):active:not\(:disabled\)/,
+    );
     assert.match(css, /\.ai-review-dialog :is\(select, \.secondary-button\):disabled/);
     assert.match(css, /\.ai-review-dialog select option:not\(:checked\)/);
     assert.match(css, /@media \(max-width: 900px\)/);
@@ -149,7 +157,8 @@ describe("Inbox review archetype", () => {
   });
   it("keeps reviews, imports, messages and insights strictly in their own panels", () => {
     const html = renderInboxReviewArchetype({
-      messageActionHtml: '<button data-open-dialog="new-inbox-message-dialog">Registrar mensagem</button>',
+      messageActionHtml:
+        '<button data-open-dialog="new-inbox-message-dialog">Registrar mensagem</button>',
       importActionHtml: '<button data-open-dialog="csv-import-dialog">Importar extrato</button>',
       suggestionsHtml:
         '<section><h2>Outras sugestões</h2><button data-review-select="fixture">Revisar</button></section>',
@@ -161,18 +170,20 @@ describe("Inbox review archetype", () => {
     const importsAt = html.indexOf('id="inbox-panel-imports"');
     const messagesAt = html.indexOf('id="inbox-panel-messages"');
     const insightsAt = html.indexOf('id="inbox-panel-insights"');
-    assert.ok(reviewAt >= 0 && reviewAt < importsAt && importsAt < messagesAt && messagesAt < insightsAt);
+    assert.ok(
+      reviewAt >= 0 && reviewAt < importsAt && importsAt < messagesAt && messagesAt < insightsAt,
+    );
     assert.ok(html.indexOf('id="inbox-review-selected"') > reviewAt);
     assert.ok(html.indexOf("data-inbox-review-evidence") > importsAt);
     assert.ok(html.indexOf("data-inbox-messages") > messagesAt);
     assert.ok(html.indexOf("data-inbox-insights") > insightsAt);
     assert.ok(
       html.indexOf('data-open-dialog="csv-import-dialog"') > importsAt &&
-      html.indexOf('data-open-dialog="csv-import-dialog"') < messagesAt,
+        html.indexOf('data-open-dialog="csv-import-dialog"') < messagesAt,
     );
     assert.ok(
       html.indexOf('data-open-dialog="new-inbox-message-dialog"') > messagesAt &&
-      html.indexOf('data-open-dialog="new-inbox-message-dialog"') < insightsAt,
+        html.indexOf('data-open-dialog="new-inbox-message-dialog"') < insightsAt,
     );
     assert.equal((html.match(/data-open-dialog="csv-import-dialog"/g) ?? []).length, 1);
     assert.equal((html.match(/data-open-dialog="new-inbox-message-dialog"/g) ?? []).length, 1);
@@ -181,7 +192,10 @@ describe("Inbox review archetype", () => {
     assert.doesNotMatch(html.slice(reviewAt, importsAt), /data-api-path="[^"]+\/(approve|reject)"/);
     const styles = inboxReviewArchetypeStyles();
     assert.match(styles, /\.inbox-review-detail \{ background: var\(--surface\)/);
-    assert.match(styles, /\.inbox-review-queue-heading, \.inbox-review-detail-heading \{ align-items: start; display: grid/);
+    assert.match(
+      styles,
+      /\.inbox-review-queue-heading, \.inbox-review-detail-heading \{ align-items: start; display: grid/,
+    );
     assert.match(styles, /\.inbox-review-group \{ border: 0/);
   });
 
@@ -200,5 +214,4 @@ describe("Inbox review archetype", () => {
     assert.equal((html.match(/aria-selected="true"/g) ?? []).length, 1);
     assert.equal((html.match(/role="tabpanel"/g) ?? []).length, 4);
   });
-
 });
