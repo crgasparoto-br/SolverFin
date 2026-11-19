@@ -70,11 +70,12 @@ function title(eyebrow: string, heading: string, link?: { href: string; label: s
   </div>`;
 }
 
-function renderCardAdvice(data: DashboardOverview): string {
+function renderCardAdvice(data: DashboardOverview, selectedCurrency?: string): string {
   const winners = data.cardAdvice.filter((card) => card.recommended);
   const first = winners[0];
   const today = data.purchaseOn === data.purchaseToday;
   const simulation = `<form method="get" action="/dashboard" class="dashboard-simulate">
+    ${selectedCurrency ? `<input type="hidden" name="currency" value="${escape(selectedCurrency)}">` : ""}
     <label for="dashboard-purchase-date">Simular data da compra</label>
     <input id="dashboard-purchase-date" type="date" name="purchaseOn" min="${escape(data.purchaseToday)}" value="${escape(data.purchaseOn)}" required>
     <button type="submit" class="button-link secondary-link">Simular</button>
@@ -113,7 +114,7 @@ function renderCardAdvice(data: DashboardOverview): string {
         .join("")}
     </div>
     ${simulation}
-    <p class="muted dashboard-footnote">Datas estimadas pelas regras cadastradas. Compras no dia do fechamento podem entrar no ciclo atual dependendo do processamento. Maior prazo não representa saldo disponível ou aprovação de compra.</p>
+    <p class="muted dashboard-footnote">Datas estimadas pelas regras cadastradas. Compras no dia do fechamento podem entrar no ciclo atual dependendo do processamento. O comparativo considera todos os cartões ativos, independentemente do filtro de valores por moeda. Maior prazo não representa saldo disponível ou aprovação de compra.</p>
   </section>`;
 }
 
@@ -275,7 +276,7 @@ function renderTrend(data: DashboardOverview): string {
   </section>`;
 }
 
-export function renderDashboardOverview(data: DashboardOverview | undefined): string {
+export function renderDashboardOverview(data: DashboardOverview | undefined, selectedCurrency?: string): string {
   if (!data) return `<div class="dashboard-overview" data-layout="approved-mockup" data-overview="unavailable">
     <div class="dashboard-operations-grid" data-dashboard-region="bills-and-accounts">
       ${unavailableWidget("dashboard-payables", "Contas a pagar")}
@@ -297,7 +298,7 @@ export function renderDashboardOverview(data: DashboardOverview | undefined): st
     </div>
     <div class="dashboard-operations-grid" data-dashboard-region="credit-cards">
       <div id="dashboard-credit-cards" class="dashboard-widget-slot">${renderCardSpending(data)}</div>
-      <div id="dashboard-best-card" class="dashboard-widget-slot">${renderCardAdvice(data)}</div>
+      <div id="dashboard-best-card" class="dashboard-widget-slot">${renderCardAdvice(data, selectedCurrency)}</div>
     </div>
     <div class="dashboard-operations-grid" data-dashboard-region="analysis">
       <div id="dashboard-categories" class="dashboard-widget-slot">${renderCategories(data)}</div>
