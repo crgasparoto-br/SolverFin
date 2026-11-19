@@ -93,6 +93,7 @@ export interface DashboardCashFlowProjectionViewModel {
           status: "available";
           amount: MoneyViewModel;
           projectedDeficit: MoneyViewModel;
+          minimumBalance: MoneyViewModel;
           minimumBalanceOnLabel: string;
         }
       | {
@@ -154,6 +155,8 @@ export interface DashboardDecisionModuleViewModel {
 }
 
 export interface DashboardContentViewModel {
+  selectedCurrency?: string;
+  purchaseOn?: string;
   overview?: DashboardOverview;
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
   cashFlowProjection?: DashboardCashFlowProjectionViewModel;
@@ -216,7 +219,12 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
     });
   }
 
+  const selectedCurrency = input.summary.data.currencyBlocks.some(
+    (block) => block.currency === input.filters.currency,
+  ) ? input.filters.currency : undefined;
   return successScreen(context, {
+    ...(selectedCurrency ? { selectedCurrency } : {}),
+    ...(input.filters.purchaseOn ? { purchaseOn: input.filters.purchaseOn } : {}),
     currencySummaries: input.summary.data.currencyBlocks.map(presentCurrencySummary),
     ...(input.overview?.ok ? { overview: input.overview.data } : {}),
     ...(input.cashFlowProjection.ok
@@ -406,6 +414,7 @@ function presentCashFlowProjection(
                 status: "available" as const,
                 amount: money(freeToSpend.freeToSpendMinor, block.currency),
                 projectedDeficit: money(freeToSpend.projectedDeficitMinor, block.currency),
+                minimumBalance: money(freeToSpend.minimumProjectedBalanceMinor, block.currency),
                 minimumBalanceOnLabel: formatDateOnly(freeToSpend.minimumBalanceOn),
               }
             : { status: "unavailable" as const },
