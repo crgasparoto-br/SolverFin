@@ -320,7 +320,7 @@ async function dashboardOverviewHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   const now = new Date();
-  const today = now.toISOString().slice(0, 10);
+  const today = financialTodayInSaoPaulo(now);
   const purchaseOn = validateDashboardPurchaseDate(request.query.get("purchaseOn"), today);
   if (!purchaseOn)
     return json(400, {
