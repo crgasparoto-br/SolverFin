@@ -72,6 +72,72 @@ export function dashboardStyles(): string {
     .row div > span { color: var(--muted); font-size: 0.8125rem; line-height: 1.4; }
     .row strong { font-size: 0.875rem; overflow-wrap: anywhere; }
     .row > strong { text-align: right; white-space: nowrap; }
+
+    .dashboard-overview { display: grid; gap: 14px; }
+    .dashboard-operations-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .dashboard-widget { align-content: start; display: grid; gap: 12px; min-width: 0; padding: 16px; }
+    .dashboard-widget-head { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; }
+    .dashboard-widget-head > div { display: grid; gap: 2px; }
+    .dashboard-widget-head h2 { color: var(--primary); font-size: 1rem; margin: 0; }
+    .dashboard-widget-head .eyebrow { margin: 0; }
+    .dashboard-recommendation { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 5px; padding: 14px; }
+    .dashboard-recommendation-name { color: var(--primary); font-size: 1.05rem; }
+    .dashboard-recommendation-days { color: var(--primary); font-size: 1.9rem; font-variant-numeric: tabular-nums; line-height: 1.2; }
+    .dashboard-recommendation-days small { color: var(--muted); font-size: 0.8rem; font-weight: normal; }
+    .dashboard-comparison, .dashboard-compact-rows { display: grid; gap: 0; min-width: 0; }
+    .dashboard-card-rank, .dashboard-account-row, .dashboard-card-spend-row { border-top: 1px solid var(--line); display: grid; gap: 3px; grid-template-columns: minmax(0, 1fr) auto; padding: 9px 0; }
+    .dashboard-card-rank > span, .dashboard-account-row > span, .dashboard-card-spend-row > span { align-items: center; display: flex; flex-wrap: wrap; gap: 7px; min-width: 0; }
+    .dashboard-card-rank > span svg, .dashboard-account-row > span svg, .dashboard-card-spend-row > span svg { color: var(--muted); flex: 0 0 auto; }
+    .dashboard-card-rank small, .dashboard-account-row small, .dashboard-card-spend-row small { color: var(--muted); font-size: 0.75rem; }
+    .dashboard-card-rank > small { grid-column: 1 / -1; }
+    .dashboard-account-row strong, .dashboard-card-spend-row strong { font-variant-numeric: tabular-nums; text-align: right; }
+    .dashboard-widget a { color: var(--primary); text-underline-offset: 3px; }
+    .dashboard-widget a:focus-visible, .dashboard-widget button:focus-visible,
+    .dashboard-widget input:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+    .dashboard-simulate { align-items: end; display: flex; flex-wrap: wrap; gap: 8px; }
+    .dashboard-simulate label { color: var(--muted); flex: 1 0 100%; font-size: 0.8rem; }
+    .dashboard-simulate input { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--primary); min-height: 38px; padding: 6px; }
+    .dashboard-simulate button { cursor: pointer; min-height: 38px; }
+    .dashboard-footnote { font-size: 0.75rem; line-height: 1.45; margin: 0; }
+    .dashboard-payable-totals { display: flex; flex-wrap: wrap; gap: 10px; }
+    .dashboard-payable-totals > div { background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 4px; min-width: 140px; padding: 9px 12px; }
+    .dashboard-payable-totals span { color: var(--muted); font-size: 0.75rem; }
+    .dashboard-payable-totals strong { font-variant-numeric: tabular-nums; }
+    .dashboard-danger { color: #bd3b4b; display: block; font-size: 0.75rem; }
+    .dashboard-table-scroll { max-height: 268px; overflow: auto; }
+    .dashboard-mini-table { border-collapse: collapse; font-size: 0.8125rem; width: 100%; }
+    .dashboard-mini-table th { color: var(--muted); position: sticky; top: 0; background: var(--surface); text-align: left; }
+    .dashboard-mini-table td, .dashboard-mini-table th { border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
+    .dashboard-mini-table td small { color: var(--muted); display: block; }
+    .dashboard-mini-table .dashboard-money { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+    .dashboard-mini-table th:last-child { text-align: right; }
+    .dashboard-bar-list, .dashboard-trend { display: grid; gap: 12px; }
+    .dashboard-bar-item { display: grid; gap: 5px; }
+    .dashboard-bar-item > div:first-child { display: flex; flex-wrap: wrap; gap: 5px; justify-content: space-between; font-size: 0.8125rem; }
+    .dashboard-bar-track { background: var(--surface-soft); border: 1px solid var(--line); border-radius: 999px; height: 9px; overflow: hidden; }
+    .dashboard-bar-track span { background: var(--primary); border-radius: inherit; display: block; height: 100%; }
+    .dashboard-trend { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .dashboard-trend-item { display: grid; gap: 7px; min-width: 0; }
+    .dashboard-trend-item > strong { font-size: 0.75rem; }
+    .dashboard-trend-item > div { display: grid; gap: 4px; }
+    .dashboard-trend-item span { border-radius: 3px; display: block; height: 9px; min-width: 2px; }
+    .dashboard-trend-income { background: #0d9488; }
+    .dashboard-trend-expense { background: #e76276; }
+    .dashboard-trend-item small { color: var(--muted); font-size: 0.72rem; }
+    .dashboard-projection-chart { display: grid; gap: 8px; margin-top: 10px; }
+    .dashboard-projection-chart svg { height: 96px; max-width: 100%; overflow: visible; width: 100%; }
+    .dashboard-projection-chart p { color: var(--muted); font-size: 0.75rem; margin: 0; }
+    @media (max-width: 1024px) { .dashboard-operations-grid { grid-template-columns: 1fr; } }
+    @media (max-width: 760px) {
+      .dashboard-operations-grid, .dashboard-trend { grid-template-columns: 1fr; }
+      .dashboard-overview { gap: 10px; }
+      .dashboard-widget { gap: 10px; padding: 12px; }
+      .dashboard-recommendation-days { font-size: 1.5rem; }
+      .dashboard-mini-table { font-size: 0.75rem; }
+      .dashboard-mini-table th, .dashboard-mini-table td { padding: 7px 3px; }
+      .dashboard-trend { gap: 8px; }
+      .dashboard-trend-item { border-top: 1px solid var(--line); padding-top: 8px; }
+    }
     @media (max-width: 1024px) { .decision-grid, .cash-flow-dashboard-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .dashboard-hero { grid-template-columns: 1fr; } .data-quality { padding-left: 10px; } }
     @media (max-width: 760px) {
       main { gap: 10px; padding-top: 8px; }
