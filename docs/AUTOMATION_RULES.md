@@ -71,7 +71,7 @@ Exemplo de criação:
 
 ## UI e falhas
 
-`Configurações` mantém as seções `/configuracoes?section=profiles` e `/configuracoes?section=rules`. A lista mostra nome, status, prioridade, condições, ações e explicação. A mesma seção exibe os aprendizados por correção, permite ignorar/reverter sinais e executar a categorização das sugestões pendentes. Referências desconhecidas usam `Não reconhecido`, sem expor ID técnico.
+`Configurações` mantém as seções `/configuracoes?section=profiles` e `/configuracoes?section=rules`. Em Regras automáticas, a lista apresenta nome, status, prioridade e um resumo de condição e ação; cada linha oferece detalhes expansíveis nativos (`details/summary`) com todas as condições, ações e a explicação, acessíveis por teclado sem JavaScript. Os filtros `Todas`, `Ativas` e `Inativas` utilizam links SSR (`?section=rules&filter=ativas|inativas`), contam as regras recebidas e preservam a ordem original. Valores desconhecidos de `filter` retornam para `Todas`; status não reconhecido só aparece na lista completa com rótulo neutro, sem código técnico nem identificador interno. O filtro modifica apenas a listagem: **Aplicar regras** continua usando as regras ativas existentes, produzindo sugestões para revisão humana, nunca lançamentos confirmados. O diálogo de criação agrupa Identificação, Quando aplicar e O que sugerir, sem alterar o payload ou endpoints.
 
 Falha ao listar regras mostra estado de erro. Contas e categorias são dependências independentes do formulário. Valores aceitam ponto ou vírgula com no máximo duas casas e são enviados em unidades minoritárias.
 
