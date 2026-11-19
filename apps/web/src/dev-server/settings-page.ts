@@ -250,14 +250,17 @@ function renderRulesSection(
             <nav class="settings-rule-filters" aria-label="Filtrar regras por situação">
               ${filters
                 .map(
-                  (item) => `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&amp;filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
+                  (item) =>
+                    `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&amp;filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
                 )
                 .join("")}
             </nav>
             <p class="settings-rule-filter-hint">O filtro organiza apenas a lista. Aplicar regras considera as regras ativas, independentemente do filtro.</p>
             <div class="rows maintenance-rows">
               ${
-                visibleRules.map((rule) => renderAutomationRuleRow(rule, accounts, categories)).join("") ||
+                visibleRules
+                  .map((rule) => renderAutomationRuleRow(rule, accounts, categories))
+                  .join("") ||
                 (automationRules.length === 0
                   ? renderEmptyState(
                       "Nenhuma regra automática.",
