@@ -208,7 +208,7 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
     </section>
     ${renderMobileAdditionalKpis(blocks, projection, overview)}
     ${renderCashFlowProjection(projection)}
-    ${renderDashboardOverview(overview)}
+    ${renderDashboardOverview(overview, content.selectedCurrency)}
     <section class="dashboard-final-grid" data-dashboard-region="activity" aria-label="Últimos lançamentos e insights">
       <div class="list-panel panel dashboard-last-items">
         <div class="section-heading">
@@ -259,7 +259,7 @@ function renderCurrencyFilter(
   purchaseOn?: string,
 ): string {
   return `<form action="/dashboard" method="get" class="dashboard-currency-filter">
-    <label for="dashboard-currency">Moeda</label>
+    <label for="dashboard-currency">Moeda dos valores</label>
     <select id="dashboard-currency" name="currency">
       <option value="">Todas</option>
       ${blocks.map((block) =>
