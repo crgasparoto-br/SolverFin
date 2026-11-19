@@ -12,7 +12,7 @@ originais. Os novos dados são produzidos no backend com escopo de
   entre hoje (UTC) e os próximos 365 dias. Formato inválido, data inexistente,
   dia anterior ou data fora do limite retornam HTTP 400 com
   `DASHBOARD_PURCHASE_DATE_INVALID`.
-- Sem `purchaseOn`, a compra simulada considera a data atual UTC.
+- Sem `purchaseOn`, a compra simulada considera a data civil atual de São Paulo, coerente com o Extrato. `purchaseToday` informa essa data; o dia de referência dos agregados financeiros continua UTC.
 - `referenceDate`, `periodStartOn` e `periodEndOn` são resolvidos no backend a
   partir de um mesmo `now` e usam o mês civil corrente UTC.
 - `purchaseOn` nunca altera os demais agregados: saldo, vencimentos e gastos do
@@ -23,6 +23,7 @@ originais. Os novos dados são produzidos no backend com escopo de
 ```json
 {
   "referenceDate": "2026-11-19",
+  "purchaseToday": "2026-11-19",
   "purchaseOn": "2026-11-19",
   "periodStartOn": "2026-11-01",
   "periodEndOn": "2026-11-30",
