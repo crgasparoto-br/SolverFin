@@ -153,7 +153,7 @@ async function handleRequest(request: IncomingMessage, response: ServerResponse)
   }
 
   if (url.pathname === "/dashboard" && token) {
-    sendHtml(response, 200, await renderDashboardPage(token));
+    sendHtml(response, 200, await renderDashboardPage(token, url));
     return;
   }
 
