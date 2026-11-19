@@ -34,40 +34,61 @@ try {
   ]) {
     await setViewport(browser.cdp, width, height);
     await navigate(browser.cdp, `${baseUrl}/notificacoes`);
-    const observed = await evaluate(
+    const received = await evaluate(
+      browser.cdp,
+      `(() => {
+        const root = document.querySelector('[data-financial-notifications]');
+        return {
+          route: location.pathname,
+          rootVisible: Boolean(root),
+          receivedTabActive: root?.querySelector('.sf-tabs a[aria-current="page"]')?.textContent?.trim() === 'Recebidas',
+          emptyState: Boolean(root?.querySelector('.notifications-empty')),
+          preferencesNotMounted: !root?.querySelector('.notifications-preferences'),
+          unreadCount: root?.querySelector('.notifications-feed header p')?.textContent?.trim(),
+          receivedHasNoHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+          viewportWidth: window.innerWidth,
+        };
+      })()`,
+    );
+    assert.equal(received.route, "/notificacoes");
+    assert.equal(received.rootVisible, true);
+    assert.equal(received.receivedTabActive, true, "Received notifications should be the active SSR tab");
+    assert.equal(received.emptyState, true, "A new profile must render an honest empty state");
+    assert.equal(received.preferencesNotMounted, true, "Inactive preferences must not compete with the inbox");
+    assert.equal(received.unreadCount, "0 não lidas");
+    assert.equal(received.receivedHasNoHorizontalOverflow, true, `${width}px inbox overflow`);
+    await screenshot(browser.cdp, join(outputDir, `issue-693-notifications-${width}.png`));
+
+    await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
+    const configured = await evaluate(
       browser.cdp,
       `(() => {
         const root = document.querySelector('[data-financial-notifications]');
         const groups = [...(root?.querySelectorAll('.notifications-preference-group') ?? [])];
         const channels = [...(root?.querySelectorAll('.notifications-preference-channel') ?? [])];
         return {
+          preferencesTabActive: root?.querySelector('.sf-tabs a[aria-current="page"]')?.textContent?.trim() === 'Preferências',
+          receivedNotMounted: !root?.querySelector('.notifications-feed'),
           preferenceGroupCount: groups.length,
           groupsHaveThreeChannels: groups.every((group) => group.querySelectorAll('[data-preference-event]').length === 3),
           readableChannelWidths: channels.length === 12 && channels.every((channel) => channel.getBoundingClientRect().width >= 120),
           labelsUseGridLayout: channels.length === 12 && channels.every((channel) => getComputedStyle(channel.closest('label')).display === 'grid'),
-          route: location.pathname,
-          rootVisible: Boolean(root),
-          emptyState: Boolean(root?.querySelector('.notifications-empty')),
           preferenceCount: root?.querySelectorAll('[data-preference-event]').length ?? 0,
-          unreadCount: root?.querySelector('.notifications-feed header p')?.textContent?.trim(),
           noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
-          viewportWidth: window.innerWidth,
         };
       })()`,
     );
-    assert.equal(observed.route, "/notificacoes");
-    assert.equal(observed.rootVisible, true);
-    assert.equal(observed.emptyState, true, "A new profile must render an honest empty state");
-    assert.equal(observed.preferenceCount, 12, "All event/channel preferences must be visible");
-    assert.equal(observed.preferenceGroupCount, 4, "Event preferences must be grouped");
-    assert.equal(observed.groupsHaveThreeChannels, true, "Each event needs its three channels");
-    assert.equal(observed.readableChannelWidths, true, "Preference labels are too narrow");
-    assert.equal(observed.labelsUseGridLayout, true, "Preference controls are not aligned");
-    assert.equal(observed.unreadCount, "0 não lidas");
-    assert.equal(observed.noHorizontalOverflow, true, `${width}px horizontal overflow`);
-    assert.equal(observed.viewportWidth, width);
-    report.viewports.push({ width, height, ...observed });
-    await screenshot(browser.cdp, join(outputDir, `issue-693-notifications-${width}.png`));
+    assert.equal(configured.preferencesTabActive, true, "Preferences should be the active SSR tab");
+    assert.equal(configured.receivedNotMounted, true, "Inactive inbox must not compete with preferences");
+    assert.equal(configured.preferenceCount, 12, "All event/channel preferences must be visible");
+    assert.equal(configured.preferenceGroupCount, 4, "Event preferences must be grouped");
+    assert.equal(configured.groupsHaveThreeChannels, true, "Each event needs its three channels");
+    assert.equal(configured.readableChannelWidths, true, "Preference labels are too narrow");
+    assert.equal(configured.labelsUseGridLayout, true, "Preference controls are not aligned");
+    assert.equal(configured.noHorizontalOverflow, true, `${width}px preferences overflow`);
+    assert.equal(received.viewportWidth, width);
+    report.viewports.push({ width, height, ...received, ...configured });
+    await screenshot(browser.cdp, join(outputDir, `issue-693-notifications-preferences-${width}.png`));
   }
 
   const preference = await evaluate(
@@ -77,10 +98,10 @@ try {
   assert.equal(typeof preference, "boolean");
   originalPreference = preference;
   await togglePreference(!preference);
-  await navigate(browser.cdp, `${baseUrl}/notificacoes`);
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
   assert.equal(await readPreference(), !preference, "Preference did not persist after reload");
   await togglePreference(preference);
-  await navigate(browser.cdp, `${baseUrl}/notificacoes`);
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
   assert.equal(await readPreference(), preference, "Preference was not restored");
   report.preference = { changedAndRestored: true, persistsAcrossReload: true };
 
