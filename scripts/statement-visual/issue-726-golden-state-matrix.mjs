@@ -4,8 +4,8 @@ import { evaluate, sleep } from "./cdp.mjs";
 // accepting a neutral rest token as evidence for hover, press or keyboard focus.
 const CONTROLS = [
   ["row", ".inbox-review-queue [data-review-select]", true],
-  ["navigation", ".inbox-review-nav", false],
-  ["new-entry", ".inbox-new-entry-trigger", false],
+  ["navigation", "#inbox-tab-imports", false],
+  ["other-tab", "#inbox-tab-messages", false],
   ["refresh", "[data-review-refresh]", true],
   ["filter", '[data-review-filter="kind"]', true],
   ["dialog-select", "#ai-review-dialog [data-review-edit-form] select", true],
@@ -55,9 +55,14 @@ export async function validateGoldenStateMatrix(cdp) {
         const a=lum(css.color),b=lum(css.backgroundColor);
         const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
         const state=${JSON.stringify(state)};
-        const background=css.backgroundColor,color=css.color,border=css.borderTopColor;
-        const rest=same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
-          [token('border'),token('line')].some((value)=>same(border,value));
+        const isTab=element.matches('[role="tab"]');
+        const rawBackground=css.backgroundColor;
+        const background=isTab && rawBackground==='rgba(0, 0, 0, 0)' ? token('surface') : rawBackground;
+        const color=css.color,border=isTab ? css.borderBottomColor : css.borderTopColor;
+        const rest=isTab
+          ? rawBackground==='rgba(0, 0, 0, 0)' && same(color,token('muted-text'))
+          : same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
+            [token('border'),token('line')].some((value)=>same(border,value));
         const hover=same(background,token('neutral-control-hover')) && same(color,token('neutral-control-text-hover')) &&
           same(border,token('neutral-control-border-hover'));
         const pressed=same(background,token('neutral-control-active-hover')) && same(color,token('neutral-control-text-hover')) &&
