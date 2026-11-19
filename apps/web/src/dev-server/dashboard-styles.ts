@@ -187,5 +187,150 @@ export function dashboardStyles(): string {
       .row > strong { text-align: left; white-space: normal; }
       .evidence-links { display: grid; }
     }
+
+    /* Dashboard #811 — approved visual mockup is the layout contract, not a collection of loose cards. */
+    .dashboard-hero[data-dashboard-region="overview"] {
+      align-items: start;
+      border-bottom: 1px solid var(--line);
+      gap: 16px;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      padding-bottom: 12px;
+    }
+    .dashboard-header-controls { align-items: end; display: flex; flex-wrap: wrap; gap: 12px; justify-content: flex-end; }
+    .dashboard-period-pill { align-items: center; background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); display: flex; gap: 7px; min-height: 39px; padding: 7px 11px; white-space: nowrap; }
+    .dashboard-period-pill span { color: var(--muted); font-size: 0.75rem; }
+    .dashboard-period-pill strong { font-size: 0.8125rem; font-variant-numeric: tabular-nums; }
+    .dashboard-currency-filter { align-items: end; display: grid; gap: 6px; grid-template-columns: 110px auto; min-width: 160px; }
+    .dashboard-currency-filter label { color: var(--muted); font-size: 0.72rem; grid-column: 1 / -1; line-height: 1; }
+    .dashboard-currency-filter select { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); color: var(--primary); min-height: 39px; min-width: 0; padding: 7px 9px; }
+    .dashboard-currency-filter button { cursor: pointer; min-height: 39px; padding: 7px 12px; }
+    .dashboard-currency-filter select:focus-visible, .dashboard-currency-filter button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+    .dashboard-header-controls .data-quality { max-width: 180px; }
+    .dashboard-primary-currencies { gap: 16px; }
+    .dashboard-primary-currencies .currency-summary { gap: 9px; }
+    .dashboard-primary-currencies .currency-summary .sf-summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+    .dashboard-kpi { position: relative; min-width: 0; }
+    .dashboard-primary-currencies .dashboard-kpi .sf-metric-card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); display: grid; min-height: 122px; gap: 5px; padding: 16px 14px 34px; }
+    .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-label { color: var(--muted); font-size: 0.8rem; font-weight: 600; }
+    .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-value { color: var(--primary); font-size: clamp(1rem, 1.45vw, 1.45rem); font-variant-numeric: tabular-nums; line-height: 1.25; overflow-wrap: anywhere; text-align: left; }
+    .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-detail { color: var(--muted); font-size: 0.74rem; line-height: 1.3; }
+    .dashboard-primary-currencies .dashboard-kpi .metric-drilldown { bottom: 11px; left: 14px; }
+    .dashboard-primary-currencies .dashboard-kpi[data-kpi="balance"] .sf-metric-card-value,
+    .dashboard-primary-currencies .dashboard-kpi[data-kpi="free"] .sf-metric-card-value { color: var(--primary); font-weight: 800; }
+    .dashboard-actions { border: 1px solid var(--line); border-radius: var(--radius); display: grid; gap: 11px; padding: 16px 18px; }
+    .dashboard-actions .section-heading h2, .dashboard-flow-wide h2, .dashboard-final-grid h2 { font-size: 1.025rem; margin: 0; }
+    .dashboard-actions .next-action-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .dashboard-actions .next-action-rows .next-action-row { align-items: center; background: var(--surface-soft); border: 1px solid var(--line); border-radius: var(--radius); gap: 10px; min-height: 64px; padding: 10px 12px; }
+    .dashboard-actions .next-action-row .button-link { flex: 0 0 auto; white-space: nowrap; }
+    .dashboard-actions .quick-links { gap: 8px; }
+    .dashboard-mobile-additional { display: none; }
+    .dashboard-flow-wide { display: grid; gap: 14px; padding: 17px 18px; }
+    .dashboard-flow-wide .cash-flow-dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    .dashboard-flow-wide .cash-flow-dashboard-card { border: 1px solid var(--line); box-shadow: none; min-width: 0; }
+    .dashboard-flow-wide .cash-flow-dashboard-metrics { display: grid; grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(130px, 1fr)); align-items: start; gap: 16px; }
+    .dashboard-flow-wide .cash-flow-dashboard-metric { align-content: start; border-top: 0; gap: 5px; padding: 8px 0 0; }
+    .dashboard-flow-wide .cash-flow-dashboard-metric + .cash-flow-dashboard-metric { border-left: 1px solid var(--line); padding-left: 14px; }
+    .dashboard-flow-wide .dashboard-projection-chart { display: grid; gap: 6px; grid-row: 1 / span 2; margin: 0; min-width: 0; }
+    .dashboard-flow-wide .dashboard-projection-chart svg { color: var(--primary); height: 182px; max-width: none; width: 100%; }
+    .dashboard-flow-wide .dashboard-projection-chart p { font-size: 0.75rem; }
+    .dashboard-flow-wide .dashboard-chart-empty { background: var(--surface-soft); border: 1px dashed var(--line); border-radius: var(--radius); grid-row: 1 / span 2; padding: 20px; }
+    .dashboard-operations-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .dashboard-operations-grid .dashboard-widget-slot { min-width: 0; }
+    .dashboard-operations-grid .dashboard-widget-slot > .dashboard-widget { height: 100%; }
+    .dashboard-operations-grid .dashboard-widget { border: 1px solid var(--line); border-radius: var(--radius); gap: 12px; padding: 17px 18px; }
+    .dashboard-operations-grid .dashboard-widget-head h2 { font-size: 1.025rem; }
+    .dashboard-other-accounts { border-top: 1px solid var(--line); padding-top: 8px; }
+    .dashboard-other-accounts summary { color: var(--primary); cursor: pointer; font-size: 0.8rem; font-weight: 650; }
+    .dashboard-other-accounts .dashboard-compact-rows { margin-top: 6px; }
+    .dashboard-card-spend-bars { display: grid; gap: 9px; }
+    .dashboard-spend-visual-item { display: grid; gap: 5px; }
+    .dashboard-spend-visual-item .dashboard-card-spend-row { border-top: 0; padding: 3px 0; }
+    .dashboard-spend-visual-item .dashboard-bar-track { height: 10px; }
+    .dashboard-spend-visual-item .dashboard-bar-track > span { background: #4361d0; }
+    .dashboard-card-advice .dashboard-recommendation { border-color: #b7d9cd; background: linear-gradient(110deg, var(--surface-soft), var(--surface)); gap: 7px; }
+    .dashboard-card-advice .dashboard-recommendation-name { font-size: 1.15rem; }
+    .dashboard-card-advice .dashboard-recommendation-days { font-size: 2rem; }
+    .dashboard-trend { align-items: end; display: flex; gap: 8px; min-height: 205px; overflow-x: auto; padding-top: 7px; }
+    .dashboard-trend-item { align-items: center; display: flex; flex: 1 0 42px; flex-direction: column; gap: 5px; justify-content: flex-end; min-width: 42px; }
+    .dashboard-trend-columns { align-items: end; border-bottom: 1px solid var(--line); display: flex; gap: 3px; height: 145px; justify-content: center; width: 100%; }
+    .dashboard-trend-columns > span { border-radius: 4px 4px 0 0; display: block; flex: 1; height: 0; max-width: 24px; min-width: 6px; }
+    .dashboard-trend-item > strong { font-size: 0.75rem; white-space: nowrap; }
+    .dashboard-trend-item > small { color: var(--muted); font-size: 0.7rem; }
+    .dashboard-trend-sr { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
+    .dashboard-trend-legend { display: flex; flex-wrap: wrap; gap: 16px; }
+    .dashboard-trend-legend span { align-items: center; color: var(--muted); display: flex; font-size: 0.75rem; gap: 6px; }
+    .dashboard-trend-legend i { border-radius: 2px; display: inline-block; height: 9px; width: 13px; }
+    .dashboard-trend-legend i.dashboard-trend-income { background: #0d9488; }
+    .dashboard-trend-legend i.dashboard-trend-expense { background: #e76276; }
+    .dashboard-final-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .dashboard-final-grid > .panel { align-content: start; display: grid; gap: 12px; min-width: 0; padding: 16px 18px; }
+    .dashboard-final-grid .row { padding: 9px 0; }
+    .dashboard-additional-tools { border-top: 1px solid var(--line); color: var(--primary); padding: 10px 0; }
+    .dashboard-additional-tools > summary { cursor: pointer; font-size: 0.82rem; font-weight: 700; }
+    .dashboard-additional-tools[open] { display: grid; gap: 14px; }
+    .dashboard-additional-tools .decision-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    @media (max-width: 1050px) {
+      .dashboard-hero[data-dashboard-region="overview"] { grid-template-columns: minmax(0, 1fr); }
+      .dashboard-header-controls { justify-content: flex-start; }
+      .dashboard-primary-currencies .currency-summary .sf-summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .dashboard-flow-wide .cash-flow-dashboard-metrics { grid-template-columns: minmax(0, 1.6fr) minmax(130px, 1fr); }
+      .dashboard-flow-wide .dashboard-projection-chart { grid-row: 1 / span 3; }
+    }
+    @media (max-width: 760px) {
+      .dashboard-hero[data-dashboard-region="overview"] { align-items: start; gap: 7px; padding-bottom: 8px; }
+      .dashboard-header-controls { align-items: center; gap: 6px; }
+      .dashboard-period-pill { background: transparent; border: 0; min-height: 28px; padding: 0; }
+      .dashboard-period-pill span { display: none; }
+      .dashboard-header-controls .data-quality { border-left: 1px solid var(--line); max-width: 100%; padding-left: 8px; }
+      .dashboard-currency-filter { grid-template-columns: minmax(92px, 1fr) auto; min-width: 155px; }
+      .dashboard-currency-filter select, .dashboard-currency-filter button { min-height: 34px; padding: 5px 8px; }
+      .dashboard-primary-currencies .currency-summary .sf-summary-grid { display: grid; gap: 0; grid-template-columns: 1fr; }
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="result"],
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="payables"],
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="cards"],
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="minimum"] { display: none; }
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="balance"],
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="free"] { border-bottom: 1px solid var(--line); display: block; padding: 6px 10px; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card { background: transparent; border: 0; border-radius: 0; box-shadow: none; display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 2px 8px; height: auto; min-height: 0; padding: 0; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-label { align-self: baseline; font-size: 0.78rem; line-height: 1.35; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-value { align-self: baseline; font-size: clamp(0.84rem, 3.6vw, 1.02rem); line-height: 1.3; overflow-wrap: normal; text-align: right; white-space: nowrap; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-detail { grid-column: 1 / -1; }
+      .dashboard-primary-currencies .dashboard-kpi .metric-drilldown { font-size: 0.72rem; margin-top: 2px; position: static; width: fit-content; }
+      .dashboard-actions { gap: 8px; padding: 11px 12px; }
+      .dashboard-actions .section-heading h2 { font-size: 0.93rem; }
+      .dashboard-actions .next-action-rows { grid-template-columns: 1fr; gap: 6px; }
+      .dashboard-actions .next-action-rows .next-action-row { align-items: center; display: flex; min-height: 53px; padding: 7px 9px; }
+      .dashboard-actions .next-action-row .button-link { padding: 7px; }
+      .dashboard-mobile-additional { display: grid; gap: 7px; }
+      .dashboard-mobile-additional > h2 { font-size: 0.9rem; margin: 0; }
+      .dashboard-mobile-kpi-group { display: grid; gap: 5px; }
+      .dashboard-mobile-currency { color: var(--muted); font-size: 0.75rem; }
+      .dashboard-mobile-additional .dashboard-kpi-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+      .dashboard-mobile-additional .dashboard-kpi { border: 1px solid var(--line); border-radius: var(--radius); min-width: 0; padding: 11px; }
+      .dashboard-mobile-additional .dashboard-kpi .sf-metric-card { background: none; border: 0; display: grid; gap: 5px; height: auto; min-height: 70px; padding: 0 0 21px; }
+      .dashboard-mobile-additional .dashboard-kpi .sf-metric-card-label { color: var(--muted); font-size: 0.75rem; }
+      .dashboard-mobile-additional .dashboard-kpi .sf-metric-card-value { font-size: 0.93rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; text-align: left; }
+      .dashboard-mobile-additional .dashboard-kpi .sf-metric-card-detail { font-size: 0.7rem; }
+      .dashboard-mobile-additional .dashboard-kpi .metric-drilldown { bottom: 8px; font-size: 0.7rem; left: 11px; }
+      .dashboard-operations-grid, .dashboard-final-grid { grid-template-columns: 1fr; gap: 10px; }
+      .dashboard-operations-grid .dashboard-widget { padding: 12px; }
+      .dashboard-flow-wide { padding: 12px; }
+      .dashboard-flow-wide .cash-flow-dashboard-metrics { display: grid; grid-template-columns: 1fr; }
+      .dashboard-flow-wide .dashboard-projection-chart { grid-row: auto; }
+      .dashboard-flow-wide .dashboard-projection-chart svg { height: 160px; }
+      .dashboard-flow-wide .cash-flow-dashboard-metric + .cash-flow-dashboard-metric { border-left: 0; border-top: 1px solid var(--line); padding: 8px 0 0; }
+      .dashboard-final-grid > .panel { padding: 12px; }
+      .dashboard-trend { min-height: 180px; }
+      .dashboard-trend-columns { height: 120px; }
+      .dashboard-additional-tools .decision-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 390px) {
+      .dashboard-currency-filter label { display: none; }
+      .dashboard-header-controls .data-quality { font-size: 0.75rem; }
+      .dashboard-mobile-additional .dashboard-kpi-grid { grid-template-columns: 1fr; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-value { font-size: 0.81rem; }
+      .dashboard-trend-item { min-width: 38px; }
+    }
+
   `;
 }
