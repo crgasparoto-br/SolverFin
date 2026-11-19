@@ -95,6 +95,7 @@ describe("dev-server dashboard page", () => {
             },
           ],
           cardSpending: [{ id: "card-a", name: "Cartão Alfa", currency: "BRL", spentMinor: 55000 }],
+          cardSpendingTotals: [{ currency: "BRL", amountMinor: 55000, count: 1 }],
           cardAdvice: [
             {
               id: "card-a",
