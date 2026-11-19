@@ -190,6 +190,8 @@ Os widgets são secundários à primeira ação no mobile (requisito Golden Scre
 por moeda. A falha do endpoint operacional é opcional: deve mostrar
 `Dados parciais`, não apagar os indicadores financeiros já confirmados.
 
+A data civil “hoje” do recomendador reutiliza a regra de São Paulo do Extrato, mesmo quando o relógio UTC do servidor já passou da meia-noite. O resumo financeiro mantém sua data de referência UTC, exposta separadamente como `referenceDate`.
+
 A recomendação considera somente prazo, não limite disponível ou aprovação
 de compra. O vencimento previsto reflete os dias cadastrados, sem pretender
 validar o processamento da administradora no dia de fechamento. O teste de
