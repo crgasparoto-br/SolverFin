@@ -623,16 +623,6 @@ function renderNextActionRow(
   `;
 }
 
-function renderDashboardMetric(metric: DashboardMetricViewModel): string {
-  const metricCard = renderFoundationMetricCard({
-    label: metric.title,
-    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
-    detail: metric.subtitle,
-  });
-
-  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a></div>`;
-}
-
 function dashboardLoadingRetryScript(): string {
   return `
     <script>
