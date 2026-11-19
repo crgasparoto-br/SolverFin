@@ -36,6 +36,8 @@ export interface DashboardPayable {
   currency: string;
   dueOn: string;
   amountMinor: number;
+  accountId?: string;
+  cardId?: string;
   overdue: boolean;
 }
 
@@ -89,6 +91,8 @@ interface PayableRow {
   description: string;
   currency: string;
   dueOn: string;
+  accountId: string | null;
+  cardId: string | null;
   amountMinor: string;
   totalMinor: string;
   overdueMinor: string;
@@ -222,7 +226,8 @@ export async function buildDashboardOverview(
       `with commitments as (
          select t."id"::text as "id", 'transaction'::text as "source",
                 t."description", upper(t."currency") as "currency",
-                t."plannedOn"::date as "dueOn", t."amountMinor" as "amountMinor"
+                t."plannedOn"::date as "dueOn", t."amountMinor" as "amountMinor",
+                t."accountId"::text as "accountId", null::text as "cardId"
            from "Transaction" t
           where t."organizationId" = $1 and t."financialProfileId" = $2
             and t."kind" = 'EXPENSE' and t."status" in ('PLANNED','SUGGESTED')
@@ -230,7 +235,8 @@ export async function buildDashboardOverview(
             and t."accountId" is not null and t."cardId" is null and t."invoiceId" is null
          union all
          select i."id"::text, 'invoice'::text, c."name",
-                upper(i."currency"), i."dueOn"::date, i."totalAmountMinor"
+                upper(i."currency"), i."dueOn"::date, i."totalAmountMinor",
+                null::text, i."cardId"::text
            from "Invoice" i join "Card" c on c."id" = i."cardId"
             and c."organizationId" = i."organizationId"
             and c."financialProfileId" = i."financialProfileId"
@@ -245,7 +251,8 @@ export async function buildDashboardOverview(
            from commitments
        )
        select "id", "source", "description", "currency", "dueOn"::text as "dueOn",
-              "amountMinor"::text as "amountMinor", "totalMinor", "overdueMinor", "itemCount"
+              "accountId", "cardId", "amountMinor"::text as "amountMinor",
+              "totalMinor", "overdueMinor", "itemCount"
          from ranked where rn <= 10 order by "dueOn", "id"`,
       [...params, referenceDate, periodEndOn],
     ),
@@ -358,6 +365,8 @@ export async function buildDashboardOverview(
       dueOn: row.dueOn,
       amountMinor: addSafeMoneyMinor([row.amountMinor], "dashboard bill"),
       overdue: row.dueOn < referenceDate,
+      ...(row.accountId ? { accountId: row.accountId } : {}),
+      ...(row.cardId ? { cardId: row.cardId } : {}),
     })),
     payableTotals,
     categoryExpenses: categories.map((row) => ({
