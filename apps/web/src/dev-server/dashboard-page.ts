@@ -176,8 +176,8 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
       </div>
     </section>
     ${renderSupportingCurrencySummaries(content.currencySummaries)}
-    ${renderDashboardOverview(content.overview)}
     ${renderCashFlowProjection(content.cashFlowProjection)}
+    ${renderDashboardOverview(content.overview)}
     ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
     ${renderDecisionModules(content.decisionModules)}
     <section class="list-panel">
