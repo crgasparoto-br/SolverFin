@@ -82,7 +82,8 @@ describe("Inbox review archetype", () => {
     assert.match(html, /event.key === "End"/);
     assert.match(html, /window.addEventListener\("popstate", syncLocation\)/);
     assert.match(html, /window.addEventListener\("hashchange", syncLocation\)/);
-    assert.match(html, /data-button-variant="neutral" role="tab"/);
+    assert.match(html, /class="sf-tab sf-focus-ring inbox-tab" role="tab"/);
+    assert.doesNotMatch(html, /data-button-variant="neutral" role="tab"/);
     assert.match(html, /data-button-variant="neutral" type="button">Limpar/);
     assert.match(css, /--sf-color-neutral-control-hover/);
     assert.match(css, /--sf-color-neutral-control-active-hover/);
