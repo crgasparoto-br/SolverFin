@@ -1,4 +1,5 @@
 import { addSafeMoneyMinor } from "@solverfin/domain/money";
+import { financialTodayInSaoPaulo } from "@solverfin/shared";
 import { calculateInvoicePeriod, type TenantContext } from "@solverfin/domain";
 
 import { query } from "../db.js";
@@ -47,6 +48,7 @@ export interface DashboardPayableTotal {
 
 export interface DashboardOverview {
   referenceDate: string;
+  purchaseToday: string;
   purchaseOn: string;
   periodStartOn: string;
   periodEndOn: string;
@@ -159,6 +161,7 @@ export async function buildDashboardOverview(
   now: Date = new Date(),
 ): Promise<DashboardOverview> {
   const referenceDate = now.toISOString().slice(0, 10);
+  const purchaseToday = financialTodayInSaoPaulo(now);
   const periodStartOn = referenceDate.slice(0, 7) + "-01";
   const [year, month] = periodStartOn.split("-").map(Number) as [number, number];
   const periodEndOn = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
@@ -327,6 +330,7 @@ export async function buildDashboardOverview(
   }
   return {
     referenceDate,
+    purchaseToday,
     purchaseOn,
     periodStartOn,
     periodEndOn,
