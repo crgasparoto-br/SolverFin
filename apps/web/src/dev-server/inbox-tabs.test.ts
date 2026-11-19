@@ -69,7 +69,18 @@ describe("Inbox subject tabs", () => {
     let scrolls = 0;
     let href = "http://localhost:5173/inbox?profileId=profile-a&lineStart=2026-11-01";
     const elements = new Map([
-      ["financial-insights", { closest: () => panels.get("insights"), scrollIntoView() { scrolls += 1; } }],
+      [
+        "financial-insights",
+        {
+          closest: (selector: string) =>
+            selector === "[data-inbox-tab-panel]"
+              ? panels.get("insights")
+              : panels.get("insights")?.hidden
+                ? panels.get("insights")
+                : null,
+          scrollIntoView() { scrolls += 1; },
+        },
+      ],
     ]);
     const window = {
       get location() { return new URL(href); },
