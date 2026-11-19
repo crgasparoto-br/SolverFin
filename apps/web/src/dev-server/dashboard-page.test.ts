@@ -61,6 +61,27 @@ describe("dev-server dashboard page", () => {
         });
       }
 
+      if (url.pathname === "/api/dashboard-overview") {
+        return jsonResponse({
+          referenceDate: "2026-07-01", purchaseOn: "2026-07-01",
+          periodStartOn: "2026-07-01", periodEndOn: "2026-07-31",
+          accountBalances: [
+            { id: "brl-primary", name: "Conta Principal", kind: "checking", currency: "BRL", balanceMinor: 450000 },
+            { id: "brl-reserve", name: "Reserva BRL", kind: "investment", currency: "BRL", balanceMinor: 50000 },
+          ],
+          cardSpending: [{ id: "card-a", name: "Cartão Alfa", currency: "BRL", spentMinor: 55000 }],
+          cardAdvice: [
+            { id: "card-a", name: "Cartão Alfa", currency: "BRL", closingOn: "2026-07-13",
+              dueOn: "2026-07-18", daysUntilPayment: 17, recommended: true },
+          ],
+          payables: [{ id: "bill-a", source: "transaction", description: "Conta de internet",
+            currency: "BRL", dueOn: "2026-07-02", amountMinor: 12000, overdue: false }],
+          payableTotals: [{ currency: "BRL", amountMinor: 12000, overdueMinor: 0, count: 1 }],
+          categoryExpenses: [{ currency: "BRL", category: "Alimentação", amountMinor: 9000 }],
+          monthlyTrend: [{ currency: "BRL", month: "2026-07", incomeMinor: 300000, expensesMinor: 150000 }],
+        });
+      }
+
       if (url.pathname === "/api/bank-message-inbox") {
         assert.equal(url.searchParams.get("status"), "pending_review");
         return jsonResponse({ messages: [{ id: "message-1" }] });
@@ -81,6 +102,19 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /Situação financeira atual/);
       assert.match(html, /sem misturar moedas/);
       assert.match(html, /data-quality="complete"/);
+      assert.match(html, /Melhor cartão para comprar hoje/);
+      assert.match(html, /Cartão Alfa/);
+      assert.match(html, /17 <small>dias até o vencimento/);
+      assert.match(html, /Conta de internet/);
+      assert.match(html, /Saldo por conta/);
+      assert.match(html, /Conta corrente/);
+      assert.match(html, /Investimento/);
+      assert.match(html, /Gastos por cartão/);
+      assert.match(html, /Despesas por categoria/);
+      assert.match(html, /Evolução financeira/);
+      assert.match(html, /Simular data da compra/);
+      assert.match(html, /class="dashboard-operations-grid"/);
+
       assert.match(html, /Variação líquida do mês/);
       assert.match(
         html,
