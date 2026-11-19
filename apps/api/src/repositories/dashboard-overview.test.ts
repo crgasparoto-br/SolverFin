@@ -13,14 +13,18 @@ const card = (
 
 describe("dashboard recommended card", () => {
   it("ranks by actual payment delay using the canonical invoice period", () => {
-    const ranked = rankCardsForPurchase([
-      card("inter", 4, 10),
-      card("porto", 13, 18),
-      card("sem-parar", 8, 15),
-    ], "2026-11-19");
-    assert.deepEqual(ranked.map((item) => [item.name, item.daysUntilPayment]), [
-      ["porto", 29], ["sem-parar", 26], ["inter", 21],
-    ]);
+    const ranked = rankCardsForPurchase(
+      [card("inter", 4, 10), card("porto", 13, 18), card("sem-parar", 8, 15)],
+      "2026-11-19",
+    );
+    assert.deepEqual(
+      ranked.map((item) => [item.name, item.daysUntilPayment]),
+      [
+        ["porto", 29],
+        ["sem-parar", 26],
+        ["inter", 21],
+      ],
+    );
     assert.equal(ranked[0]?.dueOn, "2026-12-18");
     assert.equal(ranked[0]?.closingOn, "2026-12-13");
     assert.equal(ranked[0]?.recommended, true);
@@ -44,20 +48,23 @@ describe("dashboard recommended card", () => {
   });
 
   it("excludes blocked, archived and instrument-less cards", () => {
-    const ranked = rankCardsForPurchase([
-      card("blocked", 1, 1, "blocked"),
-      card("archived", 1, 1, "archived"),
-      card("no-instrument", 1, 1, "active", "0"),
-    ], "2026-11-19");
+    const ranked = rankCardsForPurchase(
+      [
+        card("blocked", 1, 1, "blocked"),
+        card("archived", 1, 1, "archived"),
+        card("no-instrument", 1, 1, "active", "0"),
+      ],
+      "2026-11-19",
+    );
     assert.deepEqual(ranked, []);
   });
 
   it("identifies ties without inventing a unique winner", () => {
-    const ranked = rankCardsForPurchase([
-      card("zeta", 12, 19),
-      card("alfa", 12, 19),
-    ], "2026-11-19");
-    assert.deepEqual(ranked.map((item) => item.name), ["alfa", "zeta"]);
+    const ranked = rankCardsForPurchase([card("zeta", 12, 19), card("alfa", 12, 19)], "2026-11-19");
+    assert.deepEqual(
+      ranked.map((item) => item.name),
+      ["alfa", "zeta"],
+    );
     assert.ok(ranked.every((item) => item.recommended));
   });
 

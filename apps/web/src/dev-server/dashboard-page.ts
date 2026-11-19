@@ -70,16 +70,21 @@ function dashboardLoadEntry(token: string, purchaseOn?: string | null): Dashboar
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
     apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
     apiGet<FinancialInsightQueueApiPage>(token, DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE),
-    apiGet<DashboardOverview>(token, `/api/dashboard-overview${purchaseOn ? "?purchaseOn=" + encodeURIComponent(purchaseOn) : ""}`),
-  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights, overview]) => ({
-    summary,
-    cashFlowProjection,
-    pendingReview,
-    openInvoices,
-    financialInsights,
-    overview,
-    filters: {},
-  }));
+    apiGet<DashboardOverview>(
+      token,
+      `/api/dashboard-overview${purchaseOn ? "?purchaseOn=" + encodeURIComponent(purchaseOn) : ""}`,
+    ),
+  ]).then(
+    ([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights, overview]) => ({
+      summary,
+      cashFlowProjection,
+      pendingReview,
+      openInvoices,
+      financialInsights,
+      overview,
+      filters: {},
+    }),
+  );
   const entry: DashboardLoadEntry = { promise };
   dashboardLoads.set(key, entry);
 
@@ -385,7 +390,8 @@ function renderProjectionChart(
   const first = points[0];
   const last = points[points.length - 1];
   if (!first || !last) return "";
-  const description = `Trajetória de caixa de ${formatDateOnly(first.date)} até ${formatDateOnly(last.date)}. ` +
+  const description =
+    `Trajetória de caixa de ${formatDateOnly(first.date)} até ${formatDateOnly(last.date)}. ` +
     `Saldo inicial do gráfico: ${formatMinorCurrency(first.balance.amountMinor, { currency: first.balance.currency })}. ` +
     `Saldo final: ${formatMinorCurrency(last.balance.amountMinor, { currency: last.balance.currency })}.`;
   return `<figure class="dashboard-projection-chart" role="img" aria-label="${escapeHtml(description)}">

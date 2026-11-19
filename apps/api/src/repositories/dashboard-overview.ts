@@ -76,7 +76,11 @@ interface CardRow {
   dueDay: number;
   activeInstruments: string;
 }
-interface SpendRow { cardId: string; currency: string; total: string }
+interface SpendRow {
+  cardId: string;
+  currency: string;
+  total: string;
+}
 interface PayableRow {
   id: string;
   source: "transaction" | "invoice";
@@ -88,42 +92,63 @@ interface PayableRow {
   overdueMinor: string;
   itemCount: number;
 }
-interface CategoryRow { currency: string; category: string; total: string }
-interface TrendRow { currency: string; month: string; kind: string; total: string }
+interface CategoryRow {
+  currency: string;
+  category: string;
+  total: string;
+}
+interface TrendRow {
+  currency: string;
+  month: string;
+  kind: string;
+  total: string;
+}
 
 export function rankCardsForPurchase(
-  cards: readonly Pick<CardRow, "id" | "name" | "currency" | "status" | "closingDay" | "dueDay" | "activeInstruments">[],
+  cards: readonly Pick<
+    CardRow,
+    "id" | "name" | "currency" | "status" | "closingDay" | "dueDay" | "activeInstruments"
+  >[],
   purchaseOn: string,
 ): DashboardCardAdvice[] {
   const eligible = cards.filter(
     (card) => card.status.toLowerCase() === "active" && Number(card.activeInstruments) > 0,
   );
-  const ranked = eligible.map((card) => {
-    const invoice = calculateInvoicePeriod(card, purchaseOn);
-    const daysUntilPayment = Math.round(
-      (Date.parse(invoice.dueOn + "T00:00:00Z") - Date.parse(purchaseOn + "T00:00:00Z")) /
-        86_400_000,
+  const ranked = eligible
+    .map((card) => {
+      const invoice = calculateInvoicePeriod(card, purchaseOn);
+      const daysUntilPayment = Math.round(
+        (Date.parse(invoice.dueOn + "T00:00:00Z") - Date.parse(purchaseOn + "T00:00:00Z")) /
+          86_400_000,
+      );
+      return {
+        id: card.id,
+        name: card.name,
+        currency: card.currency.toUpperCase(),
+        closingOn: invoice.periodEndOn,
+        dueOn: invoice.dueOn,
+        daysUntilPayment,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.daysUntilPayment - a.daysUntilPayment ||
+        a.name.localeCompare(b.name) ||
+        a.id.localeCompare(b.id),
     );
-    return {
-      id: card.id,
-      name: card.name,
-      currency: card.currency.toUpperCase(),
-      closingOn: invoice.periodEndOn,
-      dueOn: invoice.dueOn,
-      daysUntilPayment,
-    };
-  }).sort((a, b) =>
-    b.daysUntilPayment - a.daysUntilPayment || a.name.localeCompare(b.name) || a.id.localeCompare(b.id),
-  );
   const maxDays = ranked[0]?.daysUntilPayment;
   return ranked.map((card) => ({ ...card, recommended: card.daysUntilPayment === maxDays }));
 }
 
-export function validateDashboardPurchaseDate(input: string | null, today: string): string | undefined {
+export function validateDashboardPurchaseDate(
+  input: string | null,
+  today: string,
+): string | undefined {
   if (input === null || input === "") return today;
   if (!/^\d{4}-\d{2}-\d{2}$/.test(input)) return undefined;
   const parsed = new Date(input + "T00:00:00Z");
-  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== input) return undefined;
+  if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== input)
+    return undefined;
   const offsetDays = (parsed.getTime() - Date.parse(today + "T00:00:00Z")) / 86_400_000;
   return offsetDays >= 0 && offsetDays <= 365 ? input : undefined;
 }
@@ -259,13 +284,17 @@ export async function buildDashboardOverview(
 
   const cardNames = new Map(cards.map((card) => [card.id, card]));
   const spends = spending.filter((row) => cardNames.has(row.cardId));
-  const cardSpending = cards.map((card) => ({
-    id: card.id,
-    name: card.name,
-    currency: card.currency,
-    spentMinor: addSafeMoneyMinor(spends.filter((row) => row.cardId === card.id)
-      .map((row) => row.total), "dashboard card spending"),
-  })).sort((a, b) => b.spentMinor - a.spentMinor || a.name.localeCompare(b.name));
+  const cardSpending = cards
+    .map((card) => ({
+      id: card.id,
+      name: card.name,
+      currency: card.currency,
+      spentMinor: addSafeMoneyMinor(
+        spends.filter((row) => row.cardId === card.id).map((row) => row.total),
+        "dashboard card spending",
+      ),
+    }))
+    .sort((a, b) => b.spentMinor - a.spentMinor || a.name.localeCompare(b.name));
   const seenTotals = new Set<string>();
   const payableTotals: DashboardPayableTotal[] = [];
   for (const bill of bills) {
@@ -279,32 +308,50 @@ export async function buildDashboardOverview(
     });
   }
 
-  const monthRows = new Map<string, { currency: string; month: string; incomeMinor: number; expensesMinor: number }>();
+  const monthRows = new Map<
+    string,
+    { currency: string; month: string; incomeMinor: number; expensesMinor: number }
+  >();
   for (const row of trends) {
     const key = row.currency + ":" + row.month;
-    const point = monthRows.get(key) ?? { currency: row.currency, month: row.month, incomeMinor: 0, expensesMinor: 0 };
+    const point = monthRows.get(key) ?? {
+      currency: row.currency,
+      month: row.month,
+      incomeMinor: 0,
+      expensesMinor: 0,
+    };
     const amount = addSafeMoneyMinor([row.total], "dashboard monthly trend");
     if (row.kind === "INCOME") point.incomeMinor = amount;
     if (row.kind === "EXPENSE") point.expensesMinor = amount;
     monthRows.set(key, point);
   }
   return {
-    referenceDate, purchaseOn, periodStartOn, periodEndOn,
+    referenceDate,
+    purchaseOn,
+    periodStartOn,
+    periodEndOn,
     accountBalances: accounts.map((row) => ({
-      id: row.id, name: row.name, kind: row.kind, currency: row.currency,
+      id: row.id,
+      name: row.name,
+      kind: row.kind,
+      currency: row.currency,
       balanceMinor: addSafeMoneyMinor([row.opening, row.movement], "dashboard account balance"),
     })),
     cardSpending,
     cardAdvice: rankCardsForPurchase(cards, purchaseOn),
     payables: bills.map((row) => ({
-      id: row.id, source: row.source, description: row.description,
-      currency: row.currency, dueOn: row.dueOn,
+      id: row.id,
+      source: row.source,
+      description: row.description,
+      currency: row.currency,
+      dueOn: row.dueOn,
       amountMinor: addSafeMoneyMinor([row.amountMinor], "dashboard bill"),
       overdue: row.dueOn < referenceDate,
     })),
     payableTotals,
     categoryExpenses: categories.map((row) => ({
-      currency: row.currency, category: row.category,
+      currency: row.currency,
+      category: row.category,
       amountMinor: addSafeMoneyMinor([row.total], "dashboard expense category"),
     })),
     monthlyTrend: [...monthRows.values()],

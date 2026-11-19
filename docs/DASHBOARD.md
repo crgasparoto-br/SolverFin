@@ -167,7 +167,6 @@ desses cenários são controlados, e não constituem homologação integrada com
 API de produção. O resultado Chrome e as capturas do SHA material corrigido
 precisam de auditoria técnica e visual independente antes do aceite da issue.
 
-
 ## Cockpit operacional e decisão por cartão — issue #811
 
 A refatoração acrescenta três blocos de decisão ao cockpit, preservando

@@ -43,11 +43,17 @@ describe("dev-server dashboard page", () => {
           horizonDays: 30,
           from: "2026-07-02",
           to: "2026-07-31",
-          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000, points: [
-            { date: "2026-07-02", closingBalanceMinor: 490000 },
-            { date: "2026-07-03", closingBalanceMinor: 485000 },
-            { date: "2026-07-31", closingBalanceMinor: 480000 },
-          ] }],
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              closingBalanceMinor: 480000,
+              points: [
+                { date: "2026-07-02", closingBalanceMinor: 490000 },
+                { date: "2026-07-03", closingBalanceMinor: 485000 },
+                { date: "2026-07-31", closingBalanceMinor: 480000 },
+              ],
+            },
+          ],
           freeToSpend: {
             referenceDate: "2026-07-01",
             horizonDays: 30,
@@ -67,22 +73,54 @@ describe("dev-server dashboard page", () => {
 
       if (url.pathname === "/api/dashboard-overview") {
         return jsonResponse({
-          referenceDate: "2026-07-01", purchaseOn: "2026-07-01",
-          periodStartOn: "2026-07-01", periodEndOn: "2026-07-31",
+          referenceDate: "2026-07-01",
+          purchaseOn: "2026-07-01",
+          periodStartOn: "2026-07-01",
+          periodEndOn: "2026-07-31",
           accountBalances: [
-            { id: "brl-primary", name: "Conta Principal", kind: "checking", currency: "BRL", balanceMinor: 450000 },
-            { id: "brl-reserve", name: "Reserva BRL", kind: "investment", currency: "BRL", balanceMinor: 50000 },
+            {
+              id: "brl-primary",
+              name: "Conta Principal",
+              kind: "checking",
+              currency: "BRL",
+              balanceMinor: 450000,
+            },
+            {
+              id: "brl-reserve",
+              name: "Reserva BRL",
+              kind: "investment",
+              currency: "BRL",
+              balanceMinor: 50000,
+            },
           ],
           cardSpending: [{ id: "card-a", name: "Cartão Alfa", currency: "BRL", spentMinor: 55000 }],
           cardAdvice: [
-            { id: "card-a", name: "Cartão Alfa", currency: "BRL", closingOn: "2026-07-13",
-              dueOn: "2026-07-18", daysUntilPayment: 17, recommended: true },
+            {
+              id: "card-a",
+              name: "Cartão Alfa",
+              currency: "BRL",
+              closingOn: "2026-07-13",
+              dueOn: "2026-07-18",
+              daysUntilPayment: 17,
+              recommended: true,
+            },
           ],
-          payables: [{ id: "bill-a", source: "transaction", description: "Conta de internet",
-            currency: "BRL", dueOn: "2026-07-02", amountMinor: 12000, overdue: false }],
+          payables: [
+            {
+              id: "bill-a",
+              source: "transaction",
+              description: "Conta de internet",
+              currency: "BRL",
+              dueOn: "2026-07-02",
+              amountMinor: 12000,
+              overdue: false,
+            },
+          ],
           payableTotals: [{ currency: "BRL", amountMinor: 12000, overdueMinor: 0, count: 1 }],
           categoryExpenses: [{ currency: "BRL", category: "Alimentação", amountMinor: 9000 }],
-          monthlyTrend: [{ currency: "BRL", month: "2026-07", incomeMinor: 300000, expensesMinor: 150000 }],
+          monthlyTrend: [
+            { currency: "BRL", month: "2026-07", incomeMinor: 300000, expensesMinor: 150000 },
+          ],
         });
       }
 

@@ -397,7 +397,8 @@ function presentCashFlowProjection(
         currency: block.currency,
         closingBalance: money(block.closingBalanceMinor, block.currency),
         points: (block.points ?? []).map((point) => ({
-          date: point.date, balance: money(point.closingBalanceMinor, block.currency),
+          date: point.date,
+          balance: money(point.closingBalanceMinor, block.currency),
         })),
         freeToSpend:
           freeToSpend?.status === "available"
@@ -489,7 +490,9 @@ function decisionModules(): DashboardDecisionModuleViewModel[] {
 function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenance[] {
   return [
     provenance("/api/financial-summary", input.summary.ok),
-    ...(input.overview === undefined ? [] : [provenance("/api/dashboard-overview", input.overview.ok)]),
+    ...(input.overview === undefined
+      ? []
+      : [provenance("/api/dashboard-overview", input.overview.ok)]),
     provenance("/api/cash-flow-projection?horizonDays=30", input.cashFlowProjection.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
