@@ -1,0 +1,195 @@
+{
+  "schema_version": 2,
+  "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+  "creations": [
+    {
+      "path": "apps/web/src/dev-server/inbox-tabs.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "git grep renderTabs in design-system primitives and page renderers",
+          "git grep role=\"tablist\" and existing Inbox anchor navigation"
+        ],
+        "scope": "Searched exact base 56e7549df6262c91173bf5bb250b722ba5b80c01 apps/web/src/design-system/primitives.ts, styles.ts, apps/web/src/dev-server/inbox-review-archetype.ts, inbox-interface-enhancement.ts and head.",
+        "candidates": [
+          {
+            "path": "apps/web/src/design-system/primitives.ts",
+            "reason_not_reused": "renderTabs() produces navigation links using aria-current, not in-place ARIA tab/panel interaction. Existing styling tokens are reused."
+          },
+          {
+            "path": "apps/web/src/dev-server/inbox-interface-enhancement.ts",
+            "reason_not_reused": "Legacy anchors scroll to sections; they cannot preserve exclusive hidden panels with roving tabindex and history per tab."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "A dedicated small controller is needed because the existing renderTabs navigation helper does not implement ARIA tab switch semantics. It reuses CSS tokens and integrates with existing SSR controllers."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "renderInboxTabNavigation",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/inbox-tabs.ts",
+        "line": 25
+      },
+      "verified_by": {
+        "command": "npm run test",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "renderInboxTabPanel",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/inbox-tabs.ts",
+        "line": 51
+      },
+      "verified_by": {
+        "command": "npm run test",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "inboxTabRuntimeScript",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/inbox-tabs.ts",
+        "line": 128
+      },
+      "verified_by": {
+        "command": "npm run test",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "resolveInboxInitialTab",
+      "kind": "local",
+      "used_in": "apps/web/src/dev-server/inbox-page.ts",
+      "defined_at": {
+        "path": "apps/web/src/dev-server/inbox-tabs.ts",
+        "line": 19
+      },
+      "verified_by": {
+        "command": "npm run test",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+      "operation": "modified",
+      "scenario": "Canonical category hierarchy is mounted on initial inbox tab and not duplicated by activating another tab",
+      "requirement": "issue #806 accessible Inbox tabs, contextual actions, prior review and import contracts",
+      "search": {
+        "queries": [
+          "locate prior Inbox SSR and keyboard tests",
+          "locate hierarchical category and import view regressions"
+        ],
+        "scope": "git grep in base 56e7549df6262c91173bf5bb250b722ba5b80c01 and head ac25e1c390008575bb9a11395f61cd90303ae52b under apps/web/src/dev-server and scripts/statement-visual; node test runner invoked by npm run test",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+            "case": "SSR hierarchy baseline and accessibility assertions available before issue #806",
+            "oracle": "Before this change, this test asserted canonical review composition and hierarchy but not per-tab keyboard state.",
+            "comparison": "Existing SSR assertions extended if source test was modified; independent tab state/historical links require the new VM test."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend the pre-existing test at its original path to assert the changed DOM and interaction contracts rather than add duplicate fixtures.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-806/evidence/ground-tests-806-unit-reachability.txt",
+        "evidence_sha256": "403dd3f212a3fd8a522599275195034d1d00c8e2eeb41328e0f0f0014e4336a5"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+      "operation": "modified",
+      "scenario": "SSR four tab panels, distinct contextual actions, no globally duplicated section and selected aria state",
+      "requirement": "issue #806 accessible Inbox tabs, contextual actions, prior review and import contracts",
+      "search": {
+        "queries": [
+          "locate prior Inbox SSR and keyboard tests",
+          "locate hierarchical category and import view regressions"
+        ],
+        "scope": "git grep in base 56e7549df6262c91173bf5bb250b722ba5b80c01 and head ac25e1c390008575bb9a11395f61cd90303ae52b under apps/web/src/dev-server and scripts/statement-visual; node test runner invoked by npm run test",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+            "case": "SSR hierarchy baseline and accessibility assertions available before issue #806",
+            "oracle": "Before this change, this test asserted canonical review composition and hierarchy but not per-tab keyboard state.",
+            "comparison": "Existing SSR assertions extended if source test was modified; independent tab state/historical links require the new VM test."
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Extend the pre-existing test at its original path to assert the changed DOM and interaction contracts rather than add duplicate fixtures.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-review-archetype.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-806/evidence/ground-tests-806-unit-reachability.txt",
+        "evidence_sha256": "403dd3f212a3fd8a522599275195034d1d00c8e2eeb41328e0f0f0014e4336a5"
+      }
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-tabs.test.ts",
+      "operation": "added",
+      "scenario": "Tab semantics including Home/End, click, deep links and history, inactive DOM preserved",
+      "requirement": "issue #806 accessible Inbox tabs, contextual actions, prior review and import contracts",
+      "search": {
+        "queries": [
+          "locate prior Inbox SSR and keyboard tests",
+          "locate hierarchical category and import view regressions"
+        ],
+        "scope": "git grep in base 56e7549df6262c91173bf5bb250b722ba5b80c01 and head ac25e1c390008575bb9a11395f61cd90303ae52b under apps/web/src/dev-server and scripts/statement-visual; node test runner invoked by npm run test",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+            "case": "SSR hierarchy baseline and accessibility assertions available before issue #806",
+            "oracle": "Before this change, this test asserted canonical review composition and hierarchy but not per-tab keyboard state.",
+            "comparison": "Existing SSR assertions extended if source test was modified; independent tab state/historical links require the new VM test."
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "If URL query is lost, hidden count differs from 3, history changes unexpectedly or ArrowRight does not focus Messages, this VM test fails.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+        "reached_tests": [
+          "apps/web/src/dev-server/inbox-tabs.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-806/evidence/ground-tests-806-unit-reachability.txt",
+        "evidence_sha256": "403dd3f212a3fd8a522599275195034d1d00c8e2eeb41328e0f0f0014e4336a5"
+      }
+    }
+  ]
+}

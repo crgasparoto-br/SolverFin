@@ -1,0 +1,45 @@
+{
+  "generatedAt": "2026-11-19T17:56:54.407Z",
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "browser": "Google Chrome 157.0.8103.78",
+  "batchId": "06b6d0d8-2b01-4457-acbf-1619bedc579e",
+  "clickability": {
+    "width": 133.859375,
+    "height": 34,
+    "disabled": false,
+    "pointerEvents": "auto",
+    "hitId": "apply-inbox-date-filters",
+    "centerX": 1077.5078125,
+    "centerY": 628.71875
+  },
+  "range": {
+    "visibleDates": [
+      "10/07/2026",
+      "15/07/2026",
+      "20/07/2026"
+    ],
+    "counter": "3 de 4 linha(s)",
+    "lineStart": "2026-07-10",
+    "lineEnd": "2026-07-20"
+  },
+  "singleDay": {
+    "visibleDates": [
+      "15/07/2026"
+    ],
+    "counter": "1 de 4 linha(s)",
+    "lineStart": "2026-07-15",
+    "lineEnd": "2026-07-15"
+  },
+  "cleared": {
+    "visibleDates": [
+      "01/07/2026",
+      "10/07/2026",
+      "15/07/2026",
+      "20/07/2026"
+    ],
+    "counter": "4 de 4 linha(s)",
+    "lineStart": null,
+    "lineEnd": null
+  },
+  "screenshot": "inbox-date-filter-1366x768.png"
+}

@@ -1,0 +1,257 @@
+{
+  "schema_version": 1,
+  "head_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "families": [
+    {
+      "family": "authorization",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-014-01",
+        "NC-806-023-01",
+        "NC-806-024-01",
+        "NC-806-029-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "certificate-subject-authenticity",
+          "reason": "OBL-029 checks **Distinção de gates:** esses checkboxes atestam a verificação técnica/visual dos respecti against exact-SHA evidence/independent-audit-807-report.json and source docs/BANK_MESSAGE_INBOX.md:25",
+          "control_ids": [
+            "NC-806-023-01",
+            "NC-806-024-01",
+            "NC-806-029-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "review-evidence-approval",
+          "reason": "OBL-014 checks Não somar moedas diferentes nem alterar valores, autenticação, tenant/perfil financeiro ou against exact-SHA evidence/issue-565-ai-review-queue.json and source apps/web/src/dev-server/inbox-review-archetype.ts:91",
+          "control_ids": [
+            "NC-806-014-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "tenant-isolation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-016-01",
+        "NC-806-023-03"
+      ],
+      "dimensions": [
+        {
+          "surface": "issue-pr-audit-subject-isolation",
+          "reason": "OBL-023 checks **Bloqueio de auditoria:** os checks [Verify certified handoff provenance #44554961495](ht against exact-SHA evidence/independent-audit-807-report.json and source .audit/entregar-issue/handoff-ready.json:1",
+          "control_ids": [
+            "NC-806-016-01",
+            "NC-806-023-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "public-boundary",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "reference-liveness",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-028-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "certificate-and-current-head",
+          "reason": "OBL-028 checks **Qualidade:** validador oficial `CODE-GROWTH-001` aprovado no SHA material com 12 arquivo against exact-SHA evidence/ci-exact-head.json and source scripts/statement-visual/inbox-interface-accessibility.mjs:1",
+          "control_ids": [
+            "NC-806-028-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-consistency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-003-01",
+        "NC-806-010-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "inbox-filter-timeline",
+          "reason": "OBL-010 checks [x] Insights exibem seus estados, ações e paginação; âncoras e URLs existentes (`#financia against exact-SHA evidence/inbox-date-filter.json and source apps/web/src/dev-server/inbox-tabs.ts:144",
+          "control_ids": [
+            "NC-806-003-01",
+            "NC-806-010-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "temporal-destination",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-010-02"
+      ],
+      "dimensions": [
+        {
+          "surface": "url-period-navigation",
+          "reason": "OBL-010 checks [x] Insights exibem seus estados, ações e paginação; âncoras e URLs existentes (`#financia against exact-SHA evidence/inbox-date-filter.json and source apps/web/src/dev-server/inbox-tabs.ts:144",
+          "control_ids": [
+            "NC-806-010-02"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "concurrency-atomicity",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "idempotency",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-007-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "duplicate-processing",
+          "reason": "OBL-007 checks [x] A Inbox apresenta quatro abas temáticas acessíveis; somente o painel selecionado fica  against exact-SHA evidence/issue-565-ai-review-queue.json and source apps/web/src/dev-server/inbox-tabs.ts:51",
+          "control_ids": [
+            "NC-806-007-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "rollback",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "historical-immutability",
+      "applicable": false,
+      "reason": "No current contract or diff signal requires this family.",
+      "control_ids": [],
+      "dimensions": [],
+      "status": "not-applicable"
+    },
+    {
+      "family": "structural-contract",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-001-01",
+        "NC-806-002-01",
+        "NC-806-004-01",
+        "NC-806-005-01",
+        "NC-806-006-01",
+        "NC-806-008-01",
+        "NC-806-009-01",
+        "NC-806-011-01",
+        "NC-806-012-01",
+        "NC-806-013-01",
+        "NC-806-014-02",
+        "NC-806-014-03",
+        "NC-806-015-01",
+        "NC-806-017-01",
+        "NC-806-018-01",
+        "NC-806-019-01",
+        "NC-806-021-01",
+        "NC-806-022-01",
+        "NC-806-023-02",
+        "NC-806-025-01",
+        "NC-806-026-01",
+        "NC-806-027-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "inbox-canonical-dom",
+          "reason": "OBL-027 checks **Teste de contrato e histórico:** `apps/web/src/dev-server/inbox-tabs.test.ts` executado  against exact-SHA evidence/issue-565-ai-review-queue.json and source apps/web/src/dev-server/inbox-tabs.test.ts:15",
+          "control_ids": [
+            "NC-806-001-01",
+            "NC-806-002-01",
+            "NC-806-004-01",
+            "NC-806-005-01",
+            "NC-806-006-01",
+            "NC-806-008-01",
+            "NC-806-009-01",
+            "NC-806-011-01",
+            "NC-806-012-01",
+            "NC-806-013-01",
+            "NC-806-014-02",
+            "NC-806-015-01",
+            "NC-806-017-01",
+            "NC-806-018-01",
+            "NC-806-019-01",
+            "NC-806-021-01",
+            "NC-806-022-01",
+            "NC-806-023-02",
+            "NC-806-025-01",
+            "NC-806-026-01",
+            "NC-806-027-01"
+          ],
+          "status": "passed"
+        },
+        {
+          "surface": "relational-semantic-integrity",
+          "reason": "OBL-014 checks Não somar moedas diferentes nem alterar valores, autenticação, tenant/perfil financeiro ou against exact-SHA evidence/issue-565-ai-review-queue.json and source apps/web/src/dev-server/inbox-review-archetype.ts:91",
+          "control_ids": [
+            "NC-806-014-03"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    },
+    {
+      "family": "documentation",
+      "applicable": true,
+      "reason": "Derived from requirement attack matrix.",
+      "control_ids": [
+        "NC-806-020-01"
+      ],
+      "dimensions": [
+        {
+          "surface": "inbox-navigation-documentation",
+          "reason": "OBL-020 checks [x] Documentação de comportamento de navegação atualizada se necessária. against exact-SHA evidence/ci-exact-head.json and source docs/BANK_MESSAGE_INBOX.md:11",
+          "control_ids": [
+            "NC-806-020-01"
+          ],
+          "status": "passed"
+        }
+      ],
+      "status": "passed"
+    }
+  ],
+  "material_families_missing_controls": []
+}

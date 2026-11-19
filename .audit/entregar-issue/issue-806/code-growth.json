@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "control_id": "CODE-GROWTH-001",
+  "status": "passed",
+  "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+  "comparison_base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+  "policy": {
+    "new_file_soft_limit": 300,
+    "new_file_hard_limit": 500,
+    "legacy_growth_allowance": 20,
+    "exempt_path_markers": [
+      "/vendor/",
+      "/node_modules/",
+      "/third_party/",
+      "/migrations/"
+    ],
+    "source": "default"
+  },
+  "files": [
+    {
+      "path": "apps/web/src/dev-server/inbox-page.ts",
+      "lines_before": 1191,
+      "lines_after": 1196
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "lines_before": 500,
+      "lines_after": 460
+    },
+    {
+      "path": "apps/web/src/dev-server/inbox-tabs.ts",
+      "lines_before": null,
+      "lines_after": 207
+    },
+    {
+      "path": "apps/web/src/dev-server/shared-styles.ts",
+      "lines_before": 560,
+      "lines_after": 560
+    },
+    {
+      "path": "scripts/statement-visual/bank-message-ai-inbox.mjs",
+      "lines_before": 406,
+      "lines_after": 420
+    },
+    {
+      "path": "scripts/statement-visual/inbox-date-filter.mjs",
+      "lines_before": 226,
+      "lines_after": 227
+    },
+    {
+      "path": "scripts/statement-visual/inbox-interface-accessibility.mjs",
+      "lines_before": 500,
+      "lines_after": 500
+    },
+    {
+      "path": "scripts/statement-visual/inbox-interface-refinement.mjs",
+      "lines_before": 348,
+      "lines_after": 351
+    },
+    {
+      "path": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "lines_before": 490,
+      "lines_after": 490
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "lines_before": 252,
+      "lines_after": 264
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+      "lines_before": 191,
+      "lines_after": 197
+    },
+    {
+      "path": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+      "lines_before": 286,
+      "lines_after": 289
+    }
+  ],
+  "blocking_files": []
+}

@@ -1,0 +1,1944 @@
+{
+  "schema_version": 3,
+  "specification_snapshot": {
+    "path": ".audit/entregar-issue/issue-806/specification-snapshot.json",
+    "sha256": "30d3765c0fa0311732972a38d337bf3d8c051c46cb858f3e3ade1f430e1a07c3"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-806",
+  "obligations": [
+    {
+      "id": "OBL-001",
+      "candidate_key": "e9d7624a0fbd4558207e4c3f5b63cd403e2cd99b6208d74fd596c9a502ed5350",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 5,
+      "source_text": "Refatorar a experiência da Inbox com abas temáticas, ações contextuais e o acabamento Golden Screen, preservando o fluxo financeiro e os contratos existentes.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-001"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Four themed tabs are present in one A6 cockpit; revealing the inactive imports panel invalidates the isolation invariant. Positive evidence/issue-565-ai-review-queue.json -> True; negative evidence/issue-565-ai-review-queue.json -> {'baseline': True, 'attackRejected': True, 'restored': True}. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:89. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-002",
+      "candidate_key": "fbebab3ce08a4a8ef6f012d9f7fabc2ec168b744ddb639064b7e9cd45ca0d686",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 8,
+      "source_text": "Separar a página em quatro abas: Revisões, Importações, Mensagens e Insights.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-002"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: The JS and HTML contain exactly four roles with Revisões, Importações, Mensagens, Insights and link IDs. Positive evidence/issue-565-ai-review-queue.json -> True; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-tabs.ts:7. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-003",
+      "candidate_key": "f2a0d79081d833e51aee8385e0cc53f7f4ff2fd37c565249a2431a885adefc92",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 9,
+      "source_text": "Exibir apenas o painel ativo, mantendo os demais montados para preservar o funcionamento das integrações e seus estados durante a troca de abas.",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "temporal"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-003"
+      ],
+      "inventory_ids": [
+        "INV-806003"
+      ],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Four mounted panels remain in the DOM; hidden flags change and the negative forced-reveal attack is detected. Positive evidence/issue-565-ai-review-queue.json -> {'baseline': True, 'attackRejected': True, 'restored': True}; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-tabs.ts:168. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-004",
+      "candidate_key": "c91e08ad6040e74a79533de6bbd2926c5f153fae3610653fd8e6746abc28a7ab",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 10,
+      "source_text": "Posicionar os comandos de registrar mensagem e importar extrato nos respectivos contextos.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-004"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Import button belongs to imports and message button to Messages; message retry opens its own dialog. Positive evidence/issue-565-ai-review-queue.json -> True; negative evidence/issue-563-bank-message-ai-inbox.json -> {'open': True, 'textareaEmpty': True, 'textareaFocused': True, 'origin': 'shared', 'consentChecked': False}. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:73. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-005",
+      "candidate_key": "87f053d9dc5e0821647a6b35e4df2b2edcb691c716cd069ca57dec593b13102e",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 11,
+      "source_text": "Preservar links diretos, seleção e detalhes de importação, fila de revisão e navegação para insights.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-005"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: A URL containing importBatchId focuses the imported batch; review URL retains active filters/profile. Positive evidence/issue-548-inbox-ofx-review.json -> True; negative evidence/issue-565-ai-review-queue.json -> {'before': '?kind=transaction_extraction&status=pending_review&confidence=all&tab=reviews', 'after': '?kind=transaction_extraction&confidence=low&tab=reviews', 'confidencePersisted': True, 'profilePreserved': True}. Canonical source apps/web/src/dev-server/inbox-tabs.ts:153. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-006",
+      "candidate_key": "0e7714b4ed05109462db937fb79c3a2342d1adbc96ed2564fc93d7852795f457",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 12,
+      "source_text": "Adicionar testes focados e adequar os testes visuais impactados pela mudança intencional de navegação.",
+      "flags": [
+        "semantic-effect"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-006"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-806006"
+      ],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Focused unit tests and the 77 registered Chrome scenarios execute at the final SHA; original red scenarios are historical regression input. Positive evidence/visual-gate-index.json -> ; negative evidence/independent-audit-807-report.json -> A-001, A-002, A-003. Canonical source apps/web/src/dev-server/inbox-tabs.test.ts:49. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-007",
+      "candidate_key": "9b327007defa5d9f399cbde7488db5de9930d7a39eb2cf5486960aa33dc40971",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 19,
+      "source_text": "[x] A Inbox apresenta quatro abas temáticas acessíveis; somente o painel selecionado fica visível e a troca não duplica conteúdo.",
+      "flags": [
+        "observable",
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-007"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-806007"
+      ],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Exactly four linked tabpanels and one visible panel; manual reveal of the imports panel makes the guard fail. Positive evidence/issue-565-ai-review-queue.json -> True; negative evidence/issue-565-ai-review-queue.json -> {'baseline': True, 'attackRejected': True, 'restored': True}. Canonical source apps/web/src/dev-server/inbox-tabs.ts:51. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-008",
+      "candidate_key": "a84bb5221ea6c980638e74903804ba00239f22f855b5b916f23ac63989380118",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 20,
+      "source_text": "[x] A fila de revisão conserva filtros, evidência selecionada, decisões e bloqueio de ações quando a evidência não estiver visível.",
+      "flags": [
+        "observable",
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-008"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-806008"
+      ],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Visible approval reaches one confirmed request; hidden/clipped/inert evidence blocks requests at zero posts. Positive evidence/issue-565-ai-review-queue.json -> 14 cases, hidden approval posts=0; negative evidence/issue-565-ai-review-queue.json -> {'action': 'approve', 'changed': True, 'posts': 0, 'original': 'db-fp-v1-ad00731cd93b2534e192326a6767f22d, {'action': 'approve', 'changed': False, 'posts': 1, 'original': 'db-fp-v1-ad00731cd93b2534e192326a6767f22, {'action': 'reject', 'changed': True, 'posts': 0, 'original': 'db-fp-v1-ad00731cd93b2534e192326a6767f22df, {'action': 'reject', 'changed': False, 'posts': 1, 'original': 'db-fp-v1-ad00731cd93b2534e192326a6767f22d. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:64. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-009",
+      "candidate_key": "ff869d7f97e3a09a4a5c701fda562f131a831782d49f8789c8fdddda0ef9a1bc",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 21,
+      "source_text": "[x] Importações CSV/OFX e mensagens preservam seus fluxos e exibem a ação de entrada no contexto correto, sem menu global redundante.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-009"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: OFX import navigates to the batch; malformed CSV edit preserves dialog state and actionable validation error. Positive evidence/issue-548-inbox-ofx-review.json -> {'href': 'http://127.0.0.1:5173/inbox?importBatchId=be54a5b2-d382-4a34-9a4f-2bc6a56142d7', 'listText': 'issue-548-ofx-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026hierarquia-mwnuqm8l.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026attachment-import-mwnuorum.csvCSV · Em revisão · 1 linha(s); negative evidence/issue-494-inbox-csv-review.json -> {'open': True, 'description': 'Valor preservado após erro', 'amount': '0', 'status': 'Valor precisa ser um inteiro positivo em centavos.'}. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:72. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-010",
+      "candidate_key": "d01ac6feb5c94caebc47d70f6ca464d66c3ccc8747bf27fad25f8784becf4ac7",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 22,
+      "source_text": "[x] Insights exibem seus estados, ações e paginação; âncoras e URLs existentes (`#financial-insights`, `?importBatchId=...`, filtros de período e `profileId`) continuam alcançando o assunto correto.",
+      "flags": [
+        "temporal",
+        "temporal-destination"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-010"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Date range visibly narrows four lines to one and clearing resets to four; history anchor resolution is tested in tabs VM. Positive evidence/inbox-date-filter.json -> {'visibleDates': ['15/07/2026'], 'counter': '1 de 4 linha(s)', 'lineStart': '2026-07-15', 'lineEnd': '2026-07-15'}; negative evidence/inbox-date-filter.json -> {'visibleDates': ['01/07/2026', '10/07/2026', '15/07/2026', '20/07/2026'], 'counter': '4 de 4 linha(s)', 'lineStart': None, 'lineEnd': None}. Canonical source apps/web/src/dev-server/inbox-tabs.ts:144. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-011",
+      "candidate_key": "1b795aafda5d8fa1092ee4ff622086c249c6dcbca11015275cb8b6d65b912dcd",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 23,
+      "source_text": "[x] Navegação por teclado e leitor de tela usa semântica de abas, foco visível, setas/Home/End, seleção acessível e estados corretos.",
+      "flags": [
+        "observable"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-011"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [
+        "OBS-806011"
+      ],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: ArrowRight and Home change focus and selected panel, and the original review panel is restored. Positive evidence/issue-565-ai-review-queue.json -> {'arrow': True, 'home': True, 'actionVisible': True, 'restored': True}; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-tabs.ts:185. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-012",
+      "candidate_key": "7e902178dfa5501a1886300ab68e7c91f1a879080e5c3d7349a70d97295d1be1",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 24,
+      "source_text": "[x] Layout atende desktop/mobile com rolagem horizontal apenas nas abas quando necessário, sem overflow do viewport e utilizando tokens do Golden Screen.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-012"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: At 390px document width is 375px; tablist scrollWidth 406 > clientWidth 355; forced grid overflow 162px is detected. Positive evidence/issue-525-inbox-interface-refinement.json -> {'documentScrollWidth': 375, 'documentClientWidth': 375, 'bulkWidth': 337, 'bulkLabelWidth': 177, 'bulkButtonWidth': 194}; negative evidence/issue-565-ai-review-queue.json -> {'viewport': '390x844', 'baseline': {'cardWidth': 355, 'cardRight': 365, 'buttonLeft': 12, 'buttonRight': 119, 'gridColumns': '353px', 'overflowPx': 0, 'contained': True, 'hitTarget': True}, 'attack': {'cardWidth': 355, 'cardRight': 365, 'buttonLeft': 420, 'buttonRight': 527, 'gridColumns': '150px 240px 140px', 'overflowPx': 162. Canonical source apps/web/src/dev-server/inbox-tabs.ts:69. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-013",
+      "candidate_key": "790e58e34f68ed392e378006b2f92fc1aebeacc27269d2ec735fcd643a66bce2",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 25,
+      "source_text": "[x] Testes de regressão e verificações disponíveis são executados; eventual bloqueio de evidência visual/CI é explicitado sem confundir com aprovação independente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-013"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: CI and Chrome green only attest technical execution; prior independent rejection remains a separate blocking finding. Positive evidence/ci-exact-head.json -> success; negative evidence/independent-audit-807-report.json -> REPROVADA. Canonical source apps/web/src/dev-server/inbox-review-archetype.test.ts:70. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-014",
+      "candidate_key": "a2aca03a99a57db449b0ea5366951429d4f2c24b732c89f2ba56f546a04a6b9e",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 28,
+      "source_text": "Não somar moedas diferentes nem alterar valores, autenticação, tenant/perfil financeiro ou decisões de aprovação/rejeição.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-014"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: No API/prisma/schema source changed in the PR; negative approval visibility/fingerprint controls reject unauthorized side effects. Positive evidence/issue-565-ai-review-queue.json -> 14 cases, hidden approval posts=0; negative evidence/ci-exact-head.json -> Enforce complete repository formatting, Run npm run lint, Run npm run typecheck, Run npm run test, Run npm run test:integration --workspace @solverfin/api. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:91. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-015",
+      "candidate_key": "782556d30f3d4a8187db534876d5471ae30f572329c059b94278bdf76ad10f8f",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 29,
+      "source_text": "Preservar o conteúdo e os identificadores de integração atuais da Inbox e evitar novo pós-processamento de HTML.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-015"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Existing A6 review and imports renderer identifiers are preserved while panel wrappers are generated in SSR, not a new postprocessor. Positive evidence/issue-565-ai-review-queue.json -> {'baseline': True, 'attackRejected': True, 'restored': True}; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-review-archetype.ts:91. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-016",
+      "candidate_key": "11efd63b5980f9b4daacf550c69c7735016abd9a21ecbbad6dc3f3ba5229a68c",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 30,
+      "source_text": "Não tratar CI verde ou teste estático isolado como aprovação visual ou auditoria independente.",
+      "flags": [
+        "negative",
+        "isolation"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-016"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Independent A-003 rejection remains separate despite technical CI success and all issue checkboxes checked. Positive evidence/independent-audit-807-report.json -> REPROVADA; negative evidence/ci-exact-head.json -> foreign inherited handoff from issue 695, PR 796; not yet certified for issue 806. Canonical source docs/BANK_MESSAGE_INBOX.md:25. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-017",
+      "candidate_key": "b5599148352a939de22a58ae2445ebef723c4ff6a216cc928faa4728809d35b2",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 33,
+      "source_text": "[x] Testes unitários, de rota e acessibilidade afetados.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-017"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: GitHub CRITICAL job executed npm run test; focused three tab VM cases passed, Chrome accessibility scenario also passed. Positive evidence/ci-exact-head.json -> Enforce complete repository formatting, Run npm run lint, Run npm run typecheck, Run npm run test, Run npm run test:integration --workspace @solverfin/api; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-tabs.test.ts:34. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-018",
+      "candidate_key": "ffbc7e45dc7f7dbe661c2553d0a47c73fb6bfbb2767ed4a69d73b7ee348bf684",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 34,
+      "source_text": "[x] Lint, typecheck, build e testes aplicáveis ao frontend.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-018"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Prettier, eslint, TypeScript, unit/integration and build steps each passed on final SHA; prior CI partial success was not accepted. Positive evidence/ci-exact-head.json -> Enforce complete repository formatting, Run npm run lint, Run npm run typecheck, Run npm run test, Run npm run test:integration --workspace @solverfin/api; negative evidence/independent-audit-807-report.json -> A-001, A-002, A-003. Canonical source apps/web/src/dev-server/inbox-tabs.test.ts:49. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-019",
+      "candidate_key": "d9d848b9d67a2f0c8d300223969d5d93ca332810efb89fab8351b85ac84eacad",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 35,
+      "source_text": "[x] Inspeção visual desktop/mobile e dos estados de hover, foco, ativo, disabled, conteúdo longo e vazios.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-019"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Touch height, neutral/selected styles, disabled focus and keyboard checks passed on 390px and 1366px; induced overflow fails. Positive evidence/issue-565-ai-review-queue.json -> {'viewport': '390x844', 'complete': True, 'row': {'background': 'rgb(255, 255, 255)', 'color': 'rgb(15, 61, 76)', 'border': 'rgb(226, 232, 240)', 'bottomBorder': 'rgb(226, 232, 240)', 'minTouchHeight': True, 'actualHeight': 44}, 'nav': {'background': 'rgba(0, 0, 0, 0)', 'color': 'rgb(71, 85, 105)', 'border': 'rgb(71, 85, 105)', ; negative evidence/issue-565-ai-review-queue.json -> {'viewport': '390x844', 'baseline': {'cardWidth': 355, 'cardRight': 365, 'buttonLeft': 12, 'buttonRight': 119, 'gridColumns': '353px', 'overflowPx': 0, 'contained': True, 'hitTarget': True}, 'attack': {'cardWidth': 355, 'cardRight': 365, 'buttonLeft': 420, 'buttonRight': 527, 'gridColumns': '150px 240px 140px', 'overflowPx': 162. Canonical source scripts/statement-visual/issue-726-golden-controls.mjs:4. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-020",
+      "candidate_key": "02d4555c07004ec5e7184cd2e761213ec27dce8934e99daaf8b735a52e388c2f",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 36,
+      "source_text": "[x] Documentação de comportamento de navegação atualizada se necessária.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-020"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: BANK_MESSAGE_INBOX.md now describes four tabs, URLs, retained DOM and contextual actions in lines 11-28 and is covered by CI. Positive evidence/ci-exact-head.json -> success; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source docs/BANK_MESSAGE_INBOX.md:11. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-021",
+      "candidate_key": "e2b4c4887c96dd298e0f08866b50591f4cd90afffb2f0aa18d09504d8d750add",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 39,
+      "source_text": "A rota já combina controladores legados de revisão/importação; os painéis inativos devem ser ocultos sem desmontar sua árvore DOM. O servidor não recebe fragmentos da URL, portanto âncoras precisam de resolução no cliente.",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-021"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: The tab runtime resolves URL fragment after mount; inactive panels remain hidden not removed, and browser history sync is tested. Positive evidence/issue-565-ai-review-queue.json -> {'baseline': True, 'attackRejected': True, 'restored': True}; negative evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run. Canonical source apps/web/src/dev-server/inbox-tabs.ts:197. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-022",
+      "candidate_key": "af98e8fc39784ba310863e6071088d5c9dc7593595233cac94af923a846c20e3",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 51,
+      "source_text": "**Aguardando comprovação visual:** [Statement visual validation #44554961440](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961440) em Chrome; permanecerão abertos os critérios que exigem comprovação real do layout/fluxo e foco.",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-022"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: The earlier visual CI failure was disclosed; after A-001/A-002 patch all 77 scenarios passed with no failures. Positive evidence/visual-gate-index.json -> ; negative evidence/independent-audit-807-report.json -> A-001, A-002, A-003. Canonical source scripts/statement-visual/issue-726-golden-state-matrix.mjs:55. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-023",
+      "candidate_key": "1d787fd6e30144a69f2519a52c198d0e6a32e1caf0d5efc608d144f0cc17ca28",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 52,
+      "source_text": "**Bloqueio de auditoria:** os checks [Verify certified handoff provenance #44554961495](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961495) e [Session review evidence #44554961447](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961447) reprovam porque o pacote `.audit/entregar-issue` herdado não corresponde à issue #806/PR #807/HEAD exato. Não reutilizar certificado de outra issue, não fechar issue nem efetuar merge até novo handoff autenticado e auditoria independente.",
+      "flags": [
+        "negative",
+        "isolation",
+        "structural"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-023"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Foreign subject from #695/#796 is flagged, never reused for #806/#807, release remains blocked before a fresh certificate. Positive evidence/ci-exact-head.json -> foreign inherited handoff from issue 695, PR 796; not yet certified for issue 806; negative evidence/independent-audit-807-report.json -> handoff-not-produced / inherited-base-artifact. Canonical source .audit/entregar-issue/handoff-ready.json:1. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-024",
+      "candidate_key": "736663015941aa8c8ead1bb6567324f199e912d2506de27cac77c93a8145f3f0",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 54,
+      "source_text": "Os checkboxes marcados cobrem apenas verificações técnicas autenticadas no SHA acima; não representam aceite visual ou aprovação independente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-024"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Checkboxes state only technical verification; independent report remains REPROVADA until new exact-SHA review. Positive evidence/independent-audit-807-report.json -> REPROVADA; negative evidence/ci-exact-head.json -> foreign inherited handoff from issue 695, PR 796; not yet certified for issue 806. Canonical source docs/BANK_MESSAGE_INBOX.md:26. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-025",
+      "candidate_key": "cb78620eb6899942e37d47f6a11e2cf9335e780460a24aac343aa0e38c80b02d",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 59,
+      "source_text": "**CI técnica:** [Repository CI #44581806796](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806796) em `success` (CRITICAL validation: formatação, lint, typecheck, testes, integração PostgreSQL, build e merge preview).",
+      "flags": [],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-025"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Exact-SHA CRITICAL job succeeded on final candidate after material edits; earlier CI does not transfer head identity. Positive evidence/ci-exact-head.json -> success; negative evidence/ci-exact-head.json -> Enforce complete repository formatting, Run npm run lint, Run npm run typecheck, Run npm run test, Run npm run test:integration --workspace @solverfin/api. Canonical source apps/web/src/dev-server/inbox-tabs.test.ts:49. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-026",
+      "candidate_key": "c8d31f1e975b21e2cf7947656befcf692523ed8226aa5c3ab5dfe60031a61991",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 60,
+      "source_text": "**Visual Chrome:** [Statement visual validation #44581807089](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089) em `success`, **77/77 cenários** e `visual-gate-index.json.failures=[]`. Inclui a Inbox em desktop/mobile, revisão, importação CSV/OFX, mensagens, insights, teclado, estados Golden Screen, filtro temporal, conteúdo longo e controles negativos. No cenário `ai-review-queue`, ambas as matrizes (390px e 1366px) têm `complete=true`, `negativePass=true` e contraste da aba inativa **7,58:1** (mínimo 4,5:1).",
+      "flags": [
+        "aftermath",
+        "review-surface",
+        "source-catalog"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-026"
+      ],
+      "inventory_ids": [
+        "INV-806026"
+      ],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: The authenticated Chrome index includes 77 scenario IDs, 77 passed and zero failures; negative controls run in AI review queue. Positive evidence/visual-gate-index.json -> 77 cases, 77 passed, 0 failed; negative evidence/issue-565-ai-review-queue.json -> . Canonical source scripts/statement-visual/issue-565-ai-review-queue.mjs:1. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-027",
+      "candidate_key": "c60d113782acba433537964e3eab48a073e09691b0c6d55559dd5ac2d36798cd",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 61,
+      "source_text": "**Teste de contrato e histórico:** `apps/web/src/dev-server/inbox-tabs.test.ts` executado pela CI, cobrindo os quatro painéis, setas/Home/End, URLs `#financial-insights`, `?importBatchId=`, histórico e preservação de `profileId`; os scripts Chrome confirmam importação, ações contextuais e preservação dos controladores existentes.",
+      "flags": [
+        "review-surface"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-027"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Three focused tests reached in GitHub CI: four roles, history/deep links, keyboard; profile remains preserved. Positive evidence/ground-tests-806-unit-reachability.txt -> source case named in authenticated run; negative evidence/issue-565-ai-review-queue.json -> {'before': '?kind=transaction_extraction&status=pending_review&confidence=all&tab=reviews', 'after': '?kind=transaction_extraction&confidence=low&tab=reviews', 'confidencePersisted': True, 'profilePreserved': True}. Canonical source apps/web/src/dev-server/inbox-tabs.test.ts:15. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-028",
+      "candidate_key": "6100df289f718290318449b6d246b1e68388158b959119c0b4b9eb1f0cf57d2a",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 62,
+      "source_text": "**Qualidade:** validador oficial `CODE-GROWTH-001` aprovado no SHA material com 12 arquivos medidos.",
+      "flags": [
+        "freshness"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-028"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: CODE-GROWTH-001 checked 12 code files from base to material head and returned passed, with no blocking files. Positive code-growth.json -> passed; negative evidence/ci-exact-head.json -> success. Canonical source scripts/statement-visual/inbox-interface-accessibility.mjs:1. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    },
+    {
+      "id": "OBL-029",
+      "candidate_key": "8c74cc50218504147c0abddf53889180fc92e6c11cfa7ba4453a567d81841406",
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "source_line": 64,
+      "source_text": "**Distinção de gates:** esses checkboxes atestam a verificação técnica/visual dos respectivos critérios, **não** substituem a auditoria independente nem a certificação. O handoff herdado pertence à issue #695/PR #796 e não certifica #806/#807: [provenance #44581806899](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806899) e [session review #44581806915](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806915) seguem bloqueados. A issue permanece **aberta**, sem autorização técnica para merge/release até o novo dossiê exact-SHA e auditoria independente.",
+      "flags": [
+        "negative"
+      ],
+      "disposition": "covered",
+      "requirement_ids": [
+        "REQ-806-029"
+      ],
+      "inventory_ids": [],
+      "assertion_ids": [],
+      "scope_decision": null,
+      "rationale": "Material ac25e1c390008575bb9a11395f61cd90303ae52b: Technical checkboxes are complete but exact-SHA provenance and independent approval are consciously not conflated. Positive evidence/independent-audit-807-report.json -> REPROVADA; negative evidence/ci-exact-head.json -> foreign inherited handoff from issue 695, PR 796; not yet certified for issue 806. Canonical source docs/BANK_MESSAGE_INBOX.md:25. Raw GitHub CI 44581806796 and Chrome 44581807089 are available for independent verification."
+    }
+  ],
+  "source_coverage": [
+    {
+      "source_id": "SRC-ISSUE-806",
+      "source_sha256": "40560473e6e10d7e8368b48c1075ebbafefd689bfb9257e8e1951580423c4adc",
+      "candidate_count": 29,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029"
+      ],
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "domain_inventories": [
+    {
+      "id": "INV-806003",
+      "name": "Closed product inventory from OBL-003: four actual tabs",
+      "closed_world": true,
+      "producer_sources": [
+        "apps/web/src/dev-server/inbox-tabs.ts"
+      ],
+      "consumer_sources": [
+        "apps/web/src/dev-server/inbox-review-archetype.ts"
+      ],
+      "values": [
+        {
+          "value": "reviews",
+          "producer_evidence": [
+            "apps/web/src/dev-server/inbox-tabs.ts"
+          ],
+          "consumer_evidence": [
+            "apps/web/src/dev-server/inbox-review-archetype.ts"
+          ],
+          "scenario_ids": [
+            "inbox-tabs.reviews"
+          ]
+        },
+        {
+          "value": "imports",
+          "producer_evidence": [
+            "apps/web/src/dev-server/inbox-tabs.ts"
+          ],
+          "consumer_evidence": [
+            "apps/web/src/dev-server/inbox-review-archetype.ts"
+          ],
+          "scenario_ids": [
+            "inbox-tabs.imports"
+          ]
+        },
+        {
+          "value": "messages",
+          "producer_evidence": [
+            "apps/web/src/dev-server/inbox-tabs.ts"
+          ],
+          "consumer_evidence": [
+            "apps/web/src/dev-server/inbox-review-archetype.ts"
+          ],
+          "scenario_ids": [
+            "inbox-tabs.messages"
+          ]
+        },
+        {
+          "value": "insights",
+          "producer_evidence": [
+            "apps/web/src/dev-server/inbox-tabs.ts"
+          ],
+          "consumer_evidence": [
+            "apps/web/src/dev-server/inbox-review-archetype.ts"
+          ],
+          "scenario_ids": [
+            "inbox-tabs.insights"
+          ]
+        }
+      ],
+      "unmapped_values": [],
+      "fallback_policy": "none",
+      "rationale": "Actual four tab IDs from inbox-tabs.ts and 77 registered Chrome scenario IDs from authenticated exact-SHA run, not a guessed number."
+    },
+    {
+      "id": "INV-806026",
+      "name": "Closed product inventory from OBL-026: 77 executed Chrome scenario identifiers",
+      "closed_world": true,
+      "producer_sources": [
+        "scripts/statement-visual/main.mjs"
+      ],
+      "consumer_sources": [
+        "evidence/visual-gate-index.json"
+      ],
+      "values": [
+        {
+          "value": "core-pages::0-lancamentos-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "core-pages::1-dashboard-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "core-pages::2-cartoes-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "core-pages::3-contas-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-category-evolution::0-relatorios-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-category-evolution::1-relatorios-empty",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-category-evolution::2-relatorios-error",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "ui-primitives",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "foundation-states",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "cards-golden-715",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "cards-interface::0-cartoes-normal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "cards-interface::1-cartoes-empty",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "operational-attachments::0-lancamentos-attachment-lifecycle",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "operational-attachments::1-cartoes-attachment-lifecycle",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "operational-attachments::2-inbox-attachment-lifecycle",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-group-layout",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-group-modal",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-group-pending-fixes",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-bulk-selection",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-bulk-selection-keyboard",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transaction-bulk-selection-clearance",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-category-hierarchy",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-ofx-review",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-status-control",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-date-filter",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "accounts-cards-interface",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "hover-states",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "operational-installments",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "operational-installments-keyboard",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "installment-grouping-guard",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "manual-installments",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transfer-destination-visibility",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "cross-currency-transfer",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "transfer-source-destination",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "ambiguous-recovery",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "ambiguous-close",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "non-idempotent-ambiguity",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-category-controls",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-selected-view-navigation",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-718-visual-acceptance",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "reports-installments-regression",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "settings-interface",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "settings-interface-reservations",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "category-learning",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "ai-review-queue",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "ai-review-queue-states",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "financial-insights",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "notifications-693",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "financial-assistant",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "financial-assistant-cancel",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "financial-assistant-zoom",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "budgets-pilot-baseline",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "productive-auth-login",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "account-remuneration",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "account-remuneration-mobile",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "account-edit",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "sidebar-navigation",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-csv-review",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-interface-refinement",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-interface-accessibility",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "bank-message-ai-inbox",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "inbox-content-contrast",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "categories-interface",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "secondary-admin-institutions",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "admin-institutions-728-states",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "secondary-admin-financial-indexes",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "secondary-account-remuneration-legacy",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "cards-interface-adversarial",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-724-multi-currency",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-724-multi-currency-partial",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-724-partial",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-724-error",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-724-long-content",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "dashboard-empty-state",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "accounts-cards-empty-state",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "budgets-empty-state",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        },
+        {
+          "value": "statement-profile-keyboard",
+          "producer_evidence": [
+            "scripts/statement-visual/main.mjs"
+          ],
+          "consumer_evidence": [
+            "evidence/visual-gate-index.json"
+          ],
+          "scenario_ids": [
+            "visual-gate-index:77/77"
+          ]
+        }
+      ],
+      "unmapped_values": [],
+      "fallback_policy": "none",
+      "rationale": "Actual four tab IDs from inbox-tabs.ts and 77 registered Chrome scenario IDs from authenticated exact-SHA run, not a guessed number."
+    }
+  ],
+  "observable_assertions": [
+    {
+      "id": "OBS-806006",
+      "description": "Focused unit tests and the 77 registered Chrome scenarios execute at the final SHA; original red scenarios are historical regression input. Observed .",
+      "requirement_ids": [
+        "REQ-806-006"
+      ],
+      "obligation_ids": [
+        "OBL-006"
+      ],
+      "evidence_ids": [
+        "evidence/visual-gate-index.json"
+      ],
+      "scenario_ids": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089"
+      ],
+      "negative_control_evidence": [
+        "evidence/independent-audit-807-report.json"
+      ]
+    },
+    {
+      "id": "OBS-806007",
+      "description": "Exactly four linked tabpanels and one visible panel; manual reveal of the imports panel makes the guard fail. Observed True.",
+      "requirement_ids": [
+        "REQ-806-007"
+      ],
+      "obligation_ids": [
+        "OBL-007"
+      ],
+      "evidence_ids": [
+        "evidence/issue-565-ai-review-queue.json"
+      ],
+      "scenario_ids": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-565-ai-review-queue.json"
+      ]
+    },
+    {
+      "id": "OBS-806008",
+      "description": "Visible approval reaches one confirmed request; hidden/clipped/inert evidence blocks requests at zero posts. Observed 14 cases, hidden approval posts=0.",
+      "requirement_ids": [
+        "REQ-806-008"
+      ],
+      "obligation_ids": [
+        "OBL-008"
+      ],
+      "evidence_ids": [
+        "evidence/issue-565-ai-review-queue.json"
+      ],
+      "scenario_ids": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089"
+      ],
+      "negative_control_evidence": [
+        "evidence/issue-565-ai-review-queue.json"
+      ]
+    },
+    {
+      "id": "OBS-806011",
+      "description": "ArrowRight and Home change focus and selected panel, and the original review panel is restored. Observed {'arrow': True, 'home': True, 'actionVisible': True, 'restored': True}.",
+      "requirement_ids": [
+        "REQ-806-011"
+      ],
+      "obligation_ids": [
+        "OBL-011"
+      ],
+      "evidence_ids": [
+        "evidence/issue-565-ai-review-queue.json"
+      ],
+      "scenario_ids": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089"
+      ],
+      "negative_control_evidence": [
+        "evidence/ground-tests-806-unit-reachability.txt"
+      ]
+    }
+  ],
+  "structural_invariant_closures": {
+    "status": "passed",
+    "applicability_reason": "Issue #806 prohibits new HTML postprocessing, financial API modifications, duplicate panels and inherited audit certificates; exact Git diff and SSR source were reviewed.",
+    "entries": [
+      {
+        "id": "SIC-806001",
+        "kind": "forbidden-implementation",
+        "requirement_ids": [
+          "REQ-806-003",
+          "REQ-806-015",
+          "REQ-806-021"
+        ],
+        "obligation_ids": [
+          "OBL-003",
+          "OBL-015",
+          "OBL-021"
+        ],
+        "plausible_wrong_implementation": "Move inactive HTML into another renderer or unmount each tab, losing pending import/review state and duplicating HTML post-processing.",
+        "canonical_path": "apps/web/src/dev-server/inbox-review-archetype.ts:91",
+        "competing_paths": [
+          "apps/web/src/dev-server/inbox-page.ts:189",
+          "apps/web/src/dev-server/inbox-tabs.ts:168"
+        ],
+        "evidence_ids": [
+          "evidence/issue-565-ai-review-queue.json",
+          "evidence/ground-tests-806-unit-reachability.txt"
+        ],
+        "scenario_ids": [
+          "apps/web/src/dev-server/inbox-tabs.test.ts:49"
+        ],
+        "negative_control_evidence": [
+          "evidence/issue-565-ai-review-queue.json"
+        ]
+      },
+      {
+        "id": "SIC-806002",
+        "kind": "structural",
+        "requirement_ids": [
+          "REQ-806-014",
+          "REQ-806-023"
+        ],
+        "obligation_ids": [
+          "OBL-014",
+          "OBL-023"
+        ],
+        "plausible_wrong_implementation": "Reuse the previous WhatsApp material certificate from issue #695, or alter an API decision path during a UI-only change.",
+        "canonical_path": "apps/web/src/dev-server/inbox-tabs.ts:128",
+        "competing_paths": [
+          "apps/web/src/dev-server/inbox-review-archetype.ts:95",
+          "docs/BANK_MESSAGE_INBOX.md:25"
+        ],
+        "evidence_ids": [
+          "evidence/independent-audit-807-report.json",
+          "evidence/ci-exact-head.json"
+        ],
+        "scenario_ids": [
+          "scripts/statement-visual/issue-565-ai-review-queue.mjs:1"
+        ],
+        "negative_control_evidence": [
+          "evidence/independent-audit-807-report.json"
+        ]
+      }
+    ],
+    "unresolved_invariants": []
+  },
+  "read_model_closures": {
+    "status": "passed",
+    "applicability_reason": "The Inbox tab state is a client read/view model with URL selectors; required tab, query, and panel visibility fields are sourced and consumed without new API fields.",
+    "entries": [
+      {
+        "id": "RMC-806001",
+        "contract_kind": "read-model",
+        "requirement_ids": [
+          "REQ-806-003",
+          "REQ-806-005",
+          "REQ-806-010",
+          "REQ-806-011"
+        ],
+        "required_fields": [
+          "tab",
+          "importBatchId",
+          "profileId",
+          "aria-selected",
+          "hidden"
+        ],
+        "producer_evidence": [
+          "apps/web/src/dev-server/inbox-tabs.ts:153",
+          "apps/web/src/dev-server/inbox-tabs.ts:161"
+        ],
+        "public_projection_evidence": [
+          "apps/web/src/dev-server/inbox-tabs.ts:51"
+        ],
+        "consumer_evidence": [
+          "apps/web/src/dev-server/inbox-tabs.ts:198"
+        ],
+        "visible_surface_evidence": [
+          "evidence/issue-565-ai-review-queue.json"
+        ],
+        "scenario_ids": [
+          "apps/web/src/dev-server/inbox-tabs.test.ts:49"
+        ],
+        "negative_control_evidence": [
+          "evidence/issue-565-ai-review-queue.json"
+        ]
+      }
+    ],
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "canonical_source_consistency": {
+    "status": "passed",
+    "applicability_reason": "All panels use the existing review/import/message/insight HTML producers, no parallel API or financial decision implementation.",
+    "entries": [
+      {
+        "id": "CSC-806001",
+        "semantic_field": "canonical Inbox evidence and financial decision API bindings",
+        "canonical_source": "existing inbox-page.ts and inbox-review-archetype.ts controllers",
+        "alternative_sources": [
+          "duplicate postprocess HTML",
+          "new financial endpoint state cloned per tab"
+        ],
+        "surfaces": [
+          "apps/web/src/dev-server/inbox-page.ts:189",
+          "apps/web/src/dev-server/inbox-review-archetype.ts:91",
+          "apps/web/src/dev-server/inbox-tabs.ts:168"
+        ],
+        "evidence_ids": [
+          "evidence/issue-565-ai-review-queue.json",
+          "evidence/ground-tests-806-unit-reachability.txt"
+        ],
+        "scenario_ids": [
+          "apps/web/src/dev-server/inbox-tabs.test.ts:49"
+        ],
+        "negative_control_evidence": [
+          "evidence/issue-565-ai-review-queue.json"
+        ],
+        "divergent_fixture": {
+          "canonical_value": "one selected live review panel with evidence guard, inactive components hidden but mounted",
+          "alternative_values": [
+            "duplicate review list independently constructed",
+            "hidden review evidence that still allows POST"
+          ]
+        }
+      }
+    ],
+    "unverified_surfaces": [],
+    "missing_divergent_tests": []
+  },
+  "documentation_consistency": {
+    "status": "passed",
+    "applicability_reason": "Diff-only terminology check and outside-diff search confirm docs and implementation use the same four tab names and deep-link rules.",
+    "old_contract_terms": [
+      "Inbox section-link navigation and always-visible secondary regions"
+    ],
+    "new_contract_terms": [
+      "Revisões, Importações, Mensagens, Insights in mutually exclusive ARIA tabpanels with contextual actions and preserved URL state"
+    ],
+    "occurrences": [
+      {
+        "path": "docs/BANK_MESSAGE_INBOX.md",
+        "line": 13,
+        "text": "A rota `/inbox` organiza as tarefas em quatro abas acessíveis e mutuamente exclusivas:",
+        "term": "Revisões, Importações, Mensagens, Insights in mutually exclusive ARIA tabpanels with contextual actions and preserved URL state",
+        "classification": "current-contract",
+        "evidence_ids": [
+          "evidence/issue-565-ai-review-queue.json"
+        ]
+      }
+    ],
+    "unresolved_contradictions": [],
+    "searched_outside_diff": true,
+    "search_evidence": [
+      "git grep -n renderTabs and inbox-section-nav develop and HEAD in apps/web/src and docs: unrelated legacy helper remains but only A6 tabs are used by the canonical Inbox route."
+    ]
+  },
+  "scope_reduction_review": {
+    "status": "passed",
+    "matches": []
+  },
+  "pass_c": {
+    "status": "passed",
+    "requirement_ids": [
+      "REQ-806-001",
+      "REQ-806-002",
+      "REQ-806-003",
+      "REQ-806-004",
+      "REQ-806-005",
+      "REQ-806-006",
+      "REQ-806-007",
+      "REQ-806-008",
+      "REQ-806-009",
+      "REQ-806-010",
+      "REQ-806-011",
+      "REQ-806-012",
+      "REQ-806-013",
+      "REQ-806-014",
+      "REQ-806-015",
+      "REQ-806-016",
+      "REQ-806-017",
+      "REQ-806-018",
+      "REQ-806-019",
+      "REQ-806-020",
+      "REQ-806-021",
+      "REQ-806-022",
+      "REQ-806-023",
+      "REQ-806-024",
+      "REQ-806-025",
+      "REQ-806-026",
+      "REQ-806-027",
+      "REQ-806-028",
+      "REQ-806-029"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-021",
+      "OBL-022",
+      "OBL-023",
+      "OBL-024",
+      "OBL-025",
+      "OBL-026",
+      "OBL-027",
+      "OBL-028",
+      "OBL-029"
+    ],
+    "evidence": [
+      "evidence/issue-565-ai-review-queue.json",
+      "evidence/visual-gate-index.json",
+      "evidence/ci-exact-head.json",
+      "evidence/independent-audit-807-report.json",
+      "apps/web/src/dev-server/inbox-tabs.test.ts:49",
+      "docs/BANK_MESSAGE_INBOX.md:13"
+    ],
+    "rederived_without_pr_description": true,
+    "reviewed_user_visible_semantics": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_all_specification_sources": true
+  }
+}

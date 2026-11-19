@@ -1,0 +1,63 @@
+{
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "generatedAt": "2026-11-19T18:01:53.930Z",
+  "stage": "passed",
+  "fixtureIds": [
+    "ad3a06ac-9dff-4394-b09a-0317b3939c96",
+    "2c7eb304-1dfa-4ec1-adb4-91a4d566c27a",
+    "a92440c8-357e-4883-9584-f64288dd5d98",
+    "572e84ba-689e-4491-a94b-78c059fd77c0"
+  ],
+  "desktop": {
+    "viewport": "1366x900",
+    "bodyFitsViewport": true,
+    "deterministicVisible": true,
+    "aiReadyVisible": true,
+    "lowConfidenceVisible": true,
+    "lowConfidenceReasonsVisible": true,
+    "temporaryVisible": true,
+    "reasonsVisible": true,
+    "retryVisible": true,
+    "retryFitsViewport": true,
+    "retryFocused": true,
+    "retryFocusVisible": true,
+    "retryLabel": "Tentar novamente a extração desta mensagem bancária"
+  },
+  "openedDesktop": {
+    "open": true,
+    "textareaEmpty": true,
+    "textareaFocused": true,
+    "origin": "shared",
+    "consentChecked": false,
+    "privacyNotice": "Por privacidade, o texto original não foi armazenado. Cole novamente a mesma mensagem e confirme a autorização para tentar de novo.",
+    "statusRole": "status",
+    "statusLive": "polite",
+    "dialogFitsViewport": true
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "bodyFitsViewport": true,
+    "deterministicVisible": true,
+    "aiReadyVisible": true,
+    "lowConfidenceVisible": true,
+    "lowConfidenceReasonsVisible": true,
+    "temporaryVisible": true,
+    "reasonsVisible": true,
+    "retryVisible": true,
+    "retryFitsViewport": true,
+    "retryFocused": true,
+    "retryFocusVisible": true,
+    "retryLabel": "Tentar novamente a extração desta mensagem bancária"
+  },
+  "openedMobile": {
+    "open": true,
+    "textareaEmpty": true,
+    "textareaFocused": true,
+    "origin": "shared",
+    "consentChecked": false,
+    "privacyNotice": "Por privacidade, o texto original não foi armazenado. Cole novamente a mesma mensagem e confirme a autorização para tentar de novo.",
+    "statusRole": "status",
+    "statusLive": "polite",
+    "dialogFitsViewport": true
+  }
+}

@@ -1,0 +1,263 @@
+[
+  {
+    "obligation": "OBL-001",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:89",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0.tabSemantics",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "hierarchyNegative",
+    "behavior": "Four themed tabs are present in one A6 cockpit; revealing the inactive imports panel invalidates the isolation invariant."
+  },
+  {
+    "obligation": "OBL-002",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:7",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0.tabSemantics",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "The JS and HTML contain exactly four roles with Revisões, Importações, Mensagens, Insights and link IDs."
+  },
+  {
+    "obligation": "OBL-003",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:168",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "hierarchyNegative",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "Four mounted panels remain in the DOM; hidden flags change and the negative forced-reveal attack is detected."
+  },
+  {
+    "obligation": "OBL-004",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:73",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0.contextActions",
+    "negative_artifact": "evidence/issue-563-bank-message-ai-inbox.json",
+    "negative_key": "openedMobile",
+    "behavior": "Import button belongs to imports and message button to Messages; message retry opens its own dialog."
+  },
+  {
+    "obligation": "OBL-005",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:153",
+    "positive_artifact": "evidence/issue-548-inbox-ofx-review.json",
+    "positive_key": "restored.headingFocused",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "urlState",
+    "behavior": "A URL containing importBatchId focuses the imported batch; review URL retains active filters/profile."
+  },
+  {
+    "obligation": "OBL-006",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.test.ts:49",
+    "positive_artifact": "evidence/visual-gate-index.json",
+    "positive_key": "failures",
+    "negative_artifact": "evidence/independent-audit-807-report.json",
+    "negative_key": "blocking_ids",
+    "behavior": "Focused unit tests and the 77 registered Chrome scenarios execute at the final SHA; original red scenarios are historical regression input."
+  },
+  {
+    "obligation": "OBL-007",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:51",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0.tabSemantics",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "hierarchyNegative",
+    "behavior": "Exactly four linked tabpanels and one visible panel; manual reveal of the imports panel makes the guard fail."
+  },
+  {
+    "obligation": "OBL-008",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:64",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "evidenceNegative",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "fingerprintChecks",
+    "behavior": "Visible approval reaches one confirmed request; hidden/clipped/inert evidence blocks requests at zero posts."
+  },
+  {
+    "obligation": "OBL-009",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:72",
+    "positive_artifact": "evidence/issue-548-inbox-ofx-review.json",
+    "positive_key": "created",
+    "negative_artifact": "evidence/issue-494-inbox-csv-review.json",
+    "negative_key": "failedSave",
+    "behavior": "OFX import navigates to the batch; malformed CSV edit preserves dialog state and actionable validation error."
+  },
+  {
+    "obligation": "OBL-010",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:144",
+    "positive_artifact": "evidence/inbox-date-filter.json",
+    "positive_key": "singleDay",
+    "negative_artifact": "evidence/inbox-date-filter.json",
+    "negative_key": "cleared",
+    "behavior": "Date range visibly narrows four lines to one and clearing resets to four; history anchor resolution is tested in tabs VM."
+  },
+  {
+    "obligation": "OBL-011",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:185",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0.tabKeyboard",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "ArrowRight and Home change focus and selected panel, and the original review panel is restored."
+  },
+  {
+    "obligation": "OBL-012",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:69",
+    "positive_artifact": "evidence/issue-525-inbox-interface-refinement.json",
+    "positive_key": "mobile.dimensions",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "reviewCardGridNegatives.0",
+    "behavior": "At 390px document width is 375px; tablist scrollWidth 406 > clientWidth 355; forced grid overflow 162px is detected."
+  },
+  {
+    "obligation": "OBL-013",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.test.ts:70",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "repository_ci.conclusion",
+    "negative_artifact": "evidence/independent-audit-807-report.json",
+    "negative_key": "verdict",
+    "behavior": "CI and Chrome green only attest technical execution; prior independent rejection remains a separate blocking finding."
+  },
+  {
+    "obligation": "OBL-014",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:91",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "evidenceNegative",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "repository_ci.passed_steps",
+    "behavior": "No API/prisma/schema source changed in the PR; negative approval visibility/fingerprint controls reject unauthorized side effects."
+  },
+  {
+    "obligation": "OBL-015",
+    "source_location": "apps/web/src/dev-server/inbox-review-archetype.ts:91",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "hierarchyNegative",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "Existing A6 review and imports renderer identifiers are preserved while panel wrappers are generated in SSR, not a new postprocessor."
+  },
+  {
+    "obligation": "OBL-016",
+    "source_location": "docs/BANK_MESSAGE_INBOX.md:25",
+    "positive_artifact": "evidence/independent-audit-807-report.json",
+    "positive_key": "verdict",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "handoff.pre_certificate_state",
+    "behavior": "Independent A-003 rejection remains separate despite technical CI success and all issue checkboxes checked."
+  },
+  {
+    "obligation": "OBL-017",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.test.ts:34",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "repository_ci.passed_steps",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "GitHub CRITICAL job executed npm run test; focused three tab VM cases passed, Chrome accessibility scenario also passed."
+  },
+  {
+    "obligation": "OBL-018",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.test.ts:49",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "repository_ci.passed_steps",
+    "negative_artifact": "evidence/independent-audit-807-report.json",
+    "negative_key": "blocking_ids",
+    "behavior": "Prettier, eslint, TypeScript, unit/integration and build steps each passed on final SHA; prior CI partial success was not accepted."
+  },
+  {
+    "obligation": "OBL-019",
+    "source_location": "scripts/statement-visual/issue-726-golden-controls.mjs:4",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "goldenScreenControls.0",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "reviewCardGridNegatives.0",
+    "behavior": "Touch height, neutral/selected styles, disabled focus and keyboard checks passed on 390px and 1366px; induced overflow fails."
+  },
+  {
+    "obligation": "OBL-020",
+    "source_location": "docs/BANK_MESSAGE_INBOX.md:11",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "repository_ci.conclusion",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "BANK_MESSAGE_INBOX.md now describes four tabs, URLs, retained DOM and contextual actions in lines 11-28 and is covered by CI."
+  },
+  {
+    "obligation": "OBL-021",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.ts:197",
+    "positive_artifact": "evidence/issue-565-ai-review-queue.json",
+    "positive_key": "hierarchyNegative",
+    "negative_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "negative_key": "",
+    "behavior": "The tab runtime resolves URL fragment after mount; inactive panels remain hidden not removed, and browser history sync is tested."
+  },
+  {
+    "obligation": "OBL-022",
+    "source_location": "scripts/statement-visual/issue-726-golden-state-matrix.mjs:55",
+    "positive_artifact": "evidence/visual-gate-index.json",
+    "positive_key": "failures",
+    "negative_artifact": "evidence/independent-audit-807-report.json",
+    "negative_key": "blocking_ids",
+    "behavior": "The earlier visual CI failure was disclosed; after A-001/A-002 patch all 77 scenarios passed with no failures."
+  },
+  {
+    "obligation": "OBL-023",
+    "source_location": ".audit/entregar-issue/handoff-ready.json:1",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "handoff.pre_certificate_state",
+    "negative_artifact": "evidence/independent-audit-807-report.json",
+    "negative_key": "handoff_status",
+    "behavior": "Foreign subject from #695/#796 is flagged, never reused for #806/#807, release remains blocked before a fresh certificate."
+  },
+  {
+    "obligation": "OBL-024",
+    "source_location": "docs/BANK_MESSAGE_INBOX.md:26",
+    "positive_artifact": "evidence/independent-audit-807-report.json",
+    "positive_key": "verdict",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "handoff.pre_certificate_state",
+    "behavior": "Checkboxes state only technical verification; independent report remains REPROVADA until new exact-SHA review."
+  },
+  {
+    "obligation": "OBL-025",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.test.ts:49",
+    "positive_artifact": "evidence/ci-exact-head.json",
+    "positive_key": "repository_ci.conclusion",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "repository_ci.passed_steps",
+    "behavior": "Exact-SHA CRITICAL job succeeded on final candidate after material edits; earlier CI does not transfer head identity."
+  },
+  {
+    "obligation": "OBL-026",
+    "source_location": "scripts/statement-visual/issue-565-ai-review-queue.mjs:1",
+    "positive_artifact": "evidence/visual-gate-index.json",
+    "positive_key": "scenarios",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "failures",
+    "behavior": "The authenticated Chrome index includes 77 scenario IDs, 77 passed and zero failures; negative controls run in AI review queue."
+  },
+  {
+    "obligation": "OBL-027",
+    "source_location": "apps/web/src/dev-server/inbox-tabs.test.ts:15",
+    "positive_artifact": "evidence/ground-tests-806-unit-reachability.txt",
+    "positive_key": "",
+    "negative_artifact": "evidence/issue-565-ai-review-queue.json",
+    "negative_key": "urlState",
+    "behavior": "Three focused tests reached in GitHub CI: four roles, history/deep links, keyboard; profile remains preserved."
+  },
+  {
+    "obligation": "OBL-028",
+    "source_location": "scripts/statement-visual/inbox-interface-accessibility.mjs:1",
+    "positive_artifact": "code-growth.json",
+    "positive_key": "status",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "repository_ci.conclusion",
+    "behavior": "CODE-GROWTH-001 checked 12 code files from base to material head and returned passed, with no blocking files."
+  },
+  {
+    "obligation": "OBL-029",
+    "source_location": "docs/BANK_MESSAGE_INBOX.md:25",
+    "positive_artifact": "evidence/independent-audit-807-report.json",
+    "positive_key": "verdict",
+    "negative_artifact": "evidence/ci-exact-head.json",
+    "negative_key": "handoff.pre_certificate_state",
+    "behavior": "Technical checkboxes are complete but exact-SHA provenance and independent approval are consciously not conflated."
+  }
+]

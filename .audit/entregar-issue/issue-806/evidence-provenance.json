@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "material_head_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+  "evidence": [
+    {
+      "evidence_id": "EVID-806-CI-EXACT-HEAD-JSON",
+      "kind": "structural",
+      "path": "evidence/ci-exact-head.json",
+      "sha256": "e93c5549b541e6264840c83a1dca2355405e32bdd001281690b77c7272618fcf",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions CI #44581806796",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-GROUND-TESTS-806-UNIT-REACHABILITY-TXT",
+      "kind": "structural",
+      "path": "evidence/ground-tests-806-unit-reachability.txt",
+      "sha256": "403dd3f212a3fd8a522599275195034d1d00c8e2eeb41328e0f0f0014e4336a5",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions CI #44581806796",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-INBOX-DATE-FILTER-JSON",
+      "kind": "behavioral",
+      "path": "evidence/inbox-date-filter.json",
+      "sha256": "c9a608171d41f3163516102c9e08d8243002f3fc9204d0f9eae7fbabd9916e0f",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-INDEPENDENT-AUDIT-807-ORIGINAL-MD",
+      "kind": "structural",
+      "path": "evidence/independent-audit-807-original.md",
+      "sha256": "467451939159020b7281efbd65a4c0448e0b9ef4393bae46cfaf034daae076c6",
+      "subject_sha": "2f202aedf58a2866c69659d260984e2d0bc43334",
+      "freshness_policy": "reusable",
+      "producer": "Historical ChatGPT independent pre-audit report from candidate 2f202aed; not an authenticated GitHub review",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-INDEPENDENT-AUDIT-807-REPORT-JSON",
+      "kind": "structural",
+      "path": "evidence/independent-audit-807-report.json",
+      "sha256": "20ae801170bda8389fd3c5763716fb0ab30464babf68d2eb20863fa7a7cdc4dd",
+      "subject_sha": "2f202aedf58a2866c69659d260984e2d0bc43334",
+      "freshness_policy": "reusable",
+      "producer": "Historical ChatGPT independent pre-audit report from candidate 2f202aed; not an authenticated GitHub review",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-494-INBOX-CSV-REVIEW-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-494-inbox-csv-review.json",
+      "sha256": "061b4190f6fd0a9774812742b633fffa70ea700154d8ce5af242720f4c53aa3f",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-525-INBOX-ACCESSIBILITY-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-525-inbox-accessibility.json",
+      "sha256": "88993d95e4dd206ebb5c6899adbad0dbbfb14d2b82693a02295aa61fdd0d70e5",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-525-INBOX-CONTENT-CONTRAST-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-525-inbox-content-contrast.json",
+      "sha256": "2327e0d4393205d02e7ba2edb7206f5584792d43bebea75503f48a4d9492ff40",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-525-INBOX-INTERFACE-REFINEMENT-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-525-inbox-interface-refinement.json",
+      "sha256": "df1542622321e25be65d25ecfb33d8f02cd92ad2a29181db42763804208309d3",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-548-INBOX-OFX-REVIEW-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-548-inbox-ofx-review.json",
+      "sha256": "a39490d2826c8055255c3b02e84ac77c4402e474671594751ba9b04b381fa842",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-563-BANK-MESSAGE-AI-INBOX-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-563-bank-message-ai-inbox.json",
+      "sha256": "6aa598baf6b416c1ea708457f63ec2a4530ae256265a18971fa7aa5cabfce0b3",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-565-AI-REVIEW-QUEUE-STATES-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-565-ai-review-queue-states.json",
+      "sha256": "a97aad9b9db71e27e24c2c494010883a0a93dc1b517965f683c9fd84ba7fc12b",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-ISSUE-565-AI-REVIEW-QUEUE-JSON",
+      "kind": "behavioral",
+      "path": "evidence/issue-565-ai-review-queue.json",
+      "sha256": "0aa77787e19906d702fec8057e6f3a37dc443d60dd2928664592db2d8f41e5ff",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-REQUIREMENT-OBSERVATION-MAP-JSON",
+      "kind": "structural",
+      "path": "evidence/requirement-observation-map.json",
+      "sha256": "086bd4ec4fc1267cf70ff3161fa3033233d85c595cbb415d956c99f234613417",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "EVID-806-VISUAL-GATE-INDEX-JSON",
+      "kind": "behavioral",
+      "path": "evidence/visual-gate-index.json",
+      "sha256": "d9d599424e010f3cdbc8d8bb310d377fe2087252d4ab82d5f1568c745a0ef142",
+      "subject_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Chrome #44581807089 artifact #14559247558",
+      "status": "passed"
+    }
+  ]
+}
