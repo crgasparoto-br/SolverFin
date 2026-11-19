@@ -166,3 +166,34 @@ parcial, erro e conteúdo longo, nas três larguras de aceite. Os dados de API
 desses cenários são controlados, e não constituem homologação integrada com a
 API de produção. O resultado Chrome e as capturas do SHA material corrigido
 precisam de auditoria técnica e visual independente antes do aceite da issue.
+
+
+## Cockpit operacional e decisão por cartão — issue #811
+
+A refatoração acrescenta três blocos de decisão ao cockpit, preservando
+`/api/financial-summary` e a projeção em 30 dias como fontes canônicas:
+
+1. **Melhor cartão para comprar hoje:** ordena cartões ativos com instrumentos
+   ativos pelo maior prazo entre a compra e o vencimento estimado da fatura.
+   Os cartões empatados recebem igual destaque, com fechamento/vencimento
+   explícitos. O cálculo reutiliza `calculateInvoicePeriod`, inclusive no
+   dia de fechamento. A simulação de outra data modifica somente a recomendação.
+2. **Compromissos e posição:** lista contas a pagar e faturas do mês corrente,
+   incluindo pendências vencidas anteriores, e mostra saldo por conta e tipo
+   sem classificar investimentos como liquidez imediata.
+3. **Comportamento de consumo:** gastos realizados por cartão no mês da compra,
+   despesas por categoria e comparação mensal de receitas/despesas. A
+   trajetória canônica diária alimenta o gráfico de caixa sem recalcular saldos.
+
+A API dedicada é documentada em [API_DASHBOARD_OVERVIEW.md](./API_DASHBOARD_OVERVIEW.md).
+Os widgets são secundários à primeira ação no mobile (requisito Golden Screen
+#724) e preservam o índice de evidências original e os links de navegação
+por moeda. A falha do endpoint operacional é opcional: deve mostrar
+`Dados parciais`, não apagar os indicadores financeiros já confirmados.
+
+A recomendação considera somente prazo, não limite disponível ou aprovação
+de compra. O vencimento previsto reflete os dias cadastrados, sem pretender
+validar o processamento da administradora no dia de fechamento. O teste de
+homologação deve cobrir autenticação, seletor de data, alteração do melhor
+cartão, empate, fatura paga, moeda distinta, séries vazias, conteúdo extenso,
+foco por teclado e telas 1366×768, 390×844 e 320×740.
