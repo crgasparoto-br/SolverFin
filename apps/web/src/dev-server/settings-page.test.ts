@@ -275,13 +275,13 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
         ...scope.matchAll(/<article class="maintenance-item rule-item">([\s\S]*?)<\/article>/g),
       ].map((match) => match[1]);
       for (const title of expected) {
-        assert.ok(rows.some((row) => row?.includes(title)), `${filter}: regra ausente: ${title}`);
+        assert.ok(
+          rows.some((row) => row?.includes(title)),
+          `${filter}: regra ausente: ${title}`,
+        );
       }
       for (const title of excluded) {
-        assert.ok(
-          !rows.some((row) => row?.includes(title)),
-          `${filter}: regra indevida: ${title}`,
-        );
+        assert.ok(!rows.some((row) => row?.includes(title)), `${filter}: regra indevida: ${title}`);
       }
       assert.match(scope, /<details class="rule-disclosure">/);
       assert.match(
