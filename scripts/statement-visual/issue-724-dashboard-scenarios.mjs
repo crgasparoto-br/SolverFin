@@ -69,13 +69,26 @@ try {
       assert.equal(measurements.currencyCount, 0, "Error state leaked totals");
     } else {
       assert.equal(measurements.hasNextActions, true, "Next actions missing");
-      assert.equal(measurements.primaryCount, state.startsWith("multi-currency") ? 4 : 2);
+      assert.equal(measurements.primaryCount, state.startsWith("multi-currency") ? 12 : 6);
       assert.equal(
         measurements.supportingAfterActions,
         true,
         "Secondary indicators precede next action",
       );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Mixed currencies in a summary");
+      assert.equal(measurements.mockupOrderValid, true, "Approved mockup region order drifted");
+      assert.equal(measurements.operationalRowsOrdered, true, "Approved bill/card/analysis pairing drifted");
+      assert.equal(measurements.hasWideProjection, true, "Full-width cash-flow region missing");
+      if (state !== "partial") {
+        assert.equal(measurements.widgetRowPairing, true, "Widgets must pair on desktop and stack on mobile");
+        assert.equal(measurements.hasDashboardCharts, true, "Cash-flow and consumption charts must render");
+      }
+      if (width <= 390) {
+        assert.equal(measurements.visiblePrimaryCount, state.startsWith("multi-currency") ? 4 : 2,
+          "Only balance and free-to-spend may appear before actions on mobile");
+      } else if (width === 1366) {
+        assert.equal(measurements.desktopKpiColumns, 3, "Desktop mockup requires 3 KPI columns");
+      }
       if (state.startsWith("multi-currency")) {
         assert.deepEqual(measurements.currencies, ["BRL", "USD"]);
         if (state === "multi-currency") {
@@ -113,6 +126,9 @@ try {
     }
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
+    if (state === "multi-currency" || state === "long-content") {
+      await screenshot(browser.cdp, join(outputDir, "issue-811-approved-mockup-" + state + "-" + width + ".png"));
+    }
     const item = { width, height, screenshot: stem + ".png", measurements };
     if (state === "error" && width <= 390) {
       const negative = await evaluate(browser.cdp, "(" + navigationStretchProbe.toString() + ")()");
@@ -314,6 +330,31 @@ function inspectDashboard() {
     );
   };
   const supporting = document.querySelector(".dashboard-supporting-section");
+  const region = (name) => document.querySelector('[data-dashboard-region="' + name + '"]');
+  const order = ["overview", "kpis", "alerts", "cash-flow", "bills-and-accounts",
+    "credit-cards", "analysis", "activity", "additional"].map(region);
+  const mockupOrderValid = order.every((element, index) =>
+    element && (index === 0 || Boolean(order[index - 1].compareDocumentPosition(element) &
+      Node.DOCUMENT_POSITION_FOLLOWING)));
+  const pairs = [
+    ["dashboard-payables", "dashboard-accounts"],
+    ["dashboard-credit-cards", "dashboard-best-card"],
+    ["dashboard-categories", "dashboard-evolution"],
+  ].map(([a, b]) => [document.getElementById(a), document.getElementById(b)]);
+  const widgetRowPairing = pairs.every(([left, right]) => {
+    if (!left || !right) return false;
+    const a = left.getBoundingClientRect();
+    const b = right.getBoundingClientRect();
+    return innerWidth <= 760
+      ? b.top >= a.bottom - 1
+      : Math.abs(a.top - b.top) <= 2 && b.left >= a.right - 2;
+  });
+  const isVisible = (element) => element && element.getClientRects().length > 0 &&
+    getComputedStyle(element).display !== "none";
+  const dashboardKpiGrid = document.querySelector(".currency-summary .sf-summary-grid");
+  const desktopKpiColumns = dashboardKpiGrid
+    ? getComputedStyle(dashboardKpiGrid).gridTemplateColumns.split(" ").filter(Boolean).length
+    : 0;
   return {
     viewportWidth: innerWidth,
     documentUrl: location.href,
@@ -325,6 +366,17 @@ function inspectDashboard() {
     currencyCount: summaries.length,
     currencies: summaries.map((section) => section.id.replace("currency-", "")),
     primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
+    visiblePrimaryCount: [...document.querySelectorAll(".currency-summary .dashboard-metric")].filter(isVisible).length,
+    desktopKpiColumns,
+    mockupOrderValid,
+    operationalRowsOrdered: Boolean(region("bills-and-accounts") && region("credit-cards")
+      && region("analysis") && region("bills-and-accounts").compareDocumentPosition(region("credit-cards"))
+      & Node.DOCUMENT_POSITION_FOLLOWING),
+    widgetRowPairing,
+    hasWideProjection: Boolean(region("cash-flow") && getComputedStyle(
+      region("cash-flow").querySelector(".cash-flow-dashboard-grid")).gridTemplateColumns.split(" ").length === 1),
+    hasDashboardCharts: Boolean(document.querySelector(".dashboard-projection-chart polyline")
+      && document.querySelector(".dashboard-card-spend-bars") && document.querySelector(".dashboard-trend-columns")),
     hasNextActions: Boolean(action),
     actionVisibleInFirstViewport:
       withinFirstFold(firstActionLabel) && withinFirstFold(firstActionLink),
@@ -342,7 +394,7 @@ function inspectDashboard() {
     ),
     primaryValuesOnOneLine: [
       ...document.querySelectorAll(".currency-summary .sf-metric-card-value"),
-    ].every((value) => {
+    ].filter(isVisible).every((value) => {
       const range = document.createRange();
       range.selectNodeContents(value);
       return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
