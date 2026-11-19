@@ -22,8 +22,9 @@ if (!process.env.CHROME_BIN) throw new Error("CHROME_BIN is required.");
 await mkdir(outputDir, { recursive: true });
 
 const report = {
-  commit: process.env.GITHUB_SHA ?? "local",
+  commit: process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local",
   route: "/dashboard",
+  mockupReference: "Issue #811 — item 4, Proposta de reorganização visual, 19/11/2026",
   state,
   provenance:
     "real dashboard SSR renderer with controlled API responses; authenticated browser session",
