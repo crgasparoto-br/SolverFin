@@ -56,6 +56,7 @@ export interface DashboardOverview {
   periodEndOn: string;
   accountBalances: DashboardAccountBalance[];
   cardSpending: DashboardCardSpend[];
+  cardSpendingTotals: { currency: string; amountMinor: number; count: number }[];
   cardAdvice: DashboardCardAdvice[];
   payables: DashboardPayable[];
   payableTotals: DashboardPayableTotal[];
@@ -312,6 +313,16 @@ export async function buildDashboardOverview(
       }));
     })
     .sort((a, b) => b.spentMinor - a.spentMinor || a.name.localeCompare(b.name));
+  const cardSpendingTotals = [...new Set(cardSpending.map((card) => card.currency))]
+    .sort((a, b) => a.localeCompare(b))
+    .map((currency) => ({
+      currency,
+      amountMinor: addSafeMoneyMinor(
+        cardSpending.filter((card) => card.currency === currency).map((card) => card.spentMinor),
+        "dashboard monthly card spending total",
+      ),
+      count: cardSpending.filter((card) => card.currency === currency).length,
+    }));
   const seenTotals = new Set<string>();
   const payableTotals: DashboardPayableTotal[] = [];
   for (const bill of bills) {
@@ -356,6 +367,7 @@ export async function buildDashboardOverview(
       balanceMinor: addSafeMoneyMinor([row.opening, row.movement], "dashboard account balance"),
     })),
     cardSpending,
+    cardSpendingTotals,
     cardAdvice: rankCardsForPurchase(cards, purchaseOn),
     payables: bills.map((row) => ({
       id: row.id,
