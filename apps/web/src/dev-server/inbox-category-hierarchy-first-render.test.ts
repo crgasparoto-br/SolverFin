@@ -41,20 +41,22 @@ describe("Inbox category hierarchy first render", () => {
       assert.deepEqual(categoryRequests, ["/api/categories?status=all"]);
       assert.match(html, /data-inbox-review-archetype="A6"/);
       assert.match(html, /class="sf-detail-layout"/);
+      assert.match(html, /data-inbox-tab-panel="reviews" tabindex="0">/);
+      assert.match(html, /data-inbox-tab-panel="imports" tabindex="0" hidden/);
       assert.match(html, /data-inbox-category-hierarchy-enhanced/);
       assert.match(html, /<option value="">Sem categoria<\/option>/);
       assert.match(html, /Alimentação › Mercado/);
       assert.match(html, /data-financial-insight-fallback="true"/);
       assert.match(html, /Insights financeiros aguardando dados/);
-      const secondary = html.indexOf('id="inbox-review-secondary"');
+      const insightsPanel = html.indexOf('id="inbox-panel-insights"');
       const fallback = html.indexOf('data-financial-insight-fallback="true"');
       assert.ok(
-        secondary > 0 && fallback > secondary,
-        "Insufficient insights must remain secondary to review",
+        insightsPanel > 0 && fallback > insightsPanel,
+        "Insufficient insights must remain within the insights tab",
       );
       assert.ok(
         !html
-          .slice(html.indexOf('id="inbox-review-queue"'), secondary)
+          .slice(html.indexOf('id="inbox-review-queue"'), insightsPanel)
           .includes('data-financial-insight-fallback="true"'),
       );
     } finally {
