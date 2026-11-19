@@ -1,4 +1,4 @@
-import { formatMinorCurrency } from "@solverfin/shared";
+import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
 
 import {
   renderCard,
@@ -358,6 +358,7 @@ function renderCashFlowDecisionMetrics(
 
   return `
     <div class="cash-flow-dashboard-metrics">
+      ${renderProjectionChart(item.points)}
       <div class="cash-flow-dashboard-metric">
         <span>Saldo projetado no fim do horizonte</span>
         <strong class="cash-flow-dashboard-value">${renderMoney(item.closingBalance)}</strong>
@@ -366,6 +367,36 @@ function renderCashFlowDecisionMetrics(
       ${freeToSpend}
     </div>
   `;
+}
+
+function renderProjectionChart(
+  points: readonly { date: string; balance: { amountMinor: number; currency: string } }[],
+): string {
+  if (points.length < 2) return "";
+  const amounts = points.map((point) => point.balance.amountMinor);
+  const minimum = Math.min(...amounts);
+  const maximum = Math.max(...amounts);
+  const range = Math.max(1, maximum - minimum);
+  const coordinates = amounts.map((amount, index) => {
+    const x = 8 + (index * 284) / (amounts.length - 1);
+    const y = 74 - ((amount - minimum) / range) * 60;
+    return x.toFixed(1) + "," + y.toFixed(1);
+  });
+  const first = points[0];
+  const last = points[points.length - 1];
+  if (!first || !last) return "";
+  const description = `Trajetória de caixa de ${formatDateOnly(first.date)} até ${formatDateOnly(last.date)}. ` +
+    `Saldo inicial do gráfico: ${formatMinorCurrency(first.balance.amountMinor, { currency: first.balance.currency })}. ` +
+    `Saldo final: ${formatMinorCurrency(last.balance.amountMinor, { currency: last.balance.currency })}.`;
+  return `<figure class="dashboard-projection-chart" role="img" aria-label="${escapeHtml(description)}">
+    <svg viewBox="0 0 300 86" aria-hidden="true" focusable="false">
+      <line x1="8" y1="76" x2="292" y2="76" stroke="currentColor" opacity=".18"/>
+      <line x1="8" y1="44" x2="292" y2="44" stroke="currentColor" opacity=".12"/>
+      <polyline points="${coordinates.join(" ")}" fill="none" stroke="currentColor"
+        stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <p>${escapeHtml(formatDateOnly(first.date))} a ${escapeHtml(formatDateOnly(last.date))}</p>
+  </figure>`;
 }
 
 function renderNextActions(actions: DashboardContentViewModel["nextActions"]): string {
