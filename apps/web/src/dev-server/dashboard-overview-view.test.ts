@@ -35,6 +35,7 @@ const example: DashboardOverview = {
     {
       id: "pagamento-1",
       source: "transaction",
+      accountId: "conta-1",
       description: "Luz",
       currency: "BRL",
       dueOn: "2026-11-20",
@@ -44,6 +45,7 @@ const example: DashboardOverview = {
     {
       id: "invoice-1",
       source: "invoice",
+      cardId: "cartao-1",
       description: "Fatura cartão",
       currency: "BRL",
       dueOn: "2026-11-10",
@@ -71,6 +73,8 @@ describe("dashboard operational widgets", () => {
     assert.match(html, /Mercado/);
     assert.match(html, /Evolução financeira/);
     assert.match(html, /USD/);
+    assert.match(html, /href="\\/cartoes\\?cardId=cartao-1&amp;invoiceId=invoice-1"/);
+    assert.match(html, /href="\\/lancamentos\\?month=2026-11&amp;accountId=conta-1"/);
     assert.doesNotMatch(html, /pagar-receber/);
   });
 
