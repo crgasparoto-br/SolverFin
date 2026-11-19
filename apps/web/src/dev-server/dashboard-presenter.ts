@@ -58,6 +58,7 @@ export interface DashboardCashFlowProjection {
   currencyBlocks: Array<{
     currency: string;
     closingBalanceMinor: number;
+    points?: { date: string; closingBalanceMinor: number }[];
   }>;
   freeToSpend?: {
     referenceDate: string;
@@ -86,6 +87,7 @@ export interface DashboardCashFlowProjectionViewModel {
   currencies: readonly {
     currency: string;
     closingBalance: MoneyViewModel;
+    points: readonly { date: string; balance: MoneyViewModel }[];
     freeToSpend:
       | {
           status: "available";
@@ -394,6 +396,9 @@ function presentCashFlowProjection(
       return {
         currency: block.currency,
         closingBalance: money(block.closingBalanceMinor, block.currency),
+        points: (block.points ?? []).map((point) => ({
+          date: point.date, balance: money(point.closingBalanceMinor, block.currency),
+        })),
         freeToSpend:
           freeToSpend?.status === "available"
             ? {
