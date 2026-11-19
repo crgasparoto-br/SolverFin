@@ -99,7 +99,11 @@ async function runScenario(name, width, height, section, zoom = false) {
         ? await validateRuleFiltersAndDisclosure(browser.cdp, ruleFixtures)
         : null;
     if (ruleProgressive) {
-      check(ruleProgressive.passed, `${name}: filtros SSR e divulgação dos detalhes falharam`, ruleProgressive);
+      check(
+        ruleProgressive.passed,
+        `${name}: filtros SSR e divulgação dos detalhes falharam`,
+        ruleProgressive,
+      );
     }
     const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const textScale = await applyTextScale(browser.cdp, zoom);
@@ -481,7 +485,11 @@ async function validateRuleFiltersAndDisclosure(cdp, fixtures) {
 
   const filters = [];
   for (const filter of ["ativas", "inativas"]) {
-    await navigateWithRetry(cdp, `${baseUrl}/configuracoes?section=rules&filter=${filter}`, "rules-" + filter);
+    await navigateWithRetry(
+      cdp,
+      `${baseUrl}/configuracoes?section=rules&filter=${filter}`,
+      "rules-" + filter,
+    );
     await waitForSettings(cdp, "rules");
     const observed = await evaluate(
       cdp,
