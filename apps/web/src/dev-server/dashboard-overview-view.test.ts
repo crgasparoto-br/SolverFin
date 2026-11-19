@@ -72,6 +72,19 @@ describe("dashboard operational widgets", () => {
     assert.match(html, /Gastos por cartão/);
     assert.match(html, /Mercado/);
     assert.match(html, /Evolução financeira/);
+    assert.equal((html.match(/class="dashboard-operations-grid"/g) ?? []).length, 3);
+    assert.match(html, /data-layout="approved-mockup"/);
+    const checkOrder = [
+      'id="dashboard-payables"',
+      'id="dashboard-accounts"',
+      'id="dashboard-credit-cards"',
+      'id="dashboard-best-card"',
+      'id="dashboard-categories"',
+      'id="dashboard-evolution"',
+    ].map((marker) => html.indexOf(marker));
+    assert.ok(checkOrder.every((x, i) => x >= 0 && (i === 0 || x > checkOrder[i - 1]!)));
+    assert.match(html, /class="dashboard-card-spend-bars"/);
+    assert.match(html, /class="dashboard-trend-columns"/);
     assert.match(html, /USD/);
     assert.ok(html.includes('href="/cartoes?cardId=cartao-1&amp;invoiceId=invoice-1"'));
     assert.ok(html.includes('href="/lancamentos?month=2026-11&amp;accountId=conta-1"'));
