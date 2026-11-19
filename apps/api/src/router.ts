@@ -21,6 +21,7 @@ import {
   type TransactionKind,
   type TransactionStatus,
 } from "@solverfin/domain";
+import { financialTodayInSaoPaulo } from "@solverfin/shared";
 
 import { withSharedTransaction } from "./db.js";
 import type { ApiHeaders } from "./http-headers.js";
