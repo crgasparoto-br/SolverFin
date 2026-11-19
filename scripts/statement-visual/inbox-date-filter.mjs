@@ -32,13 +32,14 @@ try {
   const evidenceFocused = await evaluate(
     browser.cdp,
     `(() => {
-      const link = document.querySelector('.inbox-review-nav[href="#csv-import-title"]');
+      const tab = document.querySelector('[data-inbox-tab="imports"]');
+      const panel = document.getElementById('inbox-panel-imports');
       const target = document.getElementById('csv-import-title');
-      link?.click();
-      return Boolean(link && target);
+      tab?.click();
+      return Boolean(tab && panel && target && !panel.hidden && panel.contains(target));
     })()`,
   );
-  assert.equal(evidenceFocused, true, "Inbox A6 evidence navigation is unavailable");
+  assert.equal(evidenceFocused, true, "Inbox import tab did not reveal the requested batch");
   await sleep(150);
 
   const clickability = await evaluate(
