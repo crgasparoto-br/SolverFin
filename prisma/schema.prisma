@@ -516,6 +516,7 @@ model Transaction {
   createdAt            DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
 
+  whatsappConfirmations WhatsappChannelConfirmation[]
   financialProfile         FinancialProfile   @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   account                  Account?           @relation("TransactionAccount", fields: [accountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
   destinationAccount       Account?           @relation("TransactionDestinationAccount", fields: [destinationAccountId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict)
@@ -828,6 +829,7 @@ model AiSuggestion {
 
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   transactions     Transaction[]
+  whatsappConfirmations WhatsappChannelConfirmation[]
 
   @@unique([id, organizationId, financialProfileId])
   @@unique([organizationId, financialProfileId, kind, sourceSuggestionId, payloadFingerprint, targetEntityId])
@@ -984,6 +986,7 @@ model WhatsappChannelLink {
   user User @relation(fields: [userId], references: [id], onDelete: Restrict)
   financialProfile FinancialProfile @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   events WhatsappChannelEvent[]
+  confirmations WhatsappChannelConfirmation[]
 
   @@index([userId, organizationId, financialProfileId, state], map: "WhatsappChannelLink_context_idx")
   @@index([state, expiresAt], map: "WhatsappChannelLink_cleanup_idx")
@@ -1019,9 +1022,43 @@ model WhatsappChannelEvent {
   user User? @relation(fields: [userId], references: [id], onDelete: Restrict)
   financialProfile FinancialProfile? @relation(fields: [financialProfileId, organizationId], references: [id, organizationId], onDelete: Restrict)
   link WhatsappChannelLink? @relation(fields: [linkId], references: [id], onDelete: Restrict)
+  confirmationSources WhatsappChannelConfirmation[] @relation("WhatsappConfirmationSource")
+  confirmationDecisions WhatsappChannelConfirmation[] @relation("WhatsappConfirmationDecision")
 
   @@unique([provider, accountId, providerMessageId], map: "WhatsappChannelEvent_provider_message_key")
   @@index([expiresAt, state], map: "WhatsappChannelEvent_expiry_idx")
   @@index([provider, accountId, senderId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_sender_idx")
   @@index([linkId, receivedAt(sort: Desc)], map: "WhatsappChannelEvent_link_idx")
+}
+
+/** Channel-only confirmation journal: effects use the canonical AiSuggestion approval path. */
+model WhatsappChannelConfirmation {
+  id String @id @db.Uuid
+  linkId String @db.Uuid
+  linkVersion Int @default(0)
+  userId String @db.Uuid
+  organizationId String @db.Uuid
+  financialProfileId String @db.Uuid
+  sourceEventId String @db.Uuid
+  decisionEventId String? @db.Uuid
+  suggestionId String @db.Uuid
+  fingerprint String @db.VarChar(128)
+  tokenHash String @unique @db.VarChar(64)
+  status String @default("pending_confirmation") @db.VarChar(32)
+  version Int @default(0)
+  expiresAt DateTime @db.Timestamptz(3)
+  resolvedAt DateTime? @db.Timestamptz(3)
+  transactionId String? @db.Uuid
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  link WhatsappChannelLink @relation(fields: [linkId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_link_fkey")
+  suggestion AiSuggestion @relation(fields: [suggestionId, organizationId, financialProfileId], references: [id, organizationId, financialProfileId], onDelete: Restrict, map: "WhatsappChannelConfirmation_suggestion_fkey")
+  sourceEvent WhatsappChannelEvent @relation("WhatsappConfirmationSource", fields: [sourceEventId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_source_event_fkey")
+  decisionEvent WhatsappChannelEvent? @relation("WhatsappConfirmationDecision", fields: [decisionEventId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_decision_event_fkey")
+  transaction Transaction? @relation(fields: [transactionId], references: [id], onDelete: Restrict, map: "WhatsappChannelConfirmation_transaction_fkey")
+
+  @@unique([sourceEventId, suggestionId], map: "WhatsappChannelConfirmation_source_suggestion_key")
+  @@index([linkId, status, expiresAt], map: "WhatsappChannelConfirmation_link_status_expiry_idx")
+  @@index([organizationId, financialProfileId, suggestionId], map: "WhatsappChannelConfirmation_profile_suggestion_idx")
 }

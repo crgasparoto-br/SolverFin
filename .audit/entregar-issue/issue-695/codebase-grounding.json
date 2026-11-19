@@ -1,0 +1,242 @@
+{
+  "schema_version": 2,
+  "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
+  "creations": [
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find canonical transaction_extraction approval and rejection APIs",
+          "search existing WhatsApp outbound and confirmation transport handling"
+        ],
+        "scope": "git grep in immutable develop bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and material HEAD 4296b6778da8f457e99557fe53d9be25412d10e0 across apps/api/src, prisma and docs",
+        "candidates": [
+          {
+            "path": "apps/api/src/ai-review-queue-public-decision-service.ts",
+            "reason_not_reused": "The existing canonical review decision service owns money mutations, but it lacks a channel-only HMAC state and authorization journal; this module delegates rather than duplicates that service."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "The existing canonical review decision service owns money mutations, but it lacks a channel-only HMAC state and authorization journal; this module delegates rather than duplicates that service."
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation-outbound.ts",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find canonical transaction_extraction approval and rejection APIs",
+          "search existing WhatsApp outbound and confirmation transport handling"
+        ],
+        "scope": "git grep in immutable develop bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and material HEAD 4296b6778da8f457e99557fe53d9be25412d10e0 across apps/api/src, prisma and docs",
+        "candidates": [
+          {
+            "path": "apps/api/src/whatsapp-channel-service.ts",
+            "reason_not_reused": "The existing WhatsApp sender handles transport/retry; this isolated renderer restores HMAC just before claimed send without storing plaintext or reopening provider sends."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "The existing WhatsApp sender handles transport/retry; this isolated renderer restores HMAC just before claimed send without storing plaintext or reopening provider sends."
+    },
+    {
+      "path": "prisma/migrations/20261116180000_whatsapp_financial_confirmations/migration.sql",
+      "kind": "file",
+      "search": {
+        "queries": [
+          "find canonical AiSuggestion and WhatsappChannelEvent unique and scope foreign keys",
+          "search previous WhatsappChannelLink foundation migration and schema relations"
+        ],
+        "scope": "git grep in base and head prisma/migrations and prisma/schema.prisma",
+        "candidates": [
+          {
+            "path": "prisma/migrations/20261113160000_whatsapp_channel_foundation/migration.sql",
+            "reason_not_reused": "Published foundation migration cannot be retroactively modified, and issue #695 requires a new forward-only confirmation journal table."
+          }
+        ]
+      },
+      "decision": "create",
+      "justification": "Forward-only schema evolution adds a channel-only, foreign-key-correlated confirmation journal without changing the canonical financial Transaction model."
+    }
+  ],
+  "references": [
+    {
+      "symbol": "approveAiReviewDecisionForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "defined_at": {
+        "path": "apps/api/src/ai-review-queue-public-decision-service.ts",
+        "line": 47
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "rejectAiReviewDecisionForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "defined_at": {
+        "path": "apps/api/src/ai-review-queue-public-decision-service.ts",
+        "line": 131
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "getAiSuggestionPayloadForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "defined_at": {
+        "path": "apps/api/src/repositories/ai-suggestion-payloads.ts",
+        "line": 46
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "withSharedTransaction",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-confirmation.ts",
+      "defined_at": {
+        "path": "apps/api/src/db.ts",
+        "line": 69
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    },
+    {
+      "symbol": "createBankMessageInboxWithAiForContext",
+      "kind": "local",
+      "used_in": "apps/api/src/whatsapp-channel-service.ts",
+      "defined_at": {
+        "path": "apps/api/src/bank-message-ai-inbox.ts",
+        "line": 95
+      },
+      "verified_by": {
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0
+      }
+    }
+  ],
+  "replacements": [],
+  "test_decisions": [
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation.integration.test.ts",
+      "operation": "added",
+      "scenario": "Real PostgreSQL suggestion review, two pending proposals, cross-profile, concurrent decisions, process restart, provider ambiguity and rotated secret",
+      "requirement": "issue #695 canonical WhatsApp approval, privacy, atomicity and idempotent channel decisions",
+      "search": {
+        "queries": [
+          "existing channel replay and provider tests",
+          "existing canonical approval and secure sender boundary tests"
+        ],
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
+        "runner": "npm run test:integration --workspace @solverfin/api",
+        "candidates": [
+          {
+            "path": "apps/api/src/whatsapp-channel.integration.test.ts",
+            "case": "Relevant existing Meta channel behavior",
+            "oracle": "Before #695, asserts signed webhook, channel read-only boundaries and replay, not canonical approval by token",
+            "comparison": "Reuse shared helpers but add distinct financial-effect and wrong-profile assertions for #695"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Separate financial confirmation and token-bound negative scenarios are not proven by read-only transport tests; existing channel tests were extended only where shared dispatch applies.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test:integration --workspace @solverfin/api",
+        "exit_code": 0,
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-confirmation.integration.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-integration-reachability.txt",
+        "evidence_sha256": "87e55b946cca04aae3ba1563cc6dbedc3da82fb802929da1491421fa0118f0be"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-confirmation.test.ts",
+      "operation": "added",
+      "scenario": "Formatted PII/URL/email/UUID/phone masking and innocuous descriptions in channel confirmation summaries",
+      "requirement": "issue #695 canonical WhatsApp approval, privacy, atomicity and idempotent channel decisions",
+      "search": {
+        "queries": [
+          "existing channel replay and provider tests",
+          "existing canonical approval and secure sender boundary tests"
+        ],
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/api/src/whatsapp-channel-service.test.ts",
+            "case": "Relevant existing Meta channel behavior",
+            "oracle": "Before #695, asserts signed webhook, channel read-only boundaries and replay, not canonical approval by token",
+            "comparison": "Reuse shared helpers but add distinct financial-effect and wrong-profile assertions for #695"
+          }
+        ]
+      },
+      "decision": "new-test-required",
+      "justification": "Separate financial confirmation and token-bound negative scenarios are not proven by read-only transport tests; existing channel tests were extended only where shared dispatch applies.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-confirmation.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-unit-reachability.txt",
+        "evidence_sha256": "50f32c42013876bc40f9f63b2e7904de614ab5455954218c3dfbe39846cadc82"
+      }
+    },
+    {
+      "path": "apps/api/src/whatsapp-channel-service.test.ts",
+      "operation": "modified",
+      "scenario": "Exact confirmation action dispatch, safe renderer placeholders, revocation before outbound, ambiguous messages and replay",
+      "requirement": "issue #695 canonical WhatsApp approval, privacy, atomicity and idempotent channel decisions",
+      "search": {
+        "queries": [
+          "existing channel replay and provider tests",
+          "existing canonical approval and secure sender boundary tests"
+        ],
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
+        "runner": "npm run test",
+        "candidates": [
+          {
+            "path": "apps/api/src/whatsapp-channel-service.test.ts",
+            "case": "Relevant existing Meta channel behavior",
+            "oracle": "Before #695, asserts signed webhook, channel read-only boundaries and replay, not canonical approval by token",
+            "comparison": "Reuse shared helpers but add distinct financial-effect and wrong-profile assertions for #695"
+          }
+        ]
+      },
+      "decision": "extend-existing",
+      "justification": "Separate financial confirmation and token-bound negative scenarios are not proven by read-only transport tests; existing channel tests were extended only where shared dispatch applies.",
+      "disposition": "keep",
+      "verification": {
+        "status": "passed",
+        "command": "npm run test",
+        "exit_code": 0,
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+        "reached_tests": [
+          "apps/api/src/whatsapp-channel-service.test.ts"
+        ],
+        "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-unit-reachability.txt",
+        "evidence_sha256": "50f32c42013876bc40f9f63b2e7904de614ab5455954218c3dfbe39846cadc82"
+      }
+    }
+  ]
+}
