@@ -4,7 +4,7 @@ import { evaluate, screenshot, setViewport } from "./cdp.mjs";
 import { validateGoldenStateMatrix } from "./issue-726-golden-state-matrix.mjs";
 import { validateReviewCardGridNegative } from "./issue-726-inbox-controls.mjs";
 
-// Golden Screen: inspect actual CSS tokens, neutral controls, accessibility and menu keyboard behavior.
+// Golden Screen: verify neutral tabs, contextual actions, keyboard behavior and shared tokens.
 export async function validateGoldenInboxControls(cdp) {
   const rest = await evaluate(
     cdp,
@@ -20,26 +20,19 @@ export async function validateGoldenInboxControls(cdp) {
         background: css.backgroundColor,
         color: css.color,
         border: css.borderTopColor,
+        bottomBorder: css.borderBottomColor,
         minTouchHeight: rect.height >= 44,
         actualHeight: Math.round(rect.height),
-        neutral: node.getAttribute('data-button-variant') === 'neutral' ||
-          node.classList.contains('sf-button-secondary') || node.matches('.inbox-new-entry-trigger'),
-        hovered: node.matches(':hover'),
-        focusVisible: node.matches(':focus-visible'),
-        active: node.matches(':active'),
-        expanded: Boolean(node.closest('details')?.open),
       };
     };
     const colors = (color) => {
       const value = String(color || '').trim();
-      if (/^#[0-9a-fA-F]{6}$/.test(value)) {
-        return [1,3,5].map((position) => parseInt(value.slice(position, position + 2), 16));
-      }
+      if (/^#[0-9a-fA-F]{6}$/.test(value)) return [1,3,5].map((position) => parseInt(value.slice(position, position + 2), 16));
       return (value.match(/[0-9]+/g) || []).slice(0,3).map(Number);
     };
-    const similar = (a,b) => {
+    const similar = (a, b) => {
       const x = colors(a), y = colors(b);
-      return x.length === 3 && y.length === 3 && x.every((v,i) => v === y[i]);
+      return x.length === 3 && y.length === 3 && x.every((v, i) => v === y[i]);
     };
     const luminance = (color) => {
       const rgb = colors(color).map((v) => {
@@ -48,21 +41,20 @@ export async function validateGoldenInboxControls(cdp) {
       });
       return rgb.length === 3 ? (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) : 0;
     };
-    const contrast = (a,b) => {
+    const contrast = (a, b) => {
       const x = luminance(a), y = luminance(b);
-      return Number(((Math.max(x,y) + 0.05)/(Math.min(x,y) + 0.05)).toFixed(2));
+      return Number(((Math.max(x, y) + 0.05)/(Math.min(x, y) + 0.05)).toFixed(2));
     };
     const row = style('.inbox-review-queue [data-review-select]');
-    const nav = style('.inbox-review-nav');
-    const trigger = style('.inbox-new-entry-trigger');
+    const nav = style('#inbox-tab-imports');
+    const activeTab = style('#inbox-tab-reviews');
     const refresh = style('[data-review-refresh]');
     const status = style('.review-card.selected');
     const selected = document.querySelector('.review-card.selected [data-review-select]');
     const refreshNode = document.querySelector('[data-review-refresh]');
-    if (!row || !nav || !trigger || !refresh || !status || !selected || !refreshNode) return {complete:false};
-    const originallyDisabled = refreshNode.disabled;
+    if (!row || !nav || !activeTab || !refresh || !status || !selected || !refreshNode) return {complete: false};
+    const originalDisabled = refreshNode.disabled;
     refreshNode.disabled = true;
-    // Wait for the real CSS transition, rather than sampling its initial frame.
     await new Promise((resolve) => setTimeout(resolve, 250));
     const disabledCss = getComputedStyle(refreshNode);
     const disabledOpacity = Number(disabledCss.opacity);
@@ -71,48 +63,66 @@ export async function validateGoldenInboxControls(cdp) {
     const disabledTokensMatch = similar(disabledCss.backgroundColor, token('neutral-control-hover')) &&
       similar(disabledCss.color, token('muted-text')) &&
       similar(disabledCss.borderTopColor, token('border')) && disabledOpacity === 1;
-    refreshNode.disabled = originallyDisabled;
-    const neutralTokensMatch = (item) => {
-      const normal = similar(item.background, token('surface')) &&
-        similar(item.color, token('primary')) &&
-        [token('border'), token('line')].some((border) => similar(item.border, border));
-      const interactive = (item.hovered || item.focusVisible || item.active || item.expanded) &&
-        similar(item.background, token('neutral-control-hover')) &&
-        similar(item.color, token('neutral-control-text-hover')) &&
-        similar(item.border, token('neutral-control-border-hover'));
-      return item.hovered || item.focusVisible || item.active || item.expanded ? interactive : normal;
-    };
+    refreshNode.disabled = originalDisabled;
+    const neutralTokensMatch = (item) =>
+      similar(item.background, token('surface')) &&
+      similar(item.color, token('primary')) &&
+      [token('border'), token('line')].some((border) => similar(item.border, border));
+    const activeTabTokensMatch = similar(activeTab.background, token('primary-soft')) &&
+      similar(activeTab.color, token('primary')) &&
+      similar(activeTab.bottomBorder, token('primary'));
+    const navTokensMatch = nav.background === 'rgba(0, 0, 0, 0)' &&
+      similar(nav.color, token('muted-text'));
+    const tabs = [...document.querySelectorAll('[role="tab"][data-inbox-tab]')];
+    const panels = [...document.querySelectorAll('[role="tabpanel"][data-inbox-tab-panel]')];
+    const tabSemantics = tabs.length === 4 && panels.length === 4 &&
+      tabs.filter((tab) => tab.getAttribute('aria-selected') === 'true').length === 1 &&
+      tabs.every((tab) => document.getElementById(tab.getAttribute('aria-controls'))?.getAttribute('aria-labelledby') === tab.id);
+    const importButton = document.querySelector('#inbox-panel-imports [data-open-dialog="csv-import-dialog"]');
+    const messageButton = document.querySelector('#inbox-panel-messages [data-open-dialog="new-inbox-message-dialog"]');
+    const contextActions = Boolean(importButton && messageButton &&
+      importButton.closest('[data-inbox-tab-panel]') !== messageButton.closest('[data-inbox-tab-panel]'));
+    const focusStyleDefined = Boolean([...document.styleSheets].some((sheet) => {
+      try { return [...sheet.cssRules].some((rule) => String(rule.cssText).includes('.inbox-tab-list .inbox-tab.sf-tab:focus-visible')); }
+      catch { return false; }
+    }));
     return {
-      complete: true, row, nav, trigger, refresh, status,
+      complete: true, row, nav, activeTab, refresh, status,
       selectedAriaPressed: selected.getAttribute('aria-pressed'),
-      tokenMatch: [row, nav, trigger, refresh].every(neutralTokensMatch),
-      contrast: [row, nav, trigger, refresh].map((item) => contrast(item.color, item.background)),
+      tokenMatch: neutralTokensMatch(row) && neutralTokensMatch(refresh) && activeTabTokensMatch && navTokensMatch,
+      contrast: [
+        contrast(row.color, row.background), contrast(refresh.color, refresh.background),
+        contrast(nav.color, token('surface')), contrast(activeTab.color, activeTab.background)
+      ],
       disabledOpacity, disabledCursor, disabledContrast, disabledTokensMatch,
-      ariaMenuLabel: document.querySelector('.inbox-new-entry-trigger')?.getAttribute('aria-label'),
-      hasNeutralLinks: document.querySelectorAll('.inbox-section-nav a.sf-button-secondary').length === 3,
+      tabSemantics, contextActions,
       financialDirectionColorFromTokens: document.querySelector('.review-risk') ?
         similar(getComputedStyle(document.querySelector('.review-risk')).backgroundColor, token('warning-surface')) : true,
-      focusStyleDefined: Boolean([...document.styleSheets].some((sheet) => {
-        try { return [...sheet.cssRules].some((rule) => String(rule.cssText).includes('.inbox-new-entry-actions > summary:focus-visible')); }
-        catch { return false; }
-      })),
+      focusStyleDefined,
     };
   })()`,
   );
-  const menuKeyboard = await evaluate(
+  const tabKeyboard = await evaluate(
     cdp,
     `(() => {
-    const details = document.querySelector('.inbox-new-entry-actions');
-    const summary = details?.querySelector('summary');
-    if (!details || !summary) return {opened:false, closed:false, focusRestored:false};
-    details.open = true;
-    summary.focus();
-    const opened = details.open;
-    details.dispatchEvent(new KeyboardEvent('keydown', {key:'Escape', bubbles:true, cancelable:true}));
-    return {opened, closed:!details.open, focusRestored: document.activeElement === summary};
+    const imports = document.getElementById('inbox-tab-imports');
+    const messages = document.getElementById('inbox-tab-messages');
+    const review = document.getElementById('inbox-tab-reviews');
+    const importsPanel = document.getElementById('inbox-panel-imports');
+    const messagePanel = document.getElementById('inbox-panel-messages');
+    if (!imports || !messages || !review || !importsPanel || !messagePanel)
+      return { arrow: false, home: false, actionVisible: false, restored: false };
+    imports.focus();
+    imports.dispatchEvent(new KeyboardEvent('keydown', {key: 'ArrowRight', bubbles: true, cancelable: true}));
+    const arrow = document.activeElement === messages && messages.getAttribute('aria-selected') === 'true' && !messagePanel.hidden;
+    const messageAction = messagePanel.querySelector('[data-open-dialog="new-inbox-message-dialog"]');
+    const actionVisible = Boolean(messageAction && messageAction.getBoundingClientRect().height >= 44);
+    messages.dispatchEvent(new KeyboardEvent('keydown', {key: 'Home', bubbles: true, cancelable: true}));
+    const home = document.activeElement === review && review.getAttribute('aria-selected') === 'true';
+    return { arrow, home, actionVisible, restored: !document.getElementById('inbox-panel-reviews').hidden && importsPanel.hidden && messagePanel.hidden };
   })()`,
   );
-  return { ...rest, menuKeyboard };
+  return { ...rest, tabKeyboard };
 }
 
 export async function validateLongEvidence(cdp, outputDir) {
@@ -189,7 +199,7 @@ export async function inspectViewport(cdp, suggestionId, width, height) {
       const decision = selected?.querySelector('[data-review-approve]');
       const decisionButtons = selected ? [...selected.querySelectorAll('.review-decision-actions button')].filter(visible) : [];
       const reviewLayout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
-      const secondary = document.querySelector('.inbox-review-secondary');
+      const panels = [...document.querySelectorAll('[data-inbox-tab-panel]')];
       const filters = [...document.querySelectorAll('[data-review-filter]')].filter(visible);
       return {
         viewport: ${JSON.stringify(`${width}x${height}`)},
@@ -206,7 +216,7 @@ export async function inspectViewport(cdp, suggestionId, width, height) {
         selectedEvidenceReady: selected?.dataset.reviewEvidenceState === 'ready' && visible(evidence),
         decisionAfterEvidence: Boolean(evidence && decision && (evidence.compareDocumentPosition(decision) & Node.DOCUMENT_POSITION_FOLLOWING)),
         detailActionsFitViewport: decisionButtons.length > 0 && decisionButtons.every((button) => { const rect = button.getBoundingClientRect(); return rect.left >= 0 && rect.right <= window.innerWidth && rect.height >= 34; }),
-        secondaryBelowReview: Boolean(reviewLayout && secondary) && secondary.getBoundingClientRect().top >= reviewLayout.getBoundingClientRect().bottom,
+        otherPanelsHidden: Boolean(reviewLayout) && panels.length === 4 && panels.filter((panel) => !panel.hidden).length === 1 && !document.getElementById('inbox-panel-reviews')?.hidden,
         buttonLabels: buttons.map((button) => (button.textContent || '').trim()),
         filterValues: filters.map((filter) => filter.value),
         cardRect: card ? (() => {
@@ -228,7 +238,8 @@ export async function validateGoldenReviewViewport(cdp, suggestionId) {
     stateMatrix.complete &&
     stateMatrix.negativePass &&
     golden.tokenMatch &&
-    golden.hasNeutralLinks &&
+    golden.tabSemantics &&
+    golden.contextActions &&
     golden.financialDirectionColorFromTokens &&
     golden.selectedAriaPressed === "true" &&
     golden.disabledTokensMatch &&
@@ -238,11 +249,12 @@ export async function validateGoldenReviewViewport(cdp, suggestionId) {
     golden.contrast.every((ratio) => ratio >= 4.5) &&
     golden.row.minTouchHeight &&
     golden.nav.minTouchHeight &&
-    golden.trigger.minTouchHeight &&
+    golden.activeTab.minTouchHeight &&
     golden.refresh.minTouchHeight &&
-    golden.menuKeyboard.opened &&
-    golden.menuKeyboard.closed &&
-    golden.menuKeyboard.focusRestored;
+    golden.tabKeyboard.arrow &&
+    golden.tabKeyboard.home &&
+    golden.tabKeyboard.actionVisible &&
+    golden.tabKeyboard.restored;
   const negativePass =
     negative.baseline.contained &&
     negative.baseline.hitTarget &&
