@@ -447,31 +447,31 @@ function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
 function renderCashFlowProjection(
   projection: DashboardCashFlowProjectionViewModel | undefined,
 ): string {
-  if (!projection) return "";
-
-  return `
-    <section class="cash-flow-section" aria-labelledby="dashboard-cash-flow-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Horizonte</p>
-          <h2 id="dashboard-cash-flow-title">Projeção de caixa — ${projection.horizonDays} dias</h2>
-          <p class="muted">Referência: ${escapeHtml(projection.referenceDateLabel)}. Cada moeda mantém sua própria série.</p>
-        </div>
-      </div>
-      <div class="cash-flow-dashboard-grid">
-        ${projection.currencies
-          .map((item) =>
-            renderCard({
-              title: item.currency,
-              className: "cash-flow-dashboard-card",
-              bodyHtml: renderCashFlowDecisionMetrics(item),
-              footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
-            }),
-          )
-          .join("")}
-      </div>
-    </section>
-  `;
+  if (!projection || projection.currencies.length === 0) {
+    return `<section class="panel cash-flow-section dashboard-flow-wide" data-dashboard-region="cash-flow"
+      aria-labelledby="dashboard-cash-flow-title">
+      <div class="section-heading"><div><p class="eyebrow">Horizonte de 30 dias</p>
+        <h2 id="dashboard-cash-flow-title">Fluxo de caixa projetado</h2></div></div>
+      ${renderEmptyState({title:"Projeção indisponível.",description:"Não há dados suficientes para montar a série de caixa neste momento."})}
+    </section>`;
+  }
+  return `<section class="panel cash-flow-section dashboard-flow-wide" data-dashboard-region="cash-flow"
+    aria-labelledby="dashboard-cash-flow-title">
+    <div class="section-heading"><div>
+      <p class="eyebrow">Horizonte · ${projection.horizonDays} dias</p>
+      <h2 id="dashboard-cash-flow-title">Fluxo de caixa projetado</h2>
+      <p class="muted">Projeção de caixa — ${projection.horizonDays} dias · Referência: ${escapeHtml(projection.referenceDateLabel)}.
+        Séries independentes por moeda; valores previstos não são saldo disponível.</p>
+    </div></div>
+    <div class="cash-flow-dashboard-grid">
+      ${projection.currencies.map((item) => renderCard({
+        title: item.currency,
+        className: "cash-flow-dashboard-card",
+        bodyHtml: renderCashFlowDecisionMetrics(item),
+        footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
+      })).join("")}
+    </div>
+  </section>`;
 }
 
 function renderCashFlowDecisionMetrics(
@@ -515,14 +515,14 @@ function renderCashFlowDecisionMetrics(
 function renderProjectionChart(
   points: readonly { date: string; balance: { amountMinor: number; currency: string } }[],
 ): string {
-  if (points.length < 2) return "";
+  if (points.length < 2) return `<p class="muted dashboard-chart-empty">Série diária insuficiente para exibir o gráfico de fluxo de caixa.</p>`;
   const amounts = points.map((point) => point.balance.amountMinor);
   const minimum = Math.min(...amounts);
   const maximum = Math.max(...amounts);
   const range = Math.max(1, maximum - minimum);
   const coordinates = amounts.map((amount, index) => {
-    const x = 8 + (index * 284) / (amounts.length - 1);
-    const y = 74 - ((amount - minimum) / range) * 60;
+    const x = 32 + (index * 656) / (amounts.length - 1);
+    const y = 180 - ((amount - minimum) / range) * 145;
     return x.toFixed(1) + "," + y.toFixed(1);
   });
   const first = points[0];
@@ -533,11 +533,13 @@ function renderProjectionChart(
     `Saldo inicial do gráfico: ${formatMinorCurrency(first.balance.amountMinor, { currency: first.balance.currency })}. ` +
     `Saldo final: ${formatMinorCurrency(last.balance.amountMinor, { currency: last.balance.currency })}.`;
   return `<figure class="dashboard-projection-chart" role="img" aria-label="${escapeHtml(description)}">
-    <svg viewBox="0 0 300 86" aria-hidden="true" focusable="false">
-      <line x1="8" y1="76" x2="292" y2="76" stroke="currentColor" opacity=".18"/>
-      <line x1="8" y1="44" x2="292" y2="44" stroke="currentColor" opacity=".12"/>
+    <svg viewBox="0 0 720 210" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+      <line x1="32" y1="182" x2="688" y2="182" stroke="currentColor" opacity=".18"/>
+      <line x1="32" y1="108" x2="688" y2="108" stroke="currentColor" opacity=".12"/>
+      <line x1="32" y1="35" x2="688" y2="35" stroke="currentColor" opacity=".10"/>
       <polyline points="${coordinates.join(" ")}" fill="none" stroke="currentColor"
-        stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+        stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+      
     </svg>
     <p>${escapeHtml(formatDateOnly(first.date))} a ${escapeHtml(formatDateOnly(last.date))}</p>
   </figure>`;
