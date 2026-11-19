@@ -124,7 +124,7 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     <button type="button" class="sf-button sf-button-primary sf-focus-ring" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
   `;
   const importActionHtml = `
-    <button type="button" class="sf-button sf-button-primary sf-focus-ring" data-open-dialog="csv-import-dialog" title="Importar extrato CSV, OFX ou outros formatos">${icon("upload", 14)} Importar extrato</button>
+    <button type="button" class="sf-button sf-button-primary sf-focus-ring" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
   `;
   const financialInsightFallbackHtml = reviewQueue.ok
     ? renderFinancialInsightFallback(reviewQueue.data.financialInsights?.insufficientData ?? [])
