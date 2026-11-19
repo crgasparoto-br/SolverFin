@@ -33,6 +33,8 @@ export interface DashboardOverview {
     dueOn: string;
     amountMinor: number;
     overdue: boolean;
+    accountId?: string;
+    cardId?: string;
   }[];
   payableTotals: { currency: string; amountMinor: number; overdueMinor: number; count: number }[];
   categoryExpenses: { currency: string; category: string; amountMinor: number }[];
@@ -114,6 +116,16 @@ function renderCardAdvice(data: DashboardOverview): string {
   </section>`;
 }
 
+function payableHref(bill: DashboardOverview["payables"][number]): string {
+  if (bill.source === "invoice") {
+    return bill.cardId
+      ? `/cartoes?cardId=${encodeURIComponent(bill.cardId)}&invoiceId=${encodeURIComponent(bill.id)}`
+      : "/cartoes";
+  }
+  const month = encodeURIComponent(bill.dueOn.slice(0, 7));
+  return `/lancamentos?month=${month}${bill.accountId ? "&accountId=" + encodeURIComponent(bill.accountId) : ""}`;
+}
+
 function renderPayables(data: DashboardOverview): string {
   return `<section class="panel dashboard-widget dashboard-payables" aria-label="Contas a pagar no mês">
     ${title("Compromissos", "Contas a pagar · " + data.periodStartOn.slice(0, 7), {
@@ -140,7 +152,7 @@ function renderPayables(data: DashboardOverview): string {
           (bill) => `<tr>
         <td><time datetime="${escape(bill.dueOn)}">${date(bill.dueOn)}</time>
           ${bill.overdue ? '<span class="dashboard-danger">Vencido</span>' : ""}</td>
-        <td><a href="${bill.source === "invoice" ? "/cartoes?invoiceId=" : "/lancamentos?entryId="}${encodeURIComponent(bill.id)}">${escape(bill.description)}</a>
+        <td><a href="${escape(payableHref(bill))}">${escape(bill.description)}</a>
           <small>${bill.source === "invoice" ? "Fatura de cartão" : "Lançamento previsto"}</small></td>
         <td class="dashboard-money">${money(bill.amountMinor, bill.currency)}</td>
       </tr>`,
