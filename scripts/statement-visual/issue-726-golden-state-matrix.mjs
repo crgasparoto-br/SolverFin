@@ -52,13 +52,14 @@ export async function validateGoldenStateMatrix(cdp) {
         };
         const same = (a,b) => { const x=rgb(a),y=rgb(b); return x.length===3 && y.length===3 && x.every((n,i)=>n===y[i]); };
         const lum = (value) => { const c=rgb(value).map((n)=>{ const v=n/255; return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4; }); return c.length===3 ? 0.2126*c[0]+0.7152*c[1]+0.0722*c[2] : 0; };
-        const a=lum(css.color),b=lum(css.backgroundColor);
-        const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
         const state=${JSON.stringify(state)};
         const isTab=element.matches('[role="tab"]');
         const rawBackground=css.backgroundColor;
+        // Measure transparent tab surfaces against the visible parent surface, not black.
         const background=isTab && rawBackground==='rgba(0, 0, 0, 0)' ? token('surface') : rawBackground;
         const color=css.color,border=isTab ? css.borderBottomColor : css.borderTopColor;
+        const a=lum(color),b=lum(background);
+        const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
         const rest=isTab
           ? rawBackground==='rgba(0, 0, 0, 0)' && same(color,token('muted-text'))
           : same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
