@@ -217,46 +217,82 @@ async function renderScenario(variant) {
       if (variant.startsWith("multi-currency")) blocks.push(currencyBlock("USD", variant));
       return response({
         currencyBlocks: blocks,
-        recentItems:
-          variant === "long-content"
-            ? [
-                {
-                  description: "QA " + "Descrição extensa de compromisso financeiro ".repeat(8),
-                  kind: "expense",
-                  amountMinor: 2500,
-                  currency: "BRL",
-                  occurredOn: "2026-07-12",
-                  status: "posted",
-                },
-              ]
-            : [],
+        recentItems: [
+          { description: variant === "long-content" ? "QA " + "Descrição extensa de compromisso financeiro ".repeat(8) : "Compra no mercado",
+            kind:"expense", amountMinor:2500, currency:"BRL", occurredOn:"2026-07-12", status:"posted" },
+          { description:"Salário", kind:"income", amountMinor:25000, currency:"BRL", occurredOn:"2026-07-01", status:"posted" },
+        ],
       });
     }
     if (path === "/api/cash-flow-projection") {
+      const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
       return response({
-        referenceDate: "2026-07-01",
-        horizonDays: 30,
-        from: "2026-07-02",
-        to: "2026-07-31",
-        currencyBlocks: (variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"]).map(
-          (currency) => ({ currency, closingBalanceMinor: 10200 }),
+        referenceDate: "2026-07-01", horizonDays: 30,
+        from: "2026-07-02", to: "2026-07-31",
+        currencyBlocks: currencies.map((currency) => ({
+          currency, closingBalanceMinor: 10200,
+          points: Array.from({ length: 30 }, (_, index) => ({
+            date: "2026-07-" + String(index + 2).padStart(2, "0"),
+            closingBalanceMinor: 17000 - index * 240 + (index % 5) * 140,
+          })),
+        })),
+        freeToSpend: {
+          referenceDate: "2026-07-01", horizonDays: 30,
+          currencyBlocks: currencies.map((currency) => ({
+            currency, status: "available", minimumProjectedBalanceMinor: 9800,
+            minimumBalanceOn: "2026-07-25", freeToSpendMinor: 9000, projectedDeficitMinor: 0,
+          })),
+        },
+      });
+    }
+    if (path === "/api/dashboard-overview") {
+      if (variant === "partial") {
+        return response({error: {message:"Complemento temporariamente indisponível"}}, 503);
+      }
+      const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
+      return response({
+        referenceDate: "2026-07-01", purchaseToday: "2026-07-01",
+        purchaseOn: "2026-07-01", periodStartOn: "2026-07-01", periodEndOn: "2026-07-31",
+        accountBalances: currencies.flatMap((currency) => [
+          { id:"visual-cash-" + currency,
+            name: variant === "long-content"
+              ? "Conta corrente com nome muito longo ".repeat(4)
+              : "Conta Principal " + currency,
+            kind:"checking", currency, balanceMinor:123450 },
+          { id:"visual-reserve-" + currency, name:"Reserva " + currency,
+            kind:"investment", currency, balanceMinor:150000 },
+        ]),
+        cardSpending: currencies.flatMap((currency) => [
+          { id:"card-a-" + currency, name:"Cartão Principal " + currency, currency, spentMinor:78000 },
+          { id:"card-b-" + currency, name:"Cartão Reserva " + currency, currency, spentMinor:24000 },
+        ]),
+        cardSpendingTotals: currencies.map((currency) =>
+          ({ currency, amountMinor:102000, count:2 })),
+        cardAdvice: [
+          { id:"card-a-BRL", name:"Cartão Principal BRL", currency:"BRL",
+            closingOn:"2026-07-18", dueOn:"2026-08-18", daysUntilPayment:48, recommended:true },
+          { id:"card-b-BRL", name:"Cartão Reserva BRL", currency:"BRL",
+            closingOn:"2026-07-10", dueOn:"2026-08-10", daysUntilPayment:40, recommended:false },
+        ],
+        payables: currencies.flatMap((currency) => [
+          { id:"payable-" + currency, source:"transaction", description:"Conta de energia " + currency,
+            currency, dueOn:"2026-07-04", amountMinor:12000, overdue:false, accountId:"visual-cash-" + currency },
+          { id:"invoice-" + currency, source:"invoice", description:"Fatura cartão " + currency,
+            currency, dueOn:"2026-07-18", amountMinor:34000, overdue:false, cardId:"card-a-" + currency },
+        ]),
+        payableTotals: currencies.map((currency) =>
+          ({ currency, amountMinor:46000, overdueMinor:0, count:2 })),
+        categoryExpenses: currencies.flatMap((currency) =>
+          ["Alimentação","Moradia","Transporte","Saúde"].map((category,index) => ({
+            currency, category, amountMinor:[36000,23000,11000,6500][index],
+          }))
         ),
-        ...(variant === "multi-currency"
-          ? {
-              freeToSpend: {
-                referenceDate: "2026-07-01",
-                horizonDays: 30,
-                currencyBlocks: ["BRL", "USD"].map((currency) => ({
-                  currency,
-                  status: "available",
-                  minimumProjectedBalanceMinor: 10000,
-                  minimumBalanceOn: "2026-07-10",
-                  freeToSpendMinor: 9000,
-                  projectedDeficitMinor: 0,
-                })),
-              },
-            }
-          : {}),
+        monthlyTrend: currencies.flatMap((currency) =>
+          ["2026-02","2026-03","2026-04","2026-05","2026-06","2026-07"].map((month,index) => ({
+            currency, month, incomeMinor:120000 + index * 11500,
+            expensesMinor:80000 + (index % 3) * 8500,
+          }))
+        ),
       });
     }
     if (path === "/api/bank-message-inbox") {
