@@ -53,9 +53,17 @@ try {
     );
     assert.equal(received.route, "/notificacoes");
     assert.equal(received.rootVisible, true);
-    assert.equal(received.receivedTabActive, true, "Received notifications should be the active SSR tab");
+    assert.equal(
+      received.receivedTabActive,
+      true,
+      "Received notifications should be the active SSR tab",
+    );
     assert.equal(received.emptyState, true, "A new profile must render an honest empty state");
-    assert.equal(received.preferencesNotMounted, true, "Inactive preferences must not compete with the inbox");
+    assert.equal(
+      received.preferencesNotMounted,
+      true,
+      "Inactive preferences must not compete with the inbox",
+    );
     assert.equal(received.unreadCount, "0 não lidas");
     assert.equal(received.receivedHasNoHorizontalOverflow, true, `${width}px inbox overflow`);
     await screenshot(browser.cdp, join(outputDir, `issue-693-notifications-${width}.png`));
@@ -80,7 +88,11 @@ try {
       })()`,
     );
     assert.equal(configured.preferencesTabActive, true, "Preferences should be the active SSR tab");
-    assert.equal(configured.receivedNotMounted, true, "Inactive inbox must not compete with preferences");
+    assert.equal(
+      configured.receivedNotMounted,
+      true,
+      "Inactive inbox must not compete with preferences",
+    );
     assert.equal(configured.preferenceCount, 12, "All event/channel preferences must be visible");
     assert.equal(configured.preferenceGroupCount, 4, "Event preferences must be grouped");
     assert.equal(configured.groupsHaveThreeChannels, true, "Each event needs its three channels");
@@ -89,7 +101,10 @@ try {
     assert.equal(configured.noHorizontalOverflow, true, `${width}px preferences overflow`);
     assert.equal(received.viewportWidth, width);
     report.viewports.push({ width, height, ...received, ...configured });
-    await screenshot(browser.cdp, join(outputDir, `issue-693-notifications-preferences-${width}.png`));
+    await screenshot(
+      browser.cdp,
+      join(outputDir, `issue-693-notifications-preferences-${width}.png`),
+    );
   }
 
   const preference = await evaluate(

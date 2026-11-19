@@ -103,7 +103,7 @@ export async function renderNotificationsPage(
   const preferencesSection = [
     '<section class="notifications-section notifications-preferences" aria-label="Preferências de notificações">',
     '<header class="notifications-section-header"><div><h2>Preferências de canais</h2>',
-    '<p>Escolha como deseja receber cada tipo de aviso.</p></div></header>',
+    "<p>Escolha como deseja receber cada tipo de aviso.</p></div></header>",
     preferences.ok
       ? renderPreferences(preferences.data.preferences)
       : '<p class="notifications-error" role="alert">' + escapeHtml(preferences.error) + "</p>",
@@ -172,7 +172,8 @@ function renderFeed(page: NotificationPage, offset: number, profileId: string | 
 
 function renderNotification(item: NotificationItem): string {
   const title = NOTIFICATION_TITLES[item.facts.code] ?? "Notificação indisponível";
-  const description = FACT_LABELS[item.facts.code] ?? "Os detalhes deste aviso estão indisponíveis.";
+  const description =
+    FACT_LABELS[item.facts.code] ?? "Os detalhes deste aviso estão indisponíveis.";
   const occurredAt = new Date(item.occurredAt);
   const dateText = Number.isNaN(occurredAt.getTime())
     ? "Data indisponível"

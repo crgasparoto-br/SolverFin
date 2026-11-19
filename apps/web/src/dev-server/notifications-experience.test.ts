@@ -52,7 +52,11 @@ globalThis.fetch = (async (input: string | URL | Request) => {
             id: "00000000-0000-4000-8000-000000000809",
             occurredAt: "2026-11-18T12:00:00.000Z",
             readAt: "2026-11-19T13:00:00.000Z",
-            facts: { code: "insight_available", severity: "info", effectiveOn: "<svg/onload=alert(1)>" },
+            facts: {
+              code: "insight_available",
+              severity: "info",
+              effectiveOn: "<svg/onload=alert(1)>",
+            },
           },
         ],
         total: 22,
@@ -88,14 +92,13 @@ try {
   assert.ok(!received.includes('class="notifications-section notifications-preferences"'));
   assert.ok(!received.includes('data-preference-event="'), "Inactive preferences are not mounted");
   assert.ok(
-    received.includes('href="/notificacoes?tab=preferencias&amp;offset=20&amp;profileId=' + profileId + '"'),
+    received.includes(
+      'href="/notificacoes?tab=preferencias&amp;offset=20&amp;profileId=' + profileId + '"',
+    ),
     "Preferences tab must preserve the selected financial profile",
   );
 
-  const configured = await renderNotificationsPage(
-    "demo",
-    new URL(base + "&tab=preferencias"),
-  );
+  const configured = await renderNotificationsPage("demo", new URL(base + "&tab=preferencias"));
   assert.ok(configured.includes('data-notifications-view="preferencias"'));
   assert.ok(configured.includes("Preferências de canais"));
   assert.ok(configured.includes('aria-current="page"'));
