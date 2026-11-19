@@ -41,7 +41,11 @@ export function renderInboxTabNavigation(active: InboxTab): string {
       "</button>"
     );
   }).join("");
-  return '<div class="sf-tabs inbox-tab-list" role="tablist" aria-label="Assuntos da Inbox">' + controls + "</div>";
+  return (
+    '<div class="sf-tabs inbox-tab-list" role="tablist" aria-label="Assuntos da Inbox">' +
+    controls +
+    "</div>"
+  );
 }
 
 export function renderInboxTabPanel(id: InboxTab, html: string, active: InboxTab): string {
