@@ -142,13 +142,16 @@ try {
     }
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
-    if (state === "multi-currency" || state === "long-content") {
-      await screenshot(
-        browser.cdp,
-        join(outputDir, "issue-811-approved-mockup-" + state + "-" + width + ".png"),
-      );
-    }
     const item = { width, height, screenshot: stem + ".png", measurements };
+    if (state === "multi-currency" || state === "long-content") {
+      const mockupStem = "issue-811-approved-mockup-" + state + "-" + width;
+      await screenshot(browser.cdp, join(outputDir, mockupStem + ".png"));
+      item.mockupViewportScreenshot = mockupStem + ".png";
+      item.fullMockupHeight = await captureApprovedMockupFullPage(
+        browser.cdp, join(outputDir, mockupStem + "-full.png"), width,
+      );
+      item.fullMockupScreenshot = mockupStem + "-full.png";
+    }
     if (state === "error" && width <= 390) {
       const negative = await evaluate(browser.cdp, "(" + navigationStretchProbe.toString() + ")()");
       assert.equal(
@@ -422,6 +425,24 @@ async function renderScenario(variant) {
   } finally {
     globalThis.fetch = originalFetch;
   }
+}
+
+async function captureApprovedMockupFullPage(cdp, path, viewportWidth) {
+  const layout = await cdp.send("Page.getLayoutMetrics");
+  const bounds = layout.cssContentSize ?? layout.contentSize;
+  const pageHeight = Math.ceil(bounds?.height ?? 0);
+  assert.ok(
+    pageHeight > 0 && pageHeight <= 16000,
+    "Full Dashboard mockup must fit Chrome's 16000px screenshot safety bound",
+  );
+  const screenshotResult = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: true,
+    clip: { x: 0, y: 0, width: viewportWidth, height: pageHeight, scale: 1 },
+  });
+  await writeFile(path, Buffer.from(screenshotResult.data, "base64"));
+  return pageHeight;
 }
 
 function currencyBlock(currency, variant) {
