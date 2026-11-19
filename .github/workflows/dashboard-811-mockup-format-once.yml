@@ -1,0 +1,57 @@
+name: Dashboard 811 approved mockup format once
+
+on:
+  push:
+    branches:
+      - feat/811-dashboard-financial-cockpit
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/811-dashboard-financial-cockpit
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Format revised files
+        run: |
+          npx prettier --write \
+            apps/api/src/repositories/dashboard-overview.ts \
+            apps/web/src/dev-server/dashboard-page.ts \
+            apps/web/src/dev-server/dashboard-presenter.ts \
+            apps/web/src/dev-server/dashboard-overview-view.ts \
+            apps/web/src/dev-server/dashboard-styles.ts \
+            apps/web/src/dev-server/dashboard-page.test.ts \
+            apps/web/src/dev-server/dashboard-page-currency.test.ts \
+            apps/web/src/dev-server/dashboard-overview-view.test.ts \
+            scripts/statement-visual/issue-724-dashboard-scenarios.mjs \
+            docs/DASHBOARD.md
+      - name: Commit formatting
+        run: |
+          if ! git diff --quiet; then
+            git config user.name 'github-actions[bot]'
+            git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+            git add \
+            apps/api/src/repositories/dashboard-overview.ts \
+            apps/web/src/dev-server/dashboard-page.ts \
+            apps/web/src/dev-server/dashboard-presenter.ts \
+            apps/web/src/dev-server/dashboard-overview-view.ts \
+            apps/web/src/dev-server/dashboard-styles.ts \
+            apps/web/src/dev-server/dashboard-page.test.ts \
+            apps/web/src/dev-server/dashboard-page-currency.test.ts \
+            apps/web/src/dev-server/dashboard-overview-view.test.ts \
+            scripts/statement-visual/issue-724-dashboard-scenarios.mjs \
+            docs/DASHBOARD.md
+            git commit -m 'style(dashboard): apply approved mockup formatting (#811)'
+            git push origin HEAD:feat/811-dashboard-financial-cockpit
+          fi
