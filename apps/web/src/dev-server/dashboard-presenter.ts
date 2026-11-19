@@ -1,4 +1,5 @@
 import { formatDateOnly } from "@solverfin/shared";
+import type { DashboardOverview } from "./dashboard-overview-view.js";
 
 import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
@@ -151,6 +152,7 @@ export interface DashboardDecisionModuleViewModel {
 }
 
 export interface DashboardContentViewModel {
+  overview?: DashboardOverview;
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
   cashFlowProjection?: DashboardCashFlowProjectionViewModel;
   /** Top canonical insights (#621): deduplicated and ordered by the API, limited to 3. */
@@ -164,6 +166,7 @@ export interface DashboardContentViewModel {
 export type DashboardScreenViewModel = ScreenViewModel<DashboardContentViewModel>;
 
 export interface DashboardPresenterInput {
+  overview?: ApiSuccess<DashboardOverview> | ApiFailure;
   summary: ApiSuccess<DashboardFinancialSummary> | ApiFailure;
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure;
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure;
@@ -213,6 +216,7 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
 
   return successScreen(context, {
     currencySummaries: input.summary.data.currencyBlocks.map(presentCurrencySummary),
+    ...(input.overview?.ok ? { overview: input.overview.data } : {}),
     ...(input.cashFlowProjection.ok
       ? { cashFlowProjection: presentCashFlowProjection(input.cashFlowProjection.data) }
       : {}),
@@ -235,6 +239,7 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       input.pendingReview,
       input.openInvoices,
       input.cashFlowProjection,
+      input.overview,
     ),
     decisionModules: decisionModules(),
   });
@@ -422,8 +427,10 @@ function presentDataQuality(
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
   cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure,
+  overview?: ApiSuccess<DashboardOverview> | ApiFailure,
 ): DashboardDataQualityViewModel {
   if (
+    (overview !== undefined && !overview.ok) ||
     !pendingReview.ok ||
     !openInvoices.ok ||
     !cashFlowProjection.ok ||
@@ -477,6 +484,7 @@ function decisionModules(): DashboardDecisionModuleViewModel[] {
 function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenance[] {
   return [
     provenance("/api/financial-summary", input.summary.ok),
+    ...(input.overview === undefined ? [] : [provenance("/api/dashboard-overview", input.overview.ok)]),
     provenance("/api/cash-flow-projection?horizonDays=30", input.cashFlowProjection.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
