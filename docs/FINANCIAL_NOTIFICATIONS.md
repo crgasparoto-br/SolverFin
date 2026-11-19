@@ -71,7 +71,15 @@ available=false sem link. Ao abrir uma origem acessível, a interface preserva o
 As leituras SSR das rotas de destino Inbox, Orçamentos e Cartões propagam esse
 perfil às consultas autenticadas da API; a API revalida a autorização do usuário
 para o perfil solicitado, sem modificar a escolha persistida da sessão.
-Página /notificacoes fornece leitura, paginação e preferências sem eventos artificiais.
+A página `/notificacoes` organiza os recursos em duas áreas: **Recebidas**,
+com a lista cronológica, estado lida/não lida, data, moeda quando informada,
+paginação e navegação validada até a origem; e **Preferências**, com os quatro
+tipos de evento e três canais por tipo. As áreas são acessadas por links SSR
+nativos (aba `tab=preferencias`), mantendo `offset` e `profileId` nas trocas
+sem depender de JavaScript. A interface usa os tokens e primitivas Golden
+Screen; estados vazio e de erro não inventam eventos. As alterações de leitura e
+preferência continuam autenticadas, com confirmação ou erro no próprio contexto.
+Push e e-mail continuam sem envio real, mesmo quando uma preferência é salva.
 
 ## Privacidade e auditoria
 
