@@ -4,8 +4,8 @@ import { evaluate, sleep } from "./cdp.mjs";
 // accepting a neutral rest token as evidence for hover, press or keyboard focus.
 const CONTROLS = [
   ["row", ".inbox-review-queue [data-review-select]", true],
-  ["navigation", ".inbox-review-nav", false],
-  ["new-entry", ".inbox-new-entry-trigger", false],
+  ["navigation", "#inbox-tab-imports", false],
+  ["other-tab", "#inbox-tab-messages", false],
   ["refresh", "[data-review-refresh]", true],
   ["filter", '[data-review-filter="kind"]', true],
   ["dialog-select", "#ai-review-dialog [data-review-edit-form] select", true],
@@ -52,12 +52,18 @@ export async function validateGoldenStateMatrix(cdp) {
         };
         const same = (a,b) => { const x=rgb(a),y=rgb(b); return x.length===3 && y.length===3 && x.every((n,i)=>n===y[i]); };
         const lum = (value) => { const c=rgb(value).map((n)=>{ const v=n/255; return v<=0.04045?v/12.92:((v+0.055)/1.055)**2.4; }); return c.length===3 ? 0.2126*c[0]+0.7152*c[1]+0.0722*c[2] : 0; };
-        const a=lum(css.color),b=lum(css.backgroundColor);
-        const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
         const state=${JSON.stringify(state)};
-        const background=css.backgroundColor,color=css.color,border=css.borderTopColor;
-        const rest=same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
-          [token('border'),token('line')].some((value)=>same(border,value));
+        const isTab=element.matches('[role="tab"]');
+        const rawBackground=css.backgroundColor;
+        // Measure transparent tab surfaces against the visible parent surface, not black.
+        const background=isTab && rawBackground==='rgba(0, 0, 0, 0)' ? token('surface') : rawBackground;
+        const color=css.color,border=isTab ? css.borderBottomColor : css.borderTopColor;
+        const a=lum(color),b=lum(background);
+        const contrast=Number(((Math.max(a,b)+0.05)/(Math.min(a,b)+0.05)).toFixed(2));
+        const rest=isTab
+          ? rawBackground==='rgba(0, 0, 0, 0)' && same(color,token('muted-text'))
+          : same(background,token('surface')) && (same(color,token('primary')) || (element.matches('select') && same(color,token('text')))) &&
+            [token('border'),token('line')].some((value)=>same(border,value));
         const hover=same(background,token('neutral-control-hover')) && same(color,token('neutral-control-text-hover')) &&
           same(border,token('neutral-control-border-hover'));
         const pressed=same(background,token('neutral-control-active-hover')) && same(color,token('neutral-control-text-hover')) &&

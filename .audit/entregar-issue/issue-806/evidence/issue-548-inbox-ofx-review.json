@@ -1,0 +1,47 @@
+{
+  "generatedAt": "2026-11-19T17:56:44.710Z",
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "browser": "Google Chrome 157.0.8103.78",
+  "failures": [],
+  "viewport": "390x844",
+  "desktopViewport": "1440x900",
+  "normalFileName": "issue-548-ofx-mwnuqqra.ofx",
+  "ambiguousFileName": "issue-548-timeout-mwnuqqra.ofx",
+  "setup": {
+    "dialogOpen": true,
+    "fileAccepted": true,
+    "delimiterHidden": true,
+    "mappingHidden": true
+  },
+  "preview": {
+    "bodyFitsViewport": true,
+    "previewText": "Pronto para revisão1 válidas · 0 com problemaLinhaDataDescriçãoTipoValor120/07/2026Compra OFX visual mwnuqqraDespesaR$ 43,21",
+    "createEnabled": true,
+    "delimiterHidden": true,
+    "mappingHidden": true
+  },
+  "created": {
+    "href": "http://127.0.0.1:5173/inbox?importBatchId=be54a5b2-d382-4a34-9a4f-2bc6a56142d7",
+    "listText": "issue-548-ofx-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026hierarquia-mwnuqm8l.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026attachment-import-mwnuorum.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026",
+    "detailText": "Pessoal Demoissue-548-ofx-mwnuqqra.ofxConta: Carteira dinheiro demo · Recebido em 19/11/2026Em revisãoVerificar duplicidadesDescartar loteVálidas 1Pendentes 1Bloqueadas 0Aprovadas 0Conciliadas 0Ignoradas como duplicadas 0Rejeitadas 0Lançamentos vinculados 0Transferências 0 · R$ 0,00Problemas 0 Selecionar elegíveis0 selecionada(s) · Receitas R$ 0,00 · Despesas R$ 0,00 · Transferências 0 (R$ 0,00) Confirmar selecionadasDe Até Aplicar períodoLimpar1 de 1 linha(s)Sel.StatusLinhaDataTipoDescriçãoValorContaObservaçõesAções1ElegívelData20/07/202620/07/2026TipoDespesaDespesaValorR$ 43,21R$ 43,21DescriçãoCompra OFX visual mwnuqqraCompra OFX visual mwnuqqraConta de referênciaCarteira dinheiro demoCarteira dinheiro demoAnexos da importaçãoAdicione arquivos relacionados a este registro.Nenhum anexo.Adicione um arquivo relacionado a este registro.TipoComprovante/reciboFaturaExtratoContratoMensagemOutroArquivoAté 5 MiB. O arquivo fica privado e só pode ser aberto no perfil autorizado.Adicionar anexo",
+    "bodyFitsViewport": true
+  },
+  "restored": {
+    "headingFocused": true,
+    "detailText": "Pessoal Demoissue-548-ofx-mwnuqqra.ofxConta: Carteira dinheiro demo · Recebido em 19/11/2026Em revisãoVerificar duplicidadesDescartar loteVálidas 1Pendentes 1Bloqueadas 0Aprovadas 0Conciliadas 0Ignoradas como duplicadas 0Rejeitadas 0Lançamentos vinculados 0Transferências 0 · R$ 0,00Problemas 0 Selecionar elegíveis0 selecionada(s) · Receitas R$ 0,00 · Despesas R$ 0,00 · Transferências 0 (R$ 0,00) Confirmar selecionadasDe Até Aplicar períodoLimpar1 de 1 linha(s)Sel.StatusLinhaDataTipoDescriçãoValorContaObservaçõesAções1ElegívelData20/07/202620/07/2026TipoDespesaDespesaValorR$ 43,21R$ 43,21DescriçãoCompra OFX visual mwnuqqraCompra OFX visual mwnuqqraConta de referênciaCarteira dinheiro demoCarteira dinheiro demoAnexos da importaçãoAdicione arquivos relacionados a este registro.Nenhum anexo.Adicione um arquivo relacionado a este registro.TipoComprovante/reciboFaturaExtratoContratoMensagemOutroArquivoAté 5 MiB. O arquivo fica privado e só pode ser aberto no perfil autorizado.Adicionar anexo"
+  },
+  "recovered": {
+    "dialogOpen": true,
+    "retryEnabled": true,
+    "listText": "issue-548-timeout-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026issue-548-ofx-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026hierarquia-mwnuqm8l.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026attachment-import-mwnuorum.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026",
+    "previewStatus": "A solicitação demorou demais. O estado será atualizado antes de permitir nova tentativa."
+  },
+  "desktop": {
+    "bodyFitsViewport": true,
+    "listText": "issue-548-timeout-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026issue-548-ofx-mwnuqqra.ofxOFX · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026hierarquia-mwnuqm8l.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026attachment-import-mwnuorum.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026",
+    "detailText": "Pessoal Demoissue-548-ofx-mwnuqqra.ofxConta: Carteira dinheiro demo · Recebido em 19/11/2026Em revisãoVerificar duplicidadesDescartar loteVálidas 1Pendentes 1Bloqueadas 0Aprovadas 0Conciliadas 0Ignoradas como duplicadas 0Rejeitadas 0Lançamentos vinculados 0Transferências 0 · R$ 0,00Problemas 0 Selecionar elegíveis0 selecionada(s) · Receitas R$ 0,00 · Despesas R$ 0,00 · Transferências 0 (R$ 0,00) Confirmar selecionadasDe Até Aplicar períodoLimpar1 de 1 linha(s)Sel.StatusLinhaDataTipoDescriçãoValorContaObservaçõesAções1ElegívelData20/07/202620/07/2026TipoDespesaDespesaValorR$ 43,21R$ 43,21DescriçãoCompra OFX visual mwnuqqraCompra OFX visual mwnuqqraConta de referênciaCarteira dinheiro demoCarteira dinheiro demoAnexos da importaçãoAdicione arquivos relacionados a este registro.Nenhum anexo.Adicione um arquivo relacionado a este registro.TipoComprovante/reciboFaturaExtratoContratoMensagemOutroArquivoAté 5 MiB. O arquivo fica privado e só pode ser aberto no perfil autorizado.Adicionar anexo",
+    "headingVisible": true
+  },
+  "screenshot": "issue-548-inbox-ofx-mobile-390x844.png",
+  "desktopScreenshot": "issue-548-inbox-ofx-desktop-1440x900.png"
+}

@@ -1,0 +1,325 @@
+{
+  "schema_version": 1,
+  "identity": {
+    "repository": "crgasparoto-br/SolverFin",
+    "base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+    "head_sha": "2f202aedf58a2866c69659d260984e2d0bc43334",
+    "base_ref": "develop",
+    "head_ref": "feat/806-inbox-tabs-refactor",
+    "pr_number": 807,
+    "issue_number": 806,
+    "merge_preview_sha": "eceda67c8c240cf1248a2b3586027bb2fd386e1b"
+  },
+  "verdict": "REPROVADA",
+  "rejection_id": "audit-rejection:622fe8b6-a43a-4408-a377-4145f7a5f67c",
+  "requirements": [
+    {
+      "id": "R-001",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "R-002",
+      "status": "covered",
+      "evidence_path": "evidence/visual/issue-565-ai-review-queue.json",
+      "evidence_sha256": "494afbf46d37938cc0278e597a4ac15c822384134d83ed69c7adc3179b535afc"
+    },
+    {
+      "id": "R-003",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-002-chrome.txt",
+      "evidence_sha256": "fca33ee425e0917fe1e4f8b5797a63631fc447fb7245a0911cdf3b97db5b847d"
+    },
+    {
+      "id": "R-004",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "R-005",
+      "status": "covered",
+      "evidence_path": "evidence/visual/issue-565-ai-review-queue.json",
+      "evidence_sha256": "494afbf46d37938cc0278e597a4ac15c822384134d83ed69c7adc3179b535afc"
+    },
+    {
+      "id": "R-006",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-001-css.txt",
+      "evidence_sha256": "8623ca5ea2db9d080748a8199ef90edb5375ea0d260e66bbef381c634ee4048a"
+    },
+    {
+      "id": "R-007",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "R-008",
+      "status": "covered",
+      "evidence_path": "evidence/visual/visual-gate-index.json",
+      "evidence_sha256": "12d523e6b17a83731b54ae25d12c637404e26fdae23e3a65da8abde265ab36e2"
+    },
+    {
+      "id": "R-009",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-003-cert.txt",
+      "evidence_sha256": "b10376c2fe053f596414cbd7828c65429d48f94b9dabc77b5e3668a8e66ed603"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-001",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "S-002",
+      "status": "covered",
+      "evidence_path": "evidence/visual/issue-565-ai-review-queue.json",
+      "evidence_sha256": "494afbf46d37938cc0278e597a4ac15c822384134d83ed69c7adc3179b535afc"
+    },
+    {
+      "id": "S-003",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-002-chrome.txt",
+      "evidence_sha256": "fca33ee425e0917fe1e4f8b5797a63631fc447fb7245a0911cdf3b97db5b847d"
+    },
+    {
+      "id": "S-004",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "S-005",
+      "status": "covered",
+      "evidence_path": "evidence/visual/issue-565-ai-review-queue.json",
+      "evidence_sha256": "494afbf46d37938cc0278e597a4ac15c822384134d83ed69c7adc3179b535afc"
+    },
+    {
+      "id": "S-006",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-001-css.txt",
+      "evidence_sha256": "8623ca5ea2db9d080748a8199ef90edb5375ea0d260e66bbef381c634ee4048a"
+    },
+    {
+      "id": "S-007",
+      "status": "covered",
+      "evidence_path": "evidence/source/ci-scope.txt",
+      "evidence_sha256": "e696098c96294030696c1239e2b0f6528d1d92e9eef6f3ec302fab9eff3256a4"
+    },
+    {
+      "id": "S-008",
+      "status": "covered",
+      "evidence_path": "evidence/visual/visual-gate-index.json",
+      "evidence_sha256": "12d523e6b17a83731b54ae25d12c637404e26fdae23e3a65da8abde265ab36e2"
+    },
+    {
+      "id": "S-009",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-003-cert.txt",
+      "evidence_sha256": "b10376c2fe053f596414cbd7828c65429d48f94b9dabc77b5e3668a8e66ed603"
+    },
+    {
+      "id": "S-010",
+      "status": "covered",
+      "evidence_path": "evidence/findings/A-002-chrome.txt",
+      "evidence_sha256": "fca33ee425e0917fe1e4f8b5797a63631fc447fb7245a0911cdf3b97db5b847d"
+    }
+  ],
+  "changed_path_reviews": [
+    {
+      "id": "apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/00-apps__web__src__dev-server__inbox-category-hierarchy-first-render.test.ts.diff",
+      "evidence_sha256": "940dd4c4f7fcbcfe388eb64e97fa7f70aeb851cd690c3bb934bb9bdeca90de86"
+    },
+    {
+      "id": "apps/web/src/dev-server/inbox-page.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-002",
+        "S-003",
+        "S-004"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/01-apps__web__src__dev-server__inbox-page.ts.diff",
+      "evidence_sha256": "efd1aa86091a45308441a5b14d3c13b68e324f837369e857ac17bf1f3a755409"
+    },
+    {
+      "id": "apps/web/src/dev-server/inbox-review-archetype.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/02-apps__web__src__dev-server__inbox-review-archetype.test.ts.diff",
+      "evidence_sha256": "dbecaea059593d6f2467831f3ac17b4ae0e268e778650a3b366eb2d6944695be"
+    },
+    {
+      "id": "apps/web/src/dev-server/inbox-review-archetype.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-001",
+        "S-002",
+        "S-003",
+        "S-004",
+        "S-005"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/03-apps__web__src__dev-server__inbox-review-archetype.ts.diff",
+      "evidence_sha256": "4cff894fe90f3c50fbfa6cdfe77f430ff46a2dad6ad30251396638d3a468def7"
+    },
+    {
+      "id": "apps/web/src/dev-server/inbox-tabs.test.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/04-apps__web__src__dev-server__inbox-tabs.test.ts.diff",
+      "evidence_sha256": "fe023defa7f2f0fe234164a2d2afcade7e524730fa58c852f33fc576cd26d38b"
+    },
+    {
+      "id": "apps/web/src/dev-server/inbox-tabs.ts",
+      "status": "covered",
+      "surface_ids": [
+        "S-001",
+        "S-005",
+        "S-006"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/05-apps__web__src__dev-server__inbox-tabs.ts.diff",
+      "evidence_sha256": "19955561fa2f71403602f6343627b5ea1f4e06b536152102da5aa9b17862806c"
+    },
+    {
+      "id": "docs/BANK_MESSAGE_INBOX.md",
+      "status": "covered",
+      "surface_ids": [
+        "S-003",
+        "S-004"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/06-docs__BANK_MESSAGE_INBOX.md.diff",
+      "evidence_sha256": "d8ac14fe4497c03c74ed07eb088a5171f3cd34c753c3902b25c036bd6ce2f1ad"
+    },
+    {
+      "id": "scripts/statement-visual/inbox-date-filter.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/07-scripts__statement-visual__inbox-date-filter.mjs.diff",
+      "evidence_sha256": "19b9414a656a43608f778c8a504b4638dd3d15f31f3f1ab0a47a1305e92415e4"
+    },
+    {
+      "id": "scripts/statement-visual/inbox-interface-refinement.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/08-scripts__statement-visual__inbox-interface-refinement.mjs.diff",
+      "evidence_sha256": "4e6dbda9d6a687bcaed3db37cb6e9f47eb8f78d6b91d7f6d1f4c192d52ac76ff"
+    },
+    {
+      "id": "scripts/statement-visual/issue-565-ai-review-queue.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/09-scripts__statement-visual__issue-565-ai-review-queue.mjs.diff",
+      "evidence_sha256": "401f44fa4f235b4528a12c2110f53101ecb55e4b4fc7d9ca66a8976bd716becf"
+    },
+    {
+      "id": "scripts/statement-visual/issue-726-golden-controls.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/10-scripts__statement-visual__issue-726-golden-controls.mjs.diff",
+      "evidence_sha256": "3a8c1853ba0ad17bf8de778f0f18fdf3df897cf518718bf1b7a382e3f1e0ef99"
+    },
+    {
+      "id": "scripts/statement-visual/issue-726-golden-state-matrix.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/11-scripts__statement-visual__issue-726-golden-state-matrix.mjs.diff",
+      "evidence_sha256": "22ad2957a86b3aefaac1a407da5ef1cdfa50aa064862d8f80c78cd9a11f2e188"
+    },
+    {
+      "id": "scripts/statement-visual/issue-726-inbox-controls.mjs",
+      "status": "covered",
+      "surface_ids": [
+        "S-010",
+        "S-008"
+      ],
+      "reason": "Reviewed exact Git diff, consumer compatibility and the changed test oracle, including the Chrome visual failure where applicable.",
+      "evidence_path": "evidence/paths/12-scripts__statement-visual__issue-726-inbox-controls.mjs.diff",
+      "evidence_sha256": "a5eb8135b840f2d214819504456734456a12574377d94e28f598c849d05a03b8"
+    }
+  ],
+  "previous_findings": [],
+  "findings": [
+    {
+      "id": "A-001",
+      "requirement_id": "R-006",
+      "surface_id": "S-006",
+      "disposition": "blocking",
+      "severity": "high",
+      "root_cause": "Specificity of global neutral button CSS overrides selected and idle Inbox tab style in actual Chrome.",
+      "evidence_path": "evidence/findings/A-001-css.txt",
+      "evidence_sha256": "8623ca5ea2db9d080748a8199ef90edb5375ea0d260e66bbef381c634ee4048a"
+    },
+    {
+      "id": "A-002",
+      "requirement_id": "R-007",
+      "surface_id": "S-010",
+      "disposition": "blocking",
+      "severity": "high",
+      "root_cause": "Registered Chrome visual scenarios have outdated tab-aware selectors and state setup and terminate in failure.",
+      "evidence_path": "evidence/findings/A-002-chrome.txt",
+      "evidence_sha256": "fca33ee425e0917fe1e4f8b5797a63631fc447fb7245a0911cdf3b97db5b847d"
+    },
+    {
+      "id": "A-003",
+      "requirement_id": "R-009",
+      "surface_id": "S-009",
+      "disposition": "blocking",
+      "severity": "high",
+      "root_cause": "Delivery did not publish PR #807/issue #806 exact SHA certified handoff; inherited packet belongs to another target.",
+      "evidence_path": "evidence/findings/A-003-cert.txt",
+      "evidence_sha256": "b10376c2fe053f596414cbd7828c65429d48f94b9dabc77b5e3668a8e66ed603"
+    }
+  ],
+  "blocking_ids": [
+    "A-001",
+    "A-002",
+    "A-003"
+  ],
+  "coverage": "comprehensive",
+  "discovery_closed": true,
+  "audit_transport": "certified-handoff",
+  "handoff_status": "handoff-not-produced / inherited-base-artifact"
+}

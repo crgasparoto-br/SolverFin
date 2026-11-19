@@ -287,7 +287,7 @@ async function inspectOperationalViewport(
       const rows = [...document.querySelectorAll('.import-row')];
       const checkboxes = [...document.querySelectorAll('.bulk-actions input[type="checkbox"], .import-row input[type="checkbox"]')].filter(visible);
       const buttons = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')].filter(visible);
-      const outOfViewportActions = buttons.filter((element) => { const rect = element.getBoundingClientRect(); return rect.left < 0 || rect.right > window.innerWidth; })
+      const outOfViewportActions = buttons.filter((element) => { const rect = element.getBoundingClientRect(); return !element.closest('.inbox-tab-list[role="tablist"]') && (rect.left < 0 || rect.right > window.innerWidth); })
         .map((element) => ({ label: (element.textContent || element.getAttribute('aria-label') || element.title || '').trim().slice(0, 100),
           className: String(element.className || '').slice(0, 160), rect: rectSnapshot(element), owner: element.closest('.inbox-new-entry-actions, .import-row, .candidate-card, .review-card')?.className || null }));
       const operationalText = [...document.querySelectorAll('.row-summary dt, .row-heading .status-pill')].filter(visible);

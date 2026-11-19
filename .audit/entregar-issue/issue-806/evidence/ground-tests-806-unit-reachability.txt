@@ -1,0 +1,16 @@
+HEAD: ac25e1c390008575bb9a11395f61cd90303ae52b
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/inbox-category-hierarchy-first-render.test.ts
+REACHED: apps/web/src/dev-server/inbox-review-archetype.test.ts
+REACHED: apps/web/src/dev-server/inbox-tabs.test.ts
+SOURCE: https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806796
+JOB: CRITICAL validation id=135764615637; Run npm run test concluded success
+Runner observed: [test] dev-server/inbox-review-archetype.test.js; passed at 2026-11-19T17:56:28Z
+Runner observed: [test] dev-server/inbox-tabs.test.js; passed 3/3 at 2026-11-19T17:56:28Z
+Observed PASS: selects default and deep-link tabs without losing existing query parameters
+Observed PASS: renders exactly four linked ARIA tabs and only one visible panel
+Observed PASS: changes panels by click and keyboard while respecting URL, history and anchors
+Runner observed: [test] dev-server/inbox-category-hierarchy-first-render.test.js; CI full npm test exit 0
+SOURCE_VISUAL_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089
+NOTE: excerpt is authored from authenticated CI observations; independent reviewer must check original GitHub job log
