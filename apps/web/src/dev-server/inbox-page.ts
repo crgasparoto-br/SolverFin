@@ -23,6 +23,7 @@ import {
   type FinancialInsightFallbackView,
 } from "./inbox-review-archetype.js";
 import { icon } from "./icons.js";
+import { resolveInboxInitialTab } from "./inbox-tabs.js";
 import { buildImportStatementUrl } from "./import-statement-navigation.js";
 import { dialogScript, sharedDialogStyles, sharedShellStyles } from "./shared-styles.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
@@ -119,9 +120,11 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     : undefined;
   const activeProfileLabel = activeProfile?.name ?? "Perfil financeiro ativo";
 
-  const actionsHtml = `
-    <button type="button" class="secondary-button" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
-    <button type="button" class="secondary-button" data-open-dialog="csv-import-dialog" title="Importar extrato CSV">${icon("upload", 14)} Importar extrato</button>
+  const messageActionHtml = `
+    <button type="button" class="sf-button sf-button-primary sf-focus-ring" data-open-dialog="new-inbox-message-dialog" title="Registrar nova mensagem">${icon("send", 14)} Registrar mensagem</button>
+  `;
+  const importActionHtml = `
+    <button type="button" class="sf-button sf-button-primary sf-focus-ring" data-open-dialog="csv-import-dialog" title="Importar extrato CSV, OFX ou outros formatos">${icon("upload", 14)} Importar extrato</button>
   `;
   const financialInsightFallbackHtml = reviewQueue.ok
     ? renderFinancialInsightFallback(reviewQueue.data.financialInsights?.insufficientData ?? [])
@@ -181,7 +184,9 @@ export async function renderInboxPage(token: string, url?: URL): Promise<string>
     : `<p class="error" role="alert">Não foi possível carregar as outras sugestões: ${escapeHtml(reviewQueue.error)}</p>`;
   const statusHtml = `${categoryStatusHtml}${reviewQueueStatusHtml}`;
   const reviewSurfaceHtml = renderInboxReviewArchetype({
-    actionsHtml,
+    importActionHtml,
+    messageActionHtml,
+    initialTab: resolveInboxInitialTab(url),
     suggestionsHtml,
     messagesHtml,
     evidenceHtml,
