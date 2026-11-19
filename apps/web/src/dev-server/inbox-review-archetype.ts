@@ -37,8 +37,7 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
   const headerHtml = renderPageHeader({
     eyebrow: "Entradas e revisão",
     title: "Inbox",
-    description:
-      "Revise pendências e acompanhe suas entradas financeiras por assunto.",
+    description: "Revise pendências e acompanhe suas entradas financeiras por assunto.",
     actionsHtml: "",
   });
   const activeTab = props.initialTab ?? "reviews";
