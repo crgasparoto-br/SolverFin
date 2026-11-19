@@ -16,6 +16,7 @@ export interface DashboardOverview {
     balanceMinor: number;
   }[];
   cardSpending: { id: string; name: string; currency: string; spentMinor: number }[];
+  cardSpendingTotals?: { currency: string; amountMinor: number; count: number }[];
   cardAdvice: {
     id: string;
     name: string;
