@@ -9,7 +9,7 @@ originais. Os novos dados são produzidos no backend com escopo de
 ## Entrada e referência temporal
 
 - `purchaseOn=YYYY-MM-DD` (opcional): simula apenas a classificação de cartão para compras
-  entre hoje (UTC) e os próximos 365 dias. Formato inválido, data inexistente,
+  entre o dia civil atual de São Paulo e os próximos 365 dias. Formato inválido, data inexistente,
   dia anterior ou data fora do limite retornam HTTP 400 com
   `DASHBOARD_PURCHASE_DATE_INVALID`.
 - Sem `purchaseOn`, a compra simulada considera a data civil atual de São Paulo, coerente com o Extrato. `purchaseToday` informa essa data; o dia de referência dos agregados financeiros continua UTC.
@@ -102,6 +102,8 @@ As ações da tabela navegam para os módulos canônicos `/lancamentos`,
 
 ## Verificações
 
+- `apps/api/src/dashboard-overview.integration.test.ts`: fatura em aberto, baixa,
+  posição de caixa e não duplicidade de compromissos e despesas.
 - `apps/api/src/repositories/dashboard-overview.test.ts`: fechamentos,
   vencimentos, ano bissexto, elegibilidade, empates e entrada de data.
 - `apps/web/src/dev-server/dashboard-page.test.ts`: widgets SSR, escopo,
