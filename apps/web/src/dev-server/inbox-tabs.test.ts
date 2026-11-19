@@ -35,6 +35,7 @@ describe("Inbox subject tabs", () => {
     const nav = renderInboxTabNavigation("reviews");
     assert.match(nav, /role="tablist" aria-label="Assuntos da Inbox"/);
     assert.equal((nav.match(/role="tab"/g) ?? []).length, 4);
+    assert.doesNotMatch(nav, /data-button-variant="neutral"/);
     assert.equal((nav.match(/aria-selected="true"/g) ?? []).length, 1);
     assert.equal((nav.match(/tabindex="0"/g) ?? []).length, 1);
     const panels = IDS.map((id) => renderInboxTabPanel(id, "<p>Teste</p>", "reviews")).join("");

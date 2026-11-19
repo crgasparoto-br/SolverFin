@@ -26,7 +26,7 @@ export function renderInboxTabNavigation(active: InboxTab): string {
   const controls = TABS.map((tab) => {
     const selected = tab.id === active;
     return (
-      '<button type="button" class="sf-tab sf-focus-ring inbox-tab" data-button-variant="neutral" role="tab" id="inbox-tab-' +
+      '<button type="button" class="sf-tab sf-focus-ring inbox-tab" role="tab" id="inbox-tab-' +
       tab.id +
       '" data-inbox-tab="' +
       tab.id +

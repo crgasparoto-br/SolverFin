@@ -235,8 +235,11 @@ async function inspectViewport(
       const unselectedStyle = unselectedBatch ? getComputedStyle(unselectedBatch) : null;
       const listStyle = batchList ? getComputedStyle(batchList) : null;
       const rowStyle = rows[0] ? getComputedStyle(rows[0]) : null;
+      // A tab can extend beyond the visible part of its own horizontal scroller.
+      // That is not document overflow; keep checking ordinary actionable controls.
       const actionElements = [...document.querySelectorAll('.inbox-page button, .inbox-page .button-link')]
-        .filter((element) => element.getBoundingClientRect().width > 0);
+        .filter((element) => element.getBoundingClientRect().width > 0 &&
+          !element.closest('.inbox-tab-list[role="tablist"]'));
       const compactFilterButtons = [...document.querySelectorAll('.inbox-page .compact-filters button')]
         .filter((element) => element.getBoundingClientRect().width > 0);
       const focusIsVisible = document.activeElement === selectedBatch
