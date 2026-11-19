@@ -271,8 +271,14 @@ async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
         (scope.match(/class="maintenance-item rule-item"/g) ?? []).length,
         expected.length,
       );
-      for (const title of expected) assert.ok(scope.includes(title), title);
-      for (const title of excluded) assert.ok(!scope.includes(title), title);
+      const rows = [...scope.matchAll(/<article class="maintenance-item rule-item">([\s\S]*?)<\/article>/g)]
+        .map((match) => match[1]);
+      for (const title of expected) {
+        assert.ok(rows.some((row) => row.includes(title)), `${filter}: regra ausente: ${title}`);
+      }
+      for (const title of excluded) {
+        assert.ok(!rows.some((row) => row.includes(title)), `${filter}: regra indevida: ${title}`);
+      }
       assert.match(scope, /<details class="rule-disclosure">/);
       assert.match(
         scope,
