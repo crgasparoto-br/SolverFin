@@ -512,7 +512,7 @@ function renderAutomationRuleRow(
         <p><span>Então</span> ${escapeHtml(actions[0] ?? "Ação não informada")}${moreActions}</p>
       </div>
       <details class="rule-disclosure">
-        <summary class="rule-detail-trigger sf-focus-ring"><span>Ver condições e ações</span>${icon("chevron-down", 16)}</summary>
+        <summary class="rule-detail-trigger sf-focus-ring" aria-label="Ver condições e ações da regra ${escapeHtml(rule.name)}"><span>Ver condições e ações</span>${icon("chevron-down", 16)}</summary>
         <div class="rule-detail-grid">
           <section class="rule-detail" aria-label="Condições da regra ${escapeHtml(rule.name)}">
             <h3>Condições</h3>
