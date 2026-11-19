@@ -167,57 +167,52 @@ function renderPayables(data: DashboardOverview): string {
 }
 
 function renderAccounts(data: DashboardOverview): string {
-  const accounts = [...data.accountBalances].sort(
-    (a, b) =>
-      Number(b.kind === "checking") - Number(a.kind === "checking") || a.name.localeCompare(b.name),
-  );
-  return `<section class="panel dashboard-widget" aria-label="Saldo por conta">
-    ${title("Posição individual", "Saldo por conta", { href: "/contas-cartoes", label: "Todas as contas" })}
-    ${
-      accounts.length
-        ? `<div class="dashboard-compact-rows">
-      ${accounts
-        .map(
-          (account) => `<div class="dashboard-account-row">
-        <span>${icon(account.kind === "checking" ? "building-2" : "wallet", 17)}
-          <a href="/lancamentos?accountId=${encodeURIComponent(account.id)}&amp;currency=${encodeURIComponent(account.currency)}">${escape(account.name)}</a>
-          <small>${escape(account.kind === "checking" ? "Conta corrente" : account.kind === "investment" ? "Investimento" : account.kind === "savings" ? "Poupança" : "Carteira/outra conta")}</small>
-        </span>
-        <strong>${money(account.balanceMinor, account.currency)}</strong>
-      </div>`,
-        )
-        .join("")}
-    </div>`
-        : empty("Nenhuma conta ativa cadastrada.")
-    }
-    <p class="muted dashboard-footnote">Saldos de investimentos não são automaticamente considerados liquidez imediata.</p>
+  const accounts = [...data.accountBalances].sort((a, b) => a.name.localeCompare(b.name));
+  const current = accounts.filter((account) => account.kind === "checking");
+  const other = accounts.filter((account) => account.kind !== "checking");
+  const rows = (items: typeof accounts) => items.map((account) => `
+    <div class="dashboard-account-row">
+      <span>${icon(account.kind === "checking" ? "building-2" : "wallet", 17)}
+        <a href="/lancamentos?accountId=${encodeURIComponent(account.id)}&amp;currency=${encodeURIComponent(account.currency)}">${escape(account.name)}</a>
+        <small>${escape(account.kind === "checking" ? "Conta corrente" : account.kind === "investment" ? "Investimento" : account.kind === "savings" ? "Poupança" : "Carteira/outra conta")}</small>
+      </span>
+      <strong>${money(account.balanceMinor, account.currency)}</strong>
+    </div>`).join("");
+  return `<section class="panel dashboard-widget dashboard-account-balances" aria-label="Saldo por conta corrente">
+    ${title("Posição individual", "Saldo por conta corrente", { href: "/contas-cartoes", label: "Todas as contas" })}
+    ${current.length ? `<div class="dashboard-compact-rows">${rows(current)}</div>` : empty("Nenhuma conta corrente ativa cadastrada.")}
+    ${other.length ? `<details class="dashboard-other-accounts"><summary>Outras contas e investimentos (${other.length})</summary>
+      <div class="dashboard-compact-rows">${rows(other)}</div></details>` : ""}
+    <p class="muted dashboard-footnote">Valores por conta e moeda. Investimentos não são tratados como dinheiro imediatamente disponível.</p>
   </section>`;
 }
 
 function renderCardSpending(data: DashboardOverview): string {
-  return `<section class="panel dashboard-widget" aria-label="Gastos por cartão de crédito">
-    ${title("Compras realizadas", "Gastos por cartão · mês corrente", {
-      href: "/cartoes",
-      label: "Ver cartões",
-    })}
-    ${
-      data.cardSpending.length
-        ? `<div class="dashboard-compact-rows">
-      ${data.cardSpending
-        .map(
-          (card) => `<div class="dashboard-card-spend-row">
-        <span>${icon("credit-card", 17)}
-          <a href="/cartoes?cardId=${encodeURIComponent(card.id)}">${escape(card.name)}</a>
-          <small>Compras em ${escape(card.currency)}</small>
-        </span>
-        <strong>${money(card.spentMinor, card.currency)}</strong>
-      </div>`,
-        )
-        .join("")}
-    </div>`
-        : empty("Nenhum cartão ativo para acompanhar.")
-    }
-    <p class="muted dashboard-footnote">Compras por data econômica. O pagamento da fatura não cria uma segunda despesa; o mês da compra pode diferir do ciclo da fatura.</p>
+  const maxByCurrency = new Map<string, number>();
+  for (const card of data.cardSpending) {
+    maxByCurrency.set(card.currency, Math.max(maxByCurrency.get(card.currency) ?? 0, card.spentMinor));
+  }
+  return `<section class="panel dashboard-widget dashboard-card-spending" aria-label="Gastos por cartão de crédito">
+    ${title("Compras realizadas", "Gastos por cartão", { href: "/cartoes", label: "Ver cartões" })}
+    ${data.cardSpending.length
+      ? `<div class="dashboard-card-spend-bars">${data.cardSpending.map((card) => {
+          const max = maxByCurrency.get(card.currency) || 1;
+          const width = Math.max(0, Math.min(100, card.spentMinor / max * 100));
+          return `<div class="dashboard-spend-visual-item">
+            <div class="dashboard-card-spend-row">
+              <span>${icon("credit-card", 17)}
+                <a href="/cartoes?cardId=${encodeURIComponent(card.id)}">${escape(card.name)}</a>
+                <small>${escape(card.currency)}</small>
+              </span>
+              <strong>${money(card.spentMinor, card.currency)}</strong>
+            </div>
+            <div class="dashboard-bar-track" role="img" aria-label="${escape(card.name)}: ${money(card.spentMinor, card.currency)} em compras neste mês">
+              <span style="width:${width.toFixed(1)}%"></span>
+            </div>
+          </div>`;
+        }).join("")}</div>`
+      : empty("Nenhum cartão ativo para acompanhar.")}
+    <p class="muted dashboard-footnote">Compras do mês corrente, não o pagamento das faturas. Barras comparadas somente dentro da mesma moeda.</p>
   </section>`;
 }
 
@@ -252,50 +247,70 @@ function renderCategories(data: DashboardOverview): string {
 function renderTrend(data: DashboardOverview): string {
   const rows = data.monthlyTrend;
   const maxByCurrency = new Map<string, number>();
-  for (const row of rows)
-    maxByCurrency.set(
-      row.currency,
-      Math.max(maxByCurrency.get(row.currency) ?? 0, row.incomeMinor, row.expensesMinor),
-    );
-  return `<section class="panel dashboard-widget" aria-label="Evolução de receitas e despesas">
-    ${title("Histórico", "Evolução financeira · até 6 meses", { href: "/relatorios", label: "Relatórios" })}
-    ${
-      rows.length
-        ? `<div class="dashboard-trend">
-      ${rows
-        .map((row) => {
-          const max = maxByCurrency.get(row.currency) || 1;
-          return `<div class="dashboard-trend-item"><strong>${escape(row.month)} · ${escape(row.currency)}</strong>
-          <div><span class="dashboard-trend-income" style="width:${((row.incomeMinor / max) * 100).toFixed(1)}%"></span>
-            <small>Receitas ${money(row.incomeMinor, row.currency)}</small></div>
-          <div><span class="dashboard-trend-expense" style="width:${((row.expensesMinor / max) * 100).toFixed(1)}%"></span>
-            <small>Despesas ${money(row.expensesMinor, row.currency)}</small></div></div>`;
-        })
-        .join("")}
-    </div>`
-        : empty("Histórico insuficiente para evolução financeira.")
-    }
+  for (const row of rows) {
+    maxByCurrency.set(row.currency, Math.max(maxByCurrency.get(row.currency) ?? 0, row.incomeMinor, row.expensesMinor));
+  }
+  return `<section class="panel dashboard-widget dashboard-evolution" aria-label="Evolução financeira">
+    ${title("Histórico", "Evolução financeira · 6 meses", { href: "/relatorios", label: "Relatórios" })}
+    ${rows.length ? `<div class="dashboard-trend" role="list" aria-label="Receitas e despesas mensais em colunas">
+      ${rows.map((row) => {
+        const max = maxByCurrency.get(row.currency) || 1;
+        const incomeHeight = Math.max(1, row.incomeMinor / max * 100);
+        const expenseHeight = Math.max(1, row.expensesMinor / max * 100);
+        return `<div class="dashboard-trend-item" role="listitem">
+          <div class="dashboard-trend-columns" role="img"
+            aria-label="${escape(row.month)} em ${escape(row.currency)}: receitas ${money(row.incomeMinor, row.currency)}, despesas ${money(row.expensesMinor, row.currency)}">
+            <span class="dashboard-trend-income" style="height:${incomeHeight.toFixed(1)}%"></span>
+            <span class="dashboard-trend-expense" style="height:${expenseHeight.toFixed(1)}%"></span>
+          </div>
+          <strong>${escape(row.month.slice(5))}/${escape(row.month.slice(2, 4))}</strong>
+          <small>${escape(row.currency)}</small>
+          <span class="dashboard-trend-sr">Receitas ${money(row.incomeMinor, row.currency)}; despesas ${money(row.expensesMinor, row.currency)}</span>
+        </div>`;
+      }).join("")}
+    </div><div class="dashboard-trend-legend" aria-label="Legenda">
+      <span><i class="dashboard-trend-income"></i> Receitas</span>
+      <span><i class="dashboard-trend-expense"></i> Despesas</span>
+    </div>` : empty("Histórico insuficiente para evolução financeira.")}
   </section>`;
 }
 
 export function renderDashboardOverview(data: DashboardOverview | undefined): string {
-  if (!data)
-    return `<section class="panel dashboard-widget" data-overview="unavailable">
-    ${title("Detalhamento", "Visão por conta, cartão e compromissos")}
-    ${empty("Os dados complementares estão temporariamente indisponíveis. Os saldos e indicadores canônicos acima continuam visíveis.")}
-  </section>`;
-  return `<div class="dashboard-overview" data-overview="available">
-    <div class="dashboard-operations-grid">
-      ${renderCardAdvice(data)}
-      ${renderPayables(data)}
+  if (!data) return `<div class="dashboard-overview" data-layout="approved-mockup" data-overview="unavailable">
+    <div class="dashboard-operations-grid" data-dashboard-region="bills-and-accounts">
+      ${unavailableWidget("dashboard-payables", "Contas a pagar")}
+      ${unavailableWidget("dashboard-accounts", "Saldo por conta corrente")}
     </div>
-    <div class="dashboard-operations-grid">
-      ${renderAccounts(data)}
-      ${renderCardSpending(data)}
+    <div class="dashboard-operations-grid" data-dashboard-region="credit-cards">
+      ${unavailableWidget("dashboard-credit-cards", "Gastos por cartão")}
+      ${unavailableWidget("dashboard-best-card", "Melhor cartão para comprar hoje")}
     </div>
-    <div class="dashboard-operations-grid">
-      ${renderCategories(data)}
-      ${renderTrend(data)}
+    <div class="dashboard-operations-grid" data-dashboard-region="analysis">
+      ${unavailableWidget("dashboard-categories", "Despesas por categoria")}
+      ${unavailableWidget("dashboard-evolution", "Evolução financeira")}
     </div>
+  </div>`;
+  return `<div class="dashboard-overview" data-layout="approved-mockup" data-overview="available">
+    <div class="dashboard-operations-grid" data-dashboard-region="bills-and-accounts">
+      <div id="dashboard-payables" class="dashboard-widget-slot">${renderPayables(data)}</div>
+      <div id="dashboard-accounts" class="dashboard-widget-slot">${renderAccounts(data)}</div>
+    </div>
+    <div class="dashboard-operations-grid" data-dashboard-region="credit-cards">
+      <div id="dashboard-credit-cards" class="dashboard-widget-slot">${renderCardSpending(data)}</div>
+      <div id="dashboard-best-card" class="dashboard-widget-slot">${renderCardAdvice(data)}</div>
+    </div>
+    <div class="dashboard-operations-grid" data-dashboard-region="analysis">
+      <div id="dashboard-categories" class="dashboard-widget-slot">${renderCategories(data)}</div>
+      <div id="dashboard-evolution" class="dashboard-widget-slot">${renderTrend(data)}</div>
+    </div>
+  </div>`;
+}
+
+function unavailableWidget(id: string, name: string): string {
+  return `<div id="${escape(id)}" class="dashboard-widget-slot">
+    <section class="panel dashboard-widget" aria-label="${escape(name)}">
+      ${title("Detalhamento", name)}
+      ${empty("Dados temporariamente indisponíveis. Os indicadores confirmados continuam visíveis.")}
+    </section>
   </div>`;
 }
