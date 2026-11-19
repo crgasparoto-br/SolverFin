@@ -5,6 +5,7 @@ import { renderDashboardOverview, type DashboardOverview } from "./dashboard-ove
 
 const example: DashboardOverview = {
   referenceDate: "2026-11-19",
+  purchaseToday: "2026-11-19",
   purchaseOn: "2026-11-19",
   periodStartOn: "2026-11-01",
   periodEndOn: "2026-11-30",
