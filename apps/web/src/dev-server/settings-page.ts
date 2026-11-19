@@ -313,36 +313,51 @@ function renderNewAutomationRuleDialog(
 ): string {
   return `
     <dialog id="new-automation-rule-dialog" class="master-dialog" aria-labelledby="new-automation-rule-title" aria-describedby="new-rule-dialog-context">
-            <div class="dialog-heading">
+      <div class="dialog-heading">
         <p class="eyebrow">Nova automação</p>
         <h2 id="new-automation-rule-title">Nova regra automática</h2>
       </div>
       <p class="settings-dialog-context" id="new-rule-dialog-context">Cada execução gera sugestões revisáveis, não confirma lançamentos.</p>
-      <form data-api-form data-api-path="/api/automation-rules" data-api-success="Regra criada. Atualizando..." class="edit-grid" novalidate>
-        <label>Nome<input name="name" required autofocus placeholder="Ex.: Mercado vira Alimentação" /></label>
-        <label>Prioridade<input name="priority" type="number" value="100" /></label>
-        <label>Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
-        <label>Tipo
-          <select name="kind">
-            <option value="">Qualquer</option>
-            <option value="expense">Despesa</option>
-            <option value="income">Receita</option>
-            <option value="transfer">Transferência</option>
-          </select>
-        </label>
-        ${renderAmountField("amountMinMinor", "Valor mínimo", "amount-minor-error")}
-        ${renderAmountField("amountMaxMinor", "Valor máximo", "amount-max-error")}
-        ${renderAccountField(accounts)}
-        ${renderCategoryField(categories)}
-        <label>Status sugerido
-          <select name="actionStatus">
-            <option value="">Não alterar</option>
-            <option value="suggested">Sugerido</option>
-            <option value="planned">Planejado</option>
-            <option value="posted">Realizado</option>
-          </select>
-        </label>
-        <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
+      <form data-api-form data-api-path="/api/automation-rules" data-api-success="Regra criada. Atualizando..." class="edit-grid settings-rule-form" novalidate>
+        <fieldset class="settings-rule-fieldset">
+          <legend>Identificação</legend>
+          <div class="settings-rule-fields">
+            <label>Nome<input name="name" required autofocus placeholder="Ex.: Mercado vira Alimentação" /></label>
+            <label>Prioridade<input name="priority" type="number" value="100" /></label>
+          </div>
+        </fieldset>
+        <fieldset class="settings-rule-fieldset">
+          <legend>Quando aplicar</legend>
+          <div class="settings-rule-fields">
+            <label class="full-span">Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
+            <label>Tipo
+              <select name="kind">
+                <option value="">Qualquer</option>
+                <option value="expense">Despesa</option>
+                <option value="income">Receita</option>
+                <option value="transfer">Transferência</option>
+              </select>
+            </label>
+            ${renderAmountField("amountMinMinor", "Valor mínimo", "amount-minor-error")}
+            ${renderAmountField("amountMaxMinor", "Valor máximo", "amount-max-error")}
+          </div>
+        </fieldset>
+        <fieldset class="settings-rule-fieldset">
+          <legend>O que sugerir</legend>
+          <div class="settings-rule-fields">
+            ${renderAccountField(accounts)}
+            ${renderCategoryField(categories)}
+            <label>Status sugerido
+              <select name="actionStatus">
+                <option value="">Não alterar</option>
+                <option value="suggested">Sugerido</option>
+                <option value="planned">Planejado</option>
+                <option value="posted">Realizado</option>
+              </select>
+            </label>
+            <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
+          </div>
+        </fieldset>
         <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button></div>
       </form>
     </dialog>
