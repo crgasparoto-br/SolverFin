@@ -4,6 +4,7 @@ import { icon } from "./icons.js";
 
 export interface DashboardOverview {
   referenceDate: string;
+  purchaseToday: string;
   purchaseOn: string;
   periodStartOn: string;
   periodEndOn: string;
@@ -69,10 +70,10 @@ function title(eyebrow: string, heading: string, link?: { href: string; label: s
 function renderCardAdvice(data: DashboardOverview): string {
   const winners = data.cardAdvice.filter((card) => card.recommended);
   const first = winners[0];
-  const today = data.purchaseOn === data.referenceDate;
+  const today = data.purchaseOn === data.purchaseToday;
   const simulation = `<form method="get" action="/dashboard" class="dashboard-simulate">
     <label for="dashboard-purchase-date">Simular data da compra</label>
-    <input id="dashboard-purchase-date" type="date" name="purchaseOn" min="${escape(data.referenceDate)}" value="${escape(data.purchaseOn)}" required>
+    <input id="dashboard-purchase-date" type="date" name="purchaseOn" min="${escape(data.purchaseToday)}" value="${escape(data.purchaseOn)}" required>
     <button type="submit" class="button-link secondary-link">Simular</button>
     ${today ? "" : '<a class="text-link" href="/dashboard">Voltar para hoje</a>'}
   </form>`;
