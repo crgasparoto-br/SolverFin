@@ -156,26 +156,48 @@ function renderDashboard(model: DashboardScreenViewModel): string {
   }
 }
 
+
 function renderDashboardContent(content: DashboardContentViewModel): string {
+  const blocks = content.selectedCurrency
+    ? content.currencySummaries.filter((block) => block.currency === content.selectedCurrency)
+    : content.currencySummaries;
+  const projection = content.cashFlowProjection
+    ? {
+        ...content.cashFlowProjection,
+        currencies: content.cashFlowProjection.currencies.filter(
+          (item) => !content.selectedCurrency || item.currency === content.selectedCurrency,
+        ),
+      }
+    : undefined;
+  const overview = filterDashboardOverview(content.overview, content.selectedCurrency);
+
   return `
-    <section class="dashboard-hero" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Situação financeira atual">
+    <header class="dashboard-hero" data-dashboard-region="overview" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Visão geral financeira">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
-          title: "Situação financeira atual",
-          description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
+          title: "Visão geral financeira",
+          description: "Posição atual, resultado do mês e decisões financeiras sem misturar moedas.",
         })}
       </div>
-      <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
-        <strong>${escapeHtml(content.dataQuality.title)}</strong>
-        <span>${escapeHtml(content.dataQuality.description)}</span>
+      <div class="dashboard-header-controls">
+        <div class="dashboard-period-pill" aria-label="Período financeiro">
+          ${icon("calendar", 16)}
+          <span>Mês corrente</span>
+          <strong>${escapeHtml(overview?.periodStartOn.slice(0, 7) ?? "Atual")}</strong>
+        </div>
+        ${renderCurrencyFilter(content.currencySummaries, content.selectedCurrency, content.purchaseOn)}
+        <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
+          <strong>${escapeHtml(content.dataQuality.title)}</strong>
+          <span>${escapeHtml(content.dataQuality.description)}</span>
+        </div>
       </div>
-    </section>
-    ${renderCurrencyNavigator(content.currencySummaries)}
-    ${renderCurrencySummaries(content.currencySummaries)}
-    <section class="next-actions" aria-label="Próximas ações">
+    </header>
+    ${renderCurrencyNavigator(blocks)}
+    ${renderCurrencySummaries(blocks, projection, overview)}
+    <section class="next-actions dashboard-actions panel" id="dashboard-actions" data-dashboard-region="alerts" aria-label="Próximas ações e alertas financeiros">
       <div class="section-heading">
-        <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
+        <div><p class="eyebrow">Acompanhar agora</p><h2>Próximas ações e alertas financeiros</h2></div>
       </div>
       ${renderNextActions(content.nextActions)}
       <div class="quick-links" aria-label="Atalhos da rotina">
@@ -184,22 +206,131 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
-    ${renderSupportingCurrencySummaries(content.currencySummaries)}
-    ${renderCashFlowProjection(content.cashFlowProjection)}
-    ${renderDashboardOverview(content.overview)}
-    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
-    ${renderDecisionModules(content.decisionModules)}
-    <section class="list-panel">
-      <div class="section-heading">
-        <div><p class="eyebrow">Evidências</p><h2>Itens recentes</h2></div>
+    ${renderMobileAdditionalKpis(blocks, projection, overview)}
+    ${renderCashFlowProjection(projection)}
+    ${renderDashboardOverview(overview)}
+    <section class="dashboard-final-grid" data-dashboard-region="activity" aria-label="Últimos lançamentos e insights">
+      <div class="list-panel panel dashboard-last-items">
+        <div class="section-heading">
+          <div><p class="eyebrow">Atividade recente</p><h2>Últimos lançamentos</h2></div>
+        </div>
+        <div class="rows">${renderRecentItems(content.recentItems)}</div>
+        <a class="text-link" href="/lancamentos">Ver todos os lançamentos</a>
       </div>
-      <div class="rows">
-        ${renderRecentItems(content.recentItems)}
+      <div class="panel dashboard-last-insights">
+        <div class="section-heading">
+          <div><p class="eyebrow">Análise prática</p><h2>Insights financeiros</h2></div>
+        </div>
+        ${content.financialInsights
+          ? renderDashboardFinancialInsights(content.financialInsights)
+          : renderEmptyState({title:"Nenhum insight disponível.",description:"A análise financeira será exibida quando houver dados suficientes."})}
       </div>
     </section>
-    ${renderCurrencyEvidenceIndex(content.currencySummaries)}
+    <details class="dashboard-additional-tools" data-dashboard-region="additional">
+      <summary>Mais indicadores e ferramentas de decisão</summary>
+      ${renderSupportingCurrencySummaries(blocks)}
+      ${renderDecisionModules(content.decisionModules)}
+    </details>
+    ${renderCurrencyEvidenceIndex(blocks)}
     ${dashboardEvidenceScript()}
   `;
+}
+
+function filterDashboardOverview(
+  overview: DashboardOverview | undefined,
+  selectedCurrency: string | undefined,
+): DashboardOverview | undefined {
+  if (!overview || !selectedCurrency) return overview;
+  return {
+    ...overview,
+    accountBalances: overview.accountBalances.filter((item) => item.currency === selectedCurrency),
+    cardSpending: overview.cardSpending.filter((item) => item.currency === selectedCurrency),
+    cardSpendingTotals: overview.cardSpendingTotals?.filter((item) => item.currency === selectedCurrency),
+    payables: overview.payables.filter((item) => item.currency === selectedCurrency),
+    payableTotals: overview.payableTotals.filter((item) => item.currency === selectedCurrency),
+    categoryExpenses: overview.categoryExpenses.filter((item) => item.currency === selectedCurrency),
+    monthlyTrend: overview.monthlyTrend.filter((item) => item.currency === selectedCurrency),
+  };
+}
+
+function renderCurrencyFilter(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+  selectedCurrency?: string,
+  purchaseOn?: string,
+): string {
+  return `<form action="/dashboard" method="get" class="dashboard-currency-filter">
+    <label for="dashboard-currency">Moeda</label>
+    <select id="dashboard-currency" name="currency">
+      <option value="">Todas</option>
+      ${blocks.map((block) =>
+        `<option value="${escapeHtml(block.currency)}"${selectedCurrency === block.currency ? " selected" : ""}>${escapeHtml(block.currency)}</option>`
+      ).join("")}
+    </select>
+    ${purchaseOn ? `<input type="hidden" name="purchaseOn" value="${escapeHtml(purchaseOn)}">` : ""}
+    <button type="submit" class="button-link secondary-link">Aplicar</button>
+  </form>`;
+}
+
+function renderKpiCard(
+  label: string,
+  value: string,
+  detail: string,
+  href: string,
+  linkLabel: string,
+  key: string,
+): string {
+  return `<div class="dashboard-metric dashboard-kpi" data-kpi="${escapeHtml(key)}">
+    ${renderFoundationMetricCard({ label, value, detail })}
+    <a class="metric-drilldown sf-focus-ring" href="${escapeHtml(href)}" aria-label="${escapeHtml(linkLabel)}">${escapeHtml(linkLabel)}</a>
+  </div>`;
+}
+
+function renderDashboardKpis(
+  block: DashboardCurrencySummaryViewModel,
+  projection: DashboardCashFlowProjectionViewModel | undefined,
+  overview: DashboardOverview | undefined,
+  secondaryOnly = false,
+): string {
+  const currency = block.currency;
+  const available = block.metrics[0];
+  const variation = block.metrics[1];
+  if (!available || !variation) return "";
+  const projected = projection?.currencies.find((item) => item.currency === currency);
+  const payables = overview?.payableTotals.find((item) => item.currency === currency);
+  const spending = overview?.cardSpendingTotals?.find((item) => item.currency === currency);
+  const forecastHref = projected?.href ?? "/relatorios?view=cash-flow";
+  const missing = "Indisponível";
+  const money = (amount: number): string => formatMinorCurrency(amount, { currency });
+  const secondary = [
+    renderKpiCard("Resultado do mês", money(variation.amount.amountMinor), "Receitas menos despesas realizadas", variation.href, variation.linkLabel, "result"),
+    renderKpiCard("Contas a pagar", overview ? money(payables?.amountMinor ?? 0) : missing, "Pendentes e vencidas até o fim do mês", "#dashboard-payables", "Ver contas a pagar", "payables"),
+    renderKpiCard("Gastos nos cartões", overview ? money(spending?.amountMinor ?? 0) : missing, "Compras realizadas no mês, sem duplicar a fatura", "#dashboard-credit-cards", "Ver gastos por cartão", "cards"),
+    renderKpiCard("Saldo mínimo projetado", projected?.freeToSpend.status === "available"
+      ? money(projected.freeToSpend.minimumBalance.amountMinor) : missing,
+      "Menor posição de caixa nos próximos 30 dias", forecastHref, "Ver projeção de caixa", "minimum"),
+  ];
+  if (secondaryOnly) return secondary.join("");
+  return [
+    renderKpiCard("Saldo das contas", money(available.amount.amountMinor), "Posição atual por moeda", available.href, available.linkLabel, "balance"),
+    renderKpiCard("Livre para gastar", projected?.freeToSpend.status === "available"
+      ? money(projected.freeToSpend.amount.amountMinor) : missing,
+      "Disponibilidade conservadora para 30 dias", forecastHref, "Ver disponibilidade de caixa", "free"),
+    ...secondary,
+  ].join("");
+}
+
+function renderMobileAdditionalKpis(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+  projection: DashboardCashFlowProjectionViewModel | undefined,
+  overview: DashboardOverview | undefined,
+): string {
+  return `<section class="dashboard-mobile-additional" aria-label="Outros indicadores financeiros">
+    <h2>Outros indicadores do mês</h2>
+    ${blocks.map((block) => `<div class="dashboard-mobile-kpi-group">
+      <strong class="dashboard-mobile-currency">${escapeHtml(block.currency)}</strong>
+      <div class="dashboard-kpi-grid">${renderDashboardKpis(block, projection, overview, true)}</div>
+    </div>`).join("")}
+  </section>`;
 }
 
 function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
@@ -213,28 +344,32 @@ function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewMo
     .join("")}</nav>`;
 }
 
-function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+
+function renderCurrencySummaries(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+  projection?: DashboardCashFlowProjectionViewModel,
+  overview?: DashboardOverview,
+): string {
   if (blocks.length === 0) {
     return renderEmptyState({
       title: "Nenhum total financeiro disponível.",
       description: "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
     });
   }
-
   const sections = blocks
-    .map(
-      (block) => `
-        <section id="currency-${escapeHtml(block.currency)}" class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
-          <div class="section-heading currency-heading">
-            <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
-          </div>
-          ${renderSummaryGrid({ childrenHtml: block.metrics.slice(0, 2).map(renderDashboardMetric).join("") })}
-        </section>
-      `,
-    )
+    .map((block) => `<section id="currency-${escapeHtml(block.currency)}"
+      class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
+      <div class="section-heading currency-heading">
+        <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
+      </div>
+      ${renderSummaryGrid({
+        childrenHtml: renderDashboardKpis(block, projection, overview),
+        className: "dashboard-kpi-grid",
+      })}
+    </section>`)
     .join("");
-
-  return `<div class="dashboard-primary-currencies" data-multicurrency="${blocks.length > 1}">${sections}</div>`;
+  return `<div class="dashboard-primary-currencies" data-dashboard-region="kpis"
+    data-multicurrency="${blocks.length > 1}">${sections}</div>`;
 }
 
 function renderSupportingCurrencySummaries(
