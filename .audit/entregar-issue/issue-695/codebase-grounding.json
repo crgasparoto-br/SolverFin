@@ -1,7 +1,7 @@
 {
   "schema_version": 2,
-  "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
-  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
   "creations": [
     {
       "path": "apps/api/src/whatsapp-channel-confirmation.ts",
@@ -11,7 +11,7 @@
           "find canonical transaction_extraction approval and rejection APIs",
           "search existing WhatsApp outbound and confirmation transport handling"
         ],
-        "scope": "git grep in immutable develop b51feb003c4fe14155e447c9a9f34853784fee2d and material HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67 across apps/api/src, prisma and docs",
+        "scope": "git grep in immutable develop bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and material HEAD 4296b6778da8f457e99557fe53d9be25412d10e0 across apps/api/src, prisma and docs",
         "candidates": [
           {
             "path": "apps/api/src/ai-review-queue-public-decision-service.ts",
@@ -30,7 +30,7 @@
           "find canonical transaction_extraction approval and rejection APIs",
           "search existing WhatsApp outbound and confirmation transport handling"
         ],
-        "scope": "git grep in immutable develop b51feb003c4fe14155e447c9a9f34853784fee2d and material HEAD 511a6644b3563ebef958a577f4e055eaddd0ea67 across apps/api/src, prisma and docs",
+        "scope": "git grep in immutable develop bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and material HEAD 4296b6778da8f457e99557fe53d9be25412d10e0 across apps/api/src, prisma and docs",
         "candidates": [
           {
             "path": "apps/api/src/whatsapp-channel-service.ts",
@@ -140,7 +140,7 @@
           "existing channel replay and provider tests",
           "existing canonical approval and secure sender boundary tests"
         ],
-        "scope": "git grep at base b51feb003c4fe14155e447c9a9f34853784fee2d and exact material 511a6644b3563ebef958a577f4e055eaddd0ea67; npm unit/integration runners",
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
         "runner": "npm run test:integration --workspace @solverfin/api",
         "candidates": [
           {
@@ -158,12 +158,12 @@
         "status": "passed",
         "command": "npm run test:integration --workspace @solverfin/api",
         "exit_code": 0,
-        "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-confirmation.integration.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-integration-reachability.txt",
-        "evidence_sha256": "d48a5c7a86e0043fe0686a9002d45935994e1fbeae413d7f4a57e84779224c09"
+        "evidence_sha256": "87e55b946cca04aae3ba1563cc6dbedc3da82fb802929da1491421fa0118f0be"
       }
     },
     {
@@ -176,7 +176,7 @@
           "existing channel replay and provider tests",
           "existing canonical approval and secure sender boundary tests"
         ],
-        "scope": "git grep at base b51feb003c4fe14155e447c9a9f34853784fee2d and exact material 511a6644b3563ebef958a577f4e055eaddd0ea67; npm unit/integration runners",
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
         "runner": "npm run test",
         "candidates": [
           {
@@ -194,12 +194,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-confirmation.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-unit-reachability.txt",
-        "evidence_sha256": "ebdba2ec170e42ed3e90a510ddf3b7a8f4b5c74a84da65d0361c31f0f96e416b"
+        "evidence_sha256": "50f32c42013876bc40f9f63b2e7904de614ab5455954218c3dfbe39846cadc82"
       }
     },
     {
@@ -212,7 +212,7 @@
           "existing channel replay and provider tests",
           "existing canonical approval and secure sender boundary tests"
         ],
-        "scope": "git grep at base b51feb003c4fe14155e447c9a9f34853784fee2d and exact material 511a6644b3563ebef958a577f4e055eaddd0ea67; npm unit/integration runners",
+        "scope": "git grep at base bfe12b2e63d6ee39b4147ed598d046f08f6ee65a and exact material 4296b6778da8f457e99557fe53d9be25412d10e0; npm unit/integration runners",
         "runner": "npm run test",
         "candidates": [
           {
@@ -230,12 +230,12 @@
         "status": "passed",
         "command": "npm run test",
         "exit_code": 0,
-        "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+        "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
         "reached_tests": [
           "apps/api/src/whatsapp-channel-service.test.ts"
         ],
         "evidence_path": ".audit/entregar-issue/issue-695/evidence/ground-tests-695-unit-reachability.txt",
-        "evidence_sha256": "ebdba2ec170e42ed3e90a510ddf3b7a8f4b5c74a84da65d0361c31f0f96e416b"
+        "evidence_sha256": "50f32c42013876bc40f9f63b2e7904de614ab5455954218c3dfbe39846cadc82"
       }
     }
   ]

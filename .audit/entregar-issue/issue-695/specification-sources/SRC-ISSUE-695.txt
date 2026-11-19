@@ -80,15 +80,15 @@ A proposta canônica continua com seus estados próprios; o estado conversaciona
 
 ## Critérios de aceite
 
-- [ ] Proposta fica pendente até confirmação explícita.
-- [ ] O primeiro corte cobre criação de lançamento e não amplia silenciosamente para outras mutações.
-- [ ] Confirmação usa o mesmo serviço/fingerprint/validações da fila de revisão.
-- [ ] Confirmação repetida ou após reinício não duplica lançamento.
-- [ ] Rejeição, cancelamento e expiração não geram efeito.
-- [ ] Autorização do canal, tenant/perfil e recursos é revalidada no momento da decisão.
-- [ ] Múltiplas propostas pendentes não podem ser resolvidas por resposta ambígua.
-- [ ] Auditoria/correlação permite ligar mensagem, proposta, decisão e efeito sem registrar texto bruto sensível.
-- [ ] Testes cobrem retry, reinício, expiração, cancelamento, concorrência e isolamento.
+- [x] Proposta fica pendente até confirmação explícita.
+- [x] O primeiro corte cobre criação de lançamento e não amplia silenciosamente para outras mutações.
+- [x] Confirmação usa o mesmo serviço/fingerprint/validações da fila de revisão.
+- [x] Confirmação repetida ou após reinício não duplica lançamento.
+- [x] Rejeição, cancelamento e expiração não geram efeito.
+- [x] Autorização do canal, tenant/perfil e recursos é revalidada no momento da decisão.
+- [x] Múltiplas propostas pendentes não podem ser resolvidas por resposta ambígua.
+- [x] Auditoria/correlação permite ligar mensagem, proposta, decisão e efeito sem registrar texto bruto sensível.
+- [x] Testes cobrem retry, reinício, expiração, cancelamento, concorrência e isolamento.
 
 ## Considerações de testes
 

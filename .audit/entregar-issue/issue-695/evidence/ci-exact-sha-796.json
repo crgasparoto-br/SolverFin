@@ -3,9 +3,9 @@
   "repository": "crgasparoto-br/SolverFin",
   "issue": 695,
   "pull_request": 796,
-  "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
-  "repository_ci_run_id": 44070478122,
-  "repository_ci_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122",
+  "material_head_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "repository_ci_run_id": 44508083193,
+  "repository_ci_run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44508083193",
   "conclusion": "success",
   "jobs": {
     "CI risk": "success",
@@ -23,8 +23,8 @@
     "npm run db:deploy",
     "npm run build"
   ],
-  "junit_artifact_id": 14322971642,
-  "junit_sha256": "ac4110e56ca71c6e2288e1db46933c248137639925ac932762068c155066e92b",
+  "junit_artifact_id": 14520328387,
+  "junit_sha256": "46ebb59b98f8a60441f285e1aad0e68e4d06af1328674d98cc52cc87d224dded",
   "junit_testcases": 34,
   "junit_failures": 0
 }

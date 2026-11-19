@@ -1,34 +1,34 @@
 {
   "schema_version": 1,
-  "material_head_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
-  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "material_head_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
   "evidence": [
     {
       "evidence_id": "EVID-695-JUNIT",
       "kind": "behavioral",
       "path": "evidence/whatsapp-exact-head.xml",
-      "sha256": "ac4110e56ca71c6e2288e1db46933c248137639925ac932762068c155066e92b",
-      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "sha256": "46ebb59b98f8a60441f285e1aad0e68e4d06af1328674d98cc52cc87d224dded",
+      "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions #44070478122 / artifact #14322971642, 34 JUnit cases",
+      "producer": "GitHub Actions #44508083193 / artifact #14520328387 - 34 passed JUnit cases",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-695-CI",
       "kind": "behavioral",
       "path": "evidence/ci-exact-sha-796.json",
-      "sha256": "bdff6d050b3c5f6fced8e54abca1845dd8d1274c177cef2a5596b528dfae60f6",
-      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "sha256": "bbe14c96b6306eff7e648612b74745915595d85dfd85eda726e7c9c404f7e71b",
+      "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
       "freshness_policy": "exact-material-head",
-      "producer": "GitHub Actions #44070478122 CRITICAL validation",
+      "producer": "GitHub Actions #44508083193 / artifact #14520328387 - 34 passed JUnit cases",
       "status": "passed"
     },
     {
       "evidence_id": "EVID-695-REVIEW",
       "kind": "structural",
       "path": "evidence/obligation-review-worklist.json",
-      "sha256": "ffd05544fefb420af197fb93df4941a7207e7991d80ea411ed2db62b7871dc30",
-      "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
+      "sha256": "33e6a97e436cfaa52479e82f9ac62a66d6ce67ae4bb907cacbab8460ed17cdf3",
+      "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
       "freshness_policy": "exact-material-head",
       "producer": "Controller code/evidence review at exact material HEAD, independent audit still pending",
       "status": "passed"

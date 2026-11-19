@@ -2,15 +2,15 @@
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
   "issue": 695,
-  "created_at": "2026-11-17T12:44:20.629187+00:00",
+  "created_at": "2026-11-19T10:46:51.836402+00:00",
   "primary_source_id": "SRC-ISSUE-695",
   "sources": [
     {
       "id": "SRC-ISSUE-695",
       "kind": "issue-body",
       "path": "specification-sources/SRC-ISSUE-695.txt",
-      "locator": "/mnt/data/pr796-work/evidence/issue-695.txt",
-      "sha256": "7fee2932cc250f71a09312160a7256fb383f3e831903cbe6a6ceeb844f6a1664",
+      "locator": "/mnt/data/pr796-fix/issue695-current.txt",
+      "sha256": "6c49b301340875a4687ebd826d22c8236075dace4ada46429ffbed19acc43ef8",
       "textual": true,
       "extract_source_id": null,
       "required": true,

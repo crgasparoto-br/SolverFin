@@ -1,7 +1,7 @@
-HEAD: 511a6644b3563ebef958a577f4e055eaddd0ea67
+HEAD: 4296b6778da8f457e99557fe53d9be25412d10e0
 COMMAND: npm run test:integration --workspace @solverfin/api
 EXIT_CODE: 0
-GITHUB_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/44070478122
+GITHUB_RUN: https://github.com/crgasparoto-br/SolverFin/actions/runs/44508083193
 CRITICAL_VALIDATION: success
 JOBCHECK: all unit and PostgreSQL integration scripts reached and passed
 REACHED: apps/api/src/whatsapp-channel-confirmation.integration.test.ts

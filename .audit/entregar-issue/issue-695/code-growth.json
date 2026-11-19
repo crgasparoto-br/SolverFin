@@ -2,9 +2,9 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "511a6644b3563ebef958a577f4e055eaddd0ea67",
-  "base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
-  "comparison_base_sha": "b51feb003c4fe14155e447c9a9f34853784fee2d",
+  "subject_sha": "4296b6778da8f457e99557fe53d9be25412d10e0",
+  "base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
+  "comparison_base_sha": "bfe12b2e63d6ee39b4147ed598d046f08f6ee65a",
   "policy": {
     "new_file_soft_limit": 300,
     "new_file_hard_limit": 500,
