@@ -73,8 +73,8 @@ describe("dashboard operational widgets", () => {
     assert.match(html, /Mercado/);
     assert.match(html, /Evolução financeira/);
     assert.match(html, /USD/);
-    assert.match(html, /href="\\/cartoes\\?cardId=cartao-1&amp;invoiceId=invoice-1"/);
-    assert.match(html, /href="\\/lancamentos\\?month=2026-11&amp;accountId=conta-1"/);
+    assert.ok(html.includes('href="/cartoes?cardId=cartao-1&amp;invoiceId=invoice-1"'));
+    assert.ok(html.includes('href="/lancamentos?month=2026-11&amp;accountId=conta-1"'));
     assert.doesNotMatch(html, /pagar-receber/);
   });
 
