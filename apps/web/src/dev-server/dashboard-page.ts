@@ -364,7 +364,6 @@ function renderCurrencySummaries(
       </div>
       ${renderSummaryGrid({
         childrenHtml: renderDashboardKpis(block, projection, overview),
-        className: "dashboard-kpi-grid",
       })}
     </section>`)
     .join("");
