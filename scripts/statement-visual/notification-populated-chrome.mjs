@@ -87,7 +87,7 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
     [
       "(() => {",
       "const actions = [...document.querySelectorAll('.notifications-entry .notifications-action')];",
-      "return { width: innerWidth,",
+      "return { width: innerWidth, scrollWidth: document.documentElement.scrollWidth,",
       "noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth + 1,",
       "actionsWithinViewport: actions.every((button) => {",
       "const box = button.getBoundingClientRect();",
@@ -95,10 +95,15 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
       "}; })()",
     ].join("\n"),
   );
-  assert.equal(zoom.width, 320);
-  assert.equal(zoom.noHorizontalOverflow, true, "Populated notifications overflow at 200% text");
-  assert.equal(zoom.actionsWithinViewport, true, "Notification actions clip at 200% text");
+  // Always retain the real 200%-text screenshot, including when the strict reflow gate fails.
   await screenshot(cdp, join(outputDir, "issue-808-populated-320-text200.png"));
+  assert.equal(zoom.width, 320);
+  assert.equal(
+    zoom.noHorizontalOverflow,
+    true,
+    "Populated notifications overflow at 200% text: scrollWidth=" + zoom.scrollWidth,
+  );
+  assert.equal(zoom.actionsWithinViewport, true, "Notification actions clip at 200% text");
   return { viewports, zoom: { ...zoom, textScale: 200 } };
 }
 
