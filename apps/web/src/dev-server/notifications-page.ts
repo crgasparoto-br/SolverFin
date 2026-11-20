@@ -146,7 +146,7 @@ function renderFeed(page: NotificationPage, offset: number, profileId: string | 
       "</div>",
     ].join("");
   }
-  const currentProfile = profileId ? "&profileId=" + encodeURIComponent(profileId) : "";
+  const currentProfile = profileId ? "&amp;profileId=" + encodeURIComponent(profileId) : "";
   const previous = offset > 0 ? Math.max(offset - 20, 0) : null;
   return [
     '<ol class="notifications-list">',
