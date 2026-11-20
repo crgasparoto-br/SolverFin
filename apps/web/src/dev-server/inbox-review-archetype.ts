@@ -1,11 +1,17 @@
 import {
   renderAlert,
   renderDetailLayout,
-  renderFilterBar,
   renderPageContainer,
   renderPageHeader,
   renderUnavailableState,
 } from "../design-system/primitives.js";
+import {
+  inboxTabRuntimeScript,
+  inboxTabStyles,
+  renderInboxTabNavigation,
+  renderInboxTabPanel,
+  type InboxTab,
+} from "./inbox-tabs.js";
 
 export interface FinancialInsightFallbackView {
   currency: string;
@@ -17,7 +23,9 @@ export interface FinancialInsightFallbackView {
 }
 
 export interface InboxReviewArchetypeProps {
-  actionsHtml: string;
+  importActionHtml: string;
+  messageActionHtml: string;
+  initialTab?: InboxTab;
   suggestionsHtml: string;
   messagesHtml: string;
   evidenceHtml: string;
@@ -29,24 +37,10 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
   const headerHtml = renderPageHeader({
     eyebrow: "Entradas e revisão",
     title: "Inbox",
-    description:
-      "Revise mensagens, sugestões e importações com evidência antes de confirmar qualquer efeito financeiro.",
+    description: "Revise pendências e acompanhe suas entradas financeiras por assunto.",
     actionsHtml: "",
   });
-  const filterBarHtml = renderFilterBar({
-    label: "Navegação da triagem",
-    childrenHtml: `
-      <nav class="inbox-section-nav" aria-label="Seções da Inbox">
-        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#inbox-review-queue">Fila de revisão</a>
-        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#inbox-review-secondary">Outras entradas</a>
-        <a class="sf-button sf-button-secondary sf-focus-ring inbox-review-nav" href="#csv-import-title">Importações</a>
-      </nav>
-      <details class="inbox-new-entry-actions">
-        <summary class="inbox-new-entry-trigger sf-focus-ring" aria-label="Adicionar entrada à Inbox">Adicionar entrada</summary>
-        <div class="inbox-new-entry-menu">${props.actionsHtml}</div>
-      </details>
-    `,
-  });
+  const activeTab = props.initialTab ?? "reviews";
   const reviewLayoutHtml = renderDetailLayout({
     masterHtml: `
       <section id="inbox-review-queue" class="inbox-review-queue" aria-labelledby="inbox-review-queue-title">
@@ -69,29 +63,38 @@ export function renderInboxReviewArchetype(props: InboxReviewArchetypeProps): st
           </div>
           <p class="muted small-note">A decisão só é liberada após consultar a evidência atual do item selecionado.</p>
         </div>
-        ${props.statusHtml ?? ""}
         <div id="inbox-review-selected" class="inbox-review-selected" data-review-evidence-state="empty" aria-live="polite">
           <p class="muted small-note">Selecione uma sugestão na fila para consultar sua origem, confiança, evidência e decisão.</p>
         </div>
       </section>
     `,
   });
-  const secondaryHtml = `
-    <section id="inbox-review-secondary" class="inbox-review-secondary" aria-labelledby="inbox-review-secondary-title">
-      <div class="inbox-review-secondary-heading">
-        <h2 id="inbox-review-secondary-title">Outras entradas e histórico</h2>
-        <p class="muted small-note">Mensagens, insights e importações CSV/OFX continuam disponíveis em fluxos separados.</p>
-      </div>
-      <div class="inbox-review-secondary-content">
-        ${props.messagesHtml}
-        ${props.insightsHtml ?? ""}
-        ${props.evidenceHtml}
-      </div>
-    </section>
+  const importPanelHtml = `
+    <div class="inbox-tab-toolbar">
+      <p>Envie arquivos CSV/OFX e acompanhe cada lote antes da confirmação.</p>
+      ${props.importActionHtml}
+    </div>
+    ${props.evidenceHtml}
+  `;
+  const messagePanelHtml = `
+    <div class="inbox-tab-toolbar">
+      <p>Consulte mensagens bancárias e registre novas entradas autorizadas.</p>
+      ${props.messageActionHtml}
+    </div>
+    ${props.messagesHtml}
   `;
   const cockpitHtml = renderPageContainer({
     className: "inbox-review-cockpit",
-    childrenHtml: `${filterBarHtml}${reviewLayoutHtml}${secondaryHtml}${inboxReviewRuntimeScript()}`,
+    childrenHtml: `
+      ${renderInboxTabNavigation(activeTab)}
+      ${props.statusHtml ?? ""}
+      ${renderInboxTabPanel("reviews", reviewLayoutHtml, activeTab)}
+      ${renderInboxTabPanel("imports", importPanelHtml, activeTab)}
+      ${renderInboxTabPanel("messages", messagePanelHtml, activeTab)}
+      ${renderInboxTabPanel("insights", props.insightsHtml ?? "", activeTab)}
+      ${inboxTabRuntimeScript()}
+      ${inboxReviewRuntimeScript()}
+    `,
   });
 
   return `<div data-inbox-review-archetype="A6">${headerHtml}${cockpitHtml}</div>`;
@@ -119,41 +122,26 @@ export function renderInboxCategoriesUnavailable(error: string): string {
 
 export function inboxReviewArchetypeStyles(): string {
   return `
+    ${inboxTabStyles()}
     .inbox-review-cockpit { display: grid; gap: 16px; max-width: none; min-width: 0; padding: 0; }
-    .inbox-review-cockpit .sf-filter-bar { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; }
-    .inbox-review-cockpit .inbox-section-nav { display: flex; flex: 1 1 auto; flex-wrap: nowrap; gap: var(--sf-space-2); min-width: 0; max-width: 100%; overflow-x: auto; overflow-y: hidden; overscroll-behavior-x: contain; scrollbar-width: thin; }
-    .inbox-review-nav { flex: 0 0 auto; min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3); font-size: var(--sf-font-size-sm); line-height: var(--sf-line-height-compact); text-decoration: none; white-space: nowrap; scroll-snap-align: start; }
     .inbox-review-cockpit .sf-detail-layout { align-items: start; display: grid; gap: 18px; grid-template-columns: minmax(280px, .82fr) minmax(0, 1.18fr); }
-    .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence, .inbox-review-secondary { min-width: 0; }
+    .inbox-review-queue, .inbox-review-detail, .inbox-review-group, .inbox-review-evidence { min-width: 0; }
     .inbox-review-queue, .inbox-review-detail { align-content: start; display: grid; gap: 12px; }
     .inbox-review-detail { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
     /* Keep the legacy heading available to assistive technology without competing with the A6 queue title. */
     .inbox-review-cockpit #inbox-review-suggestions-title { clip-path: inset(50%); height: 1px; overflow: hidden; position: absolute; white-space: nowrap; width: 1px; }
     .inbox-review-group { border: 0; border-radius: 0; background: transparent; padding: 0; }
-    .inbox-review-group + .inbox-review-group { margin-top: 2px; }
     .inbox-review-evidence { border: 0; border-radius: 0; background: transparent; padding: 0; }
     .inbox-review-queue-heading, .inbox-review-detail-heading { align-items: start; display: grid; gap: var(--sf-space-1); }
     .inbox-review-queue-heading > div, .inbox-review-detail-heading > div { display: grid; gap: 3px; }
     .inbox-review-detail { position: sticky; top: 12px; }
-    .inbox-new-entry-actions { margin-left: auto; min-width: 0; }
-    .inbox-new-entry-actions > summary {
-      align-items: center; background: var(--sf-color-surface); border: 1px solid var(--sf-color-border);
-      border-radius: var(--sf-radius-md); color: var(--sf-color-primary); cursor: pointer;
-      display: flex; font-size: var(--sf-font-size-sm); font-weight: var(--sf-font-weight-semibold);
-      min-height: var(--sf-density-interactive-target-min); padding-inline: var(--sf-space-3);
-    }
-    .inbox-new-entry-actions > summary:hover,
-    .inbox-new-entry-actions[open] > summary { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
-    .inbox-new-entry-actions > summary:focus-visible { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); box-shadow: var(--sf-shadow-focus); outline: none; }
-    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .inbox-review-nav, .inbox-new-entry-trigger, .review-card [data-review-select]):is(:hover:not(:disabled), :focus-visible),
+    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .review-card [data-review-select]):is(:hover:not(:disabled), :focus-visible),
     .ai-review-dialog :is(select, .secondary-button):is(:hover:not(:disabled), :focus-visible) { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
-    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .inbox-review-nav, .inbox-new-entry-trigger, .review-card [data-review-select]):active:not(:disabled),
+    .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .review-card [data-review-select]):active:not(:disabled),
     .ai-review-dialog :is(select, .secondary-button):active:not(:disabled) { background: var(--sf-color-neutral-control-active-hover) !important; border-color: var(--sf-color-neutral-control-border-hover); color: var(--sf-color-neutral-control-text-hover); }
     .inbox-review-cockpit :is(.review-filter-bar select, .review-filter-bar button, .review-card [data-review-select]):disabled,
     .ai-review-dialog :is(select, .secondary-button):disabled { background: var(--sf-color-neutral-control-hover); border-color: var(--sf-color-border); color: var(--sf-color-muted-text); cursor: not-allowed; opacity: 1; }
     .ai-review-dialog select option:not(:checked) { background: var(--sf-color-surface); color: var(--sf-color-primary); }
-    .inbox-new-entry-menu { align-items: center; display: flex; flex-wrap: wrap; gap: 8px; padding: 8px 0; }
-    .inbox-new-entry-menu > button { min-height: var(--sf-density-interactive-target-min); }
     .inbox-review-selected { display: grid; gap: 12px; min-width: 0; overflow-wrap: anywhere; }
     .inbox-review-selected .review-selected-context { display: grid; gap: 6px; }
     .inbox-review-selected .review-selected-context p { margin: 0; overflow-wrap: anywhere; }
@@ -163,10 +151,6 @@ export function inboxReviewArchetypeStyles(): string {
     .inbox-review-selected .review-decision-actions > button { min-height: 44px; }
     .inbox-review-selected .review-selected-error { display: grid; gap: 8px; }
     .inbox-review-selected .review-selected-error button { justify-self: start; }
-    .inbox-review-secondary { border-top: 1px solid var(--line); display: grid; gap: 14px; padding-top: 18px; }
-    .inbox-review-secondary-heading { align-items: start; display: flex; flex-wrap: wrap; gap: 8px 12px; justify-content: space-between; }
-    .inbox-review-secondary-content { display: grid; gap: 20px; min-width: 0; }
-    .inbox-review-secondary .inbox-review-group { border-bottom: 1px solid var(--line); padding-bottom: 14px; }
     .review-card .maintenance-summary { align-items: center; display: flex; gap: 8px; justify-content: space-between; }
     .review-card { align-content: start; display: grid; gap: 6px; min-width: 0; padding: 10px 8px; border-left: 2px solid transparent; }
     .inbox-page .inbox-review-queue .review-card {
@@ -182,7 +166,6 @@ export function inboxReviewArchetypeStyles(): string {
     .review-card > [data-review-select] { grid-column: 1; justify-self: start; max-width: 100%; min-height: var(--sf-density-interactive-target-min); }
     .review-card > [data-review-select][aria-pressed="true"] { font-weight: 700; }
      .inbox-review-selected .review-detail-grid div { background: transparent; border-bottom: 1px solid var(--line); padding: 5px 0; }
-    .inbox-review-evidence .import-workspace { gap: 10px; }
     .inbox-review-evidence .import-heading { align-items: center; }
     .inbox-review-evidence .import-layout { gap: 10px; grid-template-columns: minmax(205px, 250px) minmax(0, 1fr); }
     .inbox-review-evidence .batch-item { align-items: flex-start; align-self: start; display: flex; flex-direction: column; height: auto; justify-content: flex-start; min-height: 54px; white-space: normal; }
@@ -220,11 +203,6 @@ export function inboxReviewArchetypeStyles(): string {
     @media (max-width: 900px) {
       .inbox-review-cockpit .sf-detail-layout { grid-template-columns: 1fr; }
       .inbox-review-detail { position: static; }
-      .inbox-review-cockpit .sf-filter-bar { display: grid; grid-template-columns: minmax(0, 1fr); }
-      .inbox-review-cockpit .inbox-section-nav { width: 100%; }
-      .inbox-new-entry-actions { justify-self: start; margin-left: 0; max-width: 100%; width: min(100%, 240px); }
-      .inbox-new-entry-menu { max-width: 100%; }
-      .inbox-new-entry-menu > button { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
     }
     @media (max-width: 760px) {
       .inbox-review-evidence .row-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -234,10 +212,6 @@ export function inboxReviewArchetypeStyles(): string {
     @media (max-width: 600px) {
       .inbox-review-detail { padding: 10px; }
       .inbox-review-queue-heading, .inbox-review-detail-heading { display: grid; }
-      .inbox-review-cockpit .sf-filter-bar { align-items: stretch; display: grid; }
-      .inbox-review-cockpit .inbox-section-nav { max-width: 100%; width: 100%; }
-      .inbox-review-nav { justify-content: center; }
-      .inbox-new-entry-actions { margin-left: 0; width: 100%; }
       .inbox-date-filter-controls { align-items: stretch; }
     }
     @media (max-width: 480px) {
@@ -250,20 +224,6 @@ function inboxReviewRuntimeScript(): string {
   return String.raw`
     <script data-inbox-review-runtime="true">
       (() => {
-        const entryActions = document.querySelector(".inbox-new-entry-actions");
-        const entryTrigger = entryActions?.querySelector("summary");
-        entryActions?.addEventListener("keydown", (event) => {
-          if (event.key !== "Escape" || !entryActions.open) return;
-          event.preventDefault();
-          entryActions.open = false;
-          entryTrigger?.focus();
-        });
-        document.addEventListener("pointerdown", (event) => {
-          if (entryActions?.open && !entryActions.contains(event.target)) entryActions.open = false;
-        });
-        entryActions?.querySelectorAll("[data-open-dialog]").forEach((button) => {
-          button.addEventListener("click", () => { entryActions.open = false; });
-        });
         const profileId = new URLSearchParams(window.location.search).get("profileId");
         const withProfile = (path) => {
           if (!profileId) return path;

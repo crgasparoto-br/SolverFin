@@ -1,0 +1,121 @@
+{
+  "generatedAt": "2026-11-19T18:02:00.659Z",
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "browser": "Google Chrome 157.0.8103.78",
+  "failures": [],
+  "batchId": "af2d7881-760b-4dd9-b2e0-e096e8b7905c",
+  "desktop": {
+    "viewport": "1366x768",
+    "bodyFitsViewport": true,
+    "completeRows": 10,
+    "financialFieldsAreFullyVisible": true,
+    "descriptionPreviewIsFullyVisible": true,
+    "dateAndAmountAreFullyVisible": true,
+    "financialFieldsAreFullyAccessible": true,
+    "financialFields": [
+      {
+        "label": "Data",
+        "fullValue": "01/07/2026",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Tipo",
+        "fullValue": "Receita",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Valor",
+        "fullValue": "R$ 1.234.567,89",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Descrição",
+        "fullValue": "Descrição financeira extensa usada para validar acesso integral por teclado foco e ponteiro sem aumentar permanentemente a altura da linha mwnuxipi complemento operacional para distinguir lançamentos semelhantes durante a revisão",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Conta de referência",
+        "fullValue": "Carteira dinheiro demo",
+        "previewClipped": false,
+        "fullyAccessible": true
+      }
+    ],
+    "descriptionIsFullyAccessible": true,
+    "accountIsFullyAccessible": true,
+    "tooltipIsVisible": true,
+    "tooltipFitsViewport": true,
+    "disabledButtonContrast": 6.92,
+    "disabledButtonOpacity": 1,
+    "disabledButtonColors": {
+      "color": "rgb(71, 85, 105)",
+      "backgroundColor": "rgb(241, 245, 249)"
+    },
+    "descriptionDimensions": {
+      "width": 180,
+      "previewClientWidth": 169,
+      "previewScrollWidth": 169
+    },
+    "screenshot": "issue-525-inbox-content-contrast-desktop-1366x768.png"
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "bodyFitsViewport": true,
+    "completeRows": 3,
+    "financialFieldsAreFullyVisible": true,
+    "descriptionPreviewIsFullyVisible": true,
+    "dateAndAmountAreFullyVisible": true,
+    "financialFieldsAreFullyAccessible": true,
+    "financialFields": [
+      {
+        "label": "Data",
+        "fullValue": "01/07/2026",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Tipo",
+        "fullValue": "Receita",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Valor",
+        "fullValue": "R$ 1.234.567,89",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Descrição",
+        "fullValue": "Descrição financeira extensa usada para validar acesso integral por teclado foco e ponteiro sem aumentar permanentemente a altura da linha mwnuxipi complemento operacional para distinguir lançamentos semelhantes durante a revisão",
+        "previewClipped": false,
+        "fullyAccessible": true
+      },
+      {
+        "label": "Conta de referência",
+        "fullValue": "Carteira dinheiro demo",
+        "previewClipped": false,
+        "fullyAccessible": true
+      }
+    ],
+    "descriptionIsFullyAccessible": true,
+    "accountIsFullyAccessible": true,
+    "tooltipIsVisible": true,
+    "tooltipFitsViewport": true,
+    "disabledButtonContrast": 6.92,
+    "disabledButtonOpacity": 1,
+    "disabledButtonColors": {
+      "color": "rgb(71, 85, 105)",
+      "backgroundColor": "rgb(241, 245, 249)"
+    },
+    "descriptionDimensions": {
+      "width": 307,
+      "previewClientWidth": 307,
+      "previewScrollWidth": 307
+    },
+    "screenshot": "issue-525-inbox-content-contrast-mobile-390x844.png"
+  }
+}

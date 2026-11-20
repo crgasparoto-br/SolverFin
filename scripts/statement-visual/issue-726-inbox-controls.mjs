@@ -264,23 +264,26 @@ export async function validateHierarchyNegative(cdp) {
   return evaluate(
     cdp,
     `(() => {
-    const layout = document.querySelector('.inbox-review-cockpit .sf-detail-layout');
-    const secondary = document.querySelector('.inbox-review-secondary');
+    const tabPanels = [...document.querySelectorAll('[data-inbox-tab-panel]')];
+    const review = document.getElementById('inbox-panel-reviews');
+    const imports = document.getElementById('inbox-panel-imports');
     const fallback = document.querySelector('[data-financial-insight-fallback="true"]');
-    if (!layout || !secondary) return { baseline: false, attackRejected: false, restored: false };
-    const below = () => secondary.getBoundingClientRect().top >= layout.getBoundingClientRect().bottom;
-    const baseline = below() && (!fallback || secondary.contains(fallback));
-    const originalParent = secondary.parentElement;
-    const nextSibling = secondary.nextSibling;
+    if (tabPanels.length !== 4 || !review || !imports)
+      return { baseline: false, attackRejected: false, restored: false };
+    const isolated = () =>
+      tabPanels.filter((panel) => !panel.hidden).length === 1 && !review.hidden &&
+      tabPanels.filter((panel) => panel !== review).every((panel) => panel.hidden);
+    const baseline = isolated() &&
+      (!fallback || fallback.closest('[data-inbox-tab-panel]')?.dataset.inboxTabPanel === 'insights');
+    const originalHidden = imports.hidden;
     let attackRejected = false;
     try {
-      layout.before(secondary);
-      attackRejected = !below();
+      imports.hidden = false;
+      attackRejected = !isolated();
     } finally {
-      if (nextSibling) originalParent.insertBefore(secondary, nextSibling);
-      else originalParent.appendChild(secondary);
+      imports.hidden = originalHidden;
     }
-    return { baseline, attackRejected, restored: below() };
+    return { baseline, attackRejected, restored: isolated() };
   })()`,
   );
 }

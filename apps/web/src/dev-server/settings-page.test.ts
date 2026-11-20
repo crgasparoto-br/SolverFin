@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 
+import { baseCss } from "./settings-page-css.js";
 import {
   parseAutomationRuleAmountMinorInput,
   renderSettingsPage,
@@ -10,6 +11,7 @@ import {
 sectionResolutionIsServerSide();
 amountInputConvertsDecimalsToMinorUnits();
 ruleListFilterFallsBackToAll();
+ruleSummaryKeepsSingleLayout();
 await profilesSectionRendersAsTheDefault();
 await rulesSectionRendersReadableDetails();
 await rulesListFiltersPreserveActionsAndVisibility();
@@ -36,6 +38,12 @@ function sectionResolutionIsServerSide(): void {
     resolveSettingsSection(new URL("https://example.test/configuracoes?section=unknown")),
     "profiles",
   );
+}
+
+function ruleSummaryKeepsSingleLayout(): void {
+  const css = baseCss();
+  assert.equal((css.match(/\.rule-summary\s*\{/g) ?? []).length, 1);
+  assert.match(css, /\.rule-summary\s*\{[^}]*display:\s*grid;/);
 }
 
 function ruleListFilterFallsBackToAll(): void {

@@ -1,0 +1,199 @@
+{
+  "generatedAt": "2026-11-19T18:01:43.792Z",
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "browser": "Google Chrome 157.0.8103.78",
+  "failures": [],
+  "batchId": "7cbd2a3e-e403-465b-8ee1-1808a52e5ab4",
+  "desktop": {
+    "viewport": "1366x768",
+    "bodyFitsViewport": true,
+    "headerVisible": true,
+    "summaryVisible": true,
+    "toolbarVisible": true,
+    "completeRows": 8,
+    "rowRects": [
+      {
+        "top": 386,
+        "bottom": 429,
+        "height": 43
+      },
+      {
+        "top": 429,
+        "bottom": 472,
+        "height": 43
+      },
+      {
+        "top": 472,
+        "bottom": 515,
+        "height": 43
+      },
+      {
+        "top": 515,
+        "bottom": 577,
+        "height": 62
+      },
+      {
+        "top": 577,
+        "bottom": 620,
+        "height": 43
+      },
+      {
+        "top": 620,
+        "bottom": 663,
+        "height": 43
+      }
+    ],
+    "batchIsContinuous": true,
+    "selectedBatchHasIndicator": true,
+    "focusIsVisible": true,
+    "bulkControlsIntrinsic": true,
+    "compactFilterActionsIntrinsic": true,
+    "labelActivatesCheckbox": true,
+    "rowsAreContinuous": true,
+    "navScrollsHorizontally": false,
+    "actionsFitViewport": true,
+    "dimensions": {
+      "documentScrollWidth": 1351,
+      "documentClientWidth": 1351,
+      "bulkWidth": 828,
+      "bulkLabelWidth": 177,
+      "bulkButtonWidth": 194,
+      "compactFilterButtonWidths": [
+        107,
+        134,
+        73
+      ],
+      "navClientWidth": 1103,
+      "navScrollWidth": 1103
+    },
+    "screenshot": "issue-525-inbox-desktop-1366x768.png"
+  },
+  "tablet": {
+    "viewport": "768x1024",
+    "bodyFitsViewport": true,
+    "headerVisible": false,
+    "summaryVisible": false,
+    "toolbarVisible": true,
+    "completeRows": 4,
+    "rowRects": [
+      {
+        "top": 191,
+        "bottom": 352,
+        "height": 161
+      },
+      {
+        "top": 352,
+        "bottom": 513,
+        "height": 161
+      },
+      {
+        "top": 513,
+        "bottom": 674,
+        "height": 161
+      },
+      {
+        "top": 674,
+        "bottom": 878,
+        "height": 204
+      },
+      {
+        "top": 878,
+        "bottom": 1039,
+        "height": 161
+      },
+      {
+        "top": 1039,
+        "bottom": 1200,
+        "height": 161
+      }
+    ],
+    "batchIsContinuous": true,
+    "selectedBatchHasIndicator": true,
+    "focusIsVisible": false,
+    "bulkControlsIntrinsic": true,
+    "compactFilterActionsIntrinsic": true,
+    "labelActivatesCheckbox": true,
+    "rowsAreContinuous": true,
+    "navScrollsHorizontally": false,
+    "actionsFitViewport": true,
+    "dimensions": {
+      "documentScrollWidth": 753,
+      "documentClientWidth": 753,
+      "bulkWidth": 489,
+      "bulkLabelWidth": 177,
+      "bulkButtonWidth": 194,
+      "compactFilterButtonWidths": [
+        107,
+        134,
+        73
+      ],
+      "navClientWidth": 509,
+      "navScrollWidth": 509
+    },
+    "screenshot": "issue-525-inbox-tablet-768x1024.png"
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "bodyFitsViewport": true,
+    "headerVisible": false,
+    "summaryVisible": false,
+    "toolbarVisible": true,
+    "completeRows": 2,
+    "rowRects": [
+      {
+        "top": 263,
+        "bottom": 474,
+        "height": 211
+      },
+      {
+        "top": 474,
+        "bottom": 685,
+        "height": 211
+      },
+      {
+        "top": 685,
+        "bottom": 896,
+        "height": 211
+      },
+      {
+        "top": 896,
+        "bottom": 1136,
+        "height": 240
+      },
+      {
+        "top": 1136,
+        "bottom": 1347,
+        "height": 211
+      },
+      {
+        "top": 1347,
+        "bottom": 1558,
+        "height": 211
+      }
+    ],
+    "batchIsContinuous": true,
+    "selectedBatchHasIndicator": true,
+    "focusIsVisible": false,
+    "bulkControlsIntrinsic": true,
+    "compactFilterActionsIntrinsic": true,
+    "labelActivatesCheckbox": true,
+    "rowsAreContinuous": true,
+    "navScrollsHorizontally": true,
+    "actionsFitViewport": true,
+    "dimensions": {
+      "documentScrollWidth": 375,
+      "documentClientWidth": 375,
+      "bulkWidth": 337,
+      "bulkLabelWidth": 177,
+      "bulkButtonWidth": 194,
+      "compactFilterButtonWidths": [
+        107,
+        134,
+        73
+      ],
+      "navClientWidth": 355,
+      "navScrollWidth": 406
+    },
+    "screenshot": "issue-525-inbox-mobile-390x844.png"
+  }
+}

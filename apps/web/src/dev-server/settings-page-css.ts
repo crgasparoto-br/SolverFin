@@ -66,7 +66,6 @@ export function baseCss(): string {
     .settings-rule-fieldset legend { color: var(--sf-color-text); font-weight: var(--sf-font-weight-semibold); padding: 0 var(--sf-space-2) 0 0; }
     .settings-rule-fields { display: grid; gap: var(--sf-space-3); grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
     .settings-rule-fields > label { min-width: 0; }
-        .rule-summary { align-items: baseline; display: flex; flex-wrap: wrap; gap: var(--sf-space-3); justify-content: space-between; min-width: 0; }
     .rule-detail-grid { display: grid; gap: var(--sf-space-6); grid-template-columns: repeat(2, minmax(0, 1fr)); min-width: 0; }
     .rule-detail { min-width: 0; }
     .rule-detail h3 { color: var(--muted); font-size: var(--sf-font-size-sm); margin-bottom: var(--sf-space-2); }

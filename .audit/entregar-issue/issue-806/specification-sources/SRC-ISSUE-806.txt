@@ -1,0 +1,64 @@
+## Contexto
+A rota autenticada `/inbox` do SolverFin mostra simultaneamente fila de revisão, mensagens, insights e importações CSV/OFX em uma única página longa. A navegação por âncoras mistura tarefas distintas e sobrecarrega a hierarquia visual. Referências: `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/UI_PRIMITIVES.md` e `apps/web/src/dev-server/inbox-review-archetype.ts`.
+
+## Objetivo
+Refatorar a experiência da Inbox com abas temáticas, ações contextuais e o acabamento Golden Screen, preservando o fluxo financeiro e os contratos existentes.
+
+## Escopo
+- Separar a página em quatro abas: Revisões, Importações, Mensagens e Insights.
+- Exibir apenas o painel ativo, mantendo os demais montados para preservar o funcionamento das integrações e seus estados durante a troca de abas.
+- Posicionar os comandos de registrar mensagem e importar extrato nos respectivos contextos.
+- Preservar links diretos, seleção e detalhes de importação, fila de revisão e navegação para insights.
+- Adicionar testes focados e adequar os testes visuais impactados pela mudança intencional de navegação.
+
+## Fora de escopo
+- Alterar regras financeiras, persistência, APIs, decisões de revisão, fluxos de IA ou estrutura de dados.
+- Reestruturar outras rotas ou promover a branch para `main`.
+
+## Critérios de aceite
+- [x] A Inbox apresenta quatro abas temáticas acessíveis; somente o painel selecionado fica visível e a troca não duplica conteúdo.
+- [x] A fila de revisão conserva filtros, evidência selecionada, decisões e bloqueio de ações quando a evidência não estiver visível.
+- [x] Importações CSV/OFX e mensagens preservam seus fluxos e exibem a ação de entrada no contexto correto, sem menu global redundante.
+- [x] Insights exibem seus estados, ações e paginação; âncoras e URLs existentes (`#financial-insights`, `?importBatchId=...`, filtros de período e `profileId`) continuam alcançando o assunto correto.
+- [x] Navegação por teclado e leitor de tela usa semântica de abas, foco visível, setas/Home/End, seleção acessível e estados corretos.
+- [x] Layout atende desktop/mobile com rolagem horizontal apenas nas abas quando necessário, sem overflow do viewport e utilizando tokens do Golden Screen.
+- [x] Testes de regressão e verificações disponíveis são executados; eventual bloqueio de evidência visual/CI é explicitado sem confundir com aprovação independente.
+
+## Invariantes
+- Não somar moedas diferentes nem alterar valores, autenticação, tenant/perfil financeiro ou decisões de aprovação/rejeição.
+- Preservar o conteúdo e os identificadores de integração atuais da Inbox e evitar novo pós-processamento de HTML.
+- Não tratar CI verde ou teste estático isolado como aprovação visual ou auditoria independente.
+
+## Validação obrigatória
+- [x] Testes unitários, de rota e acessibilidade afetados.
+- [x] Lint, typecheck, build e testes aplicáveis ao frontend.
+- [x] Inspeção visual desktop/mobile e dos estados de hover, foco, ativo, disabled, conteúdo longo e vazios.
+- [x] Documentação de comportamento de navegação atualizada se necessária.
+
+## Riscos e perguntas abertas
+A rota já combina controladores legados de revisão/importação; os painéis inativos devem ser ocultos sem desmontar sua árvore DOM. O servidor não recebe fragmentos da URL, portanto âncoras precisam de resolução no cliente.
+
+## Referências
+- `apps/web/src/dev-server/inbox-page.ts`
+- `apps/web/src/dev-server/inbox-review-archetype.ts`
+- `apps/web/src/design-system/`
+- `crgasparoto-br/skill` (branch `develop`, skills `entregar-issue` e `design-interface`).
+
+## Evidências de implementação (parciais, não auditoria independente)
+
+- PR #807, material HEAD `2f202aedf58a2866c69659d260984e2d0bc43334` (base `develop`).
+- **Passou:** [Repository CI #44554961662](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961662): classificação de risco, merge preview, formatação, lint, typecheck, testes unitários/SSR de abas e importação, integração API e build; gate técnico concluído com sucesso.
+- **Aguardando comprovação visual:** [Statement visual validation #44554961440](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961440) em Chrome; permanecerão abertos os critérios que exigem comprovação real do layout/fluxo e foco.
+- **Bloqueio de auditoria:** os checks [Verify certified handoff provenance #44554961495](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961495) e [Session review evidence #44554961447](https://github.com/crgasparoto-br/SolverFin/actions/runs/44554961447) reprovam porque o pacote `.audit/entregar-issue` herdado não corresponde à issue #806/PR #807/HEAD exato. Não reutilizar certificado de outra issue, não fechar issue nem efetuar merge até novo handoff autenticado e auditoria independente.
+
+Os checkboxes marcados cobrem apenas verificações técnicas autenticadas no SHA acima; não representam aceite visual ou aprovação independente.
+
+## Evidências de aceite técnico da implementação — atualização 19/11/2026
+
+- **HEAD material exato:** `ac25e1c390008575bb9a11395f61cd90303ae52b`, branch `feat/806-inbox-tabs-refactor`, base `develop`.
+- **CI técnica:** [Repository CI #44581806796](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806796) em `success` (CRITICAL validation: formatação, lint, typecheck, testes, integração PostgreSQL, build e merge preview).
+- **Visual Chrome:** [Statement visual validation #44581807089](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089) em `success`, **77/77 cenários** e `visual-gate-index.json.failures=[]`. Inclui a Inbox em desktop/mobile, revisão, importação CSV/OFX, mensagens, insights, teclado, estados Golden Screen, filtro temporal, conteúdo longo e controles negativos. No cenário `ai-review-queue`, ambas as matrizes (390px e 1366px) têm `complete=true`, `negativePass=true` e contraste da aba inativa **7,58:1** (mínimo 4,5:1).
+- **Teste de contrato e histórico:** `apps/web/src/dev-server/inbox-tabs.test.ts` executado pela CI, cobrindo os quatro painéis, setas/Home/End, URLs `#financial-insights`, `?importBatchId=`, histórico e preservação de `profileId`; os scripts Chrome confirmam importação, ações contextuais e preservação dos controladores existentes.
+- **Qualidade:** validador oficial `CODE-GROWTH-001` aprovado no SHA material com 12 arquivos medidos.
+
+**Distinção de gates:** esses checkboxes atestam a verificação técnica/visual dos respectivos critérios, **não** substituem a auditoria independente nem a certificação. O handoff herdado pertence à issue #695/PR #796 e não certifica #806/#807: [provenance #44581806899](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806899) e [session review #44581806915](https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806915) seguem bloqueados. A issue permanece **aberta**, sem autorização técnica para merge/release até o novo dossiê exact-SHA e auditoria independente.

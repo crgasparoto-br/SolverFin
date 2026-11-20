@@ -171,8 +171,8 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
     }
     button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[aria-pressed]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
-    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
-    button[aria-selected]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
+    button[aria-selected]:not([role="tab"]):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected]:not([role="tab"]):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[aria-haspopup="listbox"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
     button[role="menuitem"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
@@ -233,8 +233,8 @@ export function sharedShellStyles(tokens: SolverFinDesignTokens = solverFinDesig
     }
     button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
     button[aria-pressed="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible,
-    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
-    button[aria-selected="true"]:not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
+    button[aria-selected="true"]:not([role="tab"]):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):hover:not(:disabled),
+    button[aria-selected="true"]:not([role="tab"]):not(.danger):not(.danger-action):not(.danger-menu-item):not(.danger-icon-button):focus-visible {
       background: var(--neutral-control-active-hover);
     }
     .secondary-button {

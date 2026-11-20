@@ -14,6 +14,9 @@ const report = {
   route: "/notificacoes",
   viewports: [],
   preference: null,
+  preferenceRollback: null,
+  unsafeNavigation: null,
+  failedReadMutation: null,
   result: "started",
 };
 
@@ -121,6 +124,15 @@ try {
   assert.equal(await readPreference(), preference, "Preference was not restored");
   report.preference = { changedAndRestored: true, persistsAcrossReload: true };
 
+  report.preferenceRollback = await verifyPreferenceRollback();
+  assert.equal(report.preferenceRollback.passed, true, "Preference failure must rollback without persisting");
+  assert.equal(await readPreference(), originalPreference);
+
+  report.unsafeNavigation = await verifyBlockedNotificationMutation("navigation");
+  assert.equal(report.unsafeNavigation.passed, true, "Untrusted notification destination must be rejected");
+  report.failedReadMutation = await verifyBlockedNotificationMutation("read");
+  assert.equal(report.failedReadMutation.passed, true, "Failed read mutation must recover without reload");
+
   // Exercise the real click handler with a safe mocked navigation response.
   // The origin is revalidated by the API in production; this isolates the
   // browser's profileId propagation without publishing fabricated events.
@@ -191,6 +203,100 @@ try {
     `${JSON.stringify(report, null, 2)}\n`,
   );
   await browser.close(outputDir);
+}
+
+async function verifyPreferenceRollback() {
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
+  const result = await evaluate(
+    browser.cdp,
+    `(async () => {
+      const checkbox = document.querySelector('[data-preference-event="${eventType}"][data-preference-channel="in_app"]');
+      if (!checkbox) return { passed: false, reason: 'missing preference' };
+      const before = checkbox.checked;
+      const originalFetch = window.fetch;
+      let intercepted = 0;
+      window.fetch = (path, init = {}) => {
+        if (String(path).startsWith('/api/notifications/preferences') && init.method === 'PUT') {
+          intercepted += 1;
+          return Promise.resolve(new Response(JSON.stringify({ error: { message: 'Simulated failure' } }), {
+            status: 503, headers: { 'content-type': 'application/json' }
+          }));
+        }
+        return originalFetch(path, init);
+      };
+      try {
+        checkbox.click();
+        for (let attempt = 0; attempt < 90; attempt += 1) {
+          const status = document.querySelector('[data-notifications-status]')?.textContent?.trim();
+          if (!checkbox.disabled && status === 'Não foi possível salvar a alteração.') {
+            return { passed: checkbox.checked === before && intercepted === 1,
+              restored: checkbox.checked === before, intercepted, status };
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        return { passed: false, reason: 'mutation did not settle', intercepted };
+      } finally {
+        window.fetch = originalFetch;
+      }
+    })()`,
+  );
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
+  return { ...result, persistedUnchanged: (await readPreference()) === originalPreference,
+    passed: result.passed && (await readPreference()) === originalPreference };
+}
+
+async function verifyBlockedNotificationMutation(kind) {
+  const profileId = "33333333-3333-4333-8333-333333333331";
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?profileId=${profileId}`);
+  const result = await evaluate(
+    browser.cdp,
+    `(async () => {
+      const kind = ${JSON.stringify(kind)};
+      const id = '00000000-0000-4000-8000-000000000693';
+      const root = document.querySelector('[data-financial-notifications]');
+      if (!root) return { passed: false, reason: 'missing inbox' };
+      const originalFetch = window.fetch;
+      let intercepted = 0;
+      const button = document.createElement('button');
+      button.type = 'button';
+      if (kind === 'read') {
+        button.setAttribute('data-notification-read', 'true');
+        button.setAttribute('data-id', id);
+      } else {
+        button.setAttribute('data-notification-target', id);
+      }
+      root.append(button);
+      window.fetch = (path, init = {}) => {
+        const requestPath = String(path);
+        if (requestPath.startsWith('/api/notifications/' + id + (kind === 'read' ? '/read' : '/navigation'))) {
+          intercepted += 1;
+          return Promise.resolve(kind === 'read'
+            ? new Response('{}', { status: 503, headers: { 'content-type': 'application/json' } })
+            : new Response(JSON.stringify({ available: true, href: 'https://untrusted.example/redirect' }),
+                { status: 200, headers: { 'content-type': 'application/json' } }));
+        }
+        return originalFetch(path, init);
+      };
+      try {
+        button.click();
+        const expected = kind === 'read' ? 'Não foi possível salvar a alteração.' : 'Origem indisponível.';
+        for (let attempt = 0; attempt < 90; attempt += 1) {
+          const status = document.querySelector('[data-notifications-status]')?.textContent?.trim();
+          if (status === expected && !button.disabled) {
+            return { passed: intercepted === 1 && location.pathname === '/notificacoes' &&
+                location.search.includes('profileId=') && !button.disabled,
+              kind, intercepted, status, route: location.pathname };
+          }
+          await new Promise((resolve) => setTimeout(resolve, 50));
+        }
+        return { passed: false, kind, intercepted, reason: 'mutation did not settle' };
+      } finally {
+        window.fetch = originalFetch;
+        button.remove();
+      }
+    })()`,
+  );
+  return result;
 }
 
 async function readPreference() {

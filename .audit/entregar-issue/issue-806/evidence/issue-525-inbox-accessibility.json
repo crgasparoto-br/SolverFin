@@ -1,0 +1,2026 @@
+{
+  "generatedAt": "2026-11-19T18:01:50.361Z",
+  "commit": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "browser": "Google Chrome 157.0.8103.78",
+  "failures": [],
+  "simpleBatchId": "3e23c51d-6233-43bc-acd1-e7f305ad1f13",
+  "candidateBatchId": "4dc5c656-36b0-4299-b87e-f006e7177359",
+  "desktop": {
+    "viewport": "1366x768",
+    "bodyFitsViewport": true,
+    "completeRows": 8,
+    "checkboxesMeetMinimum": true,
+    "buttonsMeetDesignSystem": true,
+    "operationalTextIsLegible": true,
+    "actionsFitViewport": true,
+    "outOfViewportActions": [],
+    "batchItemsDoNotOverlap": true,
+    "batchItemContentContained": true,
+    "labelActivatesCheckbox": true,
+    "checkboxDimensions": [
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      }
+    ],
+    "buttonDimensions": [
+      {
+        "width": 97,
+        "height": 46,
+        "text": "Revisões"
+      },
+      {
+        "width": 123,
+        "height": 46,
+        "text": "Importações"
+      },
+      {
+        "width": 115,
+        "height": 46,
+        "text": "Mensagens"
+      },
+      {
+        "width": 91,
+        "height": 46,
+        "text": "Insights"
+      },
+      {
+        "width": 188,
+        "height": 44,
+        "text": "Importar extrato"
+      },
+      {
+        "width": 107,
+        "height": 34,
+        "text": "Atualizar"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "issue-525-candidate-mwnux9kf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "issue-525-accessible-mwnux9kf.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "issue-525-inbox-mwnux5bs.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "validacao-inbox-mwnux1vn.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "issue-565-states-mwnuv7tf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 239,
+        "height": 91,
+        "text": "issue-565-review-mwnuumtx.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      }
+    ],
+    "operationalFontSizes": [
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      }
+    ],
+    "batchItemRects": [
+      {
+        "left": 234,
+        "right": 473,
+        "top": 156,
+        "bottom": 247,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 247,
+        "bottom": 337,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 337,
+        "bottom": 428,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 428,
+        "bottom": 519,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 519,
+        "bottom": 610,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 610,
+        "bottom": 700,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 700,
+        "bottom": 791,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 791,
+        "bottom": 868,
+        "width": 239,
+        "height": 77
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 868,
+        "bottom": 959,
+        "width": 239,
+        "height": 91
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 959,
+        "bottom": 1033,
+        "width": 239,
+        "height": 75
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 1033,
+        "bottom": 1108,
+        "width": 239,
+        "height": 75
+      },
+      {
+        "left": 234,
+        "right": 473,
+        "top": 1108,
+        "bottom": 1199,
+        "width": 239,
+        "height": 91
+      }
+    ],
+    "batchItemContentRects": [
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 156,
+          "bottom": 247
+        },
+        "content": [
+          {
+            "text": "issue-525-candidate-mwnux9kf.csv",
+            "left": 245,
+            "right": 464,
+            "top": 163,
+            "bottom": 195
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 196,
+            "bottom": 224
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 225,
+            "bottom": 239
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 247,
+          "bottom": 337
+        },
+        "content": [
+          {
+            "text": "issue-525-accessible-mwnux9kf.csv",
+            "left": 245,
+            "right": 464,
+            "top": 254,
+            "bottom": 286
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 287,
+            "bottom": 315
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 316,
+            "bottom": 329
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 337,
+          "bottom": 428
+        },
+        "content": [
+          {
+            "text": "issue-525-inbox-mwnux5bs.csv",
+            "left": 245,
+            "right": 464,
+            "top": 344,
+            "bottom": 377
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 378,
+            "bottom": 405
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 406,
+            "bottom": 420
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 428,
+          "bottom": 519
+        },
+        "content": [
+          {
+            "text": "validacao-inbox-mwnux1vn.csv",
+            "left": 245,
+            "right": 464,
+            "top": 435,
+            "bottom": 468
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 469,
+            "bottom": 496
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 497,
+            "bottom": 511
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 519,
+          "bottom": 610
+        },
+        "content": [
+          {
+            "text": "issue-565-states-mwnuv7tf.csv",
+            "left": 245,
+            "right": 464,
+            "top": 526,
+            "bottom": 558
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 559,
+            "bottom": 587
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 588,
+            "bottom": 602
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 610,
+          "bottom": 700
+        },
+        "content": [
+          {
+            "text": "issue-565-review-mwnuumtx.csv",
+            "left": 245,
+            "right": 464,
+            "top": 617,
+            "bottom": 649
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 650,
+            "bottom": 678
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 679,
+            "bottom": 692
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 700,
+          "bottom": 791
+        },
+        "content": [
+          {
+            "text": "inbox-date-filter-mwnuqyt5.csv",
+            "left": 245,
+            "right": 464,
+            "top": 707,
+            "bottom": 740
+          },
+          {
+            "text": "CSV · Em revisão · 4 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 741,
+            "bottom": 768
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 769,
+            "bottom": 783
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 791,
+          "bottom": 868
+        },
+        "content": [
+          {
+            "text": "inbox-status-control-mwnuquq9.csv",
+            "left": 245,
+            "right": 464,
+            "top": 798,
+            "bottom": 831
+          },
+          {
+            "text": "CSV · Concluído · 2 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 832,
+            "bottom": 845
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 846,
+            "bottom": 860
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 868,
+          "bottom": 959
+        },
+        "content": [
+          {
+            "text": "issue-548-timeout-mwnuqqra.ofx",
+            "left": 245,
+            "right": 464,
+            "top": 875,
+            "bottom": 908
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 909,
+            "bottom": 936
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 937,
+            "bottom": 951
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 959,
+          "bottom": 1033
+        },
+        "content": [
+          {
+            "text": "issue-548-ofx-mwnuqqra.ofx",
+            "left": 245,
+            "right": 464,
+            "top": 966,
+            "bottom": 982
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 983,
+            "bottom": 1011
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 1012,
+            "bottom": 1025
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 1033,
+          "bottom": 1108
+        },
+        "content": [
+          {
+            "text": "hierarquia-mwnuqm8l.csv",
+            "left": 245,
+            "right": 464,
+            "top": 1040,
+            "bottom": 1057
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 1058,
+            "bottom": 1085
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 1086,
+            "bottom": 1100
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 234,
+          "right": 473,
+          "top": 1108,
+          "bottom": 1199
+        },
+        "content": [
+          {
+            "text": "attachment-import-mwnuorum.csv",
+            "left": 245,
+            "right": 464,
+            "top": 1115,
+            "bottom": 1147
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 245,
+            "right": 464,
+            "top": 1148,
+            "bottom": 1176
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 245,
+            "right": 464,
+            "top": 1177,
+            "bottom": 1191
+          }
+        ]
+      }
+    ],
+    "rowRects": [
+      {
+        "top": 386,
+        "bottom": 461,
+        "height": 75
+      },
+      {
+        "top": 461,
+        "bottom": 504,
+        "height": 43
+      },
+      {
+        "top": 504,
+        "bottom": 547,
+        "height": 43
+      },
+      {
+        "top": 547,
+        "bottom": 590,
+        "height": 43
+      },
+      {
+        "top": 590,
+        "bottom": 633,
+        "height": 43
+      },
+      {
+        "top": 633,
+        "bottom": 676,
+        "height": 43
+      }
+    ],
+    "screenshot": "issue-525-inbox-accessibility-desktop-1366x768.png"
+  },
+  "tablet": {
+    "viewport": "768x1024",
+    "bodyFitsViewport": true,
+    "completeRows": 1,
+    "checkboxesMeetMinimum": true,
+    "buttonsMeetDesignSystem": true,
+    "operationalTextIsLegible": true,
+    "actionsFitViewport": true,
+    "outOfViewportActions": [],
+    "batchItemsDoNotOverlap": true,
+    "batchItemContentContained": true,
+    "labelActivatesCheckbox": null,
+    "checkboxDimensions": [
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      }
+    ],
+    "buttonDimensions": [
+      {
+        "width": 97,
+        "height": 46,
+        "text": "Revisões"
+      },
+      {
+        "width": 123,
+        "height": 46,
+        "text": "Importações"
+      },
+      {
+        "width": 115,
+        "height": 46,
+        "text": "Mensagens"
+      },
+      {
+        "width": 91,
+        "height": 46,
+        "text": "Insights"
+      },
+      {
+        "width": 188,
+        "height": 44,
+        "text": "Importar extrato"
+      },
+      {
+        "width": 107,
+        "height": 34,
+        "text": "Atualizar"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "issue-525-candidate-mwnux9kf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "issue-525-accessible-mwnux9kf.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "issue-525-inbox-mwnux5bs.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "validacao-inbox-mwnux1vn.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "issue-565-states-mwnuv7tf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 494,
+        "height": 61,
+        "text": "issue-565-review-mwnuumtx.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      }
+    ],
+    "operationalFontSizes": [
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Data",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Tipo",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Valor",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Descrição",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Conta de referência",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Data",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Tipo",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Valor",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Descrição",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Conta de referência",
+        "fontSize": "11px"
+      }
+    ],
+    "batchItemRects": [
+      {
+        "left": 232,
+        "right": 726,
+        "top": 217,
+        "bottom": 277,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 277,
+        "bottom": 338,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 338,
+        "bottom": 399,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 399,
+        "bottom": 460,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 460,
+        "bottom": 520,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 520,
+        "bottom": 581,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 581,
+        "bottom": 642,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 642,
+        "bottom": 703,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 703,
+        "bottom": 763,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 763,
+        "bottom": 824,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 824,
+        "bottom": 885,
+        "width": 494,
+        "height": 61
+      },
+      {
+        "left": 232,
+        "right": 726,
+        "top": 885,
+        "bottom": 946,
+        "width": 494,
+        "height": 61
+      }
+    ],
+    "batchItemContentRects": [
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 217,
+          "bottom": 277
+        },
+        "content": [
+          {
+            "text": "issue-525-candidate-mwnux9kf.csv",
+            "left": 243,
+            "right": 717,
+            "top": 224,
+            "bottom": 240
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 241,
+            "bottom": 255
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 256,
+            "bottom": 269
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 277,
+          "bottom": 338
+        },
+        "content": [
+          {
+            "text": "issue-525-accessible-mwnux9kf.csv",
+            "left": 243,
+            "right": 717,
+            "top": 284,
+            "bottom": 301
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 302,
+            "bottom": 315
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 316,
+            "bottom": 330
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 338,
+          "bottom": 399
+        },
+        "content": [
+          {
+            "text": "issue-525-inbox-mwnux5bs.csv",
+            "left": 243,
+            "right": 717,
+            "top": 345,
+            "bottom": 361
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 362,
+            "bottom": 376
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 377,
+            "bottom": 391
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 399,
+          "bottom": 460
+        },
+        "content": [
+          {
+            "text": "validacao-inbox-mwnux1vn.csv",
+            "left": 243,
+            "right": 717,
+            "top": 406,
+            "bottom": 422
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 423,
+            "bottom": 437
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 438,
+            "bottom": 452
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 460,
+          "bottom": 520
+        },
+        "content": [
+          {
+            "text": "issue-565-states-mwnuv7tf.csv",
+            "left": 243,
+            "right": 717,
+            "top": 467,
+            "bottom": 483
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 484,
+            "bottom": 498
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 499,
+            "bottom": 512
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 520,
+          "bottom": 581
+        },
+        "content": [
+          {
+            "text": "issue-565-review-mwnuumtx.csv",
+            "left": 243,
+            "right": 717,
+            "top": 527,
+            "bottom": 544
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 545,
+            "bottom": 558
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 559,
+            "bottom": 573
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 581,
+          "bottom": 642
+        },
+        "content": [
+          {
+            "text": "inbox-date-filter-mwnuqyt5.csv",
+            "left": 243,
+            "right": 717,
+            "top": 588,
+            "bottom": 604
+          },
+          {
+            "text": "CSV · Em revisão · 4 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 605,
+            "bottom": 619
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 620,
+            "bottom": 634
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 642,
+          "bottom": 703
+        },
+        "content": [
+          {
+            "text": "inbox-status-control-mwnuquq9.csv",
+            "left": 243,
+            "right": 717,
+            "top": 649,
+            "bottom": 665
+          },
+          {
+            "text": "CSV · Concluído · 2 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 666,
+            "bottom": 680
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 681,
+            "bottom": 695
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 703,
+          "bottom": 763
+        },
+        "content": [
+          {
+            "text": "issue-548-timeout-mwnuqqra.ofx",
+            "left": 243,
+            "right": 717,
+            "top": 710,
+            "bottom": 726
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 727,
+            "bottom": 741
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 742,
+            "bottom": 755
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 763,
+          "bottom": 824
+        },
+        "content": [
+          {
+            "text": "issue-548-ofx-mwnuqqra.ofx",
+            "left": 243,
+            "right": 717,
+            "top": 770,
+            "bottom": 787
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 788,
+            "bottom": 801
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 802,
+            "bottom": 816
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 824,
+          "bottom": 885
+        },
+        "content": [
+          {
+            "text": "hierarquia-mwnuqm8l.csv",
+            "left": 243,
+            "right": 717,
+            "top": 831,
+            "bottom": 847
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 848,
+            "bottom": 862
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 863,
+            "bottom": 877
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 232,
+          "right": 726,
+          "top": 885,
+          "bottom": 946
+        },
+        "content": [
+          {
+            "text": "attachment-import-mwnuorum.csv",
+            "left": 243,
+            "right": 717,
+            "top": 892,
+            "bottom": 908
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 243,
+            "right": 717,
+            "top": 909,
+            "bottom": 923
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 243,
+            "right": 717,
+            "top": 924,
+            "bottom": 938
+          }
+        ]
+      }
+    ],
+    "rowRects": [
+      {
+        "top": 720,
+        "bottom": 939,
+        "height": 219
+      },
+      {
+        "top": 939,
+        "bottom": 1100,
+        "height": 161
+      },
+      {
+        "top": 1100,
+        "bottom": 1261,
+        "height": 161
+      },
+      {
+        "top": 1261,
+        "bottom": 1422,
+        "height": 161
+      },
+      {
+        "top": 1422,
+        "bottom": 1582,
+        "height": 161
+      },
+      {
+        "top": 1582,
+        "bottom": 1743,
+        "height": 161
+      }
+    ],
+    "screenshot": "issue-525-inbox-accessibility-tablet-768x1024.png"
+  },
+  "mobile": {
+    "viewport": "390x844",
+    "bodyFitsViewport": true,
+    "completeRows": 0,
+    "checkboxesMeetMinimum": true,
+    "buttonsMeetDesignSystem": true,
+    "operationalTextIsLegible": true,
+    "actionsFitViewport": true,
+    "outOfViewportActions": [],
+    "batchItemsDoNotOverlap": true,
+    "batchItemContentContained": true,
+    "labelActivatesCheckbox": null,
+    "checkboxDimensions": [
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      },
+      {
+        "width": 24,
+        "height": 24,
+        "text": ""
+      }
+    ],
+    "buttonDimensions": [
+      {
+        "width": 89,
+        "height": 46,
+        "text": "Revisões"
+      },
+      {
+        "width": 115,
+        "height": 46,
+        "text": "Importações"
+      },
+      {
+        "width": 107,
+        "height": 46,
+        "text": "Mensagens"
+      },
+      {
+        "width": 83,
+        "height": 46,
+        "text": "Insights"
+      },
+      {
+        "width": 188,
+        "height": 44,
+        "text": "Importar extrato"
+      },
+      {
+        "width": 107,
+        "height": 34,
+        "text": "Atualizar"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "issue-525-candidate-mwnux9kf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "issue-525-accessible-mwnux9kf.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "issue-525-inbox-mwnux5bs.csvCSV · Em revisão · 10 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "validacao-inbox-mwnux1vn.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "issue-565-states-mwnuv7tf.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      },
+      {
+        "width": 340,
+        "height": 61,
+        "text": "issue-565-review-mwnuumtx.csvCSV · Em revisão · 1 linha(s) válidasRecebido em 19/11/2026"
+      }
+    ],
+    "operationalFontSizes": [
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Data",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Tipo",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Valor",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Descrição",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Conta de referência",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Elegível",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Data",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Tipo",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Valor",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Descrição",
+        "fontSize": "11px"
+      },
+      {
+        "text": "Conta de referência",
+        "fontSize": "11px"
+      }
+    ],
+    "batchItemRects": [
+      {
+        "left": 10,
+        "right": 350,
+        "top": 217,
+        "bottom": 278,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 278,
+        "bottom": 339,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 339,
+        "bottom": 400,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 400,
+        "bottom": 460,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 460,
+        "bottom": 521,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 521,
+        "bottom": 582,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 582,
+        "bottom": 643,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 643,
+        "bottom": 703,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 703,
+        "bottom": 764,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 764,
+        "bottom": 825,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 825,
+        "bottom": 886,
+        "width": 340,
+        "height": 61
+      },
+      {
+        "left": 10,
+        "right": 350,
+        "top": 886,
+        "bottom": 946,
+        "width": 340,
+        "height": 61
+      }
+    ],
+    "batchItemContentRects": [
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 217,
+          "bottom": 278
+        },
+        "content": [
+          {
+            "text": "issue-525-candidate-mwnux9kf.csv",
+            "left": 21,
+            "right": 341,
+            "top": 224,
+            "bottom": 241
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 242,
+            "bottom": 255
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 256,
+            "bottom": 270
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 278,
+          "bottom": 339
+        },
+        "content": [
+          {
+            "text": "issue-525-accessible-mwnux9kf.csv",
+            "left": 21,
+            "right": 341,
+            "top": 285,
+            "bottom": 301
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 302,
+            "bottom": 316
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 317,
+            "bottom": 331
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 339,
+          "bottom": 400
+        },
+        "content": [
+          {
+            "text": "issue-525-inbox-mwnux5bs.csv",
+            "left": 21,
+            "right": 341,
+            "top": 346,
+            "bottom": 362
+          },
+          {
+            "text": "CSV · Em revisão · 10 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 363,
+            "bottom": 377
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 378,
+            "bottom": 392
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 400,
+          "bottom": 460
+        },
+        "content": [
+          {
+            "text": "validacao-inbox-mwnux1vn.csv",
+            "left": 21,
+            "right": 341,
+            "top": 407,
+            "bottom": 423
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 424,
+            "bottom": 438
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 439,
+            "bottom": 452
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 460,
+          "bottom": 521
+        },
+        "content": [
+          {
+            "text": "issue-565-states-mwnuv7tf.csv",
+            "left": 21,
+            "right": 341,
+            "top": 467,
+            "bottom": 484
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 485,
+            "bottom": 498
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 499,
+            "bottom": 513
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 521,
+          "bottom": 582
+        },
+        "content": [
+          {
+            "text": "issue-565-review-mwnuumtx.csv",
+            "left": 21,
+            "right": 341,
+            "top": 528,
+            "bottom": 544
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 545,
+            "bottom": 559
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 560,
+            "bottom": 574
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 582,
+          "bottom": 643
+        },
+        "content": [
+          {
+            "text": "inbox-date-filter-mwnuqyt5.csv",
+            "left": 21,
+            "right": 341,
+            "top": 589,
+            "bottom": 605
+          },
+          {
+            "text": "CSV · Em revisão · 4 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 606,
+            "bottom": 620
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 621,
+            "bottom": 635
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 643,
+          "bottom": 703
+        },
+        "content": [
+          {
+            "text": "inbox-status-control-mwnuquq9.csv",
+            "left": 21,
+            "right": 341,
+            "top": 650,
+            "bottom": 666
+          },
+          {
+            "text": "CSV · Concluído · 2 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 667,
+            "bottom": 681
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 682,
+            "bottom": 695
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 703,
+          "bottom": 764
+        },
+        "content": [
+          {
+            "text": "issue-548-timeout-mwnuqqra.ofx",
+            "left": 21,
+            "right": 341,
+            "top": 710,
+            "bottom": 727
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 728,
+            "bottom": 741
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 742,
+            "bottom": 756
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 764,
+          "bottom": 825
+        },
+        "content": [
+          {
+            "text": "issue-548-ofx-mwnuqqra.ofx",
+            "left": 21,
+            "right": 341,
+            "top": 771,
+            "bottom": 787
+          },
+          {
+            "text": "OFX · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 788,
+            "bottom": 802
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 803,
+            "bottom": 817
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 825,
+          "bottom": 886
+        },
+        "content": [
+          {
+            "text": "hierarquia-mwnuqm8l.csv",
+            "left": 21,
+            "right": 341,
+            "top": 832,
+            "bottom": 848
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 849,
+            "bottom": 863
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 864,
+            "bottom": 878
+          }
+        ]
+      },
+      {
+        "itemRect": {
+          "left": 10,
+          "right": 350,
+          "top": 886,
+          "bottom": 946
+        },
+        "content": [
+          {
+            "text": "attachment-import-mwnuorum.csv",
+            "left": 21,
+            "right": 341,
+            "top": 893,
+            "bottom": 909
+          },
+          {
+            "text": "CSV · Em revisão · 1 linha(s) válidas",
+            "left": 21,
+            "right": 341,
+            "top": 910,
+            "bottom": 924
+          },
+          {
+            "text": "Recebido em 19/11/2026",
+            "left": 21,
+            "right": 341,
+            "top": 925,
+            "bottom": 938
+          }
+        ]
+      }
+    ],
+    "rowRects": [
+      {
+        "top": 944,
+        "bottom": 1184,
+        "height": 240
+      },
+      {
+        "top": 1184,
+        "bottom": 1395,
+        "height": 211
+      },
+      {
+        "top": 1395,
+        "bottom": 1606,
+        "height": 211
+      },
+      {
+        "top": 1606,
+        "bottom": 1817,
+        "height": 211
+      },
+      {
+        "top": 1817,
+        "bottom": 2028,
+        "height": 211
+      },
+      {
+        "top": 2028,
+        "bottom": 2239,
+        "height": 211
+      }
+    ],
+    "screenshot": "issue-525-inbox-accessibility-mobile-390x844.png"
+  },
+  "candidate": {
+    "desktop": {
+      "viewport": "1366x768",
+      "bodyFitsViewport": true,
+      "hasPendingState": true,
+      "actionsAssociated": true,
+      "actionsVisible": true,
+      "actionsMeetDesignSystem": true,
+      "actionsFitViewport": true,
+      "focusIsVisible": true,
+      "visuallySubordinate": true,
+      "rowState": "candidate_pending",
+      "cardText": "Possível duplicidadePossível duplicidade. Evidências: O valor da movimentacao e igual. As datas das movimentacoes sao proximas. A conta financeira e a mesma. As descricoes sao parecidas. Revise antes de decidir.ConfirmarIgnorar candidato",
+      "cardRect": {
+        "width": 199,
+        "height": 147
+      },
+      "rowRect": {
+        "width": 1152,
+        "height": 333
+      },
+      "actionDimensions": [
+        {
+          "text": "Confirmar",
+          "width": 94,
+          "height": 47
+        },
+        {
+          "text": "Ignorar candidato",
+          "width": 94,
+          "height": 47
+        }
+      ],
+      "screenshot": "issue-525-inbox-candidate-desktop-1366x768.png"
+    },
+    "mobile": {
+      "viewport": "390x844",
+      "bodyFitsViewport": true,
+      "hasPendingState": true,
+      "actionsAssociated": true,
+      "actionsVisible": true,
+      "actionsMeetDesignSystem": true,
+      "actionsFitViewport": true,
+      "focusIsVisible": true,
+      "visuallySubordinate": true,
+      "rowState": "candidate_pending",
+      "cardText": "Possível duplicidadePossível duplicidade. Evidências: O valor da movimentacao e igual. As datas das movimentacoes sao proximas. A conta financeira e a mesma. As descricoes sao parecidas. Revise antes de decidir.ConfirmarIgnorar candidato",
+      "cardRect": {
+        "width": 307,
+        "height": 156
+      },
+      "rowRect": {
+        "width": 337,
+        "height": 558
+      },
+      "actionDimensions": [
+        {
+          "text": "Confirmar",
+          "width": 95,
+          "height": 34
+        },
+        {
+          "text": "Ignorar candidato",
+          "width": 153,
+          "height": 34
+        }
+      ],
+      "screenshot": "issue-525-inbox-candidate-mobile-390x844.png"
+    }
+  }
+}

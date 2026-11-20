@@ -105,8 +105,8 @@ try {
       evidence,
     );
     check(
-      evidence.secondaryBelowReview,
-      `Import/secondary content precedes the review at ${width}px`,
+      evidence.otherPanelsHidden,
+      `Inactive Inbox panels are visible during review at ${width}px`,
       evidence,
     );
   }
@@ -146,7 +146,7 @@ try {
   hierarchyNegative = await validateHierarchyNegative(browser.cdp);
   check(
     hierarchyNegative.baseline && hierarchyNegative.attackRejected && hierarchyNegative.restored,
-    "Moving imports above review was not detected by the visual order guard",
+    "Revealing an inactive Inbox tab was not detected by the visual isolation guard",
     hierarchyNegative,
   );
   longEvidence = await validateLongEvidence(browser.cdp, outputDir);

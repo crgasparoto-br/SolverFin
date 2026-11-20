@@ -1,0 +1,29 @@
+{
+  "source": "read-only authenticated GitHub Actions observations; verify original immutable run before independent approval",
+  "repository": "crgasparoto-br/SolverFin",
+  "material_head_sha": "ac25e1c390008575bb9a11395f61cd90303ae52b",
+  "base_sha": "56e7549df6262c91173bf5bb250b722ba5b80c01",
+  "repository_ci": {
+    "run_id": 44581806796,
+    "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581806796",
+    "conclusion": "success",
+    "critical_job_id": 135764615637,
+    "passed_steps": [
+      "Enforce complete repository formatting", "Run npm run lint", "Run npm run typecheck",
+      "Run npm run test", "Run npm run test:integration --workspace @solverfin/api", "Run npm run build"
+    ]
+  },
+  "chrome": {
+    "run_id": 44581807089,
+    "run_url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/44581807089",
+    "conclusion": "success",
+    "artifact_id": 14559247558,
+    "passed_scenarios": 77,
+    "failed_scenarios": 0
+  },
+  "handoff": {
+    "provenance_run": 44581806899,
+    "session_review_run": 44581806915,
+    "pre_certificate_state": "foreign inherited handoff from issue 695, PR 796; not yet certified for issue 806"
+  }
+}
