@@ -29,6 +29,46 @@ export function collectNotifications693Evidence(report) {
     [...widths].some((width) => width >= 1024),
     "Notifications evidence lacks a desktop viewport.",
   );
+  assert.ok(
+    Array.isArray(report.populatedViewports),
+    "Populated notifications were not verified in Chrome.",
+  );
+  const populatedWidths = new Set();
+  for (const viewport of report.populatedViewports) {
+    assert.equal(viewport.route, "/notificacoes");
+    assert.equal(viewport.profilePreserved, true, "SSR lost the populated financial profile.");
+    assert.equal(viewport.rootVisible, true);
+    assert.equal(viewport.receivedTabActive, true);
+    assert.equal(viewport.emptyState, false, "The populated list was not rendered.");
+    assert.equal(viewport.rowCount, 3, "Not all real notification fixtures are visible.");
+    assert.equal(viewport.unreadCount, "2 não lidas");
+    assert.equal(viewport.hasReadState, true);
+    assert.equal(viewport.hasUnreadState, true);
+    assert.equal(viewport.hasBudgetAmount, true, "BRL is missing from the populated list.");
+    assert.equal(viewport.hasInvoiceAmount, true, "USD is missing from the populated list.");
+    assert.equal(viewport.metadataCount, 3);
+    assert.equal(viewport.visibleTitles, true);
+    assert.equal(viewport.actionCount, 6);
+    assert.equal(viewport.actionsVisible, true, "A row action is clipped or undersized.");
+    assert.equal(viewport.noRowOverflow, true, "A notification row overflows horizontally.");
+    assert.equal(viewport.noHorizontalOverflow, true, "Populated page overflows horizontally.");
+    assert.equal(viewport.viewportWidth, viewport.width);
+    populatedWidths.add(viewport.width);
+  }
+  for (const width of [320, 390, 1366]) {
+    assert.ok(populatedWidths.has(width), "Missing populated screenshot at " + width + "px.");
+  }
+  assert.equal(report.populatedZoom?.width, 320);
+  assert.equal(report.populatedZoom?.textScale, 200);
+  assert.equal(report.populatedZoom?.noHorizontalOverflow, true);
+  assert.equal(report.populatedZoom?.actionsWithinViewport, true);
+  assert.equal(report.populatedActions?.passed, true);
+  assert.equal(report.populatedActions?.restoredReadState, true);
+  assert.equal(report.populatedActions?.unavailableSourceHandled, true);
+  assert.equal(report.populatedActions?.safeOriginNavigated, true);
+  assert.equal(report.populatedActions?.profilePreserved, true);
+  assert.equal(report.fixtureCleanup?.passed, true);
+
   assert.equal(
     report.preference?.changedAndRestored,
     true,
@@ -59,6 +99,10 @@ export function collectNotifications693Evidence(report) {
     observations: {
       widths: [...widths].sort((left, right) => left - right),
       emptyState: true,
+      populatedWidths: [...populatedWidths].sort((left, right) => left - right),
+      populatedRows: 3,
+      populatedTextZoom: 200,
+      realNotificationActions: report.populatedActions,
       preferredChannels: 12,
       preferencePersistence: true,
       navigationContext: report.navigation,

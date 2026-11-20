@@ -1,15 +1,21 @@
 import assert from "node:assert/strict";
 
+import { baseCss } from "./settings-page-css.js";
 import {
   parseAutomationRuleAmountMinorInput,
   renderSettingsPage,
+  resolveRulesListFilter,
   resolveSettingsSection,
 } from "./settings-page.js";
 
 sectionResolutionIsServerSide();
 amountInputConvertsDecimalsToMinorUnits();
+ruleListFilterFallsBackToAll();
+ruleSummaryKeepsSingleLayout();
 await profilesSectionRendersAsTheDefault();
 await rulesSectionRendersReadableDetails();
+await rulesListFiltersPreserveActionsAndVisibility();
+await rulesFilteredEmptyStateIsNotAnApiError();
 await rulesFailureDoesNotRenderAnEmptyState();
 await accountFailureDoesNotDisableCategories();
 await categoryFailureDoesNotDisableAccounts();
@@ -31,6 +37,33 @@ function sectionResolutionIsServerSide(): void {
   assert.equal(
     resolveSettingsSection(new URL("https://example.test/configuracoes?section=unknown")),
     "profiles",
+  );
+}
+
+function ruleSummaryKeepsSingleLayout(): void {
+  const css = baseCss();
+  assert.equal((css.match(/\.rule-summary\s*\{/g) ?? []).length, 1);
+  assert.match(css, /\.rule-summary\s*\{[^}]*display:\s*grid;/);
+}
+
+function ruleListFilterFallsBackToAll(): void {
+  for (const suffix of ["", "&filter=todas", "&filter=desconhecido", "&filter=Ativas"]) {
+    assert.equal(
+      resolveRulesListFilter(new URL("https://example.test/configuracoes?section=rules" + suffix)),
+      "todas",
+    );
+  }
+  assert.equal(
+    resolveRulesListFilter(
+      new URL("https://example.test/configuracoes?section=rules&filter=ativas"),
+    ),
+    "ativas",
+  );
+  assert.equal(
+    resolveRulesListFilter(
+      new URL("https://example.test/configuracoes?section=rules&filter=inativas"),
+    ),
+    "inativas",
   );
 }
 
@@ -183,6 +216,149 @@ async function rulesSectionRendersReadableDetails(): Promise<void> {
       assert.match(html, /name="amountMaxMinor" type="text" inputmode="decimal"/);
       assert.doesNotMatch(html, /em centavos/);
       assert.match(html, /window\.location\.reload\(\)/);
+    },
+  );
+}
+
+async function rulesListFiltersPreserveActionsAndVisibility(): Promise<void> {
+  const responses = {
+    "/api/automation-rules?status=all": {
+      rules: [
+        {
+          id: "rule-active",
+          name: "Mercado & Casa",
+          status: "active",
+          priority: 100,
+          conditions: { descriptionIncludes: "mercado<script>alert(1)</script>", kind: "expense" },
+          actions: { status: "suggested" },
+          explanation: "Esta regra ajuda no lançamento.",
+        },
+        {
+          id: "rule-inactive",
+          name: "Regra inativa",
+          status: "inactive",
+          priority: 20,
+          conditions: { merchantIncludes: "loja" },
+          actions: { status: "planned" },
+        },
+        {
+          id: "rule-unknown",
+          name: "Estado futuro",
+          status: "status_futuro",
+          priority: 10,
+          conditions: {},
+          actions: {},
+        },
+      ],
+    },
+    "/api/accounts": { accounts: [] },
+    "/api/categories": { categories: [] },
+  };
+
+  await withFetch(responses, async () => {
+    for (const [filter, expected] of [
+      ["todas", ["Mercado &amp; Casa", "Regra inativa", "Estado futuro"]],
+      ["ativas", ["Mercado &amp; Casa"]],
+      ["inativas", ["Regra inativa"]],
+    ] as const) {
+      const query = filter === "todas" ? "" : "&filter=" + filter;
+      const html = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes?section=rules" + query),
+      );
+      const scope = html.slice(
+        html.indexOf('data-settings-scope="rules"'),
+        html.indexOf('<dialog id="new-automation-rule-dialog"'),
+      );
+
+      assert.match(scope, /aria-label="Filtrar regras por situação"/);
+      assert.match(scope, /href="\/configuracoes\?section=rules&amp;filter=ativas"/);
+      assert.match(scope, /href="\/configuracoes\?section=rules&amp;filter=inativas"/);
+      assert.match(scope, /O filtro organiza apenas a lista/);
+      assert.equal(
+        (scope.match(/class="maintenance-item rule-item"/g) ?? []).length,
+        expected.length,
+      );
+      const rowTitles = [
+        ...scope.matchAll(/<div class="item-title-line">\s*<strong>([^<]*)<\/strong>/g),
+      ].map((match) => match[1] ?? "");
+      assert.deepEqual(
+        rowTitles,
+        expected,
+        `${filter}: o filtro deve preservar a ordem e excluir regras com outro status`,
+      );
+      assert.match(scope, /<details class="rule-disclosure">/);
+      assert.match(
+        scope,
+        /<summary class="rule-detail-trigger sf-focus-ring" aria-label="Ver condições e ações da regra/,
+      );
+      assert.match(scope, /Ver condições e ações/);
+      assert.match(scope, /data-api-path="\/api\/automation-rules\/apply"/);
+      assert.match(scope, /data-api-confirm="Executar regras sobre sugestões pendentes\?"/);
+      assert.doesNotMatch(scope, /status_futuro|<script>alert\(1\)<\/script>/);
+      assert.match(
+        html,
+        /<fieldset class="settings-rule-fieldset">\s*<legend>Identificação<\/legend>/,
+      );
+      assert.match(html, /<legend>Quando aplicar<\/legend>/);
+      assert.match(html, /<legend>O que sugerir<\/legend>/);
+      assert.match(html, /name="amountMinMinor" type="text" inputmode="decimal"/);
+      assert.match(html, /name="actionCategoryId"/);
+      if (filter === "todas") {
+        assert.match(scope, /Mercado &amp; Casa[\s\S]*Regra inativa[\s\S]*Estado futuro/);
+        assert.match(scope, /mercado&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+        assert.match(scope, /Prioridade 100/);
+        assert.match(scope, /Explicação:<\/strong> Esta regra ajuda no lançamento/);
+        assert.match(scope, /href="\/configuracoes\?section=rules" aria-current="page"/);
+        assert.match(scope, /Ativas <span>1<\/span>/);
+        assert.match(scope, /Inativas <span>1<\/span>/);
+        assert.equal(
+          (scope.match(/data-api-path="\/api\/automation-rules\/rule-active\/archive"/g) ?? [])
+            .length,
+          1,
+        );
+      } else {
+        assert.match(scope, new RegExp("filter=" + filter + '" aria-current="page"'));
+      }
+    }
+
+    const unknown = await renderSettingsPage(
+      "token",
+      new URL("https://example.test/configuracoes?section=rules&filter=qualquer"),
+    );
+    assert.match(unknown, /href="\/configuracoes\?section=rules" aria-current="page"/);
+    assert.match(unknown, /Estado futuro/);
+  });
+}
+
+async function rulesFilteredEmptyStateIsNotAnApiError(): Promise<void> {
+  await withFetch(
+    {
+      "/api/automation-rules?status=all": {
+        rules: [
+          {
+            id: "only-active",
+            name: "Somente ativa",
+            status: "active",
+            priority: 3,
+            conditions: {},
+            actions: {},
+          },
+        ],
+      },
+      "/api/accounts": { accounts: [] },
+      "/api/categories": { categories: [] },
+    },
+    async () => {
+      const html = await renderSettingsPage(
+        "token",
+        new URL("https://example.test/configuracoes?section=rules&filter=inativas"),
+      );
+      assert.match(html, /Nenhuma regra inativa\./);
+      assert.match(html, /Ver todas as regras/);
+      assert.doesNotMatch(html, /Nenhuma regra automática\./);
+      assert.doesNotMatch(html, /Não foi possível carregar as regras automáticas/);
+      assert.match(html, /Aplicar regras<\/button>/);
     },
   );
 }
