@@ -323,8 +323,8 @@ function notificationsControllerScript(): string {
 
 function notificationsPageStyles(): string {
   return [
-    ".notifications-panel { display: grid; gap: var(--sf-space-5); min-width: 0; max-width: 1200px; margin: 0 auto; }",
-    ".notifications-navigation { border-bottom: 1px solid var(--sf-color-border); }",
+    ".notifications-panel { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--sf-space-5); min-width: 0; max-width: 1200px; margin: 0 auto; }",
+    ".notifications-navigation { min-width: 0; border-bottom: 1px solid var(--sf-color-border); }",
     ".notifications-section { min-width: 0; border: 1px solid var(--sf-color-border); border-radius: var(--sf-radius-lg); background: var(--sf-color-surface); padding: var(--sf-space-5); }",
     ".notifications-section-header { display: flex; align-items: center; justify-content: space-between; gap: var(--sf-space-3); margin-bottom: var(--sf-space-3); }",
     ".notifications-section-header h2 { margin: 0 0 var(--sf-space-1); font-size: var(--sf-font-size-lg); }",
@@ -336,8 +336,8 @@ function notificationsPageStyles(): string {
     ".notifications-entry-icon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: var(--sf-radius-md); color: var(--sf-color-primary); background: var(--sf-color-surface-soft); }",
     ".notifications-entry-body, .notifications-entry-aside { min-width: 0; }",
     ".notifications-entry-title { display: flex; align-items: center; flex-wrap: wrap; gap: var(--sf-space-2); }",
-    ".notifications-entry-title h3 { margin: 0; font-size: var(--sf-font-size-lg); }",
-    ".notifications-read-label { color: var(--sf-color-muted-text); font-size: var(--sf-font-size-sm); }",
+    ".notifications-entry-title h3 { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: var(--sf-font-size-lg); }",
+    ".notifications-read-label { min-width: 0; overflow-wrap: anywhere; color: var(--sf-color-muted-text); font-size: var(--sf-font-size-sm); }",
     ".notifications-entry[data-read-state='unread'] .notifications-read-label { color: var(--sf-color-primary); font-weight: var(--sf-font-weight-semibold); }",
     ".notifications-description { margin: var(--sf-space-1) 0; color: var(--sf-color-muted-text); font-size: var(--sf-font-size-md); overflow-wrap: anywhere; }",
     ".notifications-metadata { margin: 0; color: var(--sf-color-muted-text); font-size: var(--sf-font-size-sm); overflow-wrap: anywhere; }",
