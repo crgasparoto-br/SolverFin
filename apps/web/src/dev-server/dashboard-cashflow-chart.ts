@@ -35,4 +35,3 @@ export function renderProjectionChart(
     <p>${escapeHtml(formatDateOnly(first.date))} a ${escapeHtml(formatDateOnly(last.date))}</p>
   </figure>`;
 }
-

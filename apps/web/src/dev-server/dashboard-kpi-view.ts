@@ -142,7 +142,9 @@ export function renderMobileAdditionalKpis(
   </section>`;
 }
 
-export function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+export function renderCurrencyNavigator(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
   if (blocks.length < 2) return "";
 
   return `<nav class="currency-nav" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
@@ -210,7 +212,9 @@ function renderSupportingMetric(metric: DashboardMetricViewModel): string {
   `;
 }
 
-export function renderCurrencyEvidenceIndex(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
+export function renderCurrencyEvidenceIndex(
+  blocks: readonly DashboardCurrencySummaryViewModel[],
+): string {
   if (blocks.length === 0) return "";
 
   return `
@@ -253,4 +257,3 @@ function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
     </details>
   `;
 }
-
