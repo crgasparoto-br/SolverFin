@@ -99,17 +99,30 @@ try {
     "Preferences tab must preserve the selected financial profile",
   );
 
-  const highOffsetUrl = "https://solverfin.invalid/notificacoes?offset=10040&profileId=" + profileId;
+  const highOffsetUrl =
+    "https://solverfin.invalid/notificacoes?offset=10040&profileId=" + profileId;
   const highOffset = await renderNotificationsPage("demo", new URL(highOffsetUrl));
   assert.ok(highOffset.includes("10041–10042 de 10080"));
-  assert.ok(highOffset.includes('href="/notificacoes?offset=10020&amp;profileId=' + profileId + '"'));
-  assert.ok(highOffset.includes('href="/notificacoes?offset=10060&amp;profileId=' + profileId + '"'));
-  assert.ok(highOffset.includes('href="/notificacoes?tab=preferencias&amp;offset=10040&amp;profileId=' + profileId + '"'));
+  assert.ok(
+    highOffset.includes('href="/notificacoes?offset=10020&amp;profileId=' + profileId + '"'),
+  );
+  assert.ok(
+    highOffset.includes('href="/notificacoes?offset=10060&amp;profileId=' + profileId + '"'),
+  );
+  assert.ok(
+    highOffset.includes(
+      'href="/notificacoes?tab=preferencias&amp;offset=10040&amp;profileId=' + profileId + '"',
+    ),
+  );
   const highOffsetPreferences = await renderNotificationsPage(
     "demo",
     new URL(highOffsetUrl + "&tab=preferencias"),
   );
-  assert.ok(highOffsetPreferences.includes('href="/notificacoes?offset=10040&amp;profileId=' + profileId + '"'));
+  assert.ok(
+    highOffsetPreferences.includes(
+      'href="/notificacoes?offset=10040&amp;profileId=' + profileId + '"',
+    ),
+  );
 
   const configured = await renderNotificationsPage("demo", new URL(base + "&tab=preferencias"));
   assert.ok(configured.includes('data-notifications-view="preferencias"'));

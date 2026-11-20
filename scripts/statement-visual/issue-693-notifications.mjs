@@ -125,13 +125,25 @@ try {
   report.preference = { changedAndRestored: true, persistsAcrossReload: true };
 
   report.preferenceRollback = await verifyPreferenceRollback();
-  assert.equal(report.preferenceRollback.passed, true, "Preference failure must rollback without persisting");
+  assert.equal(
+    report.preferenceRollback.passed,
+    true,
+    "Preference failure must rollback without persisting",
+  );
   assert.equal(await readPreference(), originalPreference);
 
   report.unsafeNavigation = await verifyBlockedNotificationMutation("navigation");
-  assert.equal(report.unsafeNavigation.passed, true, "Untrusted notification destination must be rejected");
+  assert.equal(
+    report.unsafeNavigation.passed,
+    true,
+    "Untrusted notification destination must be rejected",
+  );
   report.failedReadMutation = await verifyBlockedNotificationMutation("read");
-  assert.equal(report.failedReadMutation.passed, true, "Failed read mutation must recover without reload");
+  assert.equal(
+    report.failedReadMutation.passed,
+    true,
+    "Failed read mutation must recover without reload",
+  );
 
   // Exercise the real click handler with a safe mocked navigation response.
   // The origin is revalidated by the API in production; this isolates the
@@ -241,8 +253,11 @@ async function verifyPreferenceRollback() {
     })()`,
   );
   await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
-  return { ...result, persistedUnchanged: (await readPreference()) === originalPreference,
-    passed: result.passed && (await readPreference()) === originalPreference };
+  return {
+    ...result,
+    persistedUnchanged: (await readPreference()) === originalPreference,
+    passed: result.passed && (await readPreference()) === originalPreference,
+  };
 }
 
 async function verifyBlockedNotificationMutation(kind) {
