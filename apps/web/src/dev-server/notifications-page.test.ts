@@ -38,10 +38,7 @@ try {
   const nextUrl = "/notificacoes?offset=10020&profileId=" + profileId;
   const nextHref = nextUrl.replace("&profileId=", "&amp;profileId=");
   assert.ok(page.includes('href="' + nextHref + '"'), "Next must retain profile and offset");
-  assert.ok(
-    !page.includes('href="' + nextUrl + '"'),
-    "SSR must escape query separators",
-  );
+  assert.ok(!page.includes('href="' + nextUrl + '"'), "SSR must escape query separators");
   const lastPage = await renderNotificationsPage(
     "demo",
     new URL("https://solverfin.invalid" + nextUrl),
