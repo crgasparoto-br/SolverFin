@@ -165,8 +165,8 @@ export async function buildDashboardOverview(
   purchaseOn: string,
   now: Date = new Date(),
 ): Promise<DashboardOverview> {
-  const referenceDate = now.toISOString().slice(0, 10);
   const purchaseToday = financialTodayInSaoPaulo(now);
+  const referenceDate = purchaseToday;
   const periodStartOn = referenceDate.slice(0, 7) + "-01";
   const [year, month] = periodStartOn.split("-").map(Number) as [number, number];
   const periodEndOn = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);
