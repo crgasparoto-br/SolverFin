@@ -21,7 +21,6 @@ import {
   type TransactionKind,
   type TransactionStatus,
 } from "@solverfin/domain";
-import { financialTodayInSaoPaulo } from "@solverfin/shared";
 
 import { withSharedTransaction } from "./db.js";
 import type { ApiHeaders } from "./http-headers.js";
@@ -71,10 +70,7 @@ import {
   updateBudgetForContext,
 } from "./repositories/budgets.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
-import {
-  buildDashboardOverview,
-  validateDashboardPurchaseDate,
-} from "./repositories/dashboard-overview.js";
+import { dashboardOverviewHandler } from "./dashboard-overview-handler.js";
 import { buildCashFlowProjectionForContext } from "./repositories/cash-flow-projection.js";
 import {
   listFutureCommitmentsForContext,
@@ -314,21 +310,6 @@ async function financialSummaryHandler(
   context: TenantContext,
 ): Promise<ApiResponse> {
   return json(200, await buildFinancialSummary(context));
-}
-
-async function dashboardOverviewHandler(
-  request: ApiRequest,
-  context: TenantContext,
-): Promise<ApiResponse> {
-  const now = new Date();
-  const today = financialTodayInSaoPaulo(now);
-  const purchaseOn = validateDashboardPurchaseDate(request.query.get("purchaseOn"), today);
-  if (!purchaseOn)
-    return json(400, {
-      code: "DASHBOARD_PURCHASE_DATE_INVALID",
-      message: "Escolha uma data de hoje até 365 dias no futuro.",
-    });
-  return json(200, await buildDashboardOverview(context, purchaseOn, now));
 }
 
 async function cashFlowProjectionHandler(

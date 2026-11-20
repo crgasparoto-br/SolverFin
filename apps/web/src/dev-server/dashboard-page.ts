@@ -1,14 +1,10 @@
-import { formatDateOnly, formatMinorCurrency } from "@solverfin/shared";
-
 import {
   renderCard,
   renderEmptyState,
   renderLoading,
-  renderMetricCard as renderFoundationMetricCard,
   renderPageContainer,
   renderPageHeader,
   renderRecoverableError,
-  renderSummaryGrid,
 } from "../design-system/primitives.js";
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
@@ -19,10 +15,8 @@ import {
   type DashboardCashFlowProjection,
   type DashboardCashFlowProjectionViewModel,
   type DashboardContentViewModel,
-  type DashboardCurrencySummaryViewModel,
   type DashboardDecisionModuleViewModel,
   type DashboardFinancialSummary,
-  type DashboardMetricViewModel,
   type DashboardOpenInvoice,
   type DashboardPresenterInput,
   type DashboardRecentItemViewModel,
@@ -33,6 +27,16 @@ import { renderDashboardFinancialInsights } from "./financial-insight-queue-view
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dashboardStyles } from "./dashboard-styles.js";
+import {
+  renderCurrencyEvidenceIndex,
+  renderCurrencyFilter,
+  renderCurrencyNavigator,
+  renderCurrencySummaries,
+  renderMobileAdditionalKpis,
+  renderSupportingCurrencySummaries,
+} from "./dashboard-kpi-view.js";
+import { renderProjectionChart } from "./dashboard-cashflow-chart.js";
+import { escapeHtml } from "./transactions-render-helpers.js";
 import { renderDashboardOverview, type DashboardOverview } from "./dashboard-overview-view.js";
 
 const DASHBOARD_LOADING_GRACE_MS = 75;
@@ -280,247 +284,6 @@ function filterDashboardOverview(
   };
 }
 
-function renderCurrencyFilter(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-  selectedCurrency?: string,
-  purchaseOn?: string,
-): string {
-  return `<form action="/dashboard" method="get" class="dashboard-currency-filter">
-    <label for="dashboard-currency">Moeda dos valores</label>
-    <select id="dashboard-currency" name="currency">
-      <option value="">Todas</option>
-      ${blocks
-        .map(
-          (block) =>
-            `<option value="${escapeHtml(block.currency)}"${selectedCurrency === block.currency ? " selected" : ""}>${escapeHtml(block.currency)}</option>`,
-        )
-        .join("")}
-    </select>
-    ${purchaseOn ? `<input type="hidden" name="purchaseOn" value="${escapeHtml(purchaseOn)}">` : ""}
-    <button type="submit" class="button-link secondary-link">Aplicar</button>
-  </form>`;
-}
-
-function renderKpiCard(
-  label: string,
-  value: string,
-  detail: string,
-  href: string,
-  linkLabel: string,
-  key: string,
-): string {
-  return `<div class="dashboard-metric dashboard-kpi" data-kpi="${escapeHtml(key)}">
-    ${renderFoundationMetricCard({ label, value, detail })}
-    <a class="metric-drilldown sf-focus-ring" href="${escapeHtml(href)}" aria-label="${escapeHtml(linkLabel)}">${escapeHtml(linkLabel)}</a>
-  </div>`;
-}
-
-function renderDashboardKpis(
-  block: DashboardCurrencySummaryViewModel,
-  projection: DashboardCashFlowProjectionViewModel | undefined,
-  overview: DashboardOverview | undefined,
-  secondaryOnly = false,
-): string {
-  const currency = block.currency;
-  const available = block.metrics[0];
-  const variation = block.metrics[1];
-  if (!available || !variation) return "";
-  const projected = projection?.currencies.find((item) => item.currency === currency);
-  const payables = overview?.payableTotals.find((item) => item.currency === currency);
-  const spending = overview?.cardSpendingTotals?.find((item) => item.currency === currency);
-  const forecastHref = projected?.href ?? "/relatorios?view=cash-flow";
-  const missing = "Indisponível";
-  const money = (amount: number): string => formatMinorCurrency(amount, { currency });
-  const secondary = [
-    renderKpiCard(
-      "Resultado do mês",
-      money(variation.amount.amountMinor),
-      "Receitas menos despesas realizadas",
-      variation.href,
-      variation.linkLabel,
-      "result",
-    ),
-    renderKpiCard(
-      "Contas a pagar",
-      overview ? money(payables?.amountMinor ?? 0) : missing,
-      "Pendentes e vencidas até o fim do mês",
-      "#dashboard-payables",
-      "Ver contas a pagar",
-      "payables",
-    ),
-    renderKpiCard(
-      "Gastos nos cartões",
-      overview ? money(spending?.amountMinor ?? 0) : missing,
-      "Compras realizadas no mês, sem duplicar a fatura",
-      "#dashboard-credit-cards",
-      "Ver gastos por cartão",
-      "cards",
-    ),
-    renderKpiCard(
-      "Saldo mínimo projetado",
-      projected?.freeToSpend.status === "available"
-        ? money(projected.freeToSpend.minimumBalance.amountMinor)
-        : missing,
-      "Menor posição de caixa nos próximos 30 dias",
-      forecastHref,
-      "Ver projeção de caixa",
-      "minimum",
-    ),
-  ];
-  if (secondaryOnly) return secondary.join("");
-  return [
-    renderKpiCard(
-      "Saldo das contas",
-      money(available.amount.amountMinor),
-      "Posição atual por moeda",
-      available.href,
-      available.linkLabel,
-      "balance",
-    ),
-    renderKpiCard(
-      "Livre para gastar",
-      projected?.freeToSpend.status === "available"
-        ? money(projected.freeToSpend.amount.amountMinor)
-        : missing,
-      "Disponibilidade conservadora para 30 dias",
-      forecastHref,
-      "Ver disponibilidade de caixa",
-      "free",
-    ),
-    ...secondary,
-  ].join("");
-}
-
-function renderMobileAdditionalKpis(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-  projection: DashboardCashFlowProjectionViewModel | undefined,
-  overview: DashboardOverview | undefined,
-): string {
-  return `<section class="dashboard-mobile-additional" aria-label="Outros indicadores financeiros">
-    <h2>Outros indicadores do mês</h2>
-    ${blocks
-      .map(
-        (block) => `<div class="dashboard-mobile-kpi-group">
-      <strong class="dashboard-mobile-currency">${escapeHtml(block.currency)}</strong>
-      <div class="dashboard-kpi-grid">${renderDashboardKpis(block, projection, overview, true)}</div>
-    </div>`,
-      )
-      .join("")}
-  </section>`;
-}
-
-function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
-  if (blocks.length < 2) return "";
-
-  return `<nav class="currency-nav" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
-    .map(
-      (block) =>
-        `<a class="currency-chip" href="#currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</a>`,
-    )
-    .join("")}</nav>`;
-}
-
-function renderCurrencySummaries(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-  projection?: DashboardCashFlowProjectionViewModel,
-  overview?: DashboardOverview,
-): string {
-  if (blocks.length === 0) {
-    return renderEmptyState({
-      title: "Nenhum total financeiro disponível.",
-      description: "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
-    });
-  }
-  const sections = blocks
-    .map(
-      (block) => `<section id="currency-${escapeHtml(block.currency)}"
-      class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
-      <div class="section-heading currency-heading">
-        <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
-      </div>
-      ${renderSummaryGrid({
-        childrenHtml: renderDashboardKpis(block, projection, overview),
-      })}
-    </section>`,
-    )
-    .join("");
-  return `<div class="dashboard-primary-currencies" data-dashboard-region="kpis"
-    data-multicurrency="${blocks.length > 1}">${sections}</div>`;
-}
-
-function renderSupportingCurrencySummaries(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-): string {
-  return blocks
-    .map(
-      (block) => `
-        <section class="dashboard-supporting-section" aria-label="Receitas, despesas e compromissos em ${escapeHtml(block.currency)}">
-          <h2 class="dashboard-supporting-title">Demais indicadores — ${escapeHtml(block.currency)}</h2>
-          <dl class="dashboard-supporting-metrics" aria-label="Demais indicadores em ${escapeHtml(block.currency)}">
-            ${block.metrics.slice(2).map(renderSupportingMetric).join("")}
-          </dl>
-        </section>
-      `,
-    )
-    .join("");
-}
-
-function renderSupportingMetric(metric: DashboardMetricViewModel): string {
-  return `
-    <div class="dashboard-supporting-metric">
-      <dt>${escapeHtml(metric.title)}</dt>
-      <dd>
-        <strong>${formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency })}</strong>
-        <a class="text-link sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a>
-      </dd>
-    </div>
-  `;
-}
-
-function renderCurrencyEvidenceIndex(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
-  if (blocks.length === 0) return "";
-
-  return `
-    <section class="dashboard-evidence-index" aria-labelledby="dashboard-evidence-title">
-      <div class="section-heading">
-        <div><p class="eyebrow">Detalhamento</p><h2 id="dashboard-evidence-title">Evidências dos indicadores</h2></div>
-      </div>
-      ${blocks
-        .map(
-          (block) => `
-            <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
-              <h3>${escapeHtml(block.currency)}</h3>
-              ${block.metrics.map(renderDashboardEvidence).join("")}
-            </div>
-          `,
-        )
-        .join("")}
-    </section>
-  `;
-}
-
-function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
-  const evidenceItems = metric.evidenceLinks.length
-    ? metric.evidenceLinks
-        .map((item) => {
-          if (item.href) {
-            return `<a class="evidence-link sf-focus-ring" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
-          }
-
-          return `<span class="evidence-static"><strong>${escapeHtml(item.label)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ""}</span>`;
-        })
-        .join("")
-    : '<p class="muted">Nenhuma conta vinculada a esta evidência.</p>';
-
-  return `
-    <details id="${escapeHtml(metric.evidenceId)}" class="evidence-detail">
-      <summary>${escapeHtml(metric.title)}</summary>
-      <p class="muted">${escapeHtml(metric.evidenceTitle)}</p>
-      <div class="evidence-links">${evidenceItems}</div>
-    </details>
-  `;
-}
-
 function renderCashFlowProjection(
   projection: DashboardCashFlowProjectionViewModel | undefined,
 ): string {
@@ -591,40 +354,6 @@ function renderCashFlowDecisionMetrics(
       ${freeToSpend}
     </div>
   `;
-}
-
-function renderProjectionChart(
-  points: readonly { date: string; balance: { amountMinor: number; currency: string } }[],
-): string {
-  if (points.length < 2)
-    return `<p class="muted dashboard-chart-empty">Série diária insuficiente para exibir o gráfico de fluxo de caixa.</p>`;
-  const amounts = points.map((point) => point.balance.amountMinor);
-  const minimum = Math.min(...amounts);
-  const maximum = Math.max(...amounts);
-  const range = Math.max(1, maximum - minimum);
-  const coordinates = amounts.map((amount, index) => {
-    const x = 32 + (index * 656) / (amounts.length - 1);
-    const y = 180 - ((amount - minimum) / range) * 145;
-    return x.toFixed(1) + "," + y.toFixed(1);
-  });
-  const first = points[0];
-  const last = points[points.length - 1];
-  if (!first || !last) return "";
-  const description =
-    `Trajetória de caixa de ${formatDateOnly(first.date)} até ${formatDateOnly(last.date)}. ` +
-    `Saldo inicial do gráfico: ${formatMinorCurrency(first.balance.amountMinor, { currency: first.balance.currency })}. ` +
-    `Saldo final: ${formatMinorCurrency(last.balance.amountMinor, { currency: last.balance.currency })}.`;
-  return `<figure class="dashboard-projection-chart" role="img" aria-label="${escapeHtml(description)}">
-    <svg viewBox="0 0 720 210" preserveAspectRatio="none" aria-hidden="true" focusable="false">
-      <line x1="32" y1="182" x2="688" y2="182" stroke="currentColor" opacity=".18"/>
-      <line x1="32" y1="108" x2="688" y2="108" stroke="currentColor" opacity=".12"/>
-      <line x1="32" y1="35" x2="688" y2="35" stroke="currentColor" opacity=".10"/>
-      <polyline points="${coordinates.join(" ")}" fill="none" stroke="currentColor"
-        stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      
-    </svg>
-    <p>${escapeHtml(formatDateOnly(first.date))} a ${escapeHtml(formatDateOnly(last.date))}</p>
-  </figure>`;
 }
 
 function renderNextActions(actions: DashboardContentViewModel["nextActions"]): string {
@@ -726,13 +455,4 @@ function dashboardEvidenceScript(): string {
       openDashboardEvidence();
     </script>
   `;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }
