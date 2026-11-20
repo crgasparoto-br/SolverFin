@@ -251,7 +251,7 @@ export function dashboardStyles(): string {
     .dashboard-card-advice .dashboard-recommendation { border-color: #b7d9cd; background: linear-gradient(110deg, var(--surface-soft), var(--surface)); gap: 7px; }
     .dashboard-card-advice .dashboard-recommendation-name { font-size: 1.15rem; }
     .dashboard-card-advice .dashboard-recommendation-days { font-size: 2rem; }
-    .dashboard-trend { align-items: end; display: flex; gap: 8px; min-height: 205px; overflow-x: auto; padding-top: 7px; }
+    .dashboard-trend { align-items: end; display: flex; gap: 8px; min-height: 205px; overflow-x: auto; padding-top: 7px; position: relative; }
     .dashboard-trend-item { align-items: center; display: flex; flex: 1 0 42px; flex-direction: column; gap: 5px; justify-content: flex-end; min-width: 42px; }
     .dashboard-trend-columns { align-items: end; border-bottom: 1px solid var(--line); display: flex; gap: 3px; height: 145px; justify-content: center; width: 100%; }
     .dashboard-trend-columns > span { border-radius: 4px 4px 0 0; display: block; flex: 1; height: 0; max-width: 24px; min-width: 6px; }
@@ -328,6 +328,10 @@ export function dashboardStyles(): string {
       .dashboard-additional-tools .decision-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 390px) {
+      .dashboard-page .currency-nav { display: none; }
+      .dashboard-header-controls .data-quality[data-quality="partial"] span { border: 0; clip-path: inset(50%); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; white-space: nowrap; width: 1px; }
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="balance"],
+      .dashboard-primary-currencies .dashboard-kpi[data-kpi="free"] { padding: 3px 8px; }
       .dashboard-currency-filter label { display: none; }
       .dashboard-header-controls .data-quality { font-size: 0.75rem; }
       .dashboard-mobile-additional .dashboard-kpi-grid { grid-template-columns: 1fr; }
