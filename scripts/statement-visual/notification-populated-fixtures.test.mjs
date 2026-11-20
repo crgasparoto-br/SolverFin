@@ -6,8 +6,7 @@ import { assertSafeNotificationVisualDatabase } from "./notification-populated-f
 const disposable = {
   NODE_ENV: "development",
   AUTH_ALLOW_DEMO: "true",
-  DATABASE_URL:
-    "postgresql://solverfin:placeholder@localhost:5432/solverfin_visual?schema=public",
+  DATABASE_URL: "postgresql://solverfin:placeholder@localhost:5432/solverfin_visual?schema=public",
 };
 
 test("populated Chrome fixtures are allowed only in disposable local demo database", () => {

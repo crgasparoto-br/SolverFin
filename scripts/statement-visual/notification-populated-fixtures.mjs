@@ -135,7 +135,10 @@ export async function createPopulatedNotificationFixtures() {
       const event = {
         type: sample.type,
         fingerprint:
-          "sha256-" + createHash("sha256").update(profileId + ":" + sample.key).digest("hex"),
+          "sha256-" +
+          createHash("sha256")
+            .update(profileId + ":" + sample.key)
+            .digest("hex"),
         occurredAt: new Date(Date.UTC(2026, 10, 20, 12, 0, index)).toISOString(),
         facts: sample.facts,
         ...(sample.resource ? { resource: sample.resource } : {}),
