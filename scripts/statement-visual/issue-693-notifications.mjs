@@ -129,6 +129,8 @@ try {
   report.populatedViewports = populated.viewports;
   report.populatedZoom = populated.zoom;
 
+  // Populated list leaves the browser on Recebidas; restore Preferências before reading its controls.
+  await navigate(browser.cdp, `${baseUrl}/notificacoes?tab=preferencias`);
   const preference = await evaluate(
     browser.cdp,
     `(() => document.querySelector('[data-preference-event="${eventType}"][data-preference-channel="in_app"]')?.checked)()`,
