@@ -6,6 +6,15 @@ import { join } from "node:path";
 import { renderDashboardPage } from "../../apps/web/dist/dev-server/dashboard-page.js";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
+import {
+  expandLongEvidence,
+  focusEvidence,
+  focusFirstAction,
+  inspectDashboard,
+  inspectEvidence,
+  intrusivePanelProbe,
+  navigationStretchProbe,
+} from "./issue-724-dashboard-inspect.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -22,8 +31,9 @@ if (!process.env.CHROME_BIN) throw new Error("CHROME_BIN is required.");
 await mkdir(outputDir, { recursive: true });
 
 const report = {
-  commit: process.env.GITHUB_SHA ?? "local",
+  commit: process.env.STATEMENT_VISUAL_CANDIDATE_SHA ?? process.env.GITHUB_SHA ?? "local",
   route: "/dashboard",
+  mockupReference: "Issue #811 — item 4, Proposta de reorganização visual, 19/11/2026",
   state,
   provenance:
     "real dashboard SSR renderer with controlled API responses; authenticated browser session",
@@ -69,13 +79,41 @@ try {
       assert.equal(measurements.currencyCount, 0, "Error state leaked totals");
     } else {
       assert.equal(measurements.hasNextActions, true, "Next actions missing");
-      assert.equal(measurements.primaryCount, state.startsWith("multi-currency") ? 4 : 2);
+      assert.equal(measurements.primaryCount, state.startsWith("multi-currency") ? 12 : 6);
       assert.equal(
         measurements.supportingAfterActions,
         true,
         "Secondary indicators precede next action",
       );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Mixed currencies in a summary");
+      assert.equal(measurements.mockupOrderValid, true, "Approved mockup region order drifted");
+      assert.equal(
+        measurements.operationalRowsOrdered,
+        true,
+        "Approved bill/card/analysis pairing drifted",
+      );
+      assert.equal(measurements.hasWideProjection, true, "Full-width cash-flow region missing");
+      if (state !== "partial") {
+        assert.equal(
+          measurements.widgetRowPairing,
+          true,
+          "Widgets must pair on desktop and stack on mobile",
+        );
+        assert.equal(
+          measurements.hasDashboardCharts,
+          true,
+          "Cash-flow and consumption charts must render",
+        );
+      }
+      if (width <= 390) {
+        assert.equal(
+          measurements.visiblePrimaryCount,
+          state.startsWith("multi-currency") ? 4 : 2,
+          "Only balance and free-to-spend may appear before actions on mobile",
+        );
+      } else if (width === 1366) {
+        assert.equal(measurements.desktopKpiColumns, 3, "Desktop mockup requires 3 KPI columns");
+      }
       if (state.startsWith("multi-currency")) {
         assert.deepEqual(measurements.currencies, ["BRL", "USD"]);
         if (state === "multi-currency") {
@@ -114,6 +152,17 @@ try {
     const stem = "issue-724-dashboard-" + state + "-" + width;
     await screenshot(browser.cdp, join(outputDir, stem + ".png"));
     const item = { width, height, screenshot: stem + ".png", measurements };
+    if (state === "multi-currency" || state === "long-content") {
+      const mockupStem = "issue-811-approved-mockup-" + state + "-" + width;
+      await screenshot(browser.cdp, join(outputDir, mockupStem + ".png"));
+      item.mockupViewportScreenshot = mockupStem + ".png";
+      item.fullMockupHeight = await captureApprovedMockupFullPage(
+        browser.cdp,
+        join(outputDir, mockupStem + "-full.png"),
+        width,
+      );
+      item.fullMockupScreenshot = mockupStem + "-full.png";
+    }
     if (state === "error" && width <= 390) {
       const negative = await evaluate(browser.cdp, "(" + navigationStretchProbe.toString() + ")()");
       assert.equal(
@@ -201,46 +250,172 @@ async function renderScenario(variant) {
       if (variant.startsWith("multi-currency")) blocks.push(currencyBlock("USD", variant));
       return response({
         currencyBlocks: blocks,
-        recentItems:
-          variant === "long-content"
-            ? [
-                {
-                  description: "QA " + "Descrição extensa de compromisso financeiro ".repeat(8),
-                  kind: "expense",
-                  amountMinor: 2500,
-                  currency: "BRL",
-                  occurredOn: "2026-07-12",
-                  status: "posted",
-                },
-              ]
-            : [],
+        recentItems: [
+          {
+            description:
+              variant === "long-content"
+                ? "QA " + "Descrição extensa de compromisso financeiro ".repeat(8)
+                : "Compra no mercado",
+            kind: "expense",
+            amountMinor: 2500,
+            currency: "BRL",
+            occurredOn: "2026-07-12",
+            status: "posted",
+          },
+          {
+            description: "Salário",
+            kind: "income",
+            amountMinor: 25000,
+            currency: "BRL",
+            occurredOn: "2026-07-01",
+            status: "posted",
+          },
+        ],
       });
     }
     if (path === "/api/cash-flow-projection") {
+      const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
       return response({
         referenceDate: "2026-07-01",
         horizonDays: 30,
         from: "2026-07-02",
         to: "2026-07-31",
-        currencyBlocks: (variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"]).map(
-          (currency) => ({ currency, closingBalanceMinor: 10200 }),
+        currencyBlocks: currencies.map((currency) => ({
+          currency,
+          closingBalanceMinor: 10200,
+          points: Array.from({ length: 30 }, (_, index) => ({
+            date: "2026-07-" + String(index + 2).padStart(2, "0"),
+            closingBalanceMinor: 17000 - index * 240 + (index % 5) * 140,
+          })),
+        })),
+        freeToSpend: {
+          referenceDate: "2026-07-01",
+          horizonDays: 30,
+          currencyBlocks: currencies.map((currency) => ({
+            currency,
+            status: "available",
+            minimumProjectedBalanceMinor: 9800,
+            minimumBalanceOn: "2026-07-25",
+            freeToSpendMinor: 9000,
+            projectedDeficitMinor: 0,
+          })),
+        },
+      });
+    }
+    if (path === "/api/dashboard-overview") {
+      if (variant === "partial") {
+        return response({ error: { message: "Complemento temporariamente indisponível" } }, 503);
+      }
+      const currencies = variant.startsWith("multi-currency") ? ["BRL", "USD"] : ["BRL"];
+      return response({
+        referenceDate: "2026-07-01",
+        purchaseToday: "2026-07-01",
+        purchaseOn: "2026-07-01",
+        periodStartOn: "2026-07-01",
+        periodEndOn: "2026-07-31",
+        accountBalances: currencies.flatMap((currency) => [
+          {
+            id: "visual-cash-" + currency,
+            name:
+              variant === "long-content"
+                ? "Conta corrente com nome muito longo ".repeat(4)
+                : "Conta Principal " + currency,
+            kind: "checking",
+            currency,
+            balanceMinor: 123450,
+          },
+          {
+            id: "visual-reserve-" + currency,
+            name: "Reserva " + currency,
+            kind: "investment",
+            currency,
+            balanceMinor: 150000,
+          },
+        ]),
+        cardSpending: currencies.flatMap((currency) => [
+          {
+            id: "card-a-" + currency,
+            name: "Cartão Principal " + currency,
+            currency,
+            spentMinor: 78000,
+          },
+          {
+            id: "card-b-" + currency,
+            name: "Cartão Reserva " + currency,
+            currency,
+            spentMinor: 24000,
+          },
+        ]),
+        cardSpendingTotals: currencies.map((currency) => ({
+          currency,
+          amountMinor: 102000,
+          count: 2,
+        })),
+        cardAdvice: [
+          {
+            id: "card-a-BRL",
+            name: "Cartão Principal BRL",
+            currency: "BRL",
+            closingOn: "2026-07-18",
+            dueOn: "2026-08-18",
+            daysUntilPayment: 48,
+            recommended: true,
+          },
+          {
+            id: "card-b-BRL",
+            name: "Cartão Reserva BRL",
+            currency: "BRL",
+            closingOn: "2026-07-10",
+            dueOn: "2026-08-10",
+            daysUntilPayment: 40,
+            recommended: false,
+          },
+        ],
+        payables: currencies.flatMap((currency) => [
+          {
+            id: "payable-" + currency,
+            source: "transaction",
+            description: "Conta de energia " + currency,
+            currency,
+            dueOn: "2026-07-04",
+            amountMinor: 12000,
+            overdue: false,
+            accountId: "visual-cash-" + currency,
+          },
+          {
+            id: "invoice-" + currency,
+            source: "invoice",
+            description: "Fatura cartão " + currency,
+            currency,
+            dueOn: "2026-07-18",
+            amountMinor: 34000,
+            overdue: false,
+            cardId: "card-a-" + currency,
+          },
+        ]),
+        payableTotals: currencies.map((currency) => ({
+          currency,
+          amountMinor: 46000,
+          overdueMinor: 0,
+          count: 2,
+        })),
+        categoryExpenses: currencies.flatMap((currency) =>
+          ["Alimentação", "Moradia", "Transporte", "Saúde"].map((category, index) => ({
+            currency,
+            category,
+            amountMinor: [36000, 23000, 11000, 6500][index],
+          })),
         ),
-        ...(variant === "multi-currency"
-          ? {
-              freeToSpend: {
-                referenceDate: "2026-07-01",
-                horizonDays: 30,
-                currencyBlocks: ["BRL", "USD"].map((currency) => ({
-                  currency,
-                  status: "available",
-                  minimumProjectedBalanceMinor: 10000,
-                  minimumBalanceOn: "2026-07-10",
-                  freeToSpendMinor: 9000,
-                  projectedDeficitMinor: 0,
-                })),
-              },
-            }
-          : {}),
+        monthlyTrend: currencies.flatMap((currency) =>
+          ["2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07"].map(
+            (month, index) => ({
+              currency,
+              month,
+              incomeMinor: 120000 + index * 11500,
+              expensesMinor: 80000 + (index % 3) * 8500,
+            }),
+          ),
+        ),
       });
     }
     if (path === "/api/bank-message-inbox") {
@@ -261,6 +436,24 @@ async function renderScenario(variant) {
   } finally {
     globalThis.fetch = originalFetch;
   }
+}
+
+async function captureApprovedMockupFullPage(cdp, path, viewportWidth) {
+  const layout = await cdp.send("Page.getLayoutMetrics");
+  const bounds = layout.cssContentSize ?? layout.contentSize;
+  const pageHeight = Math.ceil(bounds?.height ?? 0);
+  assert.ok(
+    pageHeight > 0 && pageHeight <= 16000,
+    "Full Dashboard mockup must fit Chrome's 16000px screenshot safety bound",
+  );
+  const screenshotResult = await cdp.send("Page.captureScreenshot", {
+    format: "png",
+    fromSurface: true,
+    captureBeyondViewport: true,
+    clip: { x: 0, y: 0, width: viewportWidth, height: pageHeight, scale: 1 },
+  });
+  await writeFile(path, Buffer.from(screenshotResult.data, "base64"));
+  return pageHeight;
 }
 
 function currencyBlock(currency, variant) {
@@ -288,135 +481,4 @@ function response(data, status = 200) {
     status,
     headers: { "content-type": "application/json; charset=utf-8" },
   });
-}
-function inspectDashboard() {
-  const root = document.documentElement;
-  const summaries = [...document.querySelectorAll(".currency-summary")];
-  const action = document.querySelector(".next-actions");
-  const firstAction = action?.querySelector(".next-action-row");
-  const firstActionLabel = firstAction?.querySelector("strong");
-  const firstActionLink = firstAction?.querySelector("a[href]");
-  const firstActionHref = firstActionLink?.getAttribute("href") ?? "";
-  const firstActionDestinationValid =
-    firstActionHref.startsWith("/") ||
-    (firstActionHref.startsWith("#") && Boolean(document.getElementById(firstActionHref.slice(1))));
-  const withinFirstFold = (element) => {
-    if (!element) return false;
-    const rect = element.getBoundingClientRect();
-    const style = getComputedStyle(element);
-    return (
-      rect.width > 0 &&
-      rect.height > 0 &&
-      rect.top >= 0 &&
-      rect.bottom <= innerHeight &&
-      style.visibility === "visible" &&
-      style.display !== "none"
-    );
-  };
-  const supporting = document.querySelector(".dashboard-supporting-section");
-  return {
-    viewportWidth: innerWidth,
-    documentUrl: location.href,
-    noHorizontalOverflow: root.scrollWidth <= root.clientWidth + 1,
-    mainPresent: Boolean(document.querySelector("main")),
-    navigationHeight: document.querySelector(".sidebar")?.getBoundingClientRect().height ?? null,
-    hasError: document.body.textContent.includes("Não foi possível carregar o Dashboard"),
-    hasPartial: Boolean(document.querySelector('[data-quality="partial"]')),
-    currencyCount: summaries.length,
-    currencies: summaries.map((section) => section.id.replace("currency-", "")),
-    primaryCount: document.querySelectorAll(".currency-summary .dashboard-metric").length,
-    hasNextActions: Boolean(action),
-    actionVisibleInFirstViewport:
-      withinFirstFold(firstActionLabel) && withinFirstFold(firstActionLink),
-    firstActionLabelVisibleInFirstViewport: withinFirstFold(firstActionLabel),
-    firstActionLinkVisibleInFirstViewport: withinFirstFold(firstActionLink),
-    firstActionLinkHasDestination: Boolean(
-      firstActionLink && firstActionLink.tabIndex >= 0 && firstActionDestinationValid,
-    ),
-    allPrimaryBeforeActions: Boolean(
-      action &&
-      summaries.length &&
-      summaries.every(
-        (section) => section.getBoundingClientRect().bottom <= action.getBoundingClientRect().top,
-      ),
-    ),
-    primaryValuesOnOneLine: [
-      ...document.querySelectorAll(".currency-summary .sf-metric-card-value"),
-    ].every((value) => {
-      const range = document.createRange();
-      range.selectNodeContents(value);
-      return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;
-    }),
-    supportingAfterActions: Boolean(
-      action &&
-      supporting &&
-      action.compareDocumentPosition(supporting) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ),
-    amountsSeparatedByCurrency: summaries.every((section) =>
-      [...section.querySelectorAll(".sf-metric-card-value")].every(
-        (value) => value.textContent.trim().length > 0,
-      ),
-    ),
-    longItemVisible: document.body.textContent.includes(
-      "Descrição extensa de compromisso financeiro",
-    ),
-  };
-}
-function navigationStretchProbe() {
-  const shell = document.querySelector(".app-shell");
-  const sidebar = document.querySelector(".sidebar");
-  const previousRows = shell.style.gridTemplateRows;
-  shell.style.gridTemplateRows = "auto auto";
-  const stretchedHeight = sidebar.getBoundingClientRect().height;
-  shell.style.gridTemplateRows = previousRows;
-  const restoredHeight = sidebar.getBoundingClientRect().height;
-  return { stretchedHeight, restoredHeight };
-}
-function intrusivePanelProbe() {
-  const action = document.querySelector(".next-actions");
-  const firstLink = action?.querySelector(".next-action-row a[href]");
-  if (!action || !firstLink)
-    return { actionVisibleAfterIntrusion: true, actionVisibleAfterRemoval: false };
-  const linkWithinFirstFold = () => {
-    const rect = firstLink.getBoundingClientRect();
-    return rect.width > 0 && rect.height > 0 && rect.top >= 0 && rect.bottom <= innerHeight;
-  };
-  const panel = document.createElement("aside");
-  panel.style.height = "600px";
-  panel.setAttribute("aria-label", "Controle negativo de painel secundário intrusivo");
-  action.parentElement.insertBefore(panel, action);
-  const actionVisibleAfterIntrusion = linkWithinFirstFold();
-  panel.remove();
-  const actionVisibleAfterRemoval = linkWithinFirstFold();
-  return { actionVisibleAfterIntrusion, actionVisibleAfterRemoval };
-}
-
-function focusFirstAction() {
-  const link = document.querySelector(".next-actions .next-action-row a[href]");
-  const href = link?.getAttribute("href") ?? "";
-  if (
-    !link ||
-    !(href.startsWith("/") || (href.startsWith("#") && document.getElementById(href.slice(1))))
-  )
-    return false;
-  link.focus();
-  return document.activeElement === link;
-}
-
-function focusEvidence() {
-  const link = document.querySelector('a[href="#dashboard-evidence-brl-available"]');
-  if (!link) return false;
-  link.focus();
-  return document.activeElement === link;
-}
-function inspectEvidence() {
-  const target = document.getElementById("dashboard-evidence-brl-available");
-  return { open: Boolean(target && target.open), hash: location.hash };
-}
-function expandLongEvidence() {
-  const target = document.getElementById("dashboard-evidence-brl-available");
-  if (!target) return false;
-  target.open = true;
-  target.scrollIntoView({ block: "center" });
-  return target.textContent.includes("Conta com nome extenso");
 }

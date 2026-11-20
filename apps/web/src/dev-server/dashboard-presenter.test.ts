@@ -127,6 +127,7 @@ describe("dashboard presenter", () => {
       status: "available",
       amount: { amountMinor: 8_500, currency: "USD" },
       projectedDeficit: { amountMinor: 0, currency: "USD" },
+      minimumBalance: { amountMinor: 8_500, currency: "USD" },
       minimumBalanceOnLabel: "22/08/2026",
     });
     assert.match(model.content.cashFlowProjection?.currencies[0]?.href ?? "", /view=cash-flow/);
