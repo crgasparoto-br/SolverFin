@@ -103,3 +103,29 @@ identificação de destino e consentimento revogável exigem issue própria e va
 
 CI verde isoladamente não é aprovação técnica: auditoria independente e evidências
 exact-SHA são obrigatórias antes de considerar a issue concluída.
+
+### Evidência visual de avisos preenchidos — #808
+
+O Chrome autenticado mantém a prova da caixa vazia e das preferências do
+perfil padrão. Em etapa separada, a rotina
+`scripts/statement-visual/notification-populated-fixtures.mjs` cria um **perfil
+financeiro descartável e isolado**, pertencente ao usuário demo, exclusivamente
+no PostgreSQL local `solverfin_visual` e com `AUTH_ALLOW_DEMO=true`.
+A rotina utiliza o publicador **interno** do domínio; não cria rota HTTP,
+habilita canais externos nem altera o seed compartilhado.
+
+Os três eventos do cenário visual verificam simultaneamente orçamento em BRL
+com origem existente, aviso de fatura em USD sem origem disponível e insight
+sem valor com estado lido. O cenário Chrome em
+`scripts/statement-visual/issue-693-notifications.mjs` captura Recebidas
+preenchidas em 1366, 390 e 320 px e 320 px com texto a 200%, verifica
+hierarquia, datas, estados, valores monetários sem conversão, geometria
+de ações e ausência de overflow. Exercita `PATCH` real de leitura/não leitura,
+navegação real para orçamento com `profileId` preservado e recuperação quando
+a origem é indisponível. O perfil e as notificações de teste são removidos
+ao final do cenário; testes negativos bloqueiam execução fora do banco local
+descartável. O artefato JSON `issue-693-notifications.json` e as capturas
+`issue-808-populated-*.png` devem corresponder ao SHA material da PR.
+
+A prova automatizada não substitui comparação visual independente com
+`docs/DESIGN_SYSTEM.md` nem auditoria independente exact-SHA.
