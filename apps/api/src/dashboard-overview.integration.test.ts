@@ -130,9 +130,11 @@ async function main(): Promise<void> {
     2_200,
     "the overdue invoice must remain in the month payables",
   );
-  assert.ok(
-    withOverdue.payables.some((row) => row.id === overduePurchase.invoice.id && row.overdue),
-    "the overdue invoice has its source and due-date status visible",
+  assert.equal(
+    (withOverdue.payableTotals.find((row) => row.currency === "BRL")?.overdueMinor ?? 0) -
+      (afterPayment.payableTotals.find((row) => row.currency === "BRL")?.overdueMinor ?? 0),
+    2_200,
+    "overdue totals count the unpaid invoice even when it falls outside the ten listed rows",
   );
   await query(
     `update "Invoice" set "status" = 'PAID' where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
