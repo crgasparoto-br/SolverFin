@@ -147,8 +147,14 @@ async function main(): Promise<void> {
     [overdueCard.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
   );
   const withBlocked = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
-  assert.equal(withBlocked.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor, 2_200);
-  assert.equal(withBlocked.cardAdvice.some((row) => row.id === overdueCard.id), false);
+  assert.equal(
+    withBlocked.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor,
+    2_200,
+  );
+  assert.equal(
+    withBlocked.cardAdvice.some((row) => row.id === overdueCard.id),
+    false,
+  );
   assert.equal(
     withBlocked.cardSpendingTotals.find((row) => row.currency === "BRL")?.amountMinor,
     withSettled.cardSpendingTotals.find((row) => row.currency === "BRL")?.amountMinor,
@@ -159,8 +165,14 @@ async function main(): Promise<void> {
     [overdueCard.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
   );
   const withArchived = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
-  assert.equal(withArchived.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor, 2_200);
-  assert.equal(withArchived.cardAdvice.some((row) => row.id === overdueCard.id), false);
+  assert.equal(
+    withArchived.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor,
+    2_200,
+  );
+  assert.equal(
+    withArchived.cardAdvice.some((row) => row.id === overdueCard.id),
+    false,
+  );
 }
 
 function brlPayables(overview: Awaited<ReturnType<typeof buildDashboardOverview>>): number {
