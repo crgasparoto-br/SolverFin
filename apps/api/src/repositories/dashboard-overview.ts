@@ -189,7 +189,7 @@ export async function buildDashboardOverview(
             and t."effectiveOn" <= $3::date and t."effectiveOn" is not null
             and t."destinationAccountId" is not null
        )
-       select a."id", a."name", lower(a."kind") as "kind", upper(a."currency") as "currency",
+       select a."id", a."name", lower(a."kind"::text) as "kind", upper(a."currency") as "currency",
               a."openingBalanceMinor"::text as "opening",
               coalesce(sum(legs.amount), 0)::text as "movement"
          from "Account" a left join legs on legs."accountId" = a."id"
@@ -201,13 +201,13 @@ export async function buildDashboardOverview(
     ),
     query<CardRow>(
       `select c."id", c."name", upper(c."currency") as "currency",
-              lower(c."status") as "status", c."closingDay", c."dueDay",
+              lower(c."status"::text) as "status", c."closingDay", c."dueDay",
               (select count(*)::text from "CardInstrument" i
                 where i."cardId" = c."id" and i."organizationId" = c."organizationId"
                   and i."financialProfileId" = c."financialProfileId" and i."status" = 'ACTIVE'
               ) as "activeInstruments"
          from "Card" c where c."organizationId" = $1 and c."financialProfileId" = $2
-           and c."status" = 'ACTIVE' order by lower(c."name"), c."id"`,
+           order by lower(c."name"), c."id"`,
       params,
     ),
     query<SpendRow>(
@@ -242,7 +242,7 @@ export async function buildDashboardOverview(
             and c."organizationId" = i."organizationId"
             and c."financialProfileId" = i."financialProfileId"
           where i."organizationId" = $1 and i."financialProfileId" = $2
-            and i."status" in ('OPEN', 'CLOSED') and i."dueOn" <= $4::date
+            and i."status" in ('OPEN', 'CLOSED', 'OVERDUE') and i."dueOn" <= $4::date
        ), ranked as (
          select *, sum("amountMinor") over (partition by "currency")::text as "totalMinor",
            sum(case when "dueOn" < $3::date then "amountMinor" else 0 end)
@@ -295,19 +295,29 @@ export async function buildDashboardOverview(
 
   const cardNames = new Map(cards.map((card) => [card.id, card]));
   const spends = spending.filter((row) => cardNames.has(row.cardId));
+  const spendsByCard = new Map<string, SpendRow[]>();
+  for (const spend of spends) {
+    const rows = spendsByCard.get(spend.cardId) ?? [];
+    rows.push(spend);
+    spendsByCard.set(spend.cardId, rows);
+  }
+  // Histórico de compras não desaparece quando um cartão é bloqueado ou arquivado.
+  // A restrição de cartões ativos se aplica apenas à recomendação de compra.
   const cardSpending = cards
+    .filter((card) => card.status === "active" || spendsByCard.has(card.id))
     .flatMap((card) => {
-      const currencies = card.currency
-        ? [card.currency]
-        : [...new Set(spends.filter((row) => row.cardId === card.id).map((row) => row.currency))];
+      const rows = spendsByCard.get(card.id) ?? [];
+      const currencies = rows.length
+        ? [...new Set(rows.map((row) => row.currency))]
+        : card.currency
+          ? [card.currency]
+          : [];
       return currencies.map((currency) => ({
         id: card.id,
         name: card.name,
         currency,
         spentMinor: addSafeMoneyMinor(
-          spends
-            .filter((row) => row.cardId === card.id && row.currency === currency)
-            .map((row) => row.total),
+          rows.filter((row) => row.currency === currency).map((row) => row.total),
           "dashboard card spending",
         ),
       }));

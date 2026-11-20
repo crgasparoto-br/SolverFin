@@ -53,7 +53,7 @@ Nunca consolidar moedas diferentes em um número.
 
 `payables[]` une os compromissos planejados/sugeridos de conta corrente
 (`plannedOn`, `effectiveOn IS NULL`, ainda sem vínculo de fatura/cartão)
-às faturas `OPEN` e `CLOSED` pelo `dueOn`, desde que o vencimento não ultrapasse
+às faturas ainda não pagas `OPEN`, `CLOSED` e `OVERDUE` pelo `dueOn`, desde que o vencimento não ultrapasse
 o fim do mês de referência. Inclui vencidas em meses anteriores ainda pendentes.
 
 `payableTotals[]` entrega `currency`, `amountMinor`, `overdueMinor` e `count`
@@ -65,7 +65,7 @@ O pagamento já efetivado não entra na lista pendente.
 
 ### Cartões
 
-`cardSpending[]` inclui cartões ativos e a soma de compras `EXPENSE`
+`cardSpending[]` inclui cartões ativos e cartões bloqueados/arquivados com compras realizadas, preservando o histórico e a soma de compras `EXPENSE`
 `POSTED`/`RECONCILED` por cartão no mês de `occurredOn`.
 A liquidação registrada como `Invoice.paymentTransactionId` não participa
 do gasto econômico. Transferências não representam compras.
@@ -102,8 +102,8 @@ As ações da tabela navegam para os módulos canônicos `/lancamentos`,
 
 ## Verificações
 
-- `apps/api/src/dashboard-overview.integration.test.ts`: fatura em aberto, baixa,
-  posição de caixa e não duplicidade de compromissos e despesas.
+- `apps/api/src/dashboard-overview.integration.test.ts`: fatura em aberto/vencida/paga, baixa,
+  histórico de compras em cartões bloqueados/arquivados, posição de caixa e não duplicidade de compromissos e despesas.
 - `apps/api/src/repositories/dashboard-overview.test.ts`: fechamentos,
   vencimentos, ano bissexto, elegibilidade, empates e entrada de data.
 - `apps/web/src/dev-server/dashboard-page.test.ts`: widgets SSR, escopo,

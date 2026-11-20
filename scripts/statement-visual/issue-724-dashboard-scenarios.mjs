@@ -148,7 +148,9 @@ try {
       await screenshot(browser.cdp, join(outputDir, mockupStem + ".png"));
       item.mockupViewportScreenshot = mockupStem + ".png";
       item.fullMockupHeight = await captureApprovedMockupFullPage(
-        browser.cdp, join(outputDir, mockupStem + "-full.png"), width,
+        browser.cdp,
+        join(outputDir, mockupStem + "-full.png"),
+        width,
       );
       item.fullMockupScreenshot = mockupStem + "-full.png";
     }

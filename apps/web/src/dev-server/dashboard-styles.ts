@@ -227,7 +227,8 @@ export function dashboardStyles(): string {
     .dashboard-flow-wide { display: grid; gap: 14px; padding: 17px 18px; }
     .dashboard-flow-wide .cash-flow-dashboard-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
     .dashboard-flow-wide .cash-flow-dashboard-card { border: 1px solid var(--line); box-shadow: none; min-width: 0; }
-    .dashboard-flow-wide .cash-flow-dashboard-metrics { display: grid; grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(130px, 1fr)); align-items: start; gap: 16px; }
+    .dashboard-flow-wide .cash-flow-dashboard-metrics { display: grid; grid-template-columns: minmax(0, 2.2fr) repeat(2, minmax(0, 1fr)); align-items: start; gap: 16px; }
+    .dashboard-flow-wide .cash-flow-dashboard-metric, .dashboard-flow-wide .cash-flow-dashboard-metric > * { min-width: 0; overflow-wrap: anywhere; }
     .dashboard-flow-wide .cash-flow-dashboard-metric { align-content: start; border-top: 0; gap: 5px; padding: 8px 0 0; }
     .dashboard-flow-wide .cash-flow-dashboard-metric + .cash-flow-dashboard-metric { border-left: 1px solid var(--line); padding-left: 14px; }
     .dashboard-flow-wide .dashboard-projection-chart { display: grid; gap: 6px; grid-row: 1 / span 2; margin: 0; min-width: 0; }
@@ -299,8 +300,10 @@ export function dashboardStyles(): string {
       .dashboard-actions { gap: 8px; padding: 11px 12px; }
       .dashboard-actions .section-heading h2 { font-size: 0.93rem; }
       .dashboard-actions .next-action-rows { grid-template-columns: 1fr; gap: 6px; }
-      .dashboard-actions .next-action-rows .next-action-row { align-items: center; display: flex; min-height: 53px; padding: 7px 9px; }
-      .dashboard-actions .next-action-row .button-link { padding: 7px; }
+      .dashboard-actions .next-action-rows .next-action-row { align-items: start; display: grid; grid-template-columns: minmax(0, 1fr); gap: 6px; min-height: 53px; padding: 7px 9px; }
+      .dashboard-actions .next-action-row > div { min-width: 0; }
+      .dashboard-actions .next-action-row > div > span { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+      .dashboard-actions .next-action-row .button-link { justify-self: start; max-width: 100%; padding: 7px; white-space: normal; }
       .dashboard-mobile-additional { display: grid; gap: 7px; }
       .dashboard-mobile-additional > h2 { font-size: 0.9rem; margin: 0; }
       .dashboard-mobile-kpi-group { display: grid; gap: 5px; }

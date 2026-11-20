@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 
 import type { TenantContext } from "@solverfin/domain";
 
-import { closePool } from "./db.js";
+import { closePool, query } from "./db.js";
 import { createAccountForContext } from "./repositories/accounts.js";
 import { closeInvoiceForContext } from "./repositories/card-invoice-contracts.js";
 import {
@@ -106,6 +106,61 @@ async function main(): Promise<void> {
     7_000,
     "the payment does not double economic expenses",
   );
+
+  // Uma fatura vencida ainda é exigível; PAID/CANCELLED não podem reaparecer.
+  const overdueCard = await createCardForContext(CONTEXT, {
+    name: `Overview overdue ${suffix}`,
+    closingDay: 8,
+    dueDay: 16,
+    paymentAccountId: account.id,
+    currency: "BRL",
+  });
+  const overduePurchase = await registerCardPurchaseForContext(CONTEXT, overdueCard.id, {
+    occurredOn: "2041-05-03",
+    amountMinor: 2_200,
+    description: `Overdue purchase ${suffix}`,
+  });
+  await query(
+    `update "Invoice" set "status" = 'OVERDUE' where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [overduePurchase.invoice.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  const withOverdue = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(
+    brlPayables(withOverdue) - brlPayables(afterPayment),
+    2_200,
+    "the overdue invoice must remain in the month payables",
+  );
+  assert.ok(
+    withOverdue.payables.some((row) => row.id === overduePurchase.invoice.id && row.overdue),
+    "the overdue invoice has its source and due-date status visible",
+  );
+  await query(
+    `update "Invoice" set "status" = 'PAID' where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [overduePurchase.invoice.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  const withSettled = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(brlPayables(withSettled), brlPayables(afterPayment));
+
+  // A elegibilidade para recomendar não elimina o histórico de gastos do mês.
+  await query(
+    `update "Card" set "status" = 'BLOCKED' where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [overdueCard.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  const withBlocked = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(withBlocked.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor, 2_200);
+  assert.equal(withBlocked.cardAdvice.some((row) => row.id === overdueCard.id), false);
+  assert.equal(
+    withBlocked.cardSpendingTotals.find((row) => row.currency === "BRL")?.amountMinor,
+    withSettled.cardSpendingTotals.find((row) => row.currency === "BRL")?.amountMinor,
+    "blocking a card cannot retroactively reduce monthly card spending",
+  );
+  await query(
+    `update "Card" set "status" = 'ARCHIVED' where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [overdueCard.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  const withArchived = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(withArchived.cardSpending.find((row) => row.id === overdueCard.id)?.spentMinor, 2_200);
+  assert.equal(withArchived.cardAdvice.some((row) => row.id === overdueCard.id), false);
 }
 
 function brlPayables(overview: Awaited<ReturnType<typeof buildDashboardOverview>>): number {
