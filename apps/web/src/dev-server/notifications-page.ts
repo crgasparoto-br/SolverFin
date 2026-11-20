@@ -342,9 +342,9 @@ function notificationsPageStyles(): string {
     ".notifications-description { margin: var(--sf-space-1) 0; color: var(--sf-color-muted-text); font-size: var(--sf-font-size-md); overflow-wrap: anywhere; }",
     ".notifications-metadata { margin: 0; color: var(--sf-color-muted-text); font-size: var(--sf-font-size-sm); overflow-wrap: anywhere; }",
     ".notifications-entry-aside { display: flex; flex-direction: column; align-items: flex-end; gap: var(--sf-space-2); }",
-    ".notifications-amount { color: var(--sf-color-text); font-variant-numeric: tabular-nums; white-space: nowrap; }",
-    ".notifications-entry-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sf-space-1); }",
-    ".notifications-action { padding-inline: var(--sf-space-3); white-space: nowrap; font-weight: var(--sf-font-weight-semibold); }",
+    ".notifications-amount { color: var(--sf-color-text); font-variant-numeric: tabular-nums; max-width: 100%; overflow-wrap: anywhere; text-align: right; }",
+    ".notifications-entry-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--sf-space-1); min-width: 0; max-width: 100%; }",
+    ".notifications-action { padding-inline: var(--sf-space-3); min-height: var(--sf-density-interactive-target-min); max-width: 100%; white-space: normal; overflow-wrap: anywhere; text-align: center; font-weight: var(--sf-font-weight-semibold); }",
     ".notifications-pagination { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: var(--sf-space-3); padding-top: var(--sf-space-4); }",
     ".notifications-pagination span { color: var(--sf-color-muted-text); font-variant-numeric: tabular-nums; }",
     ".notifications-pagination a { display: inline-flex; min-height: var(--sf-density-interactive-target-min); align-items: center; padding: 0 var(--sf-space-2); color: var(--sf-color-primary); }",
@@ -365,7 +365,7 @@ function notificationsPageStyles(): string {
     ".notifications-empty p { max-width: 36rem; color: var(--sf-color-muted-text); }",
     ".notifications-error { color: var(--sf-color-danger); }",
     "[data-notifications-status] { min-height: 1rem; margin: 0; }",
-    "@media (max-width: 780px) { .notifications-section { padding: var(--sf-space-4); } .notifications-entry { grid-template-columns: auto minmax(0, 1fr); } .notifications-entry-aside { grid-column: 2; align-items: flex-start; } .notifications-entry-actions { justify-content: flex-start; } .notifications-preference-list { grid-template-columns: minmax(0, 1fr); } }",
+    "@media (max-width: 780px) { .notifications-section { padding: var(--sf-space-4); } .notifications-entry { grid-template-columns: auto minmax(0, 1fr); } .notifications-entry-aside { grid-column: 2; align-items: flex-start; } .notifications-amount { text-align: left; } .notifications-entry-actions { justify-content: flex-start; } .notifications-preference-list { grid-template-columns: minmax(0, 1fr); } }",
   ].join("\n");
 }
 
