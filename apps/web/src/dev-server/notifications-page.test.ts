@@ -35,9 +35,13 @@ try {
     "demo",
     new URL("https://solverfin.invalid/notificacoes?offset=10000&profileId=" + profileId),
   );
-  const nextUrl = "/notificacoes?offset=10020&amp;profileId=" + profileId;
-  assert.ok(page.includes('href="' + nextUrl + '"'), "Next must retain profile and offset");
-  assert.ok(!page.includes('href="/notificacoes?offset=10020&profileId='), "SSR must escape query separators");
+  const nextUrl = "/notificacoes?offset=10020&profileId=" + profileId;
+  const nextHref = nextUrl.replace("&profileId=", "&amp;profileId=");
+  assert.ok(page.includes('href="' + nextHref + '"'), "Next must retain profile and offset");
+  assert.ok(
+    !page.includes('href="' + nextUrl + '"'),
+    "SSR must escape query separators",
+  );
   const lastPage = await renderNotificationsPage(
     "demo",
     new URL("https://solverfin.invalid" + nextUrl),
