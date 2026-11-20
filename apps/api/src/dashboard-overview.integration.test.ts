@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 
 import type { TenantContext } from "@solverfin/domain";
 
@@ -15,7 +16,7 @@ import { createTransactionForContext } from "./repositories/transactions.js";
 
 const CONTEXT: TenantContext = {
   organizationId: "22222222-2222-4222-8222-222222222222",
-  financialProfileId: "33333333-3333-4333-8333-333333333331",
+  financialProfileId: randomUUID(),
   financialProfileKind: "personal",
   userId: "11111111-1111-4111-8111-111111111111",
 };
@@ -35,6 +36,19 @@ async function main(): Promise<void> {
   assert.ok(process.env.DATABASE_URL, "DATABASE_URL is required for this test.");
 
   const suffix = `${Date.now().toString(36)}${process.pid.toString(36)}`;
+  // Keep integration fixtures in their own financial profile. Posted purchases
+  // must not displace another suite's recent transactions in the seeded profile.
+  await query(
+    `insert into "FinancialProfile"
+      ("id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'PERSONAL', 'ACTIVE', now(), now())`,
+    [
+      CONTEXT.financialProfileId,
+      CONTEXT.organizationId,
+      CONTEXT.userId,
+      `Dashboard test ${suffix}`,
+    ],
+  );
   const baseline = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
   const account = await createAccountForContext(CONTEXT, {
     name: `Overview cash ${suffix}`,
