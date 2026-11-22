@@ -336,6 +336,16 @@ export function dashboardStyles(): string {
       .dashboard-header-controls .data-quality { font-size: 0.75rem; }
       .dashboard-mobile-additional .dashboard-kpi-grid { grid-template-columns: 1fr; }
       .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-value { font-size: 0.81rem; }
+      /* Keep both currency summaries compact enough for the first actionable link. */
+      .dashboard-primary-currencies { gap: 3px; }
+      .dashboard-primary-currencies .currency-summary { gap: 2px; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card { gap: 0 6px; }
+      .dashboard-primary-currencies .dashboard-kpi .sf-metric-card-detail { font-size: 0.67rem; line-height: 1.15; }
+      .dashboard-primary-currencies .dashboard-kpi .metric-drilldown { margin-top: 0; }
+      .dashboard-actions { gap: 4px; padding: 7px 9px; }
+      .dashboard-actions .next-action-rows { gap: 3px; }
+      .dashboard-actions .next-action-rows .next-action-row { gap: 3px; min-height: 0; padding: 5px 7px; }
+      .dashboard-actions .next-action-row .button-link { padding: 4px 6px; }
       .dashboard-trend-item { min-width: 38px; }
     }
 
