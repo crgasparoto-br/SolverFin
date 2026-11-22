@@ -95,7 +95,7 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
       "const box = button.getBoundingClientRect();",
       "return box.left >= -1 && box.right <= innerWidth + 1; }),",
       "actionsComfortable: actions.every((button) => button.getBoundingClientRect().height >= 44)",
-      "}; })()
+      "}; })()",
     ].join("\n"),
   );
   // Keep the row title visible below the sticky header at 200% text scaling.
