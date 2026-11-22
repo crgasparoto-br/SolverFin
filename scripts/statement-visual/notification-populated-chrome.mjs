@@ -111,7 +111,11 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
     "Populated notifications overflow at 200% text: scrollWidth=" + zoom.scrollWidth,
   );
   assert.equal(zoom.actionsWithinViewport, true, "Notification actions clip at 200% text");
-  assert.equal(zoom.actionsComfortable, true, "Notification actions must remain at least 44px high");
+  assert.equal(
+    zoom.actionsComfortable,
+    true,
+    "Notification actions must remain at least 44px high",
+  );
   assert.ok(
     zoom.minDescriptionWidth >= 180,
     "Notification text becomes a narrow letter-by-letter column at 200%: " +
