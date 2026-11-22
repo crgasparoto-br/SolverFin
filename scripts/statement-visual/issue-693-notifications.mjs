@@ -33,6 +33,7 @@ await mkdir(outputDir, { recursive: true });
 const browser = await launchChrome({ baseUrl, chromePath });
 let originalPreference;
 let visualFixtures;
+let scenarioError;
 
 try {
   await setViewport(browser.cdp, 1366, 900);
@@ -220,6 +221,7 @@ try {
   report.navigation = { preservesProfileId: true, preservesAnchor: true };
   report.result = "passed";
 } catch (error) {
+  scenarioError = error;
   report.result = "failed";
   report.error = error instanceof Error ? error.message : String(error);
   throw error;
@@ -254,7 +256,8 @@ try {
     `${JSON.stringify(report, null, 2)}\n`,
   );
   await browser.close(outputDir);
-  if (cleanupError) throw cleanupError;
+  // Preserve the original Chrome failure when cleanup also fails; the report retains both.
+  if (cleanupError && !scenarioError) throw cleanupError;
 }
 
 async function verifyPreferenceRollback() {

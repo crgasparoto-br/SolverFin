@@ -18,6 +18,36 @@ export function assertSafeNotificationVisualDatabase(environment = process.env) 
   );
 }
 
+
+/**
+ * Remove every row belonging to the isolated temporary profile. Other
+ * fixture flows may create additional categories in the same profile.
+ * Deleting only the known fixture category leaves a foreign-key orphan.
+ */
+export async function deletePopulatedNotificationFixtureRows(query, { organizationId, profileId, budgetId }) {
+  const scope = 'where "organizationId"=$1 and "financialProfileId"=$2';
+  const params = [organizationId, profileId];
+  for (const table of [
+    "FinancialNotificationDelivery",
+    "FinancialNotificationPreference",
+    "AuditLogEntry",
+    "FinancialNotification",
+  ]) {
+    await query('delete from "' + table + '" ' + scope, params);
+  }
+  await query(
+    'delete from "Budget" where "id"=$1 and "organizationId"=$2 and "financialProfileId"=$3',
+    [budgetId, organizationId, profileId],
+  );
+  // Delete *all* categories in this disposable profile, including defaults
+  // added by profile initialization, before deleting the parent profile.
+  await query('delete from "Category" ' + scope, params);
+  await query('delete from "FinancialProfile" where "id"=$1 and "organizationId"=$2', [
+    profileId,
+    organizationId,
+  ]);
+}
+
 /**
  * Populate a disposable financial profile through the existing internal publisher.
  * No event is created through a public HTTP route or in production.
@@ -36,28 +66,11 @@ export async function createPopulatedNotificationFixtures() {
 
   async function cleanup() {
     if (!profileCreated || !context) return;
-    const scope = 'where "organizationId"=$1 and "financialProfileId"=$2';
-    const params = [context.organizationId, context.financialProfileId];
-    for (const table of [
-      "FinancialNotificationDelivery",
-      "FinancialNotificationPreference",
-      "AuditLogEntry",
-      "FinancialNotification",
-    ]) {
-      await query('delete from "' + table + '" ' + scope, params);
-    }
-    await query('delete from "Budget" where "id"=$1 and "financialProfileId"=$2', [
+    await deletePopulatedNotificationFixtureRows(query, {
+      organizationId: context.organizationId,
+      profileId: context.financialProfileId,
       budgetId,
-      profileId,
-    ]);
-    await query('delete from "Category" where "id"=$1 and "financialProfileId"=$2', [
-      categoryId,
-      profileId,
-    ]);
-    await query('delete from "FinancialProfile" where "id"=$1 and "organizationId"=$2', [
-      profileId,
-      context.organizationId,
-    ]);
+    });
     profileCreated = false;
   }
 
