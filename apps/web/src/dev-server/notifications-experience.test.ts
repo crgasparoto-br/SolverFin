@@ -80,7 +80,8 @@ try {
   assert.ok(received.includes("Caixa de entrada"));
   assert.ok(
     received.includes("@media (max-width: 420px)") &&
-      received.includes(".notifications-entry { display: flex; flex-direction: column;"),
+      received.includes(".notifications-entry { display: flex; flex-direction: column;") &&
+      received.includes(".notifications-page { padding-inline: 8px; }"),
     "Narrow mobile entries must stack content rather than squeeze text at 200% scaling",
   );
   assert.ok(received.includes("1 não lidas"));
