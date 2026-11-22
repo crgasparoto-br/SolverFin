@@ -366,6 +366,7 @@ function notificationsPageStyles(): string {
     ".notifications-error { color: var(--sf-color-danger); }",
     "[data-notifications-status] { min-height: 1rem; margin: 0; }",
     "@media (max-width: 780px) { .notifications-section { padding: var(--sf-space-4); } .notifications-entry { grid-template-columns: auto minmax(0, 1fr); } .notifications-entry-aside { grid-column: 2; align-items: flex-start; } .notifications-amount { text-align: left; } .notifications-entry-actions { justify-content: flex-start; } .notifications-preference-list { grid-template-columns: minmax(0, 1fr); } }",
+    "@media (max-width: 360px) { .notifications-section { padding: 12px; } .notifications-entry { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px 0; } .notifications-entry-icon { width: 32px; height: 32px; } .notifications-entry-body, .notifications-entry-aside { width: 100%; } .notifications-entry-aside { align-items: stretch; } .notifications-entry-actions { flex-direction: column; align-items: stretch; width: 100%; } .notifications-action { justify-content: center; width: 100%; padding-inline: 8px; } }",
   ].join("\n");
 }
 

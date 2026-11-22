@@ -87,18 +87,21 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
     [
       "(() => {",
       "const actions = [...document.querySelectorAll('.notifications-entry .notifications-action')];",
+      "const descriptions = [...document.querySelectorAll('.notifications-entry .notifications-description')];",
       "return { width: innerWidth, scrollWidth: document.documentElement.scrollWidth,",
+      "minDescriptionWidth: Math.min(...descriptions.map((element) => element.getBoundingClientRect().width)),",
       "noHorizontalOverflow: document.documentElement.scrollWidth <= innerWidth + 1,",
       "actionsWithinViewport: actions.every((button) => {",
       "const box = button.getBoundingClientRect();",
-      "return box.left >= -1 && box.right <= innerWidth + 1; })",
-      "}; })()",
+      "return box.left >= -1 && box.right <= innerWidth + 1; }),",
+      "actionsComfortable: actions.every((button) => button.getBoundingClientRect().height >= 44)",
+      "}; })()
     ].join("\n"),
   );
-  // Show the populated row, not just the tall page header, in the 200%-text evidence.
+  // Keep the row title visible below the sticky header at 200% text scaling.
   await evaluate(
     cdp,
-    "document.querySelector('.notifications-entry')?.scrollIntoView({ block: 'center' }); true",
+    "(() => { const row = document.querySelector('.notifications-entry'); if (!row) return false; window.scrollTo(0, Math.max(0, window.scrollY + row.getBoundingClientRect().top - 120)); return true; })()",
   );
   await screenshot(cdp, join(outputDir, "issue-808-populated-320-text200.png"));
   assert.equal(zoom.width, 320);
@@ -108,6 +111,12 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
     "Populated notifications overflow at 200% text: scrollWidth=" + zoom.scrollWidth,
   );
   assert.equal(zoom.actionsWithinViewport, true, "Notification actions clip at 200% text");
+  assert.equal(zoom.actionsComfortable, true, "Notification actions must remain at least 44px high");
+  assert.ok(
+    zoom.minDescriptionWidth >= 180,
+    "Notification text becomes a narrow letter-by-letter column at 200%: " +
+      zoom.minDescriptionWidth,
+  );
   return { viewports, zoom: { ...zoom, textScale: 200 } };
 }
 

@@ -78,6 +78,11 @@ try {
     "Active received tab must retain the offset and profile",
   );
   assert.ok(received.includes("Caixa de entrada"));
+  assert.ok(
+    received.includes("@media (max-width: 360px)") &&
+      received.includes(".notifications-entry { display: flex; flex-direction: column;"),
+    "Narrow mobile entries must stack content rather than squeeze text at 200% scaling",
+  );
   assert.ok(received.includes("1 não lidas"));
   assert.ok(received.includes("Limite do orçamento"));
   assert.ok(received.includes("Um orçamento atingiu seu limite configurado."));
