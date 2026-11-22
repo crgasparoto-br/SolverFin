@@ -18,13 +18,15 @@ export function assertSafeNotificationVisualDatabase(environment = process.env) 
   );
 }
 
-
 /**
  * Remove every row belonging to the isolated temporary profile. Other
  * fixture flows may create additional categories in the same profile.
  * Deleting only the known fixture category leaves a foreign-key orphan.
  */
-export async function deletePopulatedNotificationFixtureRows(query, { organizationId, profileId, budgetId }) {
+export async function deletePopulatedNotificationFixtureRows(
+  query,
+  { organizationId, profileId, budgetId },
+) {
   const scope = 'where "organizationId"=$1 and "financialProfileId"=$2';
   const params = [organizationId, profileId];
   for (const table of [

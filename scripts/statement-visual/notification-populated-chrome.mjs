@@ -95,7 +95,11 @@ export async function runPopulatedNotificationLayouts({ cdp, baseUrl, outputDir,
       "}; })()",
     ].join("\n"),
   );
-  // Always retain the real 200%-text screenshot, including when the strict reflow gate fails.
+  // Show the populated row, not just the tall page header, in the 200%-text evidence.
+  await evaluate(
+    cdp,
+    "document.querySelector('.notifications-entry')?.scrollIntoView({ block: 'center' }); true",
+  );
   await screenshot(cdp, join(outputDir, "issue-808-populated-320-text200.png"));
   assert.equal(zoom.width, 320);
   assert.equal(

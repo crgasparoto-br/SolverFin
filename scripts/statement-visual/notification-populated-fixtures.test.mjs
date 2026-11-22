@@ -41,7 +41,10 @@ test("visual fixture cleanup removes all profile categories, never other profile
     async (sql, params) => {
       statements.push({ sql, params });
       if (sql.startsWith('delete from "Category"')) {
-        assert.equal(sql, 'delete from "Category" where "organizationId"=$1 and "financialProfileId"=$2');
+        assert.equal(
+          sql,
+          'delete from "Category" where "organizationId"=$1 and "financialProfileId"=$2',
+        );
         assert.deepEqual(params, [organizationId, profileId]);
         for (let index = categories.length - 1; index >= 0; index -= 1) {
           if (
@@ -54,7 +57,9 @@ test("visual fixture cleanup removes all profile categories, never other profile
       }
       if (sql.startsWith('delete from "FinancialProfile"')) {
         assert.equal(
-          categories.some((item) => item.organizationId === organizationId && item.profileId === profileId),
+          categories.some(
+            (item) => item.organizationId === organizationId && item.profileId === profileId,
+          ),
           false,
           "a sibling category would prevent the profile deletion through the real foreign key",
         );
@@ -65,7 +70,10 @@ test("visual fixture cleanup removes all profile categories, never other profile
     { organizationId, profileId, budgetId },
   );
   assert.equal(parentDeleted, true);
-  assert.deepEqual(categories.map((item) => item.id), ["other-profile-category"]);
+  assert.deepEqual(
+    categories.map((item) => item.id),
+    ["other-profile-category"],
+  );
   assert.deepEqual(
     statements.map((statement) => statement.sql.match(/^delete from "([^"]+)"/)[1]),
     [
