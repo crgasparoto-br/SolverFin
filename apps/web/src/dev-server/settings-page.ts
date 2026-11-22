@@ -7,6 +7,7 @@ import {
 import { apiGet } from "./api.js";
 import { icon } from "./icons.js";
 import { baseCss } from "./settings-page-css.js";
+import { renderAutomationRuleFields, renderRuleFilters } from "./settings-rules-ui.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { getSecondaryRoutePageViewModel } from "./secondary-routes-view-model.js";
 
@@ -213,19 +214,12 @@ function renderRulesSection(
   filter: RuleListFilter,
 ): string {
   const automationRules = rules.ok ? rules.data.rules : [];
-  const activeCount = automationRules.filter((rule) => rule.status === "active").length;
-  const inactiveCount = automationRules.filter((rule) => rule.status === "inactive").length;
   const visibleRules = automationRules.filter(
     (rule) =>
       filter === "todas" ||
       (filter === "ativas" && rule.status === "active") ||
       (filter === "inativas" && rule.status === "inactive"),
   );
-  const filters = [
-    { value: "todas", label: "Todas", count: automationRules.length },
-    { value: "ativas", label: "Ativas", count: activeCount },
-    { value: "inativas", label: "Inativas", count: inactiveCount },
-  ] as const;
 
   return `
     <section class="settings-section" data-settings-scope="rules" aria-labelledby="rules-section-title">
@@ -247,15 +241,7 @@ function renderRulesSection(
       ${
         rules.ok
           ? `
-            <nav class="settings-rule-filters" aria-label="Filtrar regras por situação">
-              ${filters
-                .map(
-                  (item) =>
-                    `<a class="settings-rule-filter sf-focus-ring" href="${SETTINGS_PATH}?section=rules${item.value === "todas" ? "" : "&amp;filter=" + item.value}"${item.value === filter ? ' aria-current="page"' : ""}>${item.label} <span>${item.count}</span></a>`,
-                )
-                .join("")}
-            </nav>
-            <p class="settings-rule-filter-hint">O filtro organiza apenas a lista. Aplicar regras considera as regras ativas, independentemente do filtro.</p>
+            ${renderRuleFilters(automationRules, filter, SETTINGS_PATH)}
             <div class="rows maintenance-rows">
               ${
                 visibleRules
@@ -322,45 +308,12 @@ function renderNewAutomationRuleDialog(
       </div>
       <p class="settings-dialog-context" id="new-rule-dialog-context">Cada execução gera sugestões revisáveis, não confirma lançamentos.</p>
       <form data-api-form data-api-path="/api/automation-rules" data-api-success="Regra criada. Atualizando..." class="edit-grid settings-rule-form" novalidate>
-        <fieldset class="settings-rule-fieldset">
-          <legend>Identificação</legend>
-          <div class="settings-rule-fields">
-            <label>Nome<input name="name" required autofocus placeholder="Ex.: Mercado vira Alimentação" /></label>
-            <label>Prioridade<input name="priority" type="number" value="100" /></label>
-          </div>
-        </fieldset>
-        <fieldset class="settings-rule-fieldset">
-          <legend>Quando aplicar</legend>
-          <div class="settings-rule-fields">
-            <label class="full-span">Descrição contém<input name="descriptionIncludes" placeholder="Ex.: mercado" /></label>
-            <label>Tipo
-              <select name="kind">
-                <option value="">Qualquer</option>
-                <option value="expense">Despesa</option>
-                <option value="income">Receita</option>
-                <option value="transfer">Transferência</option>
-              </select>
-            </label>
-            ${renderAmountField("amountMinMinor", "Valor mínimo", "amount-minor-error")}
-            ${renderAmountField("amountMaxMinor", "Valor máximo", "amount-max-error")}
-          </div>
-        </fieldset>
-        <fieldset class="settings-rule-fieldset">
-          <legend>O que sugerir</legend>
-          <div class="settings-rule-fields">
-            ${renderAccountField(accounts)}
-            ${renderCategoryField(categories)}
-            <label>Status sugerido
-              <select name="actionStatus">
-                <option value="">Não alterar</option>
-                <option value="suggested">Sugerido</option>
-                <option value="planned">Planejado</option>
-                <option value="posted">Realizado</option>
-              </select>
-            </label>
-            <label class="full-span">Explicação opcional<input name="explanation" placeholder="Ex.: Compras com este texto costumam ser alimentação." /></label>
-          </div>
-        </fieldset>
+        ${renderAutomationRuleFields({
+          amountMinField: renderAmountField("amountMinMinor", "Valor mínimo", "amount-minor-error"),
+          amountMaxField: renderAmountField("amountMaxMinor", "Valor máximo", "amount-max-error"),
+          accountField: renderAccountField(accounts),
+          categoryField: renderCategoryField(categories),
+        })}
         <div class="settings-dialog-actions"><button type="button" class="sf-button sf-button-secondary" data-sf-dialog-close>Cancelar</button><button type="submit" class="sf-button sf-button-primary" title="Salvar nova regra automática">${icon("save", 14)} Criar regra</button></div>
       </form>
     </dialog>
