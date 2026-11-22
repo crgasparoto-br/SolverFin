@@ -67,7 +67,22 @@ export async function collectDashboard724Evidence(state, readEvidence, requireAr
       );
       assert.equal(measurements.amountsSeparatedByCurrency, true, "Currency amounts are missing");
       const isMultiCurrency = state.startsWith("multi-currency");
-      assert.equal(measurements.primaryCount, isMultiCurrency ? 4 : 2);
+      // The approved #811 mockup keeps six KPIs in the DOM for every currency,
+      // but only balance and free-to-spend are visible before actions on mobile.
+      // Check both cardinalities; the legacy #724 two-KPI DOM assumption is obsolete.
+      assert.equal(
+        measurements.primaryCount,
+        isMultiCurrency ? 12 : 6,
+        "Approved dashboard requires six main KPIs per currency",
+      );
+      assert.equal(
+        measurements.visiblePrimaryCount,
+        viewport.width <= 390 ? (isMultiCurrency ? 4 : 2) : isMultiCurrency ? 12 : 6,
+        "Dashboard KPI visibility diverges from approved desktop/mobile hierarchy",
+      );
+      if (viewport.width === 1366) {
+        assert.equal(measurements.desktopKpiColumns, 3, "Desktop KPI grid must have 3 columns");
+      }
       assert.deepEqual(measurements.currencies, isMultiCurrency ? ["BRL", "USD"] : ["BRL"]);
       if (viewport.width <= 390) {
         assert.equal(
