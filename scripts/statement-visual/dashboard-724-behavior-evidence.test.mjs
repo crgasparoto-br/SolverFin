@@ -239,7 +239,6 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
   });
 }
 
-
 // Regression: count all desktop KPIs, but never expose supporting KPIs before
 // next actions on mobile. The visual mockup is not a two-KPI dashboard on desktop.
 for (const width of [320, 1366]) {
