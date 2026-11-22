@@ -3,6 +3,7 @@ import { financialTodayInSaoPaulo } from "@solverfin/shared";
 import { calculateInvoicePeriod, type TenantContext } from "@solverfin/domain";
 
 import { query } from "../db.js";
+import { toDateOnly } from "./repository-date-utils.js";
 
 export interface DashboardAccountBalance {
   id: string;
@@ -166,7 +167,8 @@ export async function buildDashboardOverview(
   now: Date = new Date(),
 ): Promise<DashboardOverview> {
   const purchaseToday = financialTodayInSaoPaulo(now);
-  const referenceDate = purchaseToday;
+  // Match the canonical financial summary month; only purchase advice uses local civil today.
+  const referenceDate = toDateOnly(now);
   const periodStartOn = referenceDate.slice(0, 7) + "-01";
   const [year, month] = periodStartOn.split("-").map(Number) as [number, number];
   const periodEndOn = new Date(Date.UTC(year, month, 0)).toISOString().slice(0, 10);

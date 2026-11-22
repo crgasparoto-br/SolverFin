@@ -50,15 +50,17 @@ async function main(): Promise<void> {
     ],
   );
   // At 01:30Z on June 1st the Sao Paulo civil date is still May 31st.
-  // Both the monthly overview and the card-advice clock must agree.
+  // Monthly aggregates follow the canonical summary UTC date, while card advice
+  // follows the Sao Paulo civil purchase date at the UTC month boundary.
   const atUtcMonthBoundary = await buildDashboardOverview(
     CONTEXT,
     PURCHASE_ON,
     new Date("2041-06-01T01:30:00.000Z"),
   );
   assert.equal(atUtcMonthBoundary.purchaseToday, "2041-05-31");
-  assert.equal(atUtcMonthBoundary.periodStartOn, "2041-05-01");
-  assert.equal(atUtcMonthBoundary.periodEndOn, "2041-05-31");
+  assert.equal(atUtcMonthBoundary.referenceDate, "2041-06-01");
+  assert.equal(atUtcMonthBoundary.periodStartOn, "2041-06-01");
+  assert.equal(atUtcMonthBoundary.periodEndOn, "2041-06-30");
   const baseline = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
   const account = await createAccountForContext(CONTEXT, {
     name: `Overview cash ${suffix}`,

@@ -239,7 +239,7 @@ Os widgets são secundários à primeira ação no mobile (requisito Golden Scre
 por moeda. A falha do endpoint operacional é opcional: deve mostrar
 `Dados parciais`, não apagar os indicadores financeiros já confirmados.
 
-A data civil “hoje” do recomendador reutiliza a regra de São Paulo do Extrato, mesmo quando o relógio UTC do servidor já passou da meia-noite. O resumo financeiro mantém sua data de referência UTC, exposta separadamente como `referenceDate`.
+A data civil “hoje” do recomendador (`purchaseToday`) reutiliza a regra de São Paulo do Extrato, mesmo quando o relógio UTC do servidor já passou da meia-noite. O detalhamento operacional segue o resumo financeiro canônico no período UTC, exposto em `referenceDate`, `periodStartOn` e `periodEndOn`; a simulação de cartão não desloca esse período.
 
 A recomendação considera somente prazo, não limite disponível ou aprovação
 de compra. O vencimento previsto reflete os dias cadastrados, sem pretender
