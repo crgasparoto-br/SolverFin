@@ -247,13 +247,21 @@ for (const width of [320, 1366]) {
     const viewport = input.viewports.find((entry) => entry.width === width);
     viewport.measurements.visiblePrimaryCount = width === 320 ? 12 : 4;
     await assert.rejects(
-      collectDashboard724Evidence("multi-currency", async () => input, async () => {}),
+      collectDashboard724Evidence(
+        "multi-currency",
+        async () => input,
+        async () => {},
+      ),
       /KPI visibility diverges/,
     );
     viewport.measurements.visiblePrimaryCount = width === 320 ? 4 : 12;
     viewport.measurements.primaryCount = 4;
     await assert.rejects(
-      collectDashboard724Evidence("multi-currency", async () => input, async () => {}),
+      collectDashboard724Evidence(
+        "multi-currency",
+        async () => input,
+        async () => {},
+      ),
       /six main KPIs/,
     );
   });
