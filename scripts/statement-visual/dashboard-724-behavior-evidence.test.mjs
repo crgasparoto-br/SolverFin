@@ -27,7 +27,10 @@ function fixture(state) {
         hasPartial: state === "partial" || state === "multi-currency-partial",
         currencyCount: state === "error" ? 0 : multiple ? 2 : 1,
         currencies: state === "error" ? [] : multiple ? ["BRL", "USD"] : ["BRL"],
-        primaryCount: state === "error" ? 0 : multiple ? 4 : 2,
+        primaryCount: state === "error" ? 0 : multiple ? 12 : 6,
+        visiblePrimaryCount:
+          state === "error" ? 0 : width <= 390 ? (multiple ? 4 : 2) : multiple ? 12 : 6,
+        desktopKpiColumns: width === 1366 ? 3 : 1,
         hasNextActions: state !== "error",
         actionVisibleInFirstViewport: true,
         firstActionLabelVisibleInFirstViewport: true,
@@ -232,6 +235,27 @@ for (const state of ["multi-currency", "multi-currency-partial"]) {
         async () => {},
       ),
       /First action link cannot receive focus/,
+    );
+  });
+}
+
+
+// Regression: count all desktop KPIs, but never expose supporting KPIs before
+// next actions on mobile. The visual mockup is not a two-KPI dashboard on desktop.
+for (const width of [320, 1366]) {
+  test(`Dashboard #811 rejects KPI hierarchy regression at ${width}px`, async () => {
+    const input = fixture("multi-currency");
+    const viewport = input.viewports.find((entry) => entry.width === width);
+    viewport.measurements.visiblePrimaryCount = width === 320 ? 12 : 4;
+    await assert.rejects(
+      collectDashboard724Evidence("multi-currency", async () => input, async () => {}),
+      /KPI visibility diverges/,
+    );
+    viewport.measurements.visiblePrimaryCount = width === 320 ? 4 : 12;
+    viewport.measurements.primaryCount = 4;
+    await assert.rejects(
+      collectDashboard724Evidence("multi-currency", async () => input, async () => {}),
+      /six main KPIs/,
     );
   });
 }
