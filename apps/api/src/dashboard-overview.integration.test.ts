@@ -122,7 +122,10 @@ async function main(): Promise<void> {
     [plannedBill.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
   );
   const withSuggested = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
-  assert.equal(withSuggested.payables.find((row) => row.id === plannedBill.id)?.status, "suggested");
+  assert.equal(
+    withSuggested.payables.find((row) => row.id === plannedBill.id)?.status,
+    "suggested",
+  );
   assert.equal(brlPayables(withSuggested), brlPayables(beforePayment));
   await query(
     `update "Transaction" set "status" = 'PLANNED'
@@ -203,7 +206,10 @@ async function main(): Promise<void> {
   );
   const withSettled = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
   assert.equal(brlPayables(withSettled), brlPayables(afterPayment));
-  assert.equal(withSettled.payables.some((row) => row.id === overduePurchase.invoice.id), false);
+  assert.equal(
+    withSettled.payables.some((row) => row.id === overduePurchase.invoice.id),
+    false,
+  );
 
   // A elegibilidade para recomendar não elimina o histórico de gastos do mês.
   await query(
