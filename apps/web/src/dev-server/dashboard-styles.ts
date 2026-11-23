@@ -109,6 +109,7 @@ export function dashboardStyles(): string {
     .dashboard-mini-table th { color: var(--muted); position: sticky; top: 0; background: var(--surface); text-align: left; }
     .dashboard-mini-table td, .dashboard-mini-table th { border-bottom: 1px solid var(--line); padding: 8px 6px; vertical-align: top; }
     .dashboard-mini-table td small { color: var(--muted); display: block; }
+    .dashboard-mini-table .dashboard-payable-status { color: var(--primary); font-weight: 650; }
     .dashboard-mini-table .dashboard-money { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
     .dashboard-mini-table th:last-child { text-align: right; }
     .dashboard-bar-list, .dashboard-trend { display: grid; gap: 12px; }

@@ -29,6 +29,7 @@ export interface DashboardOverview {
   payables: {
     id: string;
     source: "transaction" | "invoice";
+    status: "planned" | "suggested" | "open" | "closed" | "overdue";
     description: string;
     currency: string;
     dueOn: string;
@@ -129,6 +130,14 @@ function payableHref(bill: DashboardOverview["payables"][number]): string {
   return `/lancamentos?${params.toString()}`;
 }
 
+const payableStatusLabels: Record<DashboardOverview["payables"][number]["status"], string> = {
+  planned: "Planejado",
+  suggested: "Sugerido",
+  open: "Aberta",
+  closed: "Fechada",
+  overdue: "Em atraso",
+};
+
 function renderPayables(data: DashboardOverview): string {
   return `<section class="panel dashboard-widget dashboard-payables" aria-label="Contas a pagar no mês">
     ${title("Compromissos", "Contas a pagar · " + data.periodStartOn.slice(0, 7), {
@@ -156,7 +165,8 @@ function renderPayables(data: DashboardOverview): string {
         <td><time datetime="${escape(bill.dueOn)}">${date(bill.dueOn)}</time>
           ${bill.overdue ? '<span class="dashboard-danger">Vencido</span>' : ""}</td>
         <td><a href="${escape(payableHref(bill))}">${escape(bill.description)}</a>
-          <small>${bill.source === "invoice" ? "Fatura de cartão" : "Lançamento previsto"}</small></td>
+          <small>${bill.source === "invoice" ? "Fatura de cartão" : "Lançamento previsto"}</small>
+          <small class="dashboard-payable-status" data-status="${escape(bill.status)}">Situação: ${escape(payableStatusLabels[bill.status])}</small></td>
         <td class="dashboard-money">${money(bill.amountMinor, bill.currency)}</td>
       </tr>`,
         )

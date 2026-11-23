@@ -68,7 +68,7 @@ async function main(): Promise<void> {
     openingBalanceMinor: 10_000,
     currency: "BRL",
   });
-  await createTransactionForContext(CONTEXT, {
+  const plannedBill = await createTransactionForContext(CONTEXT, {
     accountId: account.id,
     kind: "expense",
     status: "planned",
@@ -105,8 +105,39 @@ async function main(): Promise<void> {
     "planned transactions and credit purchases do not affect bank cash",
   );
   assert.equal(beforePayment.cardSpending.find((row) => row.id === card.id)?.spentMinor, 7_000);
+  assert.equal(
+    beforePayment.payables.find((row) => row.id === plannedBill.id)?.status,
+    "planned",
+    "planned bills expose their persisted status rather than inferring it from due date",
+  );
+  assert.equal(
+    beforePayment.payables.find((row) => row.id === purchase.invoice.id)?.status,
+    "open",
+    "open invoices expose their source status even if the invoice is past due",
+  );
+  // Negative/discriminant: same bill and due date, but different persisted status.
+  await query(
+    `update "Transaction" set "status" = 'SUGGESTED'
+      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [plannedBill.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
+  const withSuggested = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(withSuggested.payables.find((row) => row.id === plannedBill.id)?.status, "suggested");
+  assert.equal(brlPayables(withSuggested), brlPayables(beforePayment));
+  await query(
+    `update "Transaction" set "status" = 'PLANNED'
+      where "id" = $1 and "organizationId" = $2 and "financialProfileId" = $3`,
+    [plannedBill.id, CONTEXT.organizationId, CONTEXT.financialProfileId],
+  );
 
   await closeInvoiceForContext(CONTEXT, purchase.invoice.id);
+  const afterClose = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(
+    afterClose.payables.find((row) => row.id === purchase.invoice.id)?.status,
+    "closed",
+    "same invoice and due date must distinguish closed from open",
+  );
+  assert.equal(brlPayables(afterClose), brlPayables(beforePayment));
   await payInvoiceForContext(CONTEXT, purchase.invoice.id, account.id, {
     paidOn: "2041-05-18",
     amountMinor: purchase.invoice.totalAmountMinor,
@@ -152,6 +183,10 @@ async function main(): Promise<void> {
   );
   const withOverdue = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
   assert.equal(
+    withOverdue.payables.find((row) => row.id === overduePurchase.invoice.id)?.status,
+    "overdue",
+  );
+  assert.equal(
     brlPayables(withOverdue) - brlPayables(afterPayment),
     2_200,
     "the overdue invoice must remain in the month payables",
@@ -168,6 +203,7 @@ async function main(): Promise<void> {
   );
   const withSettled = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
   assert.equal(brlPayables(withSettled), brlPayables(afterPayment));
+  assert.equal(withSettled.payables.some((row) => row.id === overduePurchase.invoice.id), false);
 
   // A elegibilidade para recomendar não elimina o histórico de gastos do mês.
   await query(

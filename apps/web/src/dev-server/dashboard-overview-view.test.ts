@@ -35,6 +35,7 @@ const example: DashboardOverview = {
     {
       id: "pagamento-1",
       source: "transaction",
+      status: "planned",
       accountId: "conta-1",
       description: "Luz",
       currency: "BRL",
@@ -45,6 +46,7 @@ const example: DashboardOverview = {
     {
       id: "invoice-1",
       source: "invoice",
+      status: "overdue",
       cardId: "cartao-1",
       description: "Fatura cartão",
       currency: "BRL",
@@ -67,6 +69,8 @@ describe("dashboard operational widgets", () => {
     assert.match(html, /Simular data da compra/);
     assert.match(html, /Em aberto · BRL \(2\)/);
     assert.match(html, /Vencido/);
+    assert.match(html, /data-status="planned">Situação: Planejado/);
+    assert.match(html, /data-status="overdue">Situação: Em atraso/);
     assert.match(html, /Conta corrente/);
     assert.match(html, /Investimento/);
     assert.match(html, /Gastos por cartão/);
@@ -89,6 +93,32 @@ describe("dashboard operational widgets", () => {
     assert.ok(html.includes('href="/cartoes?cardId=cartao-1&amp;invoiceId=invoice-1"'));
     assert.ok(html.includes('href="/lancamentos?month=2026-11&amp;accountId=conta-1"'));
     assert.doesNotMatch(html, /pagar-receber/);
+  });
+
+  it("distinguishes original payable status independently of due date and origin", () => {
+    const planned = example.payables[0]!;
+    const invoice = example.payables[1]!;
+    const html = renderDashboardOverview({
+      ...example,
+      payables: [
+        planned,
+        { ...planned, id: "suggested-1", status: "suggested" },
+        { ...invoice, id: "open-1", status: "open" },
+        { ...invoice, id: "closed-1", status: "closed" },
+        invoice,
+      ],
+    });
+    for (const [status, label] of [
+      ["planned", "Planejado"],
+      ["suggested", "Sugerido"],
+      ["open", "Aberta"],
+      ["closed", "Fechada"],
+      ["overdue", "Em atraso"],
+    ]) {
+      assert.match(html, new RegExp(`data-status="${status}">Situação: ${label}`));
+    }
+    assert.equal((html.match(/Situação: /g) ?? []).length, 5);
+    assert.ok(html.includes("Vencido"), "overdue flag remains separate from persisted status");
   });
 
   it("escapes untrusted descriptions and prevents injected HTML", () => {

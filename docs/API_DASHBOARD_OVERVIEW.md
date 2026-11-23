@@ -56,6 +56,15 @@ Nunca consolidar moedas diferentes em um número.
 às faturas ainda não pagas `OPEN`, `CLOSED` e `OVERDUE` pelo `dueOn`, desde que o vencimento não ultrapasse
 o fim do mês de referência. Inclui vencidas em meses anteriores ainda pendentes.
 
+Cada item de `payables[]` expõe `source` (`transaction`/`invoice`) e `status`
+normalizado para minúsculas, mantendo os estados persistidos de origem:
+`planned`, `suggested` para lançamentos e `open`, `closed`, `overdue`
+para faturas. `overdue` (booleano) é calculado pelo vencimento com relação à
+`referenceDate` e é **independente** do status persistido: uma fatura `open`
+pode estar vencida sem ter sido reclassificada como `overdue`. A interface
+mostra ambos como informações distintas e acessíveis, sem substituir o status
+por inferência de data.
+
 `payableTotals[]` entrega `currency`, `amountMinor`, `overdueMinor` e `count`
 para **toda a coleção**, enquanto `payables[]` é limitada aos 10 vencimentos
 mais próximos por moeda. Ambos são calculados no backend na mesma consulta;
@@ -102,7 +111,8 @@ As ações da tabela navegam para os módulos canônicos `/lancamentos`,
 
 ## Verificações
 
-- `apps/api/src/dashboard-overview.integration.test.ts`: fatura em aberto/vencida/paga, baixa,
+- `apps/api/src/dashboard-overview.integration.test.ts`: distinção de status persistidos
+  `OPEN`/`CLOSED`/`OVERDUE`, `PLANNED`/`SUGGESTED`, fatura paga, baixa,
   histórico de compras em cartões bloqueados/arquivados, posição de caixa e não duplicidade de compromissos e despesas.
 - `apps/api/src/repositories/dashboard-overview.test.ts`: fechamentos,
   vencimentos, ano bissexto, elegibilidade, empates e entrada de data.

@@ -33,6 +33,7 @@ export interface DashboardCardAdvice {
 export interface DashboardPayable {
   id: string;
   source: "transaction" | "invoice";
+  status: "planned" | "suggested" | "open" | "closed" | "overdue";
   description: string;
   currency: string;
   dueOn: string;
@@ -90,6 +91,7 @@ interface SpendRow {
 interface PayableRow {
   id: string;
   source: "transaction" | "invoice";
+  status: "planned" | "suggested" | "open" | "closed" | "overdue";
   description: string;
   currency: string;
   dueOn: string;
@@ -228,7 +230,7 @@ export async function buildDashboardOverview(
     query<PayableRow>(
       `with commitments as (
          select t."id"::text as "id", 'transaction'::text as "source",
-                t."description", upper(t."currency") as "currency",
+                lower(t."status"::text) as "status", t."description", upper(t."currency") as "currency",
                 t."plannedOn"::date as "dueOn", t."amountMinor" as "amountMinor",
                 t."accountId"::text as "accountId", null::text as "cardId"
            from "Transaction" t
@@ -237,7 +239,7 @@ export async function buildDashboardOverview(
             and t."effectiveOn" is null and t."plannedOn" <= $4::date
             and t."accountId" is not null and t."cardId" is null and t."invoiceId" is null
          union all
-         select i."id"::text, 'invoice'::text, c."name",
+         select i."id"::text, 'invoice'::text, lower(i."status"::text), c."name",
                 upper(i."currency"), i."dueOn"::date, i."totalAmountMinor",
                 null::text, i."cardId"::text
            from "Invoice" i join "Card" c on c."id" = i."cardId"
@@ -253,7 +255,7 @@ export async function buildDashboardOverview(
            row_number() over (partition by "currency" order by "dueOn", "id") as rn
            from commitments
        )
-       select "id", "source", "description", "currency", "dueOn"::text as "dueOn",
+       select "id", "source", "status", "description", "currency", "dueOn"::text as "dueOn",
               "accountId", "cardId", "amountMinor"::text as "amountMinor",
               "totalMinor", "overdueMinor", "itemCount"
          from ranked where rn <= 10 order by "dueOn", "id"`,
@@ -384,6 +386,7 @@ export async function buildDashboardOverview(
     payables: bills.map((row) => ({
       id: row.id,
       source: row.source,
+      status: row.status,
       description: row.description,
       currency: row.currency,
       dueOn: row.dueOn,

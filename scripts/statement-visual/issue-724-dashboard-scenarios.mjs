@@ -375,6 +375,7 @@ async function renderScenario(variant) {
           {
             id: "payable-" + currency,
             source: "transaction",
+            status: "planned",
             description: "Conta de energia " + currency,
             currency,
             dueOn: "2026-07-04",
@@ -385,6 +386,7 @@ async function renderScenario(variant) {
           {
             id: "invoice-" + currency,
             source: "invoice",
+            status: "closed",
             description: "Fatura cartão " + currency,
             currency,
             dueOn: "2026-07-18",

@@ -111,6 +111,7 @@ describe("dev-server dashboard page", () => {
             {
               id: "bill-a",
               source: "transaction",
+              status: "planned",
               description: "Conta de internet",
               currency: "BRL",
               dueOn: "2026-07-02",

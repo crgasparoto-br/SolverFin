@@ -228,7 +228,9 @@ A refatoração acrescenta três blocos de decisão ao cockpit, preservando
    dia de fechamento. A simulação de outra data modifica somente a recomendação.
 2. **Compromissos e posição:** lista contas a pagar e faturas do mês corrente,
    incluindo pendências vencidas anteriores, e mostra saldo por conta e tipo
-   sem classificar investimentos como liquidez imediata.
+   sem classificar investimentos como liquidez imediata. Cada compromisso mostra
+   separadamente o status persistido de origem (previsto, sugerido, fatura aberta,
+   fechada ou em atraso) e a sinalização de vencimento por data.
 3. **Comportamento de consumo:** gastos realizados por cartão no mês da compra,
    despesas por categoria e comparação mensal de receitas/despesas. A
    trajetória canônica diária alimenta o gráfico de caixa sem recalcular saldos.
