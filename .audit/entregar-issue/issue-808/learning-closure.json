@@ -1,0 +1,17 @@
+{
+  "classification": "implementation-only",
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "The governing Skill already enforces target binding, immutable base inheritance checks and terminal exact-head checks; this delivery omitted an existing handoff rather than exposing a reusable Skill design defect."
+  },
+  "schema_version": 1,
+  "skill_changes": [],
+  "source_event": {
+    "audit_report_sha256": "2ea44a883eaa596d8a411fc5fa1864982ee2e01fb5da77afc2266ad4f36a3e89",
+    "finding_ids": [
+      "A-001"
+    ],
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:issuecomment-7088789291"
+  }
+}

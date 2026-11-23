@@ -1,0 +1,72 @@
+{
+  "escapes": [
+    {
+      "detection_change": {
+        "evidence": "Trusted workflow run 45094987826 proved original handoff subtype mismatch at H0/M1; re-freeze with official issue-scoped artifacts and canonical subject, pending trusted positive exact-SHA recheck."
+      },
+      "escape_class": "target-certificate-inheritance",
+      "escape_id": "ESC-809-A-001-FOREIGN-HANDOFF",
+      "literal_case": {
+        "expected": "Old certificate subject issue 806 and PR 807 is rejected for issue 808/810, PR 809.",
+        "observed": "Actual GitHub Actions failures 45083205931 and 45083205941 on material candidate and unchanged old certificate; post-correction positive must pass terminal guard.",
+        "status": "passed"
+      },
+      "plausible_wrong_implementation": "Use an old, syntactically valid certificate inherited from develop as if it proved the current notifications/rules PR.",
+      "prevention_change": {
+        "evidence": "Rebuild current-target .audit/entregar-issue artefacts from separate GitHub issue bodies and exact material M rather than inherit base bytes."
+      },
+      "required_attack_dimensions": [
+        {
+          "dimension": "certificate-target-mismatch",
+          "risk_family": "semantic-effect",
+          "surface": "ui-behavior-contract"
+        },
+        {
+          "dimension": "certificate-source-crossbind",
+          "risk_family": "documentation",
+          "surface": "documented-ssr-contract"
+        }
+      ],
+      "required_risk_families": [
+        "semantic-effect",
+        "documentation"
+      ],
+      "revalidated_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+      "sibling_cases": [
+        {
+          "dimension": "certificate-target-mismatch",
+          "id": "SIB-809-FOREIGN-ISSUE",
+          "observed": "Trusted workflow 45083205931 refused certificate subject mismatch for foreign issue/PR.",
+          "risk_family": "semantic-effect",
+          "status": "passed",
+          "surface": "ui-behavior-contract"
+        },
+        {
+          "dimension": "certificate-source-crossbind",
+          "id": "SIB-809-FOREIGN-SHA",
+          "observed": "Trusted workflow 45083205941 refused exact-head current PR binding.",
+          "risk_family": "documentation",
+          "status": "passed",
+          "surface": "documented-ssr-contract"
+        }
+      ],
+      "source_audit": {
+        "audit_report_sha256": "2ea44a883eaa596d8a411fc5fa1864982ee2e01fb5da77afc2266ad4f36a3e89",
+        "finding_ids": [
+          "A-001"
+        ],
+        "head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+        "rejection_id": "audit-rejection:issuecomment-7088789291"
+      },
+      "status": "passed"
+    }
+  ],
+  "schema_version": 1,
+  "status": "passed",
+  "subject": {
+    "issue_number": 808,
+    "material_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+    "pull_request_number": 809,
+    "repository": "crgasparoto-br/SolverFin"
+  }
+}

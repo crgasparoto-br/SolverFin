@@ -1,0 +1,16 @@
+HEAD: b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/notifications-experience.test.ts
+REACHED: apps/web/src/dev-server/notifications-page.test.ts
+REACHED: apps/web/src/dev-server/settings-page.test.ts
+Github Actions Repository CI run 45094987848, job 137432909460 completed/success (authenticated connector logs):
+2026-11-23T01:33:29.6963346Z ##[group]Run npm run test
+2026-11-23T01:35:13.0907945Z [test] dev-server/notifications-experience.test.js
+2026-11-23T01:35:13.1966143Z [test] dev-server/notifications-page.test.js
+2026-11-23T01:35:15.3102538Z [test] dev-server/settings-page.test.js
+2026-11-23T01:35:18.3550957Z 167 compiled test file(s) passed.
+2026-11-23T01:35:26.8672454Z ##[group]Run npm run test:integration --workspace @solverfin/api
+2026-11-23T01:36:38.7172517Z 132 compiled test file(s) passed.
+GitHub run: https://github.com/crgasparoto-br/SolverFin/actions/runs/45094987848
+NOTE: This is an identified transcription of authenticated runner log, not original signed JUnit.

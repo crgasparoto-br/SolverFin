@@ -1,0 +1,43 @@
+{
+  "candidate_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "contract_version": "2026-08-20.3",
+  "honesty": "The only actionable audit finding is packaging-related; product remains frozen. No claim of independent approval or of previously failed GitHub workflow success.",
+  "items": [
+    {
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json",
+        ".audit/entregar-issue/audit-escape-closure.json",
+        ".audit/entregar-issue/audit-source-result.json"
+      ],
+      "closure_kind": "behavioral-fix",
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/pull/809#issuecomment-7088789291",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45083205931",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45083205941",
+        "evidence/issue-693-notifications.json",
+        "evidence/settings-interface.json"
+      ],
+      "explanation": "New exact SHA certificate is re-frozen at M1 after previous result-only H0 was rejected by trusted verifier for work_item_kind=pr and wrong issue-scoped artifacts path. Current candidate must use work_item_kind=issue, work_item_number=808 and include issue-808/ canonical copies; this refreeze must pass trusted CI. No product code is changed between M0 and M1.",
+      "remediation_mode": "targeted-remediation",
+      "source_id": "A-001",
+      "source_kind": "finding",
+      "status": "fixed",
+      "validations": [
+        "Official specification-coverage, requirement-attack-matrix, risk-saturation, codebase-grounding and code-growth validators run on immutable candidate material",
+        "Official terminal handoff guard and provenance gate must pass after writing result-only child; not independent approval.",
+        "Current material M1 is the original read-only result-only child; SHA M0..M1 changes exactly .audit paths and does not modify product code. Revalidate complete CI, Chrome and governance on M1."
+      ]
+    }
+  ],
+  "remediation_mode": "targeted-remediation",
+  "resolution_policy": "all-actionable-items",
+  "schema_version": 1,
+  "source": {
+    "audit_report_sha256": "e223eb0f4874e81367405545e1f67ccaccef3d7df78668f22f59b93b21a477c4",
+    "audited_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+    "rejection_id": "audit-rejection:issuecomment-7088789291"
+  },
+  "status": "closed"
+}

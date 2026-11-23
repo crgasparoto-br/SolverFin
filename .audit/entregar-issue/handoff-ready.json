@@ -12,20 +12,20 @@
     ],
     "parent_issue_must_remain_open": true
   },
-  "created_at": "2026-11-23T01:27:01.556443+00:00",
+  "created_at": "2026-11-23T01:43:37.428417+00:00",
   "identity": {
-    "head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
-    "material_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+    "head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+    "material_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
     "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
-    "merge_preview_sha": "d82d4a9aacb4fbe787e15b2b2dfffc6d92ae8275",
-    "material_merge_preview_sha": "d82d4a9aacb4fbe787e15b2b2dfffc6d92ae8275"
+    "merge_preview_sha": "42c7f1a783a340b68c7823c414eeea947e364b0c",
+    "material_merge_preview_sha": "42c7f1a783a340b68c7823c414eeea947e364b0c"
   },
   "subject": {
     "repository": "crgasparoto-br/SolverFin",
     "issue_number": 808,
     "pull_request_number": 809,
-    "work_item_kind": "pr",
-    "work_item_number": 809,
+    "work_item_kind": "issue",
+    "work_item_number": 808,
     "pull_request": 809,
     "base_ref": "develop",
     "head_ref": "feat/808-notifications-experience"
@@ -33,32 +33,8 @@
   "scope": {
     "schema_version": 1,
     "work_item_start_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
-    "material_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+    "material_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
     "issue_changed_paths": [
-      "apps/web/src/dev-server/notifications-experience.test.ts",
-      "apps/web/src/dev-server/notifications-page.test.ts",
-      "apps/web/src/dev-server/notifications-page.ts",
-      "apps/web/src/dev-server/settings-page-css.ts",
-      "apps/web/src/dev-server/settings-page.test.ts",
-      "apps/web/src/dev-server/settings-page.ts",
-      "apps/web/src/dev-server/settings-rules-ui.ts",
-      "docs/AUTOMATION_RULES.md",
-      "docs/FINANCIAL_NOTIFICATIONS.md",
-      "docs/WEB_MAINTENANCE_COVERAGE.md",
-      "scripts/statement-visual/issue-693-notifications-behavior-evidence.mjs",
-      "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
-      "scripts/statement-visual/issue-693-notifications.mjs",
-      "scripts/statement-visual/notification-populated-chrome.mjs",
-      "scripts/statement-visual/notification-populated-fixtures.mjs",
-      "scripts/statement-visual/notification-populated-fixtures.test.mjs",
-      "scripts/statement-visual/settings-interface-adversarial.mjs",
-      "scripts/statement-visual/settings-rule-progressive.mjs"
-    ],
-    "issue_delta_sha256": "85cddd3cdd746b8b97cf18945830db2be0585fb976f12d5efdb5ed5457844fa8"
-  },
-  "certificate_commit_policy": {
-    "mode": "result-only-child",
-    "allowed_paths": [
       ".audit/entregar-issue/audit-escape-closure.json",
       ".audit/entregar-issue/audit-remediation.json",
       ".audit/entregar-issue/audit-source-result.json",
@@ -79,7 +55,53 @@
       ".audit/entregar-issue/risk-saturation.json",
       ".audit/entregar-issue/specification-snapshot.json",
       ".audit/entregar-issue/specification-sources/SRC-ISSUE-808.txt",
-      ".audit/entregar-issue/specification-sources/SRC-ISSUE-810.txt"
+      ".audit/entregar-issue/specification-sources/SRC-ISSUE-810.txt",
+      "apps/web/src/dev-server/notifications-experience.test.ts",
+      "apps/web/src/dev-server/notifications-page.test.ts",
+      "apps/web/src/dev-server/notifications-page.ts",
+      "apps/web/src/dev-server/settings-page-css.ts",
+      "apps/web/src/dev-server/settings-page.test.ts",
+      "apps/web/src/dev-server/settings-page.ts",
+      "apps/web/src/dev-server/settings-rules-ui.ts",
+      "docs/AUTOMATION_RULES.md",
+      "docs/FINANCIAL_NOTIFICATIONS.md",
+      "docs/WEB_MAINTENANCE_COVERAGE.md",
+      "scripts/statement-visual/issue-693-notifications-behavior-evidence.mjs",
+      "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+      "scripts/statement-visual/issue-693-notifications.mjs",
+      "scripts/statement-visual/notification-populated-chrome.mjs",
+      "scripts/statement-visual/notification-populated-fixtures.mjs",
+      "scripts/statement-visual/notification-populated-fixtures.test.mjs",
+      "scripts/statement-visual/settings-interface-adversarial.mjs",
+      "scripts/statement-visual/settings-rule-progressive.mjs"
+    ],
+    "issue_delta_sha256": "4271316bbe457b2dcf97f15a01ecb7ffe71a85ae9f5395b992df1092d4be1de6"
+  },
+  "certificate_commit_policy": {
+    "mode": "result-only-child",
+    "allowed_paths": [
+      ".audit/entregar-issue/handoff-ready.json",
+      ".audit/entregar-issue/issue-808/audit-escape-closure.json",
+      ".audit/entregar-issue/issue-808/audit-remediation.json",
+      ".audit/entregar-issue/issue-808/audit-source-result.json",
+      ".audit/entregar-issue/issue-808/code-growth.json",
+      ".audit/entregar-issue/issue-808/codebase-grounding.json",
+      ".audit/entregar-issue/issue-808/evidence-provenance.json",
+      ".audit/entregar-issue/issue-808/evidence/exact-h0-visual-node-tests.log",
+      ".audit/entregar-issue/issue-808/evidence/focused-node-tests-809.log",
+      ".audit/entregar-issue/issue-808/evidence/foreign-base-handoff.json",
+      ".audit/entregar-issue/issue-808/evidence/issue-693-notifications.json",
+      ".audit/entregar-issue/issue-808/evidence/settings-interface.json",
+      ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
+      ".audit/entregar-issue/issue-808/execution/local-pr809-node-reachability.txt",
+      ".audit/entregar-issue/issue-808/inherited-controls.json",
+      ".audit/entregar-issue/issue-808/learning-closure.json",
+      ".audit/entregar-issue/issue-808/requirement-attack-matrix.json",
+      ".audit/entregar-issue/issue-808/requirement-closure.json",
+      ".audit/entregar-issue/issue-808/risk-saturation.json",
+      ".audit/entregar-issue/issue-808/specification-snapshot.json",
+      ".audit/entregar-issue/issue-808/specification-sources/SRC-ISSUE-808.txt",
+      ".audit/entregar-issue/issue-808/specification-sources/SRC-ISSUE-810.txt"
     ]
   },
   "contract_version": "2026-08-20.3",
@@ -132,9 +154,9 @@
     },
     "requirement_attack_matrix": {
       "name": "requirement-attack-matrix.json",
-      "sha256": "6f38580a187274a6572c5b2f5da1ecbd4be733f23f82a76900a8a3ded87ee560",
-      "logical_sha256": "6f38580a187274a6572c5b2f5da1ecbd4be733f23f82a76900a8a3ded87ee560",
-      "logical_size": 211439,
+      "sha256": "7e48d1611f93fb3f8458bb501b430e4f90dffe87a8b947e9bc1b24159623c4bb",
+      "logical_sha256": "7e48d1611f93fb3f8458bb501b430e4f90dffe87a8b947e9bc1b24159623c4bb",
+      "logical_size": 238081,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -142,8 +164,8 @@
     },
     "risk_saturation": {
       "name": "risk-saturation.json",
-      "sha256": "6dbe3fa4542260ecf8f686831e1219eff72929f07cff0afd9429d77cb41431a6",
-      "logical_sha256": "6dbe3fa4542260ecf8f686831e1219eff72929f07cff0afd9429d77cb41431a6",
+      "sha256": "78689d85b13a8348ad379cd274009ad88ad5b3f2e7c81c555b383e49857ae4dd",
+      "logical_sha256": "78689d85b13a8348ad379cd274009ad88ad5b3f2e7c81c555b383e49857ae4dd",
       "logical_size": 7317,
       "artifact_transport": {
         "format": "plain-json",
@@ -152,9 +174,9 @@
     },
     "inherited_controls": {
       "name": "inherited-controls.json",
-      "sha256": "54ff51616a870124a2c26f54b5f57d45f221bbe80b192804f36036adad357fda",
-      "logical_sha256": "54ff51616a870124a2c26f54b5f57d45f221bbe80b192804f36036adad357fda",
-      "logical_size": 6381,
+      "sha256": "c64c8d8fa04a0c2d9f02fbc691ec55f4d2f874ed41ea71f655fceece4f2848d6",
+      "logical_sha256": "c64c8d8fa04a0c2d9f02fbc691ec55f4d2f874ed41ea71f655fceece4f2848d6",
+      "logical_size": 6470,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -162,9 +184,9 @@
     },
     "evidence_provenance": {
       "name": "evidence-provenance.json",
-      "sha256": "664c87e0f77ac11cad4fc4f8a9fda3d348d571512eb30b2a895ede6ff95c87be",
-      "logical_sha256": "664c87e0f77ac11cad4fc4f8a9fda3d348d571512eb30b2a895ede6ff95c87be",
-      "logical_size": 1762,
+      "sha256": "20a24a30c7632a5eb61144c922d6bcb99b19f830489b50f8a3fb36239113de7e",
+      "logical_sha256": "20a24a30c7632a5eb61144c922d6bcb99b19f830489b50f8a3fb36239113de7e",
+      "logical_size": 1744,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -172,9 +194,9 @@
     },
     "audit_escape_closure": {
       "name": "audit-escape-closure.json",
-      "sha256": "94f5c20502c9fa36dfb7227984e31c905aaaf80ba83fbd0127a15d8b6b8aa62d",
-      "logical_sha256": "94f5c20502c9fa36dfb7227984e31c905aaaf80ba83fbd0127a15d8b6b8aa62d",
-      "logical_size": 2907,
+      "sha256": "e142cc445802e07d76e558359d9576585f2aa55bd181cb4109e3b23cfbc9ef18",
+      "logical_sha256": "e142cc445802e07d76e558359d9576585f2aa55bd181cb4109e3b23cfbc9ef18",
+      "logical_size": 2943,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -192,9 +214,9 @@
     },
     "audit_remediation": {
       "name": "audit-remediation.json",
-      "sha256": "a97ddcd870fcf16a8958b8ee90d400e7016926e3f1f743c0c1365f1431014abe",
-      "logical_sha256": "a97ddcd870fcf16a8958b8ee90d400e7016926e3f1f743c0c1365f1431014abe",
-      "logical_size": 2213,
+      "sha256": "8f525653983c62d4acf3f1536d31c592ede8670b790cb343f9edf938583db481",
+      "logical_sha256": "8f525653983c62d4acf3f1536d31c592ede8670b790cb343f9edf938583db481",
+      "logical_size": 2485,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -212,9 +234,9 @@
     },
     "codebase_grounding": {
       "name": "codebase-grounding.json",
-      "sha256": "0c0d7447f7f87c5d7c2897899dab1189cfe7ef5a77ea45d37efe9c91179b857b",
-      "logical_sha256": "0c0d7447f7f87c5d7c2897899dab1189cfe7ef5a77ea45d37efe9c91179b857b",
-      "logical_size": 15458,
+      "sha256": "8df88759b32fd998d9e324dc717a17095e928e804a96c152dedf566f01fde81d",
+      "logical_sha256": "8df88759b32fd998d9e324dc717a17095e928e804a96c152dedf566f01fde81d",
+      "logical_size": 15578,
       "artifact_transport": {
         "format": "plain-json",
         "version": 1
@@ -222,8 +244,8 @@
     },
     "code_growth": {
       "name": "code-growth.json",
-      "sha256": "a7af321ceadf7ed7a5c44f2293ea005aa75c83df86e106b4fafb411c972c58ca",
-      "logical_sha256": "a7af321ceadf7ed7a5c44f2293ea005aa75c83df86e106b4fafb411c972c58ca",
+      "sha256": "28843ac99082fe0b87731350b9c99666db63f545d2719277599e2e0b1db5aa42",
+      "logical_sha256": "28843ac99082fe0b87731350b9c99666db63f545d2719277599e2e0b1db5aa42",
       "logical_size": 1932,
       "artifact_transport": {
         "format": "plain-json",
@@ -242,7 +264,7 @@
       "applicable": true,
       "status": "passed",
       "checked": 9,
-      "subject_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
       "evidence_artifacts": [
         "requirement_closure",
         "requirement_attack_matrix",
@@ -251,19 +273,5 @@
       ]
     }
   },
-  "previous_independent_rejection": true,
-  "first_escape_bootstrap": {
-    "status": "absent-proved-on-target",
-    "reference_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
-    "material_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
-    "repository": "crgasparoto-br/SolverFin",
-    "issue_number": 808,
-    "pull_request_number": 809,
-    "absent_paths": [
-      ".audit/entregar-issue/issue-808/audit-escape-closure.json"
-    ],
-    "foreign_target_paths": [
-      ".audit/entregar-issue/audit-escape-closure.json"
-    ]
-  }
+  "previous_independent_rejection": true
 }

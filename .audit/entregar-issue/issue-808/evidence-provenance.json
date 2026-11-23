@@ -1,0 +1,40 @@
+{
+  "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "evidence": [
+    {
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "evidence_id": "VISUAL-issue-693-notifications",
+      "freshness_policy": "exact-material-head",
+      "kind": "quantitative",
+      "path": "evidence/issue-693-notifications.json",
+      "producer": "GitHub Actions Chrome exact-H0 run 45094987751, populated notifications scenario",
+      "sha256": "3ae50949afee773784e2c5eb7bb3b3ff1a1334e770391c2f64b92cda604458c8",
+      "status": "passed",
+      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+    },
+    {
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "evidence_id": "VISUAL-settings-interface",
+      "freshness_policy": "exact-material-head",
+      "kind": "quantitative",
+      "path": "evidence/settings-interface.json",
+      "producer": "GitHub Actions Chrome exact-H0 run 45094987751, settings progressive rules",
+      "sha256": "44a3e2e5038d93e2748a8b2a53cf8b1c6bb9d50d3ff35b459addcc4c077c24c2",
+      "status": "passed",
+      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+    },
+    {
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "evidence_id": "LOCAL-NEGATIVE-NODE",
+      "freshness_policy": "exact-material-head",
+      "kind": "behavioral",
+      "path": "evidence/focused-node-tests-809.log",
+      "producer": "node --test exact H0, four negative/fixture cleanup cases passed",
+      "sha256": "c570a1431788f62a033d77a2ef7ea8e3e65591c00da3d51374c8f35a5251c65d",
+      "status": "passed",
+      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+    }
+  ],
+  "material_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "schema_version": 1
+}

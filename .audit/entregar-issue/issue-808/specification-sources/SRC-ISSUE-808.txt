@@ -1,0 +1,68 @@
+## Contexto
+A rota autenticada `/notificacoes` apresenta histórico e preferências lado a lado, com competição visual, controles de linha extensos e pouco destaque para o estado dos avisos. Preservar o contrato funcional já entregue na #693; aplicar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/UI_PRIMITIVES.md` e a skill oficial `design-interface`.
+
+## Objetivo
+Refatorar a experiência de notificações para priorizar leitura e ação nos avisos, separando configurações com navegação clara, responsiva e acessível.
+
+## Escopo
+- Separar **Recebidas** e **Preferências** em navegação explícita com URL persistente, sem depender de JavaScript.
+- Refinar hierarquia, lista, estados lida/não lida, datas, valores/moedas e ações contextuais da caixa de entrada.
+- Organizar preferências por evento/canal de forma legível, mantendo as preferências para canais ainda não ativados.
+- Reutilizar tokens, ícones e primitivas do SolverFin, com responsividade e foco visível.
+- Preservar paginação, `offset`, `profileId`, mutações idempotentes, navegação segura e erros recuperáveis.
+- Ajustar testes SSR e validação visual/funcional existente e documentar a navegação.
+
+## Fora de escopo
+- Criar eventos fictícios, recalcular dados financeiros ou introduzir regras de severidade/valores.
+- Alterar contratos de API, persistência, autorização, envio de push/e-mail ou implementação da Inbox.
+- Fazer merge antes de auditoria independente.
+
+## Invariantes
+- Perfil financeiro e autorização continuam validados exclusivamente no servidor.
+- Nenhuma moeda é agregada ou convertida implicitamente.
+- Origem da notificação somente é aberta após verificação do endpoint e da allowlist existente.
+- Push e e-mail seguem sem entrega externa ativa, ainda que preferências possam ser salvas.
+
+## Critérios de aceite
+- [x] A navegação Recebidas/Preferências é clara, acessível por teclado e por links SSR; URL e `profileId` são preservados.
+- [x] Histórico mantém ordenação/paginação, intervalos e deep links, inclusive offsets superiores a 10.000.
+- [x] Linhas priorizam assunto/estado, detalhes relevantes, data, moeda e ações sem visual de CRUD excessivo.
+- [x] Marcar lida/não lida e abrir origem seguem o contrato atual, incluindo erro e destino seguro.
+- [x] Preferências mostram os quatro grupos/eventos e os três canais, com persistência, rollback após falha e aviso de indisponibilidade externa.
+- [x] Estado vazio e falhas de feed/preferências são claros, sem notificações inventadas.
+- [x] Desktop e mobile têm foco visível, contraste, alvo confortável e nenhum overflow horizontal.
+- [x] Testes SSR, regressões e Chrome relevantes são ajustados sem perder cenários anteriores.
+- [x] Documentação registra a organização visual e o limite dos canais.
+- [x] CI e evidência visual do SHA material são verificadas; aprovação independente permanece separada.
+
+## Validação obrigatória
+- Testes SSR de navegação, offset/perfil, estado vazio, erro, escaping e preferências.
+- Chrome autenticado em desktop e mobile, incluindo navegação nas abas e alteração/releitura de preferência.
+- Typecheck, lint, formatação, build e regressões do repositório quando disponíveis.
+- Controles negativos de perfil, destino externo e falha de mutação sem vazamento.
+
+## Riscos e referências
+- Risco: testes visuais #693 pressupõem preferências simultaneamente visíveis; adaptar o cenário para visitar a aba sem remover afirmações existentes.
+- Risco: não romper links `/notificacoes?offset=...` e `profileId`.
+- Fontes: #693, `docs/FINANCIAL_NOTIFICATIONS.md`, `apps/web/src/dev-server/notifications-page.ts`, `scripts/statement-visual/issue-693-notifications.mjs`.
+
+## Evidência de implementação — 19/11/2026
+- Critérios assinalados acima têm comprovação em SSR/testes compilados, invariantes do código e documentação no SHA `dfa0ee036f074508a1e838442ee5942ed6b0cc5b`.
+- CI crítica e merge preview: [sucesso no SHA](https://github.com/crgasparoto-br/SolverFin/actions/runs/44601922323).
+- Critérios ainda desmarcados dependem de evidência visual autenticada, verificação de mutações/rollback ou certificação/auditoria independente. **Não concluir/fechar esta issue nem mesclar a PR até a auditoria aprovar.**
+- Registro detalhado: [PR #809](https://github.com/crgasparoto-br/SolverFin/pull/809).
+## Evidência complementar de remediação — 20/11/2026
+- **Material HEAD:** `d0ace8bd19818c01a49b2e137aba3739b4deef0a` na PR #809, base `develop` atualizada.
+- [CI do produto](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419706): `success`; inclui format, lint, typecheck, testes SSR de paginação >10.000, mutações, escaping, integração e build.
+- [Chrome autenticado](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419769): `success`; `issue-693-notifications.json` vinculado ao SHA comprova Recebidas/Preferências em 1366/390/320, 12 preferências (4 eventos × 3 canais), persistência e restauração, rollback de PUT 503, rejeição de origem externa, erro PATCH sem recarregamento e preservação de `profileId`/âncora. Nenhum overflow nos estados observados.
+- Permanecem **não assinalados** os critérios de aparência de avisos preenchidos e cobertura visual completa desses avisos em todos os tamanhos: o cenário Chrome ainda usa a caixa de entrada vazia, embora haja teste SSR com itens. Não inferir homologação visual de uma lista não observada.
+- **Governança pendente:** certificado/handoff atual da árvore pertence à issue #806 / PR #807 herdada de `develop` e não certifica #808/#810; a auditoria independente do HEAD atual não ocorreu. **Não fechar a issue nem fazer merge.**
+
+## Fechamento de implementação e evidências visuais — 22/11/2026
+- **SHA material autenticado:** `72ef5a38eddafda0c74f51445c763aacac3ee429` da [PR #809](https://github.com/crgasparoto-br/SolverFin/pull/809), base `develop`.
+- [Repository CI #45081920179](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179): **completed/success**. Format, lint, typecheck, testes SSR, regressões, integração com PostgreSQL, build, merge preview, `CRITICAL validation`, `Delivery V2 gate` e `Repository CI gate` aprovados.
+- [Chrome autenticado #45081920192](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920192): **completed/success**. Artifact `statement-visual-evidence-72ef5a38eddafda0c74f51445c763aacac3ee429`, `issue-693-notifications.json` com `result=passed`, 3 avisos preenchidos em 1366/390/320 px, datas, BRL/USD, estados lida/não lida e ações. `populatedActions.passed=true`, `fixtureCleanup.passed=true`, controles de destino inseguro, erro de mutação e rollback de preferências aprovados.
+- **Inspeção visual da captura real** `issue-808-populated-320-text200.png`: texto legível e sem quebra letra a letra; em 320 px com texto a 200%, `minDescriptionWidth=207`, `scrollWidth=305`, `noHorizontalOverflow=true` e `actionsComfortable=true`. Navegação, foco e contraste foram exercitados nos cenários Chrome.
+- A falha original de cleanup FK `Category_financialProfileId_organizationId_fkey` foi corrigida por exclusão de categorias apenas do perfil temporário e organização, antes do perfil pai; controles negativos de isolamento e testes de fixture 2/2 PASS.
+- **Aceite técnico funcional/visual: 10/10 critérios marcados**, exclusivamente porque os dois critérios restantes foram comprovados pelas evidências acima. **Não é aprovação de auditoria independente**.
+- **Governança ainda bloqueante:** `Verify certified handoff provenance` e `Session review evidence (exact SHA)` continuam `failure` por certificado histórico relacionado à issue #806/PR #807, não à presente entrega #808/#810/PR #809. Novo handoff certificado validado e parecer independente de contexto distinto são obrigatórios. **Issue permanece aberta; NÃO fazer merge nem fechar antes da aprovação independente.**

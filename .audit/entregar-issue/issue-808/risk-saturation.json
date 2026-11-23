@@ -1,0 +1,219 @@
+{
+  "families": [
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-001-01",
+        "NEG-008-01",
+        "NEG-026-01",
+        "NEG-027-01",
+        "NEG-030-01",
+        "NEG-037-01",
+        "NEG-048-01",
+        "NEG-056-01"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-001-01",
+            "NEG-008-01",
+            "NEG-026-01",
+            "NEG-027-01",
+            "NEG-030-01",
+            "NEG-037-01",
+            "NEG-048-01",
+            "NEG-056-01"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-056. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "server-profile-check"
+        }
+      ],
+      "family": "authorization",
+      "reason": "Matrix risk family authorization is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": false,
+      "control_ids": [],
+      "dimensions": [],
+      "family": "tenant-isolation",
+      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable"
+    },
+    {
+      "applicable": false,
+      "control_ids": [],
+      "dimensions": [],
+      "family": "public-boundary",
+      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-008-02",
+        "NEG-015-01",
+        "NEG-052-01"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-008-02",
+            "NEG-015-01",
+            "NEG-052-01"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-052. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "notification-origin-check"
+        }
+      ],
+      "family": "reference-liveness",
+      "reason": "Matrix risk family reference-liveness is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-010-01",
+        "NEG-016-02",
+        "NEG-027-02"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-010-01",
+            "NEG-016-02",
+            "NEG-027-02"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-027. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "view-state-after-error"
+        }
+      ],
+      "family": "temporal-consistency",
+      "reason": "Matrix risk family temporal-consistency is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": false,
+      "control_ids": [],
+      "dimensions": [],
+      "family": "temporal-destination",
+      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable"
+    },
+    {
+      "applicable": false,
+      "control_ids": [],
+      "dimensions": [],
+      "family": "concurrency-atomicity",
+      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-006-01"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-006-01"
+          ],
+          "reason": "Retry, callback duplication, replay or reprocessing can execute the same logical operation more than once. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "duplicate-processing"
+        }
+      ],
+      "family": "idempotency",
+      "reason": "Matrix risk family idempotency is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-016-01",
+        "NEG-026-02"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-016-01",
+            "NEG-026-02"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-026. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "preferences-put-rollback"
+        }
+      ],
+      "family": "rollback",
+      "reason": "Matrix risk family rollback is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": false,
+      "control_ids": [],
+      "dimensions": [],
+      "family": "historical-immutability",
+      "reason": "No current contract or diff signal requires this family.",
+      "status": "not-applicable"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-005-01",
+        "NEG-036-01",
+        "NEG-037-02"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-005-01",
+            "NEG-036-01",
+            "NEG-037-02"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-037. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "stable-contract-fields"
+        }
+      ],
+      "family": "structural-contract",
+      "reason": "Matrix risk family structural-contract is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    },
+    {
+      "applicable": true,
+      "control_ids": [
+        "NEG-020-01",
+        "NEG-049-01",
+        "NEG-CERT-809-COMPLETE"
+      ],
+      "dimensions": [
+        {
+          "applicable": true,
+          "control_ids": [
+            "NEG-020-01",
+            "NEG-049-01",
+            "NEG-CERT-809-COMPLETE"
+          ],
+          "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-049. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
+          "status": "passed",
+          "surface": "documented-ssr-contract"
+        }
+      ],
+      "family": "documentation",
+      "reason": "Matrix risk family documentation is covered by exact-head negative controls, SSR tests and Chrome evidence; no material issue requirement omitted.",
+      "status": "passed"
+    }
+  ],
+  "head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "material_families_missing_controls": [],
+  "schema_version": 1
+}

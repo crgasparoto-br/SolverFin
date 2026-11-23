@@ -1,0 +1,1471 @@
+{
+  "canonical_source_consistency": {
+    "applicability_reason": "O backend e as rotas de API nao foram alterados: PR altera somente HTML/SSR e controles visuais. Contratos e nomes de campos permanecem canonicamente os mesmos.",
+    "entries": [
+      {
+        "alternative_sources": [
+          "query filter=ativas",
+          "query filter=inativas"
+        ],
+        "canonical_source": "/api/automation-rules?status=all",
+        "divergent_fixture": {
+          "alternative_values": [
+            "status=inactive, priority=20",
+            "status=status_futuro, priority=10"
+          ],
+          "canonical_value": "status=active, priority=100"
+        },
+        "evidence_ids": [
+          "SSR-RULE-STATUS-NEGATIVE"
+        ],
+        "id": "CSC-001",
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/settings-page.test.ts:247 excluded from active and inactive; original server ordering retained"
+        ],
+        "scenario_ids": [
+          "rulesListFiltersPreserveActionsAndVisibility"
+        ],
+        "semantic_field": "rule_status_and_order",
+        "surfaces": [
+          "apps/web/src/dev-server/settings-page.ts",
+          "apps/web/src/dev-server/settings-rules-ui.ts"
+        ]
+      }
+    ],
+    "missing_divergent_tests": [],
+    "status": "passed",
+    "unverified_surfaces": []
+  },
+  "documentation_consistency": {
+    "applicability_reason": "Rotas SSR e limites dos canais estao refletidos nos docs atuais e confirmados por testes; o contrato API anterior permanece e as telas novas nao reescrevem autorizacao.",
+    "new_contract_terms": [
+      "abas Recebidas/Preferencias SSR",
+      "filtros SSR e expansao details/summary"
+    ],
+    "occurrences": [
+      {
+        "classification": "current-contract",
+        "evidence_ids": [
+          "DOC-CHECK-809"
+        ],
+        "line": 74,
+        "path": "docs/FINANCIAL_NOTIFICATIONS.md",
+        "term": "Recebidas/Preferências SSR",
+        "text": "A página `/notificacoes` organiza os recursos em duas áreas: **Recebidas**,"
+      },
+      {
+        "classification": "current-contract",
+        "evidence_ids": [
+          "DOC-CHECK-809"
+        ],
+        "line": 74,
+        "path": "docs/AUTOMATION_RULES.md",
+        "term": "details/summary SSR",
+        "text": "`Configurações` mantém as seções `/configuracoes?section=profiles` e `/configuracoes?section=rules`. Em Regras automáticas, a lista apresenta nome, status, prioridade e um resumo de condição e ação; cada linha oferece detalhes expansíveis nativos (`details/summary`) com todas as condições, ações e a explicação, acessíveis por teclado sem JavaScript. Os filtros `Todas`, `Ativas` e `Inativas` utilizam links SSR (`?section=rules&filter=ativas|inativas`), contam as regras recebidas e preservam a ordem original. Valores desconhecidos de `filter` retornam para `Todas`; status não reconhecido só aparece na lista completa com rótulo neutro, sem código técnico nem identificador interno. O filtro modifica apenas a listagem: **Aplicar regras** continua usando as regras ativas existentes, produzindo sugestões para revisão humana, nunca lançamentos confirmados. O diálogo de criação agrupa Identificação, Quando aplicar e O que sugerir, sem alterar o payload ou endpoints."
+      }
+    ],
+    "old_contract_terms": [
+      "notificacoes exibidas lado a lado",
+      "regras expandidas por padrao"
+    ],
+    "search_evidence": [
+      "git grep -n \"notificacoes\\|automation-rules\" docs apps/web/src/dev-server -i no HEAD material; contratos externos de APIs intactos."
+    ],
+    "searched_outside_diff": true,
+    "status": "passed",
+    "unresolved_contradictions": []
+  },
+  "domain_inventories": [],
+  "obligations": [
+    {
+      "assertion_ids": [],
+      "candidate_key": "2874291219d42e1a7136d8db80bde8d2b46e82356edc4acac6b2fe3e40a2a6d1",
+      "disposition": "covered",
+      "flags": [
+        "review-surface"
+      ],
+      "id": "OBL-001",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-001"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 2,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "A rota autenticada `/notificacoes` apresenta histórico e preferências lado a lado, com competição visual, controles de linha extensos e pouco destaque para o estado dos avisos. Preservar o contrato funcional já entregue na #693; aplicar `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/UI_PRIMITIVES.md` e a skill oficial `design-interface`."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "f506087db404c2111b6bb94205e8d6ea3099377c6ee53e46e04f5f70cb6aa7fa",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-002",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-002"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 8,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Separar **Recebidas** e **Preferências** em navegação explícita com URL persistente, sem depender de JavaScript."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "39608b7717b89f02ecb8ddf7efdbef78ff45dc7375bbb15966167c99d1dd0ecc",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-003",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-003"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 9,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Refinar hierarquia, lista, estados lida/não lida, datas, valores/moedas e ações contextuais da caixa de entrada."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "dd2763dc7cbb9476b3c0351d8721c28acb54cf4a13c5088e7d528c34202c9ad8",
+      "disposition": "covered",
+      "flags": [
+        "observable",
+        "negative"
+      ],
+      "id": "OBL-004",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-004"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 10,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Organizar preferências por evento/canal de forma legível, mantendo as preferências para canais ainda não ativados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "fe5eaaf50898a94990abe33f75e907fc0ace7624ef0e1465f4c8994e83b893c3",
+      "disposition": "covered",
+      "flags": [
+        "observable",
+        "structural"
+      ],
+      "id": "OBL-005",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-005"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 11,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Reutilizar tokens, ícones e primitivas do SolverFin, com responsividade e foco visível."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "4c4ca7d8a9ce600708efc54c2b7c7b5c89e5a5ec03d62a179f472678a56d1714",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-006",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-006"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 12,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Preservar paginação, `offset`, `profileId`, mutações idempotentes, navegação segura e erros recuperáveis."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "8b2340bf2809a7811d71737093b20012ba5d5615787cb4dd990be8b6a543a99c",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-007",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-007"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 13,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Ajustar testes SSR e validação visual/funcional existente e documentar a navegação."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "7503db7b23f46122b887272962352735c657514f13eeb8839ace3b7084df9309",
+      "disposition": "covered",
+      "flags": [
+        "reference-liveness"
+      ],
+      "id": "OBL-008",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-008"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 21,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Perfil financeiro e autorização continuam validados exclusivamente no servidor."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "16377fe2e4e430fd4336dd5a94155c706524843e05453240dba90d82b89e3433",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "aftermath"
+      ],
+      "id": "OBL-009",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-009"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 22,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Nenhuma moeda é agregada ou convertida implicitamente."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "a4151a8d5f4537a291cc948ab247a65485d240cdc0035dc35aaea3765a96ad07",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "temporal",
+        "aftermath",
+        "review-surface"
+      ],
+      "id": "OBL-010",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-010"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 23,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Origem da notificação somente é aberta após verificação do endpoint e da allowlist existente."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "ecf1dde33fae30384a0cd50edcf13c2070522f4ae8b781cd3f1947c6aa2d5af1",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-011",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-011"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 24,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Push e e-mail seguem sem entrega externa ativa, ainda que preferências possam ser salvas."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "b22abd2dde5495dac3859212fc545a7d0160512d79fccb684b8455ff2eff2860",
+      "disposition": "covered",
+      "flags": [
+        "observable"
+      ],
+      "id": "OBL-012",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-012"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 27,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] A navegação Recebidas/Preferências é clara, acessível por teclado e por links SSR; URL e `profileId` são preservados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "47bc7fd755a7d73acd95203eeccedfb678a11d881b996d639cc1f74c2dadc5c7",
+      "disposition": "covered",
+      "flags": [
+        "review-surface"
+      ],
+      "id": "OBL-013",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-013"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 28,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Histórico mantém ordenação/paginação, intervalos e deep links, inclusive offsets superiores a 10.000."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "9d4124006b5726b09fdaeeb65eb1fc586fc2dd4075b68c088927981713279907",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-014",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-014"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 29,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Linhas priorizam assunto/estado, detalhes relevantes, data, moeda e ações sem visual de CRUD excessivo."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "5009bd317f0f2ff46de24e909e3199c79a71abca740c6060dbc7fdb4d61dcbba",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "freshness",
+        "review-surface"
+      ],
+      "id": "OBL-015",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-015"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 30,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Marcar lida/não lida e abrir origem seguem o contrato atual, incluindo erro e destino seguro."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "5ea3b162a4454627fa978d5cacb6eec3d62b8c295220c5fc287cd62c1aa7a5f3",
+      "disposition": "covered",
+      "flags": [
+        "temporal",
+        "aftermath"
+      ],
+      "id": "OBL-016",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-016"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 31,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Preferências mostram os quatro grupos/eventos e os três canais, com persistência, rollback após falha e aviso de indisponibilidade externa."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "a30991c960d7bb8d04a6b0c81ad84c44db427f4e757b971e5c8e1818fe602fce",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-017",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-017"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 32,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Estado vazio e falhas de feed/preferências são claros, sem notificações inventadas."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "724ecc30425b80df6c8bcf99ba35bde88a45f5686fd09622a5b42d210c37b00e",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative"
+      ],
+      "id": "OBL-018",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-018"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 33,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Desktop e mobile têm foco visível, contraste, alvo confortável e nenhum overflow horizontal."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "3aa205c5d34f18d5b2ed8be284bb81ca5f653a375c653ba6ad6c232c5302245b",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-019",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-019"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 34,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Testes SSR, regressões e Chrome relevantes são ajustados sem perder cenários anteriores."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "7dfc6739b52980fb14141d57eb9785ee14b9dd5b48486833aaf44ed37075992a",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-020",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-020"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 35,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] Documentação registra a organização visual e o limite dos canais."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "b2e44ff86c8f3e9ce25bc90a4b75aeb9870f215a608b613b1c57174f329313e6",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "observable"
+      ],
+      "id": "OBL-021",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-021"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 36,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[x] CI e evidência visual do SHA material são verificadas; aprovação independente permanece separada."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "e53e083c9bb9f7b85650f360af036e2ac68a4e4504faa63fd1faf698715bb171",
+      "disposition": "not-applicable",
+      "flags": [],
+      "id": "OBL-022",
+      "inventory_ids": [],
+      "rationale": "Historico factual da execucao 44650419706 em SHA anterior; a evidencia atual, mais recente, esta nos registros 45081920179/45081920192, sem reutilizar a execucao antiga como prova do HEAD.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 56,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[CI do produto](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419706): `success`; inclui format, lint, typecheck, testes SSR de paginação >10.000, mutações, escaping, integração e build."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "033e382004d0f74e7d894df1f01bee60dfee0217199988084d413e7784760f50",
+      "disposition": "not-applicable",
+      "flags": [
+        "exhaustive",
+        "negative",
+        "review-surface"
+      ],
+      "id": "OBL-023",
+      "inventory_ids": [],
+      "rationale": "Historico factual do Chrome 44650419769 em SHA anterior; nao e uma obrigacao de produto adicional ao aceite da issue. O artefato Chrome autenticado 45081920192 substitui esta constatacao no SHA atual.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 57,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[Chrome autenticado](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419769): `success`; `issue-693-notifications.json` vinculado ao SHA comprova Recebidas/Preferências em 1366/390/320, 12 preferências (4 eventos × 3 canais), persistência e restauração, rollback de PUT 503, rejeição de origem externa, erro PATCH sem recarregamento e preservação de `profileId`/âncora. Nenhum overflow nos estados observados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "0e6f3f826d55f219e7deb4b60a639f9492333721f7686969aab0ea8c11880cfa",
+      "disposition": "not-applicable",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "id": "OBL-024",
+      "inventory_ids": [],
+      "rationale": "Apontamento historico superado pelo Chrome 45081920192: agora existem 3 avisos preenchidos em larguras 1366/390/320, caso 320 a 200% sem overflow.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 58,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "Permanecem **não assinalados** os critérios de aparência de avisos preenchidos e cobertura visual completa desses avisos em todos os tamanhos: o cenário Chrome ainda usa a caixa de entrada vazia, embora haja teste SSR com itens. Não inferir homologação visual de uma lista não observada."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "0fe286145660e7e9042c556ba420e9c0cd02bdbe9faa4bd390cf0ef64900851c",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-025",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-025"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 63,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[Repository CI #45081920179](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179): **completed/success**. Format, lint, typecheck, testes SSR, regressões, integração com PostgreSQL, build, merge preview, `CRITICAL validation`, `Delivery V2 gate` e `Repository CI gate` aprovados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "a1bc04efab07654b9ef2324fd279b435ab889c1b20e6e26e79266e778d50b43f",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-026",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-026"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 64,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "[Chrome autenticado #45081920192](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920192): **completed/success**. Artifact `statement-visual-evidence-72ef5a38eddafda0c74f51445c763aacac3ee429`, `issue-693-notifications.json` com `result=passed`, 3 avisos preenchidos em 1366/390/320 px, datas, BRL/USD, estados lida/não lida e ações. `populatedActions.passed=true`, `fixtureCleanup.passed=true`, controles de destino inseguro, erro de mutação e rollback de preferências aprovados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "8d3a37114a34342a56d8b8d81b803e79d6a20c3a3765a2529d39512d63ed94f0",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "temporal"
+      ],
+      "id": "OBL-027",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-027"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 66,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "A falha original de cleanup FK `Category_financialProfileId_organizationId_fkey` foi corrigida por exclusão de categorias apenas do perfil temporário e organização, antes do perfil pai; controles negativos de isolamento e testes de fixture 2/2 PASS."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "5bbacb90abe4937f2b189656fdb4da0e8303826db1c1754d534d81bee5900026",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-028",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-028"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 67,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "**Aceite técnico funcional/visual: 10/10 critérios marcados**, exclusivamente porque os dois critérios restantes foram comprovados pelas evidências acima. **Não é aprovação de auditoria independente**."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "073f7a21c1dd14818d95806547affbc6d3b8e0cf848bec4c8083a8c28e55a74c",
+      "disposition": "deferred",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative",
+        "temporal",
+        "review-surface"
+      ],
+      "id": "OBL-029",
+      "inventory_ids": [],
+      "rationale": "Handoff e gates de proveniencia sao precondicoes agora em producao; parecer de auditoria realmente independente e liberacao de merge ocorrem exclusivamente em nova sessao apos publicacao do filho de resultados. A issue 808 permanece aberta; o pre-handoff e tratado pelo achado A-001 no ledger de remediacao.",
+      "requirement_ids": [],
+      "scope_decision": {
+        "decision_locator": "parecer independente de contexto distinto",
+        "decision_source_id": "SRC-ISSUE-808",
+        "decision_source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+        "parent_issue_must_remain_open": true,
+        "pre_handoff_coverage": {
+          "covered_text": "*Governança ainda bloqueante:** `Verify certified handoff provenance` e `Session review evidence (exact SHA)` continuam `failure` por certificado histórico relacionado à issue #806/PR #807, não à presente entrega #808/#810/PR #809. Novo handoff certificado validado e  são obrigatórios. **Issue permanece aberta; NÃO fazer merge nem fechar antes da aprovação independente.**",
+          "rationale": "O material M ja teve CI funcional/visual positiva. O builder certificado de issue 808 e 810 e produzido na mesma invocacao, com publicacao atomica do filho restrito e releitura terminal; o parecer independente de contexto distinto fica explicitamente posterior e a issue permanece aberta."
+        },
+        "target_issue": 808
+      },
+      "source_id": "SRC-ISSUE-808",
+      "source_line": 68,
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "source_text": "**Governança ainda bloqueante:** `Verify certified handoff provenance` e `Session review evidence (exact SHA)` continuam `failure` por certificado histórico relacionado à issue #806/PR #807, não à presente entrega #808/#810/PR #809. Novo handoff certificado validado e parecer independente de contexto distinto são obrigatórios. **Issue permanece aberta; NÃO fazer merge nem fechar antes da aprovação independente.**"
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "28d1aea2efb878d251a69b6c10a7838afccea4c351812d20d6955c80dbac16e7",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "id": "OBL-030",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-030"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 2,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "A rota autenticada `/configuracoes?section=rules` (implementada originalmente na #558) apresenta cada regra com todos os critérios, ações e explicações visíveis simultaneamente. O resultado é uma lista pouco escaneável e um diálogo de criação longo. Esta melhoria será integrada à PR #809 a pedido do proprietário, sem modificar os contratos financeiros."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "fa7a468a90d4707fec26ec1606d2004282599c764488e086bcc7c7b0104aaf79",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-031",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-031"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 5,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Refatorar a experiência de Regras automáticas com hierarquia Golden Screen, filtros persistentes na URL e acesso progressivo aos detalhes, preservando o comportamento funcional existente."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "0655d5aa3fb6f471ff3f3bf495472c6768c437fc7f2ffc67bc7b6b6ceb3aa0d9",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "id": "OBL-032",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-032"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 8,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Resumir cada regra com nome, estado, prioridade e visão rápida de condição/ação, mantendo todos os detalhes em uma expansão sem dependência de JavaScript."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "ca46865fc667d7b580da4146b8a14af950601e4c9f69790bfe3df471bcd80901",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive"
+      ],
+      "id": "OBL-033",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-033"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 9,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Filtrar a listagem por Todas, Ativas e Inativas por links GET SSR, com contagem por situação e estado vazio contextual."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "b3e91e8709bbc53f9a777478b7b8237fa9dc137fd59316e582e73698e63e6020",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "id": "OBL-034",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-034"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 10,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Organizar o formulário de criação por Identificação, Condições e Ações sugeridas, preservando names, payload decimal sem moeda inferida, validação, mensagens e recuperação de erro."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "3d84ff34ade87e568040a8a88d3ead7922466216518f2b26be94d66dde4d980b",
+      "disposition": "covered",
+      "flags": [
+        "aftermath",
+        "review-surface"
+      ],
+      "id": "OBL-035",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-035"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 11,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Preservar o botão de aplicar regras, suas confirmações e aviso de revisão humana; deixar explícito que o filtro só afeta a listagem."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "cdc27bb3b4b7d75730531ce37095b26902ff8adb83c2eb0739c79c9fb1c518bb",
+      "disposition": "covered",
+      "flags": [
+        "observable",
+        "structural"
+      ],
+      "id": "OBL-036",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-036"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 12,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Reutilizar componentes, ícones e tokens oficiais e verificar layout responsivo, foco e teclado."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "ab91945e91d47bb5d93e1f42b766e367d0d71dd21bea59905e42e899a8974206",
+      "disposition": "covered",
+      "flags": [
+        "precedence"
+      ],
+      "id": "OBL-037",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-037"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 15,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "As APIs, autorização, status, regras de precedência e processamento de sugestões permanecem inalterados."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "dac947a742b4a160285427941c3fce220321d862d6280c3e300b6c70e8795117",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-038",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-038"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 16,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Regras com códigos de status desconhecidos não devem aparecer indevidamente nas listas Ativas/Inativas nem expor o código bruto ao usuário."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "17dc04dc1a05ea90f2d8d6c1dbe24c479ebc5009a467c584ab012398360c10c6",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-039",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-039"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 17,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "A ordem retornada pelo servidor deve ser preservada, sem reordenação silenciosa da prioridade."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "24e3a8cf4dfff3df8230c84cfa189df152551a956cb467453beb3fd4bfd36a2f",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "id": "OBL-040",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-040"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 18,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Nenhuma condição financeira ganha símbolo ou código de moeda que não exista no domínio."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "e46c7467f6b4c38d5334a1f35cb758c79e36901f06ba3c15aa3cfb1c56df6b77",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-041",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-041"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 19,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Falhas de contas, categorias e listagem continuam independentes; não inventar dados nem ocultar erros."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "7adc5e6a24f9f6df8cb756b39e7caee3a9705b5909a2dfc5f71113f53ab4da6e",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "observable",
+        "negative"
+      ],
+      "id": "OBL-042",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-042"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 22,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Cada regra é escaneável na forma recolhida e revela condições, ações e explicação mediante `details/summary` acessível, por teclado e sem JavaScript."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "f2f136b76875e3ec56ccfc9a67dbb8f97cae1c15251099ff4a2f66ef31efca6d",
+      "disposition": "covered",
+      "flags": [
+        "exhaustive",
+        "negative"
+      ],
+      "id": "OBL-043",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-043"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 23,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Filtros Todas/Ativas/Inativas usam links GET SSR e `section=rules` na URL; fallback desconhecido exibe Todas; contagens refletem a resposta sem alterar a ordem ou o backend."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "1f3d09943e8e8725e01ffadac4d7dec0644875a940470e2970f0fe22d8fa0a89",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-044",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-044"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 24,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Listas filtradas vazias apresentam orientação contextual sem confundir ausência de regras com falha de carregamento."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "035fce15296c54d2ee55f096f5a6dafaababdb8a841c8a6629a1daa87d525378",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "review-surface"
+      ],
+      "id": "OBL-045",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-045"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 25,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] O diálogo de criação agrupa campos por identificação, condições e ações sem alterar nomes enviados, validação decimal ou fallback de dependências."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "bb259b4bfc63f31328a7b861a57148a7dbaa62b9c42df99cedf2231ecb077ef7",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "aftermath"
+      ],
+      "id": "OBL-046",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-046"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 26,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Criar, inativar e aplicar mantêm confirmação, acessibilidade, recarregamento da URL e indicação de que aplicação não confirma lançamentos."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "7cd4dc1d8cc6989cdc42a1b4885301a343568a0263404ecc1db86ec73a2e70f3",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-047",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-047"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 27,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Desktop 1440/1366, tablet 768, mobile 390/320 e texto 200% não introduzem overflow; foco e contraste seguem o Golden Screen."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "01b6f531a4e341c099a09d4b86d757b0eddbf72b6a051866e247b1abbdcbeda7",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "aftermath"
+      ],
+      "id": "OBL-048",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-048"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 28,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Testes SSR, controles negativos de filtro/escaping e Chrome autenticado cobrem os novos estados sem perder os cenários da #558."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "236e1037d1d837bde3245a82ccd16012d6d16d866d324023f5a18ad8dea0e009",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-049",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-049"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 29,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[x] Documentação e CI são verificadas no HEAD material da PR; auditoria independente é posterior e não há merge automático."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "39fce63450f45b08749374832e5d3bdce13fbdc3b1835edd1b3b49a163f98f88",
+      "disposition": "not-applicable",
+      "flags": [],
+      "id": "OBL-050",
+      "inventory_ids": [],
+      "rationale": "Registro de CI 44650419706 em SHA anterior, preservado na historia da issue; a execucao 45081920179 no HEAD atual substitui a prova de implementacao.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 44,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[CI do produto](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419706): `success` com SSR de filtros, escaping, regras desconhecidas, isolamento de dependências, conversão decimal e regressões, além de lint, typecheck e build."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "8532b6ec121a9582310b1291d09576fce727de33f9420ebd64bb3864f952cd7c",
+      "disposition": "not-applicable",
+      "flags": [
+        "observable",
+        "negative"
+      ],
+      "id": "OBL-051",
+      "inventory_ids": [],
+      "rationale": "Registro Chrome 44650419769 em SHA anterior, preservado apenas como antecedente; nova evidencia autenticada foi emitida por 45081920192 no HEAD atual.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 45,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[Chrome autenticado](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419769): `success`; `settings-interface.json` sem falhas, desktop 1440/1366, tablet 768, mobile 390/320, zoom texto 200%; `ruleProgressive.passed=true` em desktop e mobile com colapso/expansão por teclado, foco visível, filtros Ativas/Inativas e ausência de overflow. Criar/inativar e validação decimal mantêm regressões #558."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "21894b5311db9ec9b9be9fea091ecb2b08d4f00ce9e74ec358cd2dddc83b60ab",
+      "disposition": "covered",
+      "flags": [
+        "negative",
+        "freshness"
+      ],
+      "id": "OBL-052",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-052"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 46,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Os **oito critérios funcionais/documentais** acima são assinalados pela prova de código, testes e Chrome do HEAD, sem declarar auditoria independente aprovada."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "f08aa463d6ed7e8d072831c5fe49c8077a9334ffcd0968adf1af4a674567a618",
+      "disposition": "not-applicable",
+      "flags": [
+        "negative",
+        "temporal",
+        "isolation",
+        "structural"
+      ],
+      "id": "OBL-053",
+      "inventory_ids": [],
+      "rationale": "Obrigacao conjunta redundante representada integralmente pela OBL-029 da issue 808; condicao continua obrigatoria para as duas issues e nao foi dispensada.",
+      "requirement_ids": [],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 47,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "**Governança pendente:** a PR #809 precisa de certificado/handoff exato para #808/#810 e parecer independente real antes de merge/fechamento. Não reutilizar handoff herdado da base (#806/#807) nem tratar CI verde como certificação."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "0ec7d8a7f88be87b48280713b3d7049b9ef1b9dba581728ff476c0d72e1396e9",
+      "disposition": "covered",
+      "flags": [],
+      "id": "OBL-054",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-054"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 51,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[Repository CI #45081920179](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179) `success`: format/lint/typecheck, SSR, testes integrados, build e merge preview."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "d26bc4b4e9a7ae8df781880d6cd8033055ed5e223fb9cc333091cfa029b7f287",
+      "disposition": "covered",
+      "flags": [
+        "observable"
+      ],
+      "id": "OBL-055",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-055"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 52,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "[Chrome #45081920192](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920192) `success`: `settings-interface.json`, `failures=[]`, `ruleProgressive.passed=true` em desktop e mobile; filtros SSR Ativas/Inativas, detalhes por teclado, foco visível e ausência de overflow."
+    },
+    {
+      "assertion_ids": [],
+      "candidate_key": "71905cb534aeb5d573c1991318fa7a2969bcf2ed0cceb7c546ace2bb2763f126",
+      "disposition": "covered",
+      "flags": [
+        "negative"
+      ],
+      "id": "OBL-056",
+      "inventory_ids": [],
+      "rationale": "Implementacao em M, confirmada pelo codigo, testes SSR da Repository CI 45081920179 e/ou Chrome real 45081920192; ver controles discriminantes vinculados a este ID na matriz.",
+      "requirement_ids": [
+        "R-OBL-056"
+      ],
+      "scope_decision": null,
+      "source_id": "SRC-ISSUE-810",
+      "source_line": 53,
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "source_text": "Componentes SSR e teste progressivo extraídos para `settings-rules-ui.ts` e `settings-rule-progressive.mjs`, sem alterar contratos HTTP, autorização, status ou decisões financeiras. Validador oficial `CODE-GROWTH-001`: `READY` para 10 arquivos, 0 bloqueios; arquivos legados dentro do limite (+18/+19 linhas)."
+    }
+  ],
+  "observable_assertions": [],
+  "pass_c": {
+    "evidence": [
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179",
+      "https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920192",
+      "apps/web/src/dev-server/notifications-experience.test.ts",
+      "apps/web/src/dev-server/settings-page.test.ts"
+    ],
+    "obligation_ids": [
+      "OBL-001",
+      "OBL-002",
+      "OBL-003",
+      "OBL-004",
+      "OBL-005",
+      "OBL-006",
+      "OBL-007",
+      "OBL-008",
+      "OBL-009",
+      "OBL-010",
+      "OBL-011",
+      "OBL-012",
+      "OBL-013",
+      "OBL-014",
+      "OBL-015",
+      "OBL-016",
+      "OBL-017",
+      "OBL-018",
+      "OBL-019",
+      "OBL-020",
+      "OBL-021",
+      "OBL-025",
+      "OBL-026",
+      "OBL-027",
+      "OBL-028",
+      "OBL-030",
+      "OBL-031",
+      "OBL-032",
+      "OBL-033",
+      "OBL-034",
+      "OBL-035",
+      "OBL-036",
+      "OBL-037",
+      "OBL-038",
+      "OBL-039",
+      "OBL-040",
+      "OBL-041",
+      "OBL-042",
+      "OBL-043",
+      "OBL-044",
+      "OBL-045",
+      "OBL-046",
+      "OBL-047",
+      "OBL-048",
+      "OBL-049",
+      "OBL-052",
+      "OBL-054",
+      "OBL-055",
+      "OBL-056"
+    ],
+    "rederived_without_pr_description": true,
+    "requirement_ids": [
+      "R-OBL-001",
+      "R-OBL-002",
+      "R-OBL-003",
+      "R-OBL-004",
+      "R-OBL-005",
+      "R-OBL-006",
+      "R-OBL-007",
+      "R-OBL-008",
+      "R-OBL-009",
+      "R-OBL-010",
+      "R-OBL-011",
+      "R-OBL-012",
+      "R-OBL-013",
+      "R-OBL-014",
+      "R-OBL-015",
+      "R-OBL-016",
+      "R-OBL-017",
+      "R-OBL-018",
+      "R-OBL-019",
+      "R-OBL-020",
+      "R-OBL-021",
+      "R-OBL-025",
+      "R-OBL-026",
+      "R-OBL-027",
+      "R-OBL-028",
+      "R-OBL-030",
+      "R-OBL-031",
+      "R-OBL-032",
+      "R-OBL-033",
+      "R-OBL-034",
+      "R-OBL-035",
+      "R-OBL-036",
+      "R-OBL-037",
+      "R-OBL-038",
+      "R-OBL-039",
+      "R-OBL-040",
+      "R-OBL-041",
+      "R-OBL-042",
+      "R-OBL-043",
+      "R-OBL-044",
+      "R-OBL-045",
+      "R-OBL-046",
+      "R-OBL-047",
+      "R-OBL-048",
+      "R-OBL-049",
+      "R-OBL-052",
+      "R-OBL-054",
+      "R-OBL-055",
+      "R-OBL-056"
+    ],
+    "reviewed_all_specification_sources": true,
+    "reviewed_producer_consumer_parity": true,
+    "reviewed_user_visible_semantics": true,
+    "status": "passed"
+  },
+  "primary_issue_source_id": "SRC-ISSUE-808",
+  "read_model_closures": {
+    "applicability_reason": "Historico e paginacao da notificacao usam mesma API de origem, sem conversao de moeda; testes SSR >10000, filtros e fallback.",
+    "entries": [
+      {
+        "consumer_evidence": [
+          "apps/web/src/dev-server/notifications-experience.test.ts:109-130"
+        ],
+        "contract_kind": "pagination",
+        "id": "RMC-001",
+        "negative_control_evidence": [
+          "No 10000 offset cap, test expects 10020/10060 and profileId retained; CI 45081920179"
+        ],
+        "producer_evidence": [
+          "apps/web/src/dev-server/notifications-page.ts:62",
+          "apps/web/src/dev-server/notifications-experience.test.ts:108"
+        ],
+        "public_projection_evidence": [
+          "apps/web/src/dev-server/notifications-page.ts:139-170 response into SSR list with offsets"
+        ],
+        "required_fields": [
+          "profileId",
+          "offset",
+          "limit",
+          "nextOffset",
+          "items",
+          "readAt"
+        ],
+        "requirement_ids": [
+          "R-OBL-006",
+          "R-OBL-013"
+        ],
+        "scenario_ids": [
+          "NOTIF-OFFSET-10040",
+          "NOTIF-SSR-PROFILE"
+        ],
+        "visible_surface_evidence": [
+          "evidence/issue-693-notifications.json [populatedViewports]"
+        ]
+      }
+    ],
+    "status": "passed",
+    "unconsumed_outputs": [],
+    "unmapped_required_fields": []
+  },
+  "schema_version": 3,
+  "scope_reduction_review": {
+    "matches": [],
+    "status": "passed"
+  },
+  "source_coverage": [
+    {
+      "candidate_count": 29,
+      "obligation_ids": [
+        "OBL-001",
+        "OBL-002",
+        "OBL-003",
+        "OBL-004",
+        "OBL-005",
+        "OBL-006",
+        "OBL-007",
+        "OBL-008",
+        "OBL-009",
+        "OBL-010",
+        "OBL-011",
+        "OBL-012",
+        "OBL-013",
+        "OBL-014",
+        "OBL-015",
+        "OBL-016",
+        "OBL-017",
+        "OBL-018",
+        "OBL-019",
+        "OBL-020",
+        "OBL-021",
+        "OBL-022",
+        "OBL-023",
+        "OBL-024",
+        "OBL-025",
+        "OBL-026",
+        "OBL-027",
+        "OBL-028",
+        "OBL-029"
+      ],
+      "source_id": "SRC-ISSUE-808",
+      "source_sha256": "d309c4083c6f5e20a1de97f4fc5ddbbbcd3c5b7424f87a1f2b0b9bfb3e0cefb4",
+      "unmapped_candidate_keys": []
+    },
+    {
+      "candidate_count": 27,
+      "obligation_ids": [
+        "OBL-030",
+        "OBL-031",
+        "OBL-032",
+        "OBL-033",
+        "OBL-034",
+        "OBL-035",
+        "OBL-036",
+        "OBL-037",
+        "OBL-038",
+        "OBL-039",
+        "OBL-040",
+        "OBL-041",
+        "OBL-042",
+        "OBL-043",
+        "OBL-044",
+        "OBL-045",
+        "OBL-046",
+        "OBL-047",
+        "OBL-048",
+        "OBL-049",
+        "OBL-050",
+        "OBL-051",
+        "OBL-052",
+        "OBL-053",
+        "OBL-054",
+        "OBL-055",
+        "OBL-056"
+      ],
+      "source_id": "SRC-ISSUE-810",
+      "source_sha256": "02dbd083b46160b91d66edc8157d91c47eb962bff44a8f15fc3134ec1736f31d",
+      "unmapped_candidate_keys": []
+    }
+  ],
+  "specification_snapshot": {
+    "path": "/mnt/data/delivery809/work/specification-snapshot.json",
+    "sha256": "f4b3671795f11a2395645946def3014aa815e786db60b19c3f49e5baf2514c85"
+  },
+  "structural_invariant_closures": {
+    "applicability_reason": "Reuso de primitivas e preservacao das interfaces/contratos originais provados pelo diff B..M de 18 paths, sem alteracoes em APIs, backend ou dominio.",
+    "entries": [
+      {
+        "canonical_path": "apps/web/src/dev-server/settings-rules-ui.ts",
+        "competing_paths": [
+          "apps/web/src/dev-server/settings-page.ts",
+          "apps/web/src/design-system/primitives.ts"
+        ],
+        "evidence_ids": [
+          "VISUAL-RULE-PROGRESSIVE",
+          "SSR-NOTIFICATION-TABS"
+        ],
+        "id": "SIC-001",
+        "kind": "structural",
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/settings-page.test.ts:223",
+          "apps/web/src/dev-server/notifications-experience.test.ts:69"
+        ],
+        "obligation_ids": [
+          "OBL-005",
+          "OBL-036"
+        ],
+        "plausible_wrong_implementation": "Criar componentes globais duplicados, reescrever o backend ou depender de listeners JS para a revelacao de conteudo SSR.",
+        "requirement_ids": [
+          "R-OBL-005",
+          "R-OBL-036"
+        ],
+        "scenario_ids": [
+          "CR-810-SSR",
+          "CR-808-SSR"
+        ]
+      },
+      {
+        "canonical_path": "apps/web/src/dev-server/settings-page.ts",
+        "competing_paths": [
+          "apps/web/src/dev-server/settings-rules-ui.ts",
+          "apps/api/src"
+        ],
+        "evidence_ids": [
+          "SSR-RULE-FILTER",
+          "VISUAL-RULE-PROGRESSIVE"
+        ],
+        "id": "SIC-002",
+        "kind": "precedence",
+        "negative_control_evidence": [
+          "apps/web/src/dev-server/settings-page.test.ts:223",
+          "scripts/statement-visual/settings-interface-adversarial.mjs:98"
+        ],
+        "obligation_ids": [
+          "OBL-037"
+        ],
+        "plausible_wrong_implementation": "Reorder backend precedence and suggestion application or introduce client-side status transforms that silently override server rules.",
+        "requirement_ids": [
+          "R-OBL-037"
+        ],
+        "scenario_ids": [
+          "CR-810-SSR"
+        ]
+      }
+    ],
+    "status": "passed",
+    "unresolved_invariants": []
+  }
+}
