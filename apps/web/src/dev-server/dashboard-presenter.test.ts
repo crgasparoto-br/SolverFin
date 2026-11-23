@@ -134,6 +134,64 @@ describe("dashboard presenter", () => {
     assert.equal(model.content.dataQuality.status, "complete");
   });
 
+  it("distinguishes overdue, due today, and future open invoices without calling the overdue date upcoming", () => {
+    const input = successfulInput();
+    input.openInvoices = {
+      ok: true,
+      data: {
+        invoices: [
+          { dueOn: "2026-08-26" },
+          { dueOn: "2026-08-15" },
+          { dueOn: "2026-08-18" },
+          { dueOn: "2026-08-12" },
+        ],
+      },
+    };
+
+    const model = presentDashboard(input, new Date("2026-08-18T12:00:00.000Z"));
+    assert.equal(model.status, "success");
+    if (model.status !== "success") return;
+    const action = model.content.nextActions.find((item) => item.href === "/cartoes");
+    assert.equal(action?.title, "4 faturas de cartão em aberto");
+    assert.match(
+      action?.description ?? "",
+      /2 faturas vencidas; a mais antiga venceu em 12\/08\/2026/,
+    );
+    assert.match(action?.description ?? "", /1 fatura vence hoje/);
+    assert.match(action?.description ?? "", /Próximo vencimento em 26\/08\/2026/);
+    assert.doesNotMatch(action?.description ?? "", /Próximo vencimento em (12|15)\/08/);
+  });
+
+  it("does not describe a past invoice as upcoming when it is the only open bill", () => {
+    const input = successfulInput();
+    input.openInvoices = { ok: true, data: { invoices: [{ dueOn: "2026-07-10" }] } };
+    const model = presentDashboard(input, new Date("2026-11-23T12:00:00.000Z"));
+    assert.equal(model.status, "success");
+    if (model.status !== "success") return;
+    const action = model.content.nextActions.find((item) => item.href === "/cartoes");
+    assert.equal(action?.description, "1 fatura vencida em 10/07/2026.");
+  });
+
+  it("uses Sao Paulo civil date around midnight UTC, and keeps future-only invoices upcoming", () => {
+    const input = successfulInput();
+    input.openInvoices = { ok: true, data: { invoices: [{ dueOn: "2026-08-17" }] } };
+    const atSaoPauloToday = presentDashboard(input, new Date("2026-08-18T01:30:00.000Z"));
+    assert.equal(atSaoPauloToday.status, "success");
+    if (atSaoPauloToday.status !== "success") return;
+    assert.equal(
+      atSaoPauloToday.content.nextActions.find((item) => item.href === "/cartoes")?.description,
+      "1 fatura vence hoje.",
+    );
+    input.openInvoices = { ok: true, data: { invoices: [{ dueOn: "2026-09-18" }] } };
+    const future = presentDashboard(input, new Date("2026-08-18T12:00:00.000Z"));
+    assert.equal(future.status, "success");
+    if (future.status !== "success") return;
+    assert.equal(
+      future.content.nextActions.find((item) => item.href === "/cartoes")?.description,
+      "Próximo vencimento em 18/09/2026.",
+    );
+  });
+
   it("preserves filters and records availability without loading the complete transaction collection", () => {
     const input = successfulInput();
     input.pendingReview = { ok: false, error: "Inbox indisponível" };

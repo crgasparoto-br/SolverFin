@@ -1,4 +1,4 @@
-import { formatDateOnly } from "@solverfin/shared";
+import { financialTodayInSaoPaulo, formatDateOnly } from "@solverfin/shared";
 import type { DashboardOverview } from "./dashboard-overview-view.js";
 import { presentCashFlowProjection } from "./dashboard-cashflow-presenter.js";
 
@@ -199,7 +199,10 @@ export function presentDashboardLoading(
   return loadingScreen({ filters, provenance: [] });
 }
 
-export function presentDashboard(input: DashboardPresenterInput): DashboardScreenViewModel {
+export function presentDashboard(
+  input: DashboardPresenterInput,
+  now: Date = new Date(),
+): DashboardScreenViewModel {
   const context = {
     filters: input.filters,
     provenance: dashboardProvenance(input),
@@ -240,6 +243,7 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       input.summary.data.currencyBlocks,
       input.pendingReview,
       input.openInvoices,
+      input.overview?.ok ? input.overview.data.purchaseToday : financialTodayInSaoPaulo(now),
     ),
     recentItems: input.summary.data.recentItems.map((item) => ({
       description: item.description,
@@ -358,6 +362,7 @@ function presentNextActions(
   currencyBlocks: DashboardFinancialSummaryCurrencyBlock[],
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
+  today: string,
 ): DashboardNextActionViewModel[] {
   const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
   const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
@@ -384,7 +389,7 @@ function presentNextActions(
   if (invoices.length > 0) {
     actions.push({
       title: `${invoices.length} fatura${invoicePlural} de cartão em aberto`,
-      description: `Próximo vencimento em ${formatDateOnly(nearestDueDate(invoices.map((item) => item.dueOn)))}.`,
+      description: describeOpenInvoiceDueDates(invoices, today),
       href: "/cartoes",
       linkLabel: "Ver cartões",
     });
@@ -502,8 +507,34 @@ function accountDrilldownHref(
   return `/lancamentos?${query.toString()}`;
 }
 
-function nearestDueDate(dates: string[]): string {
-  return dates.slice().sort((left, right) => left.localeCompare(right))[0] ?? "";
+function describeOpenInvoiceDueDates(
+  invoices: readonly DashboardOpenInvoice[],
+  today: string,
+): string {
+  // Dates are canonical YYYY-MM-DD civil dates, not UTC timestamps.
+  const dueDates = invoices
+    .map((invoice) => invoice.dueOn)
+    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort((left, right) => left.localeCompare(right));
+  const overdue = dueDates.filter((date) => date < today);
+  const dueTodayCount = dueDates.filter((date) => date === today).length;
+  const next = dueDates.find((date) => date > today);
+  const messages: string[] = [];
+
+  if (overdue.length === 1) {
+    messages.push(`1 fatura vencida em ${formatDateOnly(overdue[0])}.`);
+  } else if (overdue.length > 1) {
+    messages.push(
+      `${overdue.length} faturas vencidas; a mais antiga venceu em ${formatDateOnly(overdue[0])}.`,
+    );
+  }
+  if (dueTodayCount > 0) {
+    messages.push(`${dueTodayCount} fatura${dueTodayCount === 1 ? " vence" : "s vencem"} hoje.`);
+  }
+  if (next) {
+    messages.push(`Próximo vencimento em ${formatDateOnly(next)}.`);
+  }
+  return messages.join(" ") || "Consulte os cartões para confirmar os vencimentos.";
 }
 
 function money(amountMinor: number, currency: string): MoneyViewModel {

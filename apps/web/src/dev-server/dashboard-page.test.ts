@@ -213,6 +213,7 @@ describe("dev-server dashboard page", () => {
       assert.doesNotMatch(availableEvidence, /Conta Histórica/);
       assert.match(html, /1 item aguardando revisão na inbox/);
       assert.match(html, /1 fatura de cartão em aberto/);
+      assert.match(html, /Próximo vencimento em 12\/07\/2026/);
       assert.match(html, /href="\/inbox">Abrir inbox/);
       assert.match(html, /href="\/cartoes">Ver cartões/);
       assert.match(html, /Ferramentas de decisão/);

@@ -80,6 +80,8 @@ O Dashboard consome contratos agregados e operacionais específicos:
 
 A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`. As referências de conta são metadados leves (`id`, nome e status); nenhum cálculo financeiro novo é executado no frontend.
 
+Nos alertas de faturas em aberto, o Dashboard distingue vencimentos passados, a data de hoje e datas futuras. Faturas vencidas são identificadas como **vencidas** (com a mais antiga em destaque), e somente uma data futura recebe o rótulo **Próximo vencimento**; vencimentos de hoje são explícitos. A comparação utiliza a data civil de São Paulo do `purchaseToday` fornecido pelo overview autenticado e, caso essa fonte opcional esteja indisponível, a data civil obtida pelo calendário financeiro compartilhado. A lista de faturas permanece a fonte operacional de valores de vencimento, sem inferência de novas obrigações no frontend.
+
 Quando uma fonte operacional opcional falha, os indicadores financeiros continuam visíveis e a interface sinaliza `Dados parciais`. Falha do resumo financeiro obrigatório resulta em estado de erro explícito.
 
 ## Fundação da Fase 3B
