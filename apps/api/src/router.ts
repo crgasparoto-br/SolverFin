@@ -70,6 +70,7 @@ import {
   updateBudgetForContext,
 } from "./repositories/budgets.js";
 import { buildFinancialSummary } from "./repositories/dashboard.js";
+import { dashboardOverviewHandler } from "./dashboard-overview-handler.js";
 import { buildCashFlowProjectionForContext } from "./repositories/cash-flow-projection.js";
 import {
   listFutureCommitmentsForContext,
@@ -134,6 +135,7 @@ const routes: Route[] = [];
 
 route("GET", "/api/financial-profiles", listProfilesHandler);
 route("GET", "/api/financial-summary", financialSummaryHandler);
+route("GET", "/api/dashboard-overview", dashboardOverviewHandler);
 route("GET", "/api/cash-flow-projection", cashFlowProjectionHandler);
 route("GET", "/api/future-commitments/recurrences", listFutureRecurrenceContextsHandler);
 route("GET", "/api/future-commitments", listFutureCommitmentsHandler);

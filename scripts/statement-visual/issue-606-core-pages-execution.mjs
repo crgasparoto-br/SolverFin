@@ -342,7 +342,11 @@ function dashboardFirstReadExpression() {
     return {
       hasPrimaryMetrics: primary.length >= 2,
       hasNextActions: !!action,
-      amountsOnOneLine: [...document.querySelectorAll('.currency-summary .sf-metric-card-value')].every((value) => {
+      // Secondary KPIs are intentionally hidden on mobile by the approved mockup.
+      // Only rendered values can physically wrap or overflow in the viewport.
+      amountsOnOneLine: [...document.querySelectorAll('.currency-summary .sf-metric-card-value')]
+        .filter((value) => value.getClientRects().length > 0)
+        .every((value) => {
         const range = document.createRange();
         range.selectNodeContents(value);
         return range.getClientRects().length === 1 && value.scrollWidth <= value.clientWidth + 1;

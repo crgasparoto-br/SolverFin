@@ -1,14 +1,10 @@
-import { formatMinorCurrency } from "@solverfin/shared";
-
 import {
   renderCard,
   renderEmptyState,
   renderLoading,
-  renderMetricCard as renderFoundationMetricCard,
   renderPageContainer,
   renderPageHeader,
   renderRecoverableError,
-  renderSummaryGrid,
 } from "../design-system/primitives.js";
 import { renderMoney } from "../design-system/money.js";
 import { apiGet } from "./api.js";
@@ -19,10 +15,8 @@ import {
   type DashboardCashFlowProjection,
   type DashboardCashFlowProjectionViewModel,
   type DashboardContentViewModel,
-  type DashboardCurrencySummaryViewModel,
   type DashboardDecisionModuleViewModel,
   type DashboardFinancialSummary,
-  type DashboardMetricViewModel,
   type DashboardOpenInvoice,
   type DashboardPresenterInput,
   type DashboardRecentItemViewModel,
@@ -33,6 +27,17 @@ import { renderDashboardFinancialInsights } from "./financial-insight-queue-view
 import { icon } from "./icons.js";
 import { renderAuthenticatedShellDocument } from "./shell.js";
 import { dashboardStyles } from "./dashboard-styles.js";
+import {
+  renderCurrencyEvidenceIndex,
+  renderCurrencyFilter,
+  renderCurrencyNavigator,
+  renderCurrencySummaries,
+  renderMobileAdditionalKpis,
+  renderSupportingCurrencySummaries,
+} from "./dashboard-kpi-view.js";
+import { renderProjectionChart } from "./dashboard-cashflow-chart.js";
+import { escapeHtml } from "./transactions-render-helpers.js";
+import { renderDashboardOverview, type DashboardOverview } from "./dashboard-overview-view.js";
 
 const DASHBOARD_LOADING_GRACE_MS = 75;
 const DASHBOARD_LOAD_MAX_LIFETIME_MS = 30_000;
@@ -43,8 +48,12 @@ interface DashboardLoadEntry {
 
 const dashboardLoads = new Map<string, DashboardLoadEntry>();
 
-export async function renderDashboardPage(token: string): Promise<string> {
-  const entry = dashboardLoadEntry(token);
+export async function renderDashboardPage(token: string, url?: URL): Promise<string> {
+  const entry = dashboardLoadEntry(
+    token,
+    url?.searchParams.get("purchaseOn"),
+    url?.searchParams.get("currency"),
+  );
   const outcome = await Promise.race([
     entry.promise.then((input) => ({ state: "ready" as const, input })),
     loadingGrace().then(() => ({ state: "loading" as const })),
@@ -54,12 +63,27 @@ export async function renderDashboardPage(token: string): Promise<string> {
     return renderDashboard(presentDashboardLoading());
   }
 
-  dashboardLoads.delete(token);
+  dashboardLoads.delete(
+    dashboardLoadKey(token, url?.searchParams.get("purchaseOn"), url?.searchParams.get("currency")),
+  );
   return renderDashboard(presentDashboard(outcome.input));
 }
 
-function dashboardLoadEntry(token: string): DashboardLoadEntry {
-  const pending = dashboardLoads.get(token);
+function dashboardLoadKey(
+  token: string,
+  purchaseOn?: string | null,
+  currency?: string | null,
+): string {
+  return token + ":" + (purchaseOn ?? "today") + ":" + (currency ?? "all");
+}
+
+function dashboardLoadEntry(
+  token: string,
+  purchaseOn?: string | null,
+  currency?: string | null,
+): DashboardLoadEntry {
+  const key = dashboardLoadKey(token, purchaseOn, currency);
+  const pending = dashboardLoads.get(key);
   if (pending) return pending;
 
   const promise = Promise.all([
@@ -68,19 +92,26 @@ function dashboardLoadEntry(token: string): DashboardLoadEntry {
     apiGet<{ messages: unknown[] }>(token, "/api/bank-message-inbox?status=pending_review"),
     apiGet<{ invoices: DashboardOpenInvoice[] }>(token, "/api/invoices?status=open"),
     apiGet<FinancialInsightQueueApiPage>(token, DASHBOARD_FINANCIAL_INSIGHTS_RESOURCE),
-  ]).then(([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights]) => ({
-    summary,
-    cashFlowProjection,
-    pendingReview,
-    openInvoices,
-    financialInsights,
-    filters: {},
-  }));
+    apiGet<DashboardOverview>(
+      token,
+      `/api/dashboard-overview${purchaseOn ? "?purchaseOn=" + encodeURIComponent(purchaseOn) : ""}`,
+    ),
+  ]).then(
+    ([summary, cashFlowProjection, pendingReview, openInvoices, financialInsights, overview]) => ({
+      summary,
+      cashFlowProjection,
+      pendingReview,
+      openInvoices,
+      financialInsights,
+      overview,
+      filters: { ...(currency ? { currency } : {}), ...(purchaseOn ? { purchaseOn } : {}) },
+    }),
+  );
   const entry: DashboardLoadEntry = { promise };
-  dashboardLoads.set(token, entry);
+  dashboardLoads.set(key, entry);
 
   const cleanup = setTimeout(() => {
-    if (dashboardLoads.get(token) === entry) dashboardLoads.delete(token);
+    if (dashboardLoads.get(key) === entry) dashboardLoads.delete(key);
   }, DASHBOARD_LOAD_MAX_LIFETIME_MS);
   cleanup.unref?.();
 
@@ -144,25 +175,47 @@ function renderDashboard(model: DashboardScreenViewModel): string {
 }
 
 function renderDashboardContent(content: DashboardContentViewModel): string {
+  const blocks = content.selectedCurrency
+    ? content.currencySummaries.filter((block) => block.currency === content.selectedCurrency)
+    : content.currencySummaries;
+  const projection = content.cashFlowProjection
+    ? {
+        ...content.cashFlowProjection,
+        currencies: content.cashFlowProjection.currencies.filter(
+          (item) => !content.selectedCurrency || item.currency === content.selectedCurrency,
+        ),
+      }
+    : undefined;
+  const overview = filterDashboardOverview(content.overview, content.selectedCurrency);
+
   return `
-    <section class="dashboard-hero" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Situação financeira atual">
+    <header class="dashboard-hero" data-dashboard-region="overview" data-multicurrency="${content.currencySummaries.length > 1}" aria-label="Visão geral financeira">
       <div class="dashboard-heading">
         ${renderPageHeader({
           eyebrow: "Cockpit financeiro",
-          title: "Situação financeira atual",
-          description: "Acompanhe posição, entradas, despesas e compromissos sem misturar moedas.",
+          title: "Visão geral financeira",
+          description:
+            "Posição atual, resultado do mês e decisões financeiras sem misturar moedas.",
         })}
       </div>
-      <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
-        <strong>${escapeHtml(content.dataQuality.title)}</strong>
-        <span>${escapeHtml(content.dataQuality.description)}</span>
+      <div class="dashboard-header-controls">
+        <div class="dashboard-period-pill" aria-label="Período financeiro">
+          ${icon("calendar", 16)}
+          <span>Mês corrente</span>
+          <strong>${escapeHtml(overview?.periodStartOn.slice(0, 7) ?? "Atual")}</strong>
+        </div>
+        ${renderCurrencyFilter(content.currencySummaries, content.selectedCurrency, content.purchaseOn)}
+        <div class="data-quality" data-quality="${content.dataQuality.status}" role="status">
+          <strong>${escapeHtml(content.dataQuality.title)}</strong>
+          <span>${escapeHtml(content.dataQuality.description)}</span>
+        </div>
       </div>
-    </section>
-    ${renderCurrencyNavigator(content.currencySummaries)}
-    ${renderCurrencySummaries(content.currencySummaries)}
-    <section class="next-actions" aria-label="Próximas ações">
+    </header>
+    ${renderCurrencyNavigator(blocks)}
+    ${renderCurrencySummaries(blocks, projection, overview)}
+    <section class="next-actions dashboard-actions panel" id="dashboard-actions" data-dashboard-region="alerts" aria-label="Próximas ações e alertas financeiros">
       <div class="section-heading">
-        <div><p class="eyebrow">Ação</p><h2>Próximas ações</h2></div>
+        <div><p class="eyebrow">Acompanhar agora</p><h2>Próximas ações e alertas financeiros</h2></div>
       </div>
       ${renderNextActions(content.nextActions)}
       <div class="quick-links" aria-label="Atalhos da rotina">
@@ -171,159 +224,98 @@ function renderDashboardContent(content: DashboardContentViewModel): string {
         <a class="button-link secondary-link" href="/inbox" title="Inbox e revisão de sugestões">${icon("inbox", 14)} Inbox</a>
       </div>
     </section>
-    ${renderSupportingCurrencySummaries(content.currencySummaries)}
-    ${renderCashFlowProjection(content.cashFlowProjection)}
-    ${content.financialInsights ? renderDashboardFinancialInsights(content.financialInsights) : ""}
-    ${renderDecisionModules(content.decisionModules)}
-    <section class="list-panel">
-      <div class="section-heading">
-        <div><p class="eyebrow">Evidências</p><h2>Itens recentes</h2></div>
+    ${renderMobileAdditionalKpis(blocks, projection, overview)}
+    ${renderCashFlowProjection(projection)}
+    ${renderDashboardOverview(overview, content.selectedCurrency)}
+    <section class="dashboard-final-grid" data-dashboard-region="activity" aria-label="Últimos lançamentos e insights">
+      <div class="list-panel panel dashboard-last-items">
+        <div class="section-heading">
+          <div><p class="eyebrow">Atividade recente</p><h2>Últimos lançamentos</h2></div>
+        </div>
+        <div class="rows">${renderRecentItems(content.recentItems)}</div>
+        <a class="text-link" href="/lancamentos">Ver todos os lançamentos</a>
       </div>
-      <div class="rows">
-        ${renderRecentItems(content.recentItems)}
+      <div class="panel dashboard-last-insights">
+        <div class="section-heading">
+          <div><p class="eyebrow">Análise prática</p><h2>Insights financeiros</h2></div>
+        </div>
+        ${
+          content.financialInsights
+            ? renderDashboardFinancialInsights(content.financialInsights)
+            : renderEmptyState({
+                title: "Nenhum insight disponível.",
+                description: "A análise financeira será exibida quando houver dados suficientes.",
+              })
+        }
       </div>
     </section>
-    ${renderCurrencyEvidenceIndex(content.currencySummaries)}
+    <details class="dashboard-additional-tools" data-dashboard-region="additional">
+      <summary>Mais indicadores e ferramentas de decisão</summary>
+      ${renderSupportingCurrencySummaries(blocks)}
+      ${renderDecisionModules(content.decisionModules)}
+    </details>
+    ${renderCurrencyEvidenceIndex(blocks)}
     ${dashboardEvidenceScript()}
   `;
 }
 
-function renderCurrencyNavigator(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
-  if (blocks.length < 2) return "";
-
-  return `<nav class="currency-nav" aria-label="Moedas disponíveis"><span>Moedas</span>${blocks
-    .map(
-      (block) =>
-        `<a class="currency-chip" href="#currency-${escapeHtml(block.currency)}">${escapeHtml(block.currency)}</a>`,
-    )
-    .join("")}</nav>`;
-}
-
-function renderCurrencySummaries(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
-  if (blocks.length === 0) {
-    return renderEmptyState({
-      title: "Nenhum total financeiro disponível.",
-      description: "Registre lançamentos ou contas para acompanhar os valores deste perfil.",
-    });
-  }
-
-  const sections = blocks
-    .map(
-      (block) => `
-        <section id="currency-${escapeHtml(block.currency)}" class="currency-summary" aria-label="Indicadores em ${escapeHtml(block.currency)}">
-          <div class="section-heading currency-heading">
-            <div><p class="eyebrow">Moeda</p><h2>${escapeHtml(block.currency)}</h2></div>
-          </div>
-          ${renderSummaryGrid({ childrenHtml: block.metrics.slice(0, 2).map(renderDashboardMetric).join("") })}
-        </section>
-      `,
-    )
-    .join("");
-
-  return `<div class="dashboard-primary-currencies" data-multicurrency="${blocks.length > 1}">${sections}</div>`;
-}
-
-function renderSupportingCurrencySummaries(
-  blocks: readonly DashboardCurrencySummaryViewModel[],
-): string {
-  return blocks
-    .map(
-      (block) => `
-        <section class="dashboard-supporting-section" aria-label="Receitas, despesas e compromissos em ${escapeHtml(block.currency)}">
-          <h2 class="dashboard-supporting-title">Demais indicadores — ${escapeHtml(block.currency)}</h2>
-          <dl class="dashboard-supporting-metrics" aria-label="Demais indicadores em ${escapeHtml(block.currency)}">
-            ${block.metrics.slice(2).map(renderSupportingMetric).join("")}
-          </dl>
-        </section>
-      `,
-    )
-    .join("");
-}
-
-function renderSupportingMetric(metric: DashboardMetricViewModel): string {
-  return `
-    <div class="dashboard-supporting-metric">
-      <dt>${escapeHtml(metric.title)}</dt>
-      <dd>
-        <strong>${formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency })}</strong>
-        <a class="text-link sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a>
-      </dd>
-    </div>
-  `;
-}
-
-function renderCurrencyEvidenceIndex(blocks: readonly DashboardCurrencySummaryViewModel[]): string {
-  if (blocks.length === 0) return "";
-
-  return `
-    <section class="dashboard-evidence-index" aria-labelledby="dashboard-evidence-title">
-      <div class="section-heading">
-        <div><p class="eyebrow">Detalhamento</p><h2 id="dashboard-evidence-title">Evidências dos indicadores</h2></div>
-      </div>
-      ${blocks
-        .map(
-          (block) => `
-            <div class="currency-evidence" aria-label="Evidências dos indicadores em ${escapeHtml(block.currency)}">
-              <h3>${escapeHtml(block.currency)}</h3>
-              ${block.metrics.map(renderDashboardEvidence).join("")}
-            </div>
-          `,
-        )
-        .join("")}
-    </section>
-  `;
-}
-
-function renderDashboardEvidence(metric: DashboardMetricViewModel): string {
-  const evidenceItems = metric.evidenceLinks.length
-    ? metric.evidenceLinks
-        .map((item) => {
-          if (item.href) {
-            return `<a class="evidence-link sf-focus-ring" href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
-          }
-
-          return `<span class="evidence-static"><strong>${escapeHtml(item.label)}</strong>${item.note ? `<small>${escapeHtml(item.note)}</small>` : ""}</span>`;
-        })
-        .join("")
-    : '<p class="muted">Nenhuma conta vinculada a esta evidência.</p>';
-
-  return `
-    <details id="${escapeHtml(metric.evidenceId)}" class="evidence-detail">
-      <summary>${escapeHtml(metric.title)}</summary>
-      <p class="muted">${escapeHtml(metric.evidenceTitle)}</p>
-      <div class="evidence-links">${evidenceItems}</div>
-    </details>
-  `;
+function filterDashboardOverview(
+  overview: DashboardOverview | undefined,
+  selectedCurrency: string | undefined,
+): DashboardOverview | undefined {
+  if (!overview || !selectedCurrency) return overview;
+  return {
+    ...overview,
+    accountBalances: overview.accountBalances.filter((item) => item.currency === selectedCurrency),
+    cardSpending: overview.cardSpending.filter((item) => item.currency === selectedCurrency),
+    ...(overview.cardSpendingTotals
+      ? {
+          cardSpendingTotals: overview.cardSpendingTotals.filter(
+            (item) => item.currency === selectedCurrency,
+          ),
+        }
+      : {}),
+    payables: overview.payables.filter((item) => item.currency === selectedCurrency),
+    payableTotals: overview.payableTotals.filter((item) => item.currency === selectedCurrency),
+    categoryExpenses: overview.categoryExpenses.filter(
+      (item) => item.currency === selectedCurrency,
+    ),
+    monthlyTrend: overview.monthlyTrend.filter((item) => item.currency === selectedCurrency),
+  };
 }
 
 function renderCashFlowProjection(
   projection: DashboardCashFlowProjectionViewModel | undefined,
 ): string {
-  if (!projection) return "";
-
-  return `
-    <section class="cash-flow-section" aria-labelledby="dashboard-cash-flow-title">
-      <div class="section-heading">
-        <div>
-          <p class="eyebrow">Horizonte</p>
-          <h2 id="dashboard-cash-flow-title">Projeção de caixa — ${projection.horizonDays} dias</h2>
-          <p class="muted">Referência: ${escapeHtml(projection.referenceDateLabel)}. Cada moeda mantém sua própria série.</p>
-        </div>
-      </div>
-      <div class="cash-flow-dashboard-grid">
-        ${projection.currencies
-          .map((item) =>
-            renderCard({
-              title: item.currency,
-              className: "cash-flow-dashboard-card",
-              bodyHtml: renderCashFlowDecisionMetrics(item),
-              footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
-            }),
-          )
-          .join("")}
-      </div>
-    </section>
-  `;
+  if (!projection || projection.currencies.length === 0) {
+    return `<section class="panel cash-flow-section dashboard-flow-wide" data-dashboard-region="cash-flow"
+      aria-labelledby="dashboard-cash-flow-title">
+      <div class="section-heading"><div><p class="eyebrow">Horizonte de 30 dias</p>
+        <h2 id="dashboard-cash-flow-title">Fluxo de caixa projetado</h2></div></div>
+      ${renderEmptyState({ title: "Projeção indisponível.", description: "Não há dados suficientes para montar a série de caixa neste momento." })}
+    </section>`;
+  }
+  return `<section class="panel cash-flow-section dashboard-flow-wide" data-dashboard-region="cash-flow"
+    aria-labelledby="dashboard-cash-flow-title">
+    <div class="section-heading"><div>
+      <p class="eyebrow">Horizonte · ${projection.horizonDays} dias</p>
+      <h2 id="dashboard-cash-flow-title">Fluxo de caixa projetado</h2>
+      <p class="muted">Projeção de caixa — ${projection.horizonDays} dias · Referência: ${escapeHtml(projection.referenceDateLabel)}.
+        Séries independentes por moeda; valores previstos não são saldo disponível.</p>
+    </div></div>
+    <div class="cash-flow-dashboard-grid">
+      ${projection.currencies
+        .map((item) =>
+          renderCard({
+            title: item.currency,
+            className: "cash-flow-dashboard-card",
+            bodyHtml: renderCashFlowDecisionMetrics(item),
+            footerHtml: `<a class="text-link" href="${escapeHtml(item.href)}">Ver série diária e evidências</a>`,
+          }),
+        )
+        .join("")}
+    </div>
+  </section>`;
 }
 
 function renderCashFlowDecisionMetrics(
@@ -353,6 +345,7 @@ function renderCashFlowDecisionMetrics(
 
   return `
     <div class="cash-flow-dashboard-metrics">
+      ${renderProjectionChart(item.points)}
       <div class="cash-flow-dashboard-metric">
         <span>Saldo projetado no fim do horizonte</span>
         <strong class="cash-flow-dashboard-value">${renderMoney(item.closingBalance)}</strong>
@@ -441,16 +434,6 @@ function renderNextActionRow(
   `;
 }
 
-function renderDashboardMetric(metric: DashboardMetricViewModel): string {
-  const metricCard = renderFoundationMetricCard({
-    label: metric.title,
-    value: formatMinorCurrency(metric.amount.amountMinor, { currency: metric.amount.currency }),
-    detail: metric.subtitle,
-  });
-
-  return `<div class="dashboard-metric">${metricCard}<a class="metric-drilldown sf-focus-ring" href="${escapeHtml(metric.href)}" aria-label="${escapeHtml(metric.linkLabel)}">${escapeHtml(metric.linkLabel)}</a></div>`;
-}
-
 function dashboardLoadingRetryScript(): string {
   return `
     <script>
@@ -472,13 +455,4 @@ function dashboardEvidenceScript(): string {
       openDashboardEvidence();
     </script>
   `;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
 }

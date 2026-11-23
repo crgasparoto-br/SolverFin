@@ -19,6 +19,55 @@ O Dashboard funciona como cockpit financeiro orientado à decisão. Ele deve res
 
 Nenhum total combina moedas diferentes. Cada bloco de indicadores preserva a moeda de origem e valores monetários continuam representados pelo contrato `Money` (`amountMinor + currency`).
 
+## Layout de aceite: mockups aprovados em 19/11/2026 — issue #811
+
+A proposta visual aprovada na conversa, item **4. Proposta de reorganização visual**,
+é a fonte vinculante para a posição, hierarquia e agrupamento dos widgets.
+O layout anterior (#724) permanece registrado como histórico de Golden Screen,
+mas seu par de KPIs e sua disposição de módulos **não substituem** o mockup #811.
+
+### Desktop — distribuição obrigatória
+
+| Ordem | Posição                                             | Conteúdo                                                                                                                                                                                                                     |
+| ----- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1     | Cabeçalho + grade de 3 colunas × 2 linhas por moeda | **Visão geral financeira**, período/mês corrente, filtro de moeda, qualidade, KPIs **Saldo das contas**, **Livre para gastar**, **Resultado do mês**, **Contas a pagar**, **Gastos nos cartões**, **Saldo mínimo projetado** |
+| 2     | Faixa operacional                                   | **Próximas ações e alertas financeiros**, com links reais antes dos gráficos                                                                                                                                                 |
+| 3     | Faixa larga                                         | **Fluxo de caixa projetado**, gráfico de linha diária por moeda, saldo final e déficit                                                                                                                                       |
+| 4     | Duas colunas                                        | **Contas a pagar** à esquerda; **Saldo por conta corrente** à direita                                                                                                                                                        |
+| 5     | Duas colunas                                        | **Gastos por cartão** à esquerda (barras comparativas); **Melhor cartão para comprar hoje** à direita (fechamento, vencimento, dias e simulação)                                                                             |
+| 6     | Duas colunas                                        | **Despesas por categoria** (barras horizontais) e **Evolução financeira** (colunas mensais)                                                                                                                                  |
+| 7     | Duas colunas                                        | **Últimos lançamentos** e **Insights financeiros**                                                                                                                                                                           |
+| 8     | Detalhes recolhidos                                 | Indicadores adicionais, ferramentas de decisão e índice das evidências por moeda                                                                                                                                             |
+
+### Mobile — prioridade da dobra
+
+Na largura de 390 e 320 px somente **Saldo das contas** e **Livre para gastar**
+aparecem como KPIs _antes_ das próximas ações. O primeiro título e respectivo
+link de ação precisam caber completamente na dobra inicial mesmo com duas moedas.
+Os outros quatro KPIs de cada moeda são exibidos **depois** das ações.
+Os pares de widgets refluem para coluna única, preservando a ordem da tabela.
+
+O filtro de moeda seleciona a apresentação por moeda sem converter valores
+financeiros nem recalcular saldos no browser. A simulação do cartão é um cálculo
+realizado no domínio/backend, independente do recorte temporal dos demais KPIs.
+
+### Artefatos visuais obrigatórios
+
+`scripts/statement-visual/issue-724-dashboard-scenarios.mjs` executa
+validação em Chrome nas resoluções **1366×768, 390×844 e 320×740**.
+Além da regressão histórica #724, o job publica imagens
+`issue-811-approved-mockup-multi-currency-<width>.png` e
+`issue-811-approved-mockup-long-content-<width>.png`
+e as correspondentes capturas de página inteira `issue-811-approved-mockup-<state>-<width>-full.png`
+em `statement-visual-evidence-<SHA>`, incluindo relatórios de
+ordem das regiões, 3 colunas de KPIs no desktop, pares de widgets,
+2 KPIs iniciais por moeda no mobile, linha temporal, overflow e foco.
+
+**Gate:** capturas, comparação humana com os mockups originais,
+validação do código exato e auditoria independente são verificações
+distintas. Nenhuma substitui outra. CI verde não significa fidelidade visual
+sem conferência das imagens.
+
 ## Fontes de dados
 
 O Dashboard consome contratos agregados e operacionais específicos:
@@ -30,6 +79,8 @@ O Dashboard consome contratos agregados e operacionais específicos:
 - `/api/financial-insights?state=active&limit=3`: principais insights ativos já deduplicados e ordenados pela política canônica (#621).
 
 A rota não baixa indiscriminadamente `/api/transactions?status=all` para recompor indicadores que já existem no `financial-summary`. As referências de conta são metadados leves (`id`, nome e status); nenhum cálculo financeiro novo é executado no frontend.
+
+Nos alertas de faturas em aberto, o Dashboard distingue vencimentos passados, a data de hoje e datas futuras. Faturas vencidas são identificadas como **vencidas** (com a mais antiga em destaque), e somente uma data futura recebe o rótulo **Próximo vencimento**; vencimentos de hoje são explícitos. A comparação utiliza a data civil de São Paulo do `purchaseToday` fornecido pelo overview autenticado e, caso essa fonte opcional esteja indisponível, a data civil obtida pelo calendário financeiro compartilhado. A lista de faturas permanece a fonte operacional de valores de vencimento, sem inferência de novas obrigações no frontend.
 
 Quando uma fonte operacional opcional falha, os indicadores financeiros continuam visíveis e a interface sinaliza `Dados parciais`. Falha do resumo financeiro obrigatório resulta em estado de erro explícito.
 
@@ -48,7 +99,7 @@ Os estilos compartilhados são fornecidos por `sharedShellStyles()`, que inclui 
 
 ## Indicadores e drilldown
 
-Cada moeda preserva os cinco indicadores e seus cálculos: **saldo das contas** e **variação líquida** aparecem como os dois indicadores de decisão da primeira leitura; receitas, despesas e compromissos aparecem em uma faixa compacta, sem três cards extras. Todos os cinco oferecem o mesmo drilldown contextual por moeda. O índice de evidências foi movido para depois de ações, projeção, insights, ferramentas de decisão e itens recentes, evitando que cinco blocos de detalhes por moeda ocupem a dobra inicial. O link navega para o mesmo índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
+Cada moeda preserva os cinco indicadores financeiros canônicos e seus cálculos. A primeira leitura no desktop expõe seis KPIs de decisão derivados das fontes canônicas, enquanto os indicadores financeiros de receitas, despesas e compromissos permanecem acessíveis numa faixa de detalhes recolhidos; no mobile, somente saldo das contas e livre para gastar precedem a primeira ação. Todos os cinco oferecem o mesmo drilldown contextual por moeda. O índice de evidências foi movido para depois de ações, projeção, insights, ferramentas de decisão e itens recentes, evitando que cinco blocos de detalhes por moeda ocupem a dobra inicial. O link navega para o mesmo índice de evidências da própria moeda no Dashboard. Esse índice apresenta uma entrada explícita para cada conta relacionada ao bloco; contas ativas abrem o Extrato já filtrado por `accountId` e moeda, enquanto contas inativas permanecem identificadas como evidência histórica sem oferecer uma ação operacional enganosa.
 
 - Saldo das contas: posição atual das contas ativas da moeda, com acesso ao Extrato individual de cada conta;
 - Variação líquida do mês: contas da moeda relacionadas ao agregado, com `evidence=posted` nas contas ativas;
@@ -93,7 +144,7 @@ Quando existem mais itens ativos, a seção oferece **Ver todos os insights (N)*
 
 A composição preserva:
 
-- reflow dos dois indicadores prioritários e da faixa de três indicadores secundários (colunas no desktop, linhas compactas no mobile);
+- reflow dos seis KPIs em três colunas no desktop e dois KPIs iniciais no mobile, com os quatro restantes após ações;
 - posição e próxima ação acima do horizonte e de coleções de evidências;
 - navegação nativa por links para moedas e índices de evidência;
 - detalhes nativos (`details`/`summary`) para abrir as evidências de cada KPI;
@@ -166,3 +217,37 @@ parcial, erro e conteúdo longo, nas três larguras de aceite. Os dados de API
 desses cenários são controlados, e não constituem homologação integrada com a
 API de produção. O resultado Chrome e as capturas do SHA material corrigido
 precisam de auditoria técnica e visual independente antes do aceite da issue.
+
+## Cockpit operacional e decisão por cartão — issue #811
+
+A refatoração acrescenta três blocos de decisão ao cockpit, preservando
+`/api/financial-summary` e a projeção em 30 dias como fontes canônicas:
+
+1. **Melhor cartão para comprar hoje:** ordena cartões ativos com instrumentos
+   ativos pelo maior prazo entre a compra e o vencimento estimado da fatura.
+   Os cartões empatados recebem igual destaque, com fechamento/vencimento
+   explícitos. O cálculo reutiliza `calculateInvoicePeriod`, inclusive no
+   dia de fechamento. A simulação de outra data modifica somente a recomendação.
+2. **Compromissos e posição:** lista contas a pagar e faturas do mês corrente,
+   incluindo pendências vencidas anteriores, e mostra saldo por conta e tipo
+   sem classificar investimentos como liquidez imediata. Cada compromisso mostra
+   separadamente o status persistido de origem (previsto, sugerido, fatura aberta,
+   fechada ou em atraso) e a sinalização de vencimento por data.
+3. **Comportamento de consumo:** gastos realizados por cartão no mês da compra,
+   despesas por categoria e comparação mensal de receitas/despesas. A
+   trajetória canônica diária alimenta o gráfico de caixa sem recalcular saldos.
+
+A API dedicada é documentada em [API_DASHBOARD_OVERVIEW.md](./API_DASHBOARD_OVERVIEW.md).
+Os widgets são secundários à primeira ação no mobile (requisito Golden Screen
+#724) e preservam o índice de evidências original e os links de navegação
+por moeda. A falha do endpoint operacional é opcional: deve mostrar
+`Dados parciais`, não apagar os indicadores financeiros já confirmados.
+
+A data civil “hoje” do recomendador (`purchaseToday`) reutiliza a regra de São Paulo do Extrato, mesmo quando o relógio UTC do servidor já passou da meia-noite. O detalhamento operacional segue o resumo financeiro canônico no período UTC, exposto em `referenceDate`, `periodStartOn` e `periodEndOn`; a simulação de cartão não desloca esse período.
+
+A recomendação considera somente prazo, não limite disponível ou aprovação
+de compra. O vencimento previsto reflete os dias cadastrados, sem pretender
+validar o processamento da administradora no dia de fechamento. O teste de
+homologação deve cobrir autenticação, seletor de data, alteração do melhor
+cartão, empate, fatura paga, moeda distinta, séries vazias, conteúdo extenso,
+foco por teclado e telas 1366×768, 390×844 e 320×740.

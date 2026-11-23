@@ -1,3 +1,4 @@
+import { financialTodayInSaoPaulo } from "@solverfin/shared";
 import { createStatementFilters } from "./transactions-filters.js";
 import { css } from "./transactions-page-styles.js";
 import {
@@ -354,16 +355,9 @@ function renderQuickActions(selectedAccount: AccountRecord | undefined): string 
   </div>`;
 }
 
-/** The financial day follows Brazil's civil calendar, not the server's UTC clock. */
+/** Preserves the statement's public helper using the shared Brazilian calendar. */
 export function statementTodayInSaoPaulo(now: Date = new Date()): string {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone: "America/Sao_Paulo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(now);
-  const value = (type: string): string => parts.find((part) => part.type === type)?.value ?? "";
-  return `${value("year")}-${value("month")}-${value("day")}`;
+  return financialTodayInSaoPaulo(now);
 }
 
 function renderSortOptions(selected: StatementSort): string {

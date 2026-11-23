@@ -43,7 +43,17 @@ describe("dev-server dashboard page", () => {
           horizonDays: 30,
           from: "2026-07-02",
           to: "2026-07-31",
-          currencyBlocks: [{ currency: "BRL", closingBalanceMinor: 480000 }],
+          currencyBlocks: [
+            {
+              currency: "BRL",
+              closingBalanceMinor: 480000,
+              points: [
+                { date: "2026-07-02", closingBalanceMinor: 490000 },
+                { date: "2026-07-03", closingBalanceMinor: 485000 },
+                { date: "2026-07-31", closingBalanceMinor: 480000 },
+              ],
+            },
+          ],
           freeToSpend: {
             referenceDate: "2026-07-01",
             horizonDays: 30,
@@ -58,6 +68,62 @@ describe("dev-server dashboard page", () => {
               },
             ],
           },
+        });
+      }
+
+      if (url.pathname === "/api/dashboard-overview") {
+        return jsonResponse({
+          referenceDate: "2026-07-01",
+          purchaseToday: "2026-07-01",
+          purchaseOn: "2026-07-01",
+          periodStartOn: "2026-07-01",
+          periodEndOn: "2026-07-31",
+          accountBalances: [
+            {
+              id: "brl-primary",
+              name: "Conta Principal",
+              kind: "checking",
+              currency: "BRL",
+              balanceMinor: 450000,
+            },
+            {
+              id: "brl-reserve",
+              name: "Reserva BRL",
+              kind: "investment",
+              currency: "BRL",
+              balanceMinor: 50000,
+            },
+          ],
+          cardSpending: [{ id: "card-a", name: "Cartão Alfa", currency: "BRL", spentMinor: 55000 }],
+          cardSpendingTotals: [{ currency: "BRL", amountMinor: 55000, count: 1 }],
+          cardAdvice: [
+            {
+              id: "card-a",
+              name: "Cartão Alfa",
+              currency: "BRL",
+              closingOn: "2026-07-13",
+              dueOn: "2026-07-18",
+              daysUntilPayment: 17,
+              recommended: true,
+            },
+          ],
+          payables: [
+            {
+              id: "bill-a",
+              source: "transaction",
+              status: "planned",
+              description: "Conta de internet",
+              currency: "BRL",
+              dueOn: "2026-07-02",
+              amountMinor: 12000,
+              overdue: false,
+            },
+          ],
+          payableTotals: [{ currency: "BRL", amountMinor: 12000, overdueMinor: 0, count: 1 }],
+          categoryExpenses: [{ currency: "BRL", category: "Alimentação", amountMinor: 9000 }],
+          monthlyTrend: [
+            { currency: "BRL", month: "2026-07", incomeMinor: 300000, expensesMinor: 150000 },
+          ],
         });
       }
 
@@ -78,9 +144,35 @@ describe("dev-server dashboard page", () => {
       const html = await renderDashboardPage("session-token-actionable");
 
       assert.match(html, /Cockpit financeiro/);
-      assert.match(html, /Situação financeira atual/);
+      assert.match(html, /Visão geral financeira/);
       assert.match(html, /sem misturar moedas/);
       assert.match(html, /data-quality="complete"/);
+      assert.match(html, /Melhor cartão para comprar hoje/);
+      assert.match(html, /Cartão Alfa/);
+      assert.match(html, /17 <small>dias até o vencimento/);
+      assert.match(html, /Conta de internet/);
+      assert.match(html, /Saldo por conta/);
+      assert.match(html, /Conta corrente/);
+      assert.match(html, /Investimento/);
+      assert.match(html, /Gastos por cartão/);
+      assert.match(html, /Despesas por categoria/);
+      assert.match(html, /Evolução financeira/);
+      assert.match(html, /Simular data da compra/);
+      assert.match(html, /data-layout="approved-mockup"/);
+      assert.match(html, /data-dashboard-region="bills-and-accounts"/);
+      assert.match(html, /data-dashboard-region="credit-cards"/);
+      assert.match(html, /data-dashboard-region="analysis"/);
+      assert.match(html, /Resultado do mês/);
+      assert.match(html, /Contas a pagar/);
+      assert.match(html, /Gastos nos cartões/);
+      assert.match(html, /data-kpi="cards"[\s\S]*?R\$\s*550,00/);
+      assert.match(html, /Saldo mínimo projetado/);
+      assert.match(html, /data-kpi="free"/);
+      assert.match(html, /class="dashboard-currency-filter"/);
+      assert.match(html, /class="dashboard-mobile-additional"/);
+      assert.match(html, /class="dashboard-trend-columns"/);
+      assert.match(html, /class="dashboard-card-spend-bars"/);
+
       assert.match(html, /Variação líquida do mês/);
       assert.match(
         html,
@@ -88,6 +180,8 @@ describe("dev-server dashboard page", () => {
       );
       assert.match(html, /Compromissos previstos em BRL/);
       assert.match(html, /Projeção de caixa — 30 dias/);
+      assert.match(html, /class="dashboard-projection-chart"/);
+      assert.match(html, /polyline points=/);
       assert.match(html, /Saldo projetado no fim do horizonte/);
       assert.match(html, /R\$\s*4\.800,00/);
       assert.match(html, /Livre para gastar hoje/);
@@ -119,21 +213,23 @@ describe("dev-server dashboard page", () => {
       assert.doesNotMatch(availableEvidence, /Conta Histórica/);
       assert.match(html, /1 item aguardando revisão na inbox/);
       assert.match(html, /1 fatura de cartão em aberto/);
+      assert.match(html, /Próximo vencimento em 12\/07\/2026/);
       assert.match(html, /href="\/inbox">Abrir inbox/);
       assert.match(html, /href="\/cartoes">Ver cartões/);
       assert.match(html, /Ferramentas de decisão/);
       assertCockpitHierarchy(html);
-      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 2);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 10);
       assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 3);
       assert.ok(
-        html.indexOf('class="next-actions"') < html.indexOf('class="dashboard-supporting-section"'),
+        html.indexOf('data-dashboard-region="alerts"') <
+          html.indexOf('class="dashboard-supporting-section"'),
       );
       assert.match(html, /\.dashboard-metric \.sf-metric-card \{ display: grid;/);
       assert.match(html, /text-align: left; white-space: nowrap;/);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 5);
       const intrusive = html.replace(
-        '<section class="next-actions"',
-        '<section class="decision-section" aria-label="Painel intrusivo"></section><section class="next-actions"',
+        '<section class="next-actions dashboard-actions panel"',
+        '<section class="decision-section" aria-label="Painel intrusivo"></section><section class="next-actions dashboard-actions panel"',
       );
       assert.throws(() => assertCockpitHierarchy(intrusive));
       assert.match(html, /Planejamento financeiro/);
@@ -150,7 +246,10 @@ describe("dev-server dashboard page", () => {
 
       assert.match(html, /class="sf-page-container dashboard-page"/);
       assert.match(html, /class="sf-page-header"/);
-      assert.match(html, /class="dashboard-primary-currencies" data-multicurrency="false"/);
+      assert.match(
+        html,
+        /class="dashboard-primary-currencies" data-dashboard-region="kpis"\s+data-multicurrency="false"/,
+      );
       assert.match(html, /class="sf-summary-grid"/);
       assert.match(html, /class="sf-metric-card"/);
       assert.match(html, /class="evidence-detail"/);
@@ -158,8 +257,9 @@ describe("dev-server dashboard page", () => {
       assert.match(html, /\.metric-drilldown:focus-visible/);
       assert.match(
         html,
-        /\.currency-summary \.sf-summary-grid, \.dashboard-supporting-metrics, \.decision-grid, \.cash-flow-dashboard-grid \{ grid-template-columns: 1fr;/,
+        /dashboard-primary-currencies \.currency-summary \.sf-summary-grid \{ display: grid;/,
       );
+      assert.match(html, /data-kpi="result"/);
     } finally {
       globalThis.fetch = originalFetch;
     }
@@ -283,16 +383,38 @@ function jsonResponse(body: unknown): Response {
 }
 
 function assertCockpitHierarchy(html: string): void {
-  const position = html.indexOf('id="currency-BRL"');
-  const action = html.indexOf('<section class="next-actions"');
-  const horizon = html.indexOf('class="cash-flow-section"');
-  const secondary = html.indexOf('class="decision-section"');
-  const supporting = html.indexOf('class="dashboard-supporting-section"');
-  const evidence = html.indexOf('class="dashboard-evidence-index"');
-  assert.ok(position >= 0, "Posição por moeda deve existir");
-  assert.ok(action > position, "Próxima ação deve seguir o saldo e a variação");
-  assert.ok(supporting > action, "Indicadores complementares não podem preceder a próxima ação");
-  assert.ok(horizon > supporting, "Horizonte não pode encobrir os complementos");
-  assert.ok(secondary > horizon, "Módulos secundários devem ficar após o horizonte");
-  assert.ok(evidence > secondary, "Índice de evidências não pode ocupar a dobra inicial");
+  const order = [
+    'data-dashboard-region="overview"',
+    'data-dashboard-region="kpis"',
+    'data-dashboard-region="alerts"',
+    'data-dashboard-region="cash-flow"',
+    'data-dashboard-region="bills-and-accounts"',
+    'id="dashboard-payables"',
+    'id="dashboard-accounts"',
+    'data-dashboard-region="credit-cards"',
+    'id="dashboard-credit-cards"',
+    'id="dashboard-best-card"',
+    'data-dashboard-region="analysis"',
+    'id="dashboard-categories"',
+    'id="dashboard-evolution"',
+    'data-dashboard-region="activity"',
+    'data-dashboard-region="additional"',
+    'class="dashboard-evidence-index"',
+  ];
+  const positions = order.map((marker) => html.indexOf(marker));
+  assert.ok(
+    positions.every((position) => position >= 0),
+    "Todas as regiões do mockup devem existir",
+  );
+  for (let index = 1; index < positions.length; index += 1) {
+    assert.ok(
+      positions[index]! > positions[index - 1]!,
+      "Ordem do mockup violada: " + order[index],
+    );
+  }
+  const alert = positions[2]!;
+  assert.ok(
+    !html.slice(0, alert).includes('<section class="decision-section"'),
+    "Ferramentas secundárias não podem anteceder a primeira ação",
+  );
 }

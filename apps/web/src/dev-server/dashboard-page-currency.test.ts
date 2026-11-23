@@ -85,13 +85,28 @@ describe("dashboard multi-currency contract", () => {
       assert.match(html, /Variação líquida do mês/);
       assert.match(html, /Compra ficticia USD/);
       assert.match(html, /expense - posted - USD - 18\/08\/2026/);
-      assert.match(html, /class="dashboard-hero" data-multicurrency="true"/);
-      assert.match(html, /class="dashboard-primary-currencies" data-multicurrency="true"/);
+      assert.match(
+        html,
+        /class="dashboard-hero" data-dashboard-region="overview" data-multicurrency="true"/,
+      );
+      assert.match(
+        html,
+        /class="dashboard-primary-currencies" data-dashboard-region="kpis"\s+data-multicurrency="true"/,
+      );
       assert.equal((html.match(/class="currency-summary"/g) ?? []).length, 2);
-      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 4);
+      assert.equal((html.match(/class="sf-metric-card"/g) ?? []).length, 20);
       assert.equal((html.match(/class="dashboard-supporting-metric"/g) ?? []).length, 6);
       assert.equal((html.match(/class="evidence-detail"/g) ?? []).length, 10);
       assert.match(html, /class="sf-summary-grid"/);
+      const usdOnly = await renderDashboardPage(
+        "session-token-multi-currency-selected",
+        new URL("http://localhost:5173/dashboard?currency=USD"),
+      );
+      assert.doesNotMatch(usdOnly, /aria-label="Indicadores em BRL"/);
+      assert.match(usdOnly, /aria-label="Indicadores em USD"/);
+      assert.match(usdOnly, /<option value="USD" selected>USD<\/option>/);
+      assert.equal((usdOnly.match(/class="currency-summary"/g) ?? []).length, 1);
+      assert.equal((usdOnly.match(/class="evidence-detail"/g) ?? []).length, 5);
     } finally {
       globalThis.fetch = originalFetch;
     }

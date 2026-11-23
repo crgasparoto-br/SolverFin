@@ -1,4 +1,7 @@
-import { formatDateOnly } from "@solverfin/shared";
+import { financialTodayInSaoPaulo, formatDateOnly } from "@solverfin/shared";
+import type { DashboardOverview } from "./dashboard-overview-view.js";
+import { presentCashFlowProjection } from "./dashboard-cashflow-presenter.js";
+import { describeOpenInvoiceDueDates } from "./dashboard-invoice-alert.js";
 
 import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
@@ -57,6 +60,7 @@ export interface DashboardCashFlowProjection {
   currencyBlocks: Array<{
     currency: string;
     closingBalanceMinor: number;
+    points?: { date: string; closingBalanceMinor: number }[];
   }>;
   freeToSpend?: {
     referenceDate: string;
@@ -85,11 +89,13 @@ export interface DashboardCashFlowProjectionViewModel {
   currencies: readonly {
     currency: string;
     closingBalance: MoneyViewModel;
+    points: readonly { date: string; balance: MoneyViewModel }[];
     freeToSpend:
       | {
           status: "available";
           amount: MoneyViewModel;
           projectedDeficit: MoneyViewModel;
+          minimumBalance: MoneyViewModel;
           minimumBalanceOnLabel: string;
         }
       | {
@@ -151,6 +157,9 @@ export interface DashboardDecisionModuleViewModel {
 }
 
 export interface DashboardContentViewModel {
+  selectedCurrency?: string;
+  purchaseOn?: string;
+  overview?: DashboardOverview;
   currencySummaries: readonly DashboardCurrencySummaryViewModel[];
   cashFlowProjection?: DashboardCashFlowProjectionViewModel;
   /** Top canonical insights (#621): deduplicated and ordered by the API, limited to 3. */
@@ -164,6 +173,7 @@ export interface DashboardContentViewModel {
 export type DashboardScreenViewModel = ScreenViewModel<DashboardContentViewModel>;
 
 export interface DashboardPresenterInput {
+  overview?: ApiSuccess<DashboardOverview> | ApiFailure;
   summary: ApiSuccess<DashboardFinancialSummary> | ApiFailure;
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure;
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure;
@@ -190,7 +200,10 @@ export function presentDashboardLoading(
   return loadingScreen({ filters, provenance: [] });
 }
 
-export function presentDashboard(input: DashboardPresenterInput): DashboardScreenViewModel {
+export function presentDashboard(
+  input: DashboardPresenterInput,
+  now: Date = new Date(),
+): DashboardScreenViewModel {
   const context = {
     filters: input.filters,
     provenance: dashboardProvenance(input),
@@ -211,8 +224,16 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
     });
   }
 
+  const selectedCurrency = input.summary.data.currencyBlocks.some(
+    (block) => block.currency === input.filters.currency,
+  )
+    ? input.filters.currency
+    : undefined;
   return successScreen(context, {
+    ...(selectedCurrency ? { selectedCurrency } : {}),
+    ...(input.filters.purchaseOn ? { purchaseOn: input.filters.purchaseOn } : {}),
     currencySummaries: input.summary.data.currencyBlocks.map(presentCurrencySummary),
+    ...(input.overview?.ok ? { overview: input.overview.data } : {}),
     ...(input.cashFlowProjection.ok
       ? { cashFlowProjection: presentCashFlowProjection(input.cashFlowProjection.data) }
       : {}),
@@ -223,6 +244,7 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       input.summary.data.currencyBlocks,
       input.pendingReview,
       input.openInvoices,
+      input.overview?.ok ? input.overview.data.purchaseToday : financialTodayInSaoPaulo(now),
     ),
     recentItems: input.summary.data.recentItems.map((item) => ({
       description: item.description,
@@ -235,6 +257,7 @@ export function presentDashboard(input: DashboardPresenterInput): DashboardScree
       input.pendingReview,
       input.openInvoices,
       input.cashFlowProjection,
+      input.overview,
     ),
     decisionModules: decisionModules(),
   });
@@ -340,6 +363,7 @@ function presentNextActions(
   currencyBlocks: DashboardFinancialSummaryCurrencyBlock[],
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
+  today: string,
 ): DashboardNextActionViewModel[] {
   const reviewCount = pendingReview.ok ? pendingReview.data.messages.length : 0;
   const invoices = openInvoices.ok ? openInvoices.data.invoices : [];
@@ -366,46 +390,13 @@ function presentNextActions(
   if (invoices.length > 0) {
     actions.push({
       title: `${invoices.length} fatura${invoicePlural} de cartão em aberto`,
-      description: `Próximo vencimento em ${formatDateOnly(nearestDueDate(invoices.map((item) => item.dueOn)))}.`,
+      description: describeOpenInvoiceDueDates(invoices, today),
       href: "/cartoes",
       linkLabel: "Ver cartões",
     });
   }
 
   return actions;
-}
-
-function presentCashFlowProjection(
-  projection: DashboardCashFlowProjection,
-): DashboardCashFlowProjectionViewModel {
-  return {
-    referenceDateLabel: formatDateOnly(projection.referenceDate),
-    horizonDays: projection.horizonDays,
-    currencies: projection.currencyBlocks.map((block) => {
-      const freeToSpend = projection.freeToSpend?.currencyBlocks.find(
-        (candidate) => candidate.currency === block.currency,
-      );
-
-      return {
-        currency: block.currency,
-        closingBalance: money(block.closingBalanceMinor, block.currency),
-        freeToSpend:
-          freeToSpend?.status === "available"
-            ? {
-                status: "available" as const,
-                amount: money(freeToSpend.freeToSpendMinor, block.currency),
-                projectedDeficit: money(freeToSpend.projectedDeficitMinor, block.currency),
-                minimumBalanceOnLabel: formatDateOnly(freeToSpend.minimumBalanceOn),
-              }
-            : { status: "unavailable" as const },
-        href: `/relatorios?view=cash-flow&referenceDate=${encodeURIComponent(
-          projection.referenceDate,
-        )}&horizonDays=${projection.horizonDays}#cash-flow-${encodeURIComponent(
-          block.currency.toLowerCase(),
-        )}`,
-      };
-    }),
-  };
 }
 
 function presentDashboardFinancialInsights(
@@ -422,8 +413,10 @@ function presentDataQuality(
   pendingReview: ApiSuccess<{ messages: unknown[] }> | ApiFailure,
   openInvoices: ApiSuccess<{ invoices: DashboardOpenInvoice[] }> | ApiFailure,
   cashFlowProjection: ApiSuccess<DashboardCashFlowProjection> | ApiFailure,
+  overview?: ApiSuccess<DashboardOverview> | ApiFailure,
 ): DashboardDataQualityViewModel {
   if (
+    (overview !== undefined && !overview.ok) ||
     !pendingReview.ok ||
     !openInvoices.ok ||
     !cashFlowProjection.ok ||
@@ -477,6 +470,9 @@ function decisionModules(): DashboardDecisionModuleViewModel[] {
 function dashboardProvenance(input: DashboardPresenterInput): ScreenDataProvenance[] {
   return [
     provenance("/api/financial-summary", input.summary.ok),
+    ...(input.overview === undefined
+      ? []
+      : [provenance("/api/dashboard-overview", input.overview.ok)]),
     provenance("/api/cash-flow-projection?horizonDays=30", input.cashFlowProjection.ok),
     provenance("/api/bank-message-inbox?status=pending_review", input.pendingReview.ok),
     provenance("/api/invoices?status=open", input.openInvoices.ok),
@@ -510,10 +506,6 @@ function accountDrilldownHref(
   if (filters.kind) query.set("kind", filters.kind);
   if (filters.evidence) query.set("evidence", filters.evidence);
   return `/lancamentos?${query.toString()}`;
-}
-
-function nearestDueDate(dates: string[]): string {
-  return dates.slice().sort((left, right) => left.localeCompare(right))[0] ?? "";
 }
 
 function money(amountMinor: number, currency: string): MoneyViewModel {
