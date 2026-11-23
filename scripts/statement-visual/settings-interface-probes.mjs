@@ -170,10 +170,12 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
           rect.left >= navRect.left - 1 && rect.right <= navRect.right + 1 &&
           rect.left >= -1 && rect.right <= innerWidth + 1;
       }));
+      const tabsScrollable = Boolean(nav && nav.scrollWidth > nav.clientWidth + 1);
       return {
         viewport: { width: window.innerWidth, height: window.innerHeight },
         rootFontSizePx: parseFloat(getComputedStyle(document.documentElement).fontSize),
-        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1 &&
+          (window.innerWidth > 430 || (allTabsVisible && !tabsScrollable)),
         documentScrollWidth: document.documentElement.scrollWidth,
         horizontalOverflowCandidates: Array.from(document.querySelectorAll("body *")).filter((element) => {
           const rect = element.getBoundingClientRect();
@@ -185,7 +187,7 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
         linksAreGet: links.length === 2 && links.every((link, index) => link.tagName === 'A' && link.getAttribute('href') === expectedLinks[index]),
         focusableNavigation: links.every((link) => link.tabIndex >= 0),
         allTabsVisible,
-        tabsScrollable: Boolean(nav && nav.scrollWidth > nav.clientWidth + 1),
+        tabsScrollable,
         dialogOpen: Boolean(dialog?.open),
         dialogInsideViewport: Boolean(dialogRect && dialogRect.left >= 0 && dialogRect.right <= window.innerWidth && dialogRect.top >= 0 && dialogRect.bottom <= window.innerHeight),
         hasTenantOperational: bodyText.includes('Tenant operacional'),
