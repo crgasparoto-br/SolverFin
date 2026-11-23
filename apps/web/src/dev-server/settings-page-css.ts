@@ -111,6 +111,9 @@ export function baseCss(): string {
       .settings-operation-actions { justify-self: start; }
     }
     @media (max-width: 430px) {
+      /* Keep both navigation links fully discoverable instead of clipping the second tab. */
+      .settings-page .sf-tabs { flex-wrap: wrap; overflow-x: visible; }
+      .settings-page .sf-tab { flex: 1 1 auto; justify-content: center; min-width: 0; padding-inline: var(--sf-space-2); text-align: center; white-space: normal; }
       .settings-section-heading .sf-button { width: 100%; }
       .settings-operation-actions, .settings-operation-actions .sf-button { width: 100%; }
       .settings-page .master-dialog .edit-grid { grid-template-columns: 1fr; }

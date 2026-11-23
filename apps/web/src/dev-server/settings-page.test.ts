@@ -12,6 +12,7 @@ sectionResolutionIsServerSide();
 amountInputConvertsDecimalsToMinorUnits();
 ruleListFilterFallsBackToAll();
 ruleSummaryKeepsSingleLayout();
+settingsMobileTabsRemainDiscoverable();
 await profilesSectionRendersAsTheDefault();
 await rulesSectionRendersReadableDetails();
 await rulesListFiltersPreserveActionsAndVisibility();
@@ -44,6 +45,18 @@ function ruleSummaryKeepsSingleLayout(): void {
   const css = baseCss();
   assert.equal((css.match(/\.rule-summary\s*\{/g) ?? []).length, 1);
   assert.match(css, /\.rule-summary\s*\{[^}]*display:\s*grid;/);
+}
+
+function settingsMobileTabsRemainDiscoverable(): void {
+  const css = baseCss();
+  const mobile = css.slice(css.indexOf("@media (max-width: 430px)"));
+  assert.match(
+    mobile,
+    /\.settings-page \.sf-tabs \{[^}]*flex-wrap: wrap;[^}]*overflow-x: visible;/,
+  );
+  assert.match(mobile, /\.settings-page \.sf-tab \{[^}]*flex: 1 1 auto;[^}]*min-width: 0;/);
+  // A clipped, scroll-only navigation must not silently replace this reflow.
+  assert.doesNotMatch(mobile, /\.settings-page \.sf-tabs \{[^}]*overflow-x: auto;/);
 }
 
 function ruleListFilterFallsBackToAll(): void {

@@ -164,6 +164,18 @@ async function runScenario(name, width, height, section, zoom = false) {
     check(measurements.dialogOpen, `${name}: diálogo não abriu`, measurements);
     check(measurements.dialogInsideViewport, `${name}: diálogo excede o viewport`, measurements);
     check(measurements.focusableNavigation, `${name}: navegação não recebe foco`, measurements);
+    if (width <= 430) {
+      check(
+        measurements.allTabsVisible,
+        `${name}: uma das abas de Configurações está cortada`,
+        measurements,
+      );
+      check(
+        !measurements.tabsScrollable,
+        `${name}: as abas ainda dependem de rolagem horizontal`,
+        measurements,
+      );
+    }
     check(
       keyboardNavigation.focusMoved,
       `${name}: Tab não moveu o foco entre seções`,
