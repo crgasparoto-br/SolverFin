@@ -62,6 +62,59 @@ async function main(): Promise<void> {
   assert.equal(atUtcMonthBoundary.periodStartOn, "2041-06-01");
   assert.equal(atUtcMonthBoundary.periodEndOn, "2041-06-30");
   const baseline = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  // Adversarial isolation: identical owner/organization but a different profile
+  // must never leak accounts, commitments or card purchases into this context.
+  const otherContext: TenantContext = { ...CONTEXT, financialProfileId: randomUUID() };
+  await query(
+    `insert into "FinancialProfile"
+      ("id", "organizationId", "ownerUserId", "name", "kind", "status", "createdAt", "updatedAt")
+     values ($1, $2, $3, $4, 'PERSONAL', 'ACTIVE', now(), now())`,
+    [
+      otherContext.financialProfileId,
+      otherContext.organizationId,
+      otherContext.userId,
+      `Other dashboard profile ${suffix}`,
+    ],
+  );
+  const otherAccount = await createAccountForContext(otherContext, {
+    name: `Other profile cash ${suffix}`,
+    kind: "checking",
+    openingBalanceMinor: 321_321,
+    currency: "BRL",
+  });
+  const otherBill = await createTransactionForContext(otherContext, {
+    accountId: otherAccount.id,
+    kind: "expense",
+    status: "planned",
+    amountMinor: 1_234,
+    currency: "BRL",
+    occurredOn: "2041-05-07",
+    plannedOn: "2041-05-25",
+    effectiveOn: null,
+    description: `Foreign profile bill ${suffix}`,
+  });
+  const otherCard = await createCardForContext(otherContext, {
+    name: `Foreign card ${suffix}`,
+    closingDay: 8,
+    dueDay: 16,
+    paymentAccountId: otherAccount.id,
+    currency: "BRL",
+  });
+  const otherPurchase = await registerCardPurchaseForContext(otherContext, otherCard.id, {
+    occurredOn: "2041-05-03",
+    amountMinor: 2_900,
+    description: `Foreign purchase ${suffix}`,
+  });
+  const ownSnapshot = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
+  assert.equal(ownSnapshot.accountBalances.some((row) => row.id === otherAccount.id), false);
+  assert.equal(ownSnapshot.payables.some((row) => row.id === otherBill.id), false);
+  assert.equal(ownSnapshot.payables.some((row) => row.id === otherPurchase.invoice.id), false);
+  assert.equal(ownSnapshot.cardSpending.some((row) => row.id === otherCard.id), false);
+  const otherSnapshot = await buildDashboardOverview(otherContext, PURCHASE_ON, REFERENCE);
+  assert.ok(otherSnapshot.accountBalances.some((row) => row.id === otherAccount.id));
+  assert.ok(otherSnapshot.payables.some((row) => row.id === otherBill.id));
+  assert.ok(otherSnapshot.payables.some((row) => row.id === otherPurchase.invoice.id));
+  assert.ok(otherSnapshot.cardSpending.some((row) => row.id === otherCard.id));
   const account = await createAccountForContext(CONTEXT, {
     name: `Overview cash ${suffix}`,
     kind: "checking",
