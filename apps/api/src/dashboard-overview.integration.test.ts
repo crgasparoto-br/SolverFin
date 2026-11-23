@@ -106,10 +106,22 @@ async function main(): Promise<void> {
     description: `Foreign purchase ${suffix}`,
   });
   const ownSnapshot = await buildDashboardOverview(CONTEXT, PURCHASE_ON, REFERENCE);
-  assert.equal(ownSnapshot.accountBalances.some((row) => row.id === otherAccount.id), false);
-  assert.equal(ownSnapshot.payables.some((row) => row.id === otherBill.id), false);
-  assert.equal(ownSnapshot.payables.some((row) => row.id === otherPurchase.invoice.id), false);
-  assert.equal(ownSnapshot.cardSpending.some((row) => row.id === otherCard.id), false);
+  assert.equal(
+    ownSnapshot.accountBalances.some((row) => row.id === otherAccount.id),
+    false,
+  );
+  assert.equal(
+    ownSnapshot.payables.some((row) => row.id === otherBill.id),
+    false,
+  );
+  assert.equal(
+    ownSnapshot.payables.some((row) => row.id === otherPurchase.invoice.id),
+    false,
+  );
+  assert.equal(
+    ownSnapshot.cardSpending.some((row) => row.id === otherCard.id),
+    false,
+  );
   const otherSnapshot = await buildDashboardOverview(otherContext, PURCHASE_ON, REFERENCE);
   assert.ok(otherSnapshot.accountBalances.some((row) => row.id === otherAccount.id));
   assert.ok(otherSnapshot.payables.some((row) => row.id === otherBill.id));
