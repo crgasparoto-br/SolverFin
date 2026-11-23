@@ -1,6 +1,7 @@
 import { financialTodayInSaoPaulo, formatDateOnly } from "@solverfin/shared";
 import type { DashboardOverview } from "./dashboard-overview-view.js";
 import { presentCashFlowProjection } from "./dashboard-cashflow-presenter.js";
+import { describeOpenInvoiceDueDates } from "./dashboard-invoice-alert.js";
 
 import type { ApiFailure, ApiSuccess } from "./api.js";
 import {
@@ -505,39 +506,6 @@ function accountDrilldownHref(
   if (filters.kind) query.set("kind", filters.kind);
   if (filters.evidence) query.set("evidence", filters.evidence);
   return `/lancamentos?${query.toString()}`;
-}
-
-function describeOpenInvoiceDueDates(
-  invoices: readonly DashboardOpenInvoice[],
-  today: string,
-): string {
-  // Dates are canonical YYYY-MM-DD civil dates, not UTC timestamps.
-  const dueDates = invoices
-    .map((invoice) => invoice.dueOn)
-    .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
-    .sort((left, right) => left.localeCompare(right));
-  const overdue = dueDates.filter((date) => date < today);
-  const dueTodayCount = dueDates.filter((date) => date === today).length;
-  const next = dueDates.find((date) => date > today);
-  const messages: string[] = [];
-
-  const oldestOverdue = overdue[0];
-  if (oldestOverdue) {
-    if (overdue.length === 1) {
-      messages.push(`1 fatura vencida em ${formatDateOnly(oldestOverdue)}.`);
-    } else {
-      messages.push(
-        `${overdue.length} faturas vencidas; a mais antiga venceu em ${formatDateOnly(oldestOverdue)}.`,
-      );
-    }
-  }
-  if (dueTodayCount > 0) {
-    messages.push(`${dueTodayCount} fatura${dueTodayCount === 1 ? " vence" : "s vencem"} hoje.`);
-  }
-  if (next) {
-    messages.push(`Próximo vencimento em ${formatDateOnly(next)}.`);
-  }
-  return messages.join(" ") || "Consulte os cartões para confirmar os vencimentos.";
 }
 
 function money(amountMinor: number, currency: string): MoneyViewModel {
