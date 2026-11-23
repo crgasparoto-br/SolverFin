@@ -1,0 +1,35 @@
+{
+  "contract_version": "2026-08-20.3",
+  "external_report": {
+    "path": "evidence/independent-audit-comment-7103431338-source.txt",
+    "sha256": "d8e32af30656677e6b42ff6cd12badffae7ce040b8ebacb2f7ab5342c8dd34a8",
+    "url": "https://github.com/crgasparoto-br/SolverFin/pull/809#issuecomment-7103431338"
+  },
+  "findings": [
+    {
+      "actionable": true,
+      "category": "delivery-certification",
+      "disposition": "blocking",
+      "id": "A-001",
+      "remediation_mode": "targeted-remediation",
+      "status": "open",
+      "summary": "Material UI commit published after final H1 handoff invalidates exact-SHA certification; trusted gate rejects parent(H)!=M2. Recovery requires post-write-refreeze and new result-only child."
+    }
+  ],
+  "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+  "identity": {
+    "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+    "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+    "issue_number": 808,
+    "material_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+    "pull_request_number": 809,
+    "repository": "crgasparoto-br/SolverFin"
+  },
+  "provenance_note": "Exact SHA-256 of authenticated GitHub PR comment #7103431338; prior audit-source-result and rejection lineage remain available in immutable H1 Git commit. The source URL is authoritative, no independent approval is claimed.",
+  "recommendations": [],
+  "rejection_id": "audit-rejection:97f077da-7370-4527-980c-c11ebc9c1e77",
+  "schema_version": 1,
+  "status": "rejected",
+  "trusted_anchor_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "verdict": "REPROVADA"
+}

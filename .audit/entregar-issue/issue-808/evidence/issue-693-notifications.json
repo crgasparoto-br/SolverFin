@@ -1,0 +1,183 @@
+{
+  "commit": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+  "route": "/notificacoes",
+  "viewports": [
+    {
+      "width": 1366,
+      "height": 900,
+      "route": "/notificacoes",
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": true,
+      "preferencesNotMounted": true,
+      "unreadCount": "0 não lidas",
+      "receivedHasNoHorizontalOverflow": true,
+      "viewportWidth": 1366,
+      "preferencesTabActive": true,
+      "receivedNotMounted": true,
+      "preferenceGroupCount": 4,
+      "groupsHaveThreeChannels": true,
+      "readableChannelWidths": true,
+      "labelsUseGridLayout": true,
+      "preferenceCount": 12,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "route": "/notificacoes",
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": true,
+      "preferencesNotMounted": true,
+      "unreadCount": "0 não lidas",
+      "receivedHasNoHorizontalOverflow": true,
+      "viewportWidth": 390,
+      "preferencesTabActive": true,
+      "receivedNotMounted": true,
+      "preferenceGroupCount": 4,
+      "groupsHaveThreeChannels": true,
+      "readableChannelWidths": true,
+      "labelsUseGridLayout": true,
+      "preferenceCount": 12,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 320,
+      "height": 740,
+      "route": "/notificacoes",
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": true,
+      "preferencesNotMounted": true,
+      "unreadCount": "0 não lidas",
+      "receivedHasNoHorizontalOverflow": true,
+      "viewportWidth": 320,
+      "preferencesTabActive": true,
+      "receivedNotMounted": true,
+      "preferenceGroupCount": 4,
+      "groupsHaveThreeChannels": true,
+      "readableChannelWidths": true,
+      "labelsUseGridLayout": true,
+      "preferenceCount": 12,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "populatedViewports": [
+    {
+      "width": 1366,
+      "height": 900,
+      "route": "/notificacoes",
+      "viewportWidth": 1366,
+      "profilePreserved": true,
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": false,
+      "rowCount": 3,
+      "unreadCount": "2 não lidas",
+      "hasReadState": true,
+      "hasUnreadState": true,
+      "hasBudgetAmount": true,
+      "hasInvoiceAmount": true,
+      "metadataCount": 3,
+      "visibleTitles": true,
+      "actionCount": 6,
+      "actionsVisible": true,
+      "noRowOverflow": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "route": "/notificacoes",
+      "viewportWidth": 390,
+      "profilePreserved": true,
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": false,
+      "rowCount": 3,
+      "unreadCount": "2 não lidas",
+      "hasReadState": true,
+      "hasUnreadState": true,
+      "hasBudgetAmount": true,
+      "hasInvoiceAmount": true,
+      "metadataCount": 3,
+      "visibleTitles": true,
+      "actionCount": 6,
+      "actionsVisible": true,
+      "noRowOverflow": true,
+      "noHorizontalOverflow": true
+    },
+    {
+      "width": 320,
+      "height": 740,
+      "route": "/notificacoes",
+      "viewportWidth": 320,
+      "profilePreserved": true,
+      "rootVisible": true,
+      "receivedTabActive": true,
+      "emptyState": false,
+      "rowCount": 3,
+      "unreadCount": "2 não lidas",
+      "hasReadState": true,
+      "hasUnreadState": true,
+      "hasBudgetAmount": true,
+      "hasInvoiceAmount": true,
+      "metadataCount": 3,
+      "visibleTitles": true,
+      "actionCount": 6,
+      "actionsVisible": true,
+      "noRowOverflow": true,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "populatedZoom": {
+    "width": 320,
+    "scrollWidth": 305,
+    "minDescriptionWidth": 207,
+    "noHorizontalOverflow": true,
+    "actionsWithinViewport": true,
+    "actionsComfortable": true,
+    "textScale": 200
+  },
+  "populatedActions": {
+    "passed": true,
+    "restoredReadState": true,
+    "unavailableSourceHandled": true,
+    "safeOriginNavigated": true,
+    "profilePreserved": true
+  },
+  "preference": {
+    "changedAndRestored": true,
+    "persistsAcrossReload": true
+  },
+  "preferenceRollback": {
+    "passed": true,
+    "restored": true,
+    "intercepted": 1,
+    "status": "Não foi possível salvar a alteração.",
+    "persistedUnchanged": true
+  },
+  "unsafeNavigation": {
+    "passed": true,
+    "kind": "navigation",
+    "intercepted": 1,
+    "status": "Origem indisponível.",
+    "route": "/notificacoes"
+  },
+  "failedReadMutation": {
+    "passed": true,
+    "kind": "read",
+    "intercepted": 1,
+    "status": "Não foi possível salvar a alteração.",
+    "route": "/notificacoes"
+  },
+  "result": "passed",
+  "navigation": {
+    "preservesProfileId": true,
+    "preservesAnchor": true
+  },
+  "fixtureCleanup": {
+    "passed": true
+  }
+}

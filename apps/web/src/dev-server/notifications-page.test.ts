@@ -36,14 +36,16 @@ try {
     new URL("https://solverfin.invalid/notificacoes?offset=10000&profileId=" + profileId),
   );
   const nextUrl = "/notificacoes?offset=10020&profileId=" + profileId;
-  assert.ok(page.includes('href="' + nextUrl + '"'), "Next must retain profile and offset");
+  const nextHref = nextUrl.replace("&profileId=", "&amp;profileId=");
+  assert.ok(page.includes('href="' + nextHref + '"'), "Next must retain profile and offset");
+  assert.ok(!page.includes('href="' + nextUrl + '"'), "SSR must escape query separators");
   const lastPage = await renderNotificationsPage(
     "demo",
     new URL("https://solverfin.invalid" + nextUrl),
   );
   assert.deepEqual(requestedOffsets, [10000, 10020]);
   assert.ok(lastPage.includes("10021–10021 de 10021"));
-  assert.ok(lastPage.includes('href="/notificacoes?offset=10000&profileId=' + profileId + '"'));
+  assert.ok(lastPage.includes('href="/notificacoes?offset=10000&amp;profileId=' + profileId + '"'));
   assert.ok(!lastPage.includes(">Próxima</a>"), "last page must not offer another link");
   console.log("Notifications: deep history links preserve offset and profile across SSR pages.");
 } finally {

@@ -1,0 +1,263 @@
+{
+  "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "creations": [
+    {
+      "decision": "create",
+      "justification": "Narrow extracted module for progressive controls or disposable browser fixture reuses existing route, visual runner and contracts; no duplicate standalone entrypoint.",
+      "kind": "file",
+      "path": "apps/web/src/dev-server/settings-rules-ui.ts",
+      "search": {
+        "candidates": [
+          {
+            "path": "apps/web/src/dev-server/settings-page.ts",
+            "reason_not_reused": "Original module is an existing route/visual entrypoint; extension via a small reusable imported helper avoids increasing legacy module size and preserves existing consumers."
+          }
+        ],
+        "queries": [
+          "git grep -nE \"renderRule|rule.*Form|rule.*Summary\" -- apps/web/src/dev-server/settings-page.ts"
+        ],
+        "scope": "Compare existing SSR/visual modules in the exact material tree to reuse established entrypoints and isolate new targeted helpers."
+      }
+    },
+    {
+      "decision": "create",
+      "justification": "Narrow extracted module for progressive controls or disposable browser fixture reuses existing route, visual runner and contracts; no duplicate standalone entrypoint.",
+      "kind": "file",
+      "path": "scripts/statement-visual/notification-populated-chrome.mjs",
+      "search": {
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-693-notifications.mjs",
+            "reason_not_reused": "Original module is an existing route/visual entrypoint; extension via a small reusable imported helper avoids increasing legacy module size and preserves existing consumers."
+          }
+        ],
+        "queries": [
+          "git grep -n \"notification.*fixture\" -- scripts/statement-visual/issue-693-notifications.mjs"
+        ],
+        "scope": "Compare existing SSR/visual modules in the exact material tree to reuse established entrypoints and isolate new targeted helpers."
+      }
+    },
+    {
+      "decision": "create",
+      "justification": "Narrow extracted module for progressive controls or disposable browser fixture reuses existing route, visual runner and contracts; no duplicate standalone entrypoint.",
+      "kind": "file",
+      "path": "scripts/statement-visual/notification-populated-fixtures.mjs",
+      "search": {
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/issue-693-notifications.mjs",
+            "reason_not_reused": "Original module is an existing route/visual entrypoint; extension via a small reusable imported helper avoids increasing legacy module size and preserves existing consumers."
+          }
+        ],
+        "queries": [
+          "git grep -n \"notification.*fixture\" -- scripts/statement-visual/issue-693-notifications.mjs"
+        ],
+        "scope": "Compare existing SSR/visual modules in the exact material tree to reuse established entrypoints and isolate new targeted helpers."
+      }
+    },
+    {
+      "decision": "create",
+      "justification": "Narrow extracted module for progressive controls or disposable browser fixture reuses existing route, visual runner and contracts; no duplicate standalone entrypoint.",
+      "kind": "file",
+      "path": "scripts/statement-visual/settings-rule-progressive.mjs",
+      "search": {
+        "candidates": [
+          {
+            "path": "scripts/statement-visual/settings-interface-adversarial.mjs",
+            "reason_not_reused": "Original module is an existing route/visual entrypoint; extension via a small reusable imported helper avoids increasing legacy module size and preserves existing consumers."
+          }
+        ],
+        "queries": [
+          "git grep -n \"ruleProgressive\" -- scripts/statement-visual/settings-interface-adversarial.mjs"
+        ],
+        "scope": "Compare existing SSR/visual modules in the exact material tree to reuse established entrypoints and isolate new targeted helpers."
+      }
+    }
+  ],
+  "references": [],
+  "replacements": [],
+  "schema_version": 2,
+  "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+  "test_decisions": [
+    {
+      "decision": "new-test-required",
+      "disposition": "keep",
+      "justification": "Adds a discriminant negative/SSR or Chrome fixture case not exposed by previous test, or extends the existing oracle without deleting coverage.",
+      "operation": "added",
+      "path": "apps/web/src/dev-server/notifications-experience.test.ts",
+      "requirement": "Issue #808 or #810 changed notification/rules experience in PR #809.",
+      "scenario": "Native SSR/progressive rule or notification fixture regression including negative unauthorized destination/failed dependency conditions.",
+      "search": {
+        "candidates": [
+          {
+            "case": "Previously existing SSR regression, browser behavior and negative origin/escaping cases.",
+            "comparison": "New test adds independent source/viewport/fixture setup, existing tests retained for regression.",
+            "oracle": "No incorrect response, SSR contract preserved and no untrusted output rendered as HTML.",
+            "path": "apps/web/src/dev-server/notifications-page.test.ts"
+          }
+        ],
+        "queries": [
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/notifications-experience.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/notifications-experience.test.ts"
+        ],
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
+        "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
+      },
+      "verification": {
+        "command": "npm run test",
+        "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
+        "exit_code": 0,
+        "reached_tests": [
+          "apps/web/src/dev-server/notifications-experience.test.ts"
+        ],
+        "status": "passed",
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+      }
+    },
+    {
+      "decision": "extend-existing",
+      "disposition": "keep",
+      "justification": "Adds a discriminant negative/SSR or Chrome fixture case not exposed by previous test, or extends the existing oracle without deleting coverage.",
+      "operation": "modified",
+      "path": "apps/web/src/dev-server/notifications-page.test.ts",
+      "requirement": "Issue #808 or #810 changed notification/rules experience in PR #809.",
+      "scenario": "Native SSR/progressive rule or notification fixture regression including negative unauthorized destination/failed dependency conditions.",
+      "search": {
+        "candidates": [
+          {
+            "case": "Previously existing SSR regression, browser behavior and negative origin/escaping cases.",
+            "comparison": "New test adds independent source/viewport/fixture setup, existing tests retained for regression.",
+            "oracle": "No incorrect response, SSR contract preserved and no untrusted output rendered as HTML.",
+            "path": "apps/web/src/dev-server/notifications-experience.test.ts"
+          }
+        ],
+        "queries": [
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/notifications-page.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/notifications-page.test.ts"
+        ],
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
+        "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
+      },
+      "verification": {
+        "command": "npm run test",
+        "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
+        "exit_code": 0,
+        "reached_tests": [
+          "apps/web/src/dev-server/notifications-page.test.ts"
+        ],
+        "status": "passed",
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+      }
+    },
+    {
+      "decision": "extend-existing",
+      "disposition": "keep",
+      "justification": "Adds a discriminant negative/SSR or Chrome fixture case not exposed by previous test, or extends the existing oracle without deleting coverage.",
+      "operation": "modified",
+      "path": "apps/web/src/dev-server/settings-page.test.ts",
+      "requirement": "Issue #808 or #810 changed notification/rules experience in PR #809.",
+      "scenario": "Native SSR/progressive rule or notification fixture regression including negative unauthorized destination/failed dependency conditions.",
+      "search": {
+        "candidates": [
+          {
+            "case": "Previously existing SSR regression, browser behavior and negative origin/escaping cases.",
+            "comparison": "New test adds independent source/viewport/fixture setup, existing tests retained for regression.",
+            "oracle": "No incorrect response, SSR contract preserved and no untrusted output rendered as HTML.",
+            "path": "apps/web/src/dev-server/settings-page-css.ts"
+          }
+        ],
+        "queries": [
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/settings-page.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/settings-page.test.ts"
+        ],
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
+        "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
+      },
+      "verification": {
+        "command": "npm run test",
+        "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
+        "exit_code": 0,
+        "reached_tests": [
+          "apps/web/src/dev-server/settings-page.test.ts"
+        ],
+        "status": "passed",
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+      }
+    },
+    {
+      "decision": "extend-existing",
+      "disposition": "keep",
+      "justification": "Adds a discriminant negative/SSR or Chrome fixture case not exposed by previous test, or extends the existing oracle without deleting coverage.",
+      "operation": "modified",
+      "path": "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+      "requirement": "Issue #808 or #810 changed notification/rules experience in PR #809.",
+      "scenario": "Native SSR/progressive rule or notification fixture regression including negative unauthorized destination/failed dependency conditions.",
+      "search": {
+        "candidates": [
+          {
+            "case": "Previously existing SSR regression, browser behavior and negative origin/escaping cases.",
+            "comparison": "New test adds independent source/viewport/fixture setup, existing tests retained for regression.",
+            "oracle": "No incorrect response, SSR contract preserved and no untrusted output rendered as HTML.",
+            "path": "scripts/statement-visual/notification-populated-fixtures.test.mjs"
+          }
+        ],
+        "queries": [
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
+        ],
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
+        "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
+      },
+      "verification": {
+        "command": "node --test scripts/statement-visual/notification-populated-fixtures.test.mjs scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+        "evidence_path": ".audit/entregar-issue/issue-808/execution/local-pr809-node-reachability.txt",
+        "evidence_sha256": "56d45b35f58cc14ab6ae23c08b2dd268a005a0a154e295d78e484123de4cdda8",
+        "exit_code": 0,
+        "reached_tests": [
+          "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
+        ],
+        "status": "passed",
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+      }
+    },
+    {
+      "decision": "new-test-required",
+      "disposition": "keep",
+      "justification": "Adds a discriminant negative/SSR or Chrome fixture case not exposed by previous test, or extends the existing oracle without deleting coverage.",
+      "operation": "added",
+      "path": "scripts/statement-visual/notification-populated-fixtures.test.mjs",
+      "requirement": "Issue #808 or #810 changed notification/rules experience in PR #809.",
+      "scenario": "Native SSR/progressive rule or notification fixture regression including negative unauthorized destination/failed dependency conditions.",
+      "search": {
+        "candidates": [
+          {
+            "case": "Previously existing SSR regression, browser behavior and negative origin/escaping cases.",
+            "comparison": "New test adds independent source/viewport/fixture setup, existing tests retained for regression.",
+            "oracle": "No incorrect response, SSR contract preserved and no untrusted output rendered as HTML.",
+            "path": "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
+          }
+        ],
+        "queries": [
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- scripts/statement-visual/notification-populated-fixtures.test.mjs",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- scripts/statement-visual/notification-populated-fixtures.test.mjs"
+        ],
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
+        "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
+      },
+      "verification": {
+        "command": "node --test scripts/statement-visual/notification-populated-fixtures.test.mjs scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+        "evidence_path": ".audit/entregar-issue/issue-808/execution/local-pr809-node-reachability.txt",
+        "evidence_sha256": "56d45b35f58cc14ab6ae23c08b2dd268a005a0a154e295d78e484123de4cdda8",
+        "exit_code": 0,
+        "reached_tests": [
+          "scripts/statement-visual/notification-populated-fixtures.test.mjs"
+        ],
+        "status": "passed",
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+      }
+    }
+  ]
+}

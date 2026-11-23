@@ -1,0 +1,39 @@
+HEAD: 72ef5a38eddafda0c74f51445c763aacac3ee429
+COMMAND: node --test scripts/statement-visual/notification-populated-fixtures.test.mjs scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs
+EXIT_CODE: 0
+REACHED: scripts/statement-visual/notification-populated-fixtures.test.mjs
+REACHED: scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs
+TAP version 13
+# Subtest: notifications behavior proof derives layout and preference assertions from both viewports
+ok 1 - notifications behavior proof derives layout and preference assertions from both viewports
+  ---
+  duration_ms: 1.896498
+  type: 'test'
+  ...
+# Subtest: notifications proof rejects missing mobile, wrong route and page errors
+ok 2 - notifications proof rejects missing mobile, wrong route and page errors
+  ---
+  duration_ms: 7.105851
+  type: 'test'
+  ...
+# Subtest: populated Chrome fixtures are allowed only in disposable local demo database
+ok 3 - populated Chrome fixtures are allowed only in disposable local demo database
+  ---
+  duration_ms: 2.075957
+  type: 'test'
+  ...
+# Subtest: visual fixture cleanup removes all profile categories, never other profiles
+ok 4 - visual fixture cleanup removes all profile categories, never other profiles
+  ---
+  duration_ms: 1.386882
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 82.569583

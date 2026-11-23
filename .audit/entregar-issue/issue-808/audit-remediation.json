@@ -1,0 +1,44 @@
+{
+  "candidate_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+  "contract_version": "2026-08-20.3",
+  "honesty": "Audit A-001 is a terminal packaging/post-write-refreeze failure; original trusted check is failed. Material CI/Chrome are green at M2; no trusted positive at H2 nor independent approval is claimed by this source ledger.",
+  "items": [
+    {
+      "changed_files": [
+        ".audit/entregar-issue/handoff-ready.json",
+        ".audit/entregar-issue/issue-808/audit-remediation.json",
+        ".audit/entregar-issue/issue-808/audit-source-result.json",
+        ".audit/entregar-issue/issue-808/requirement-attack-matrix.json",
+        ".audit/entregar-issue/issue-808/evidence-provenance.json"
+      ],
+      "closure_kind": "behavioral-fix",
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/pull/809#issuecomment-7103431338",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45177539156",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45177539268",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45177539127",
+        "evidence/post-write-stale-handoff.json",
+        "evidence/issue-693-notifications.json",
+        "evidence/settings-interface.json"
+      ],
+      "explanation": "M2 post-write refreeze: code change R-001 was verified by Repository CI 45177539268 and Chrome 45177539127, then a fresh certificate and result-only child are generated locally for M2. Trusted provenance only becomes verified after its future exact-H2 GitHub run passes; do not treat historical failure as new success.",
+      "remediation_mode": "targeted-remediation",
+      "source_id": "A-001",
+      "source_kind": "finding",
+      "status": "fixed",
+      "validations": [
+        "Trusted provenance failure reproduced at M2 and new parent(H2)=M2 will be required by official terminal guard, with release blocked until terminal check and independent audit",
+        "All changed material paths and exact-M2 Chrome/CI validations authenticated; targeted negative Node suite 4/4 PASS"
+      ]
+    }
+  ],
+  "remediation_mode": "targeted-remediation",
+  "resolution_policy": "all-actionable-items",
+  "schema_version": 1,
+  "source": {
+    "audit_report_sha256": "3b2d02151eb4b28834fb24626e3db792a6ad7400bc20d2fb520552b4c0079404",
+    "audited_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+    "rejection_id": "audit-rejection:97f077da-7370-4527-980c-c11ebc9c1e77"
+  },
+  "status": "closed"
+}

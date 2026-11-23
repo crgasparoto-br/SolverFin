@@ -162,10 +162,20 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
       const dialogRect = dialog?.getBoundingClientRect();
       const links = Array.from(document.querySelectorAll('.sf-tab'));
       const expectedLinks = ['/configuracoes?section=profiles', '/configuracoes?section=rules'];
+      const nav = document.querySelector('.settings-page .sf-tabs');
+      const navRect = nav?.getBoundingClientRect();
+      const allTabsVisible = Boolean(navRect && links.length === 2 && links.every((link) => {
+        const rect = link.getBoundingClientRect();
+        return rect.width > 0 && rect.height >= 44 &&
+          rect.left >= navRect.left - 1 && rect.right <= navRect.right + 1 &&
+          rect.left >= -1 && rect.right <= innerWidth + 1;
+      }));
+      const tabsScrollable = Boolean(nav && nav.scrollWidth > nav.clientWidth + 1);
       return {
         viewport: { width: window.innerWidth, height: window.innerHeight },
         rootFontSizePx: parseFloat(getComputedStyle(document.documentElement).fontSize),
-        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1,
+        noHorizontalOverflow: document.documentElement.scrollWidth <= window.innerWidth + 1 &&
+          (window.innerWidth > 430 || (allTabsVisible && !tabsScrollable)),
         documentScrollWidth: document.documentElement.scrollWidth,
         horizontalOverflowCandidates: Array.from(document.querySelectorAll("body *")).filter((element) => {
           const rect = element.getBoundingClientRect();
@@ -176,6 +186,8 @@ export function createSettingsInterfaceProbes({ outputDir, screenshots }) {
         activeSection: active?.getAttribute('href')?.endsWith('section=rules') ? 'rules' : 'profiles',
         linksAreGet: links.length === 2 && links.every((link, index) => link.tagName === 'A' && link.getAttribute('href') === expectedLinks[index]),
         focusableNavigation: links.every((link) => link.tabIndex >= 0),
+        allTabsVisible,
+        tabsScrollable,
         dialogOpen: Boolean(dialog?.open),
         dialogInsideViewport: Boolean(dialogRect && dialogRect.left >= 0 && dialogRect.right <= window.innerWidth && dialogRect.top >= 0 && dialogRect.bottom <= window.innerHeight),
         hasTenantOperational: bodyText.includes('Tenant operacional'),

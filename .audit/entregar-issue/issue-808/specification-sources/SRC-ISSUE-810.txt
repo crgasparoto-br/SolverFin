@@ -1,0 +1,54 @@
+## Contexto
+A rota autenticada `/configuracoes?section=rules` (implementada originalmente na #558) apresenta cada regra com todos os critérios, ações e explicações visíveis simultaneamente. O resultado é uma lista pouco escaneável e um diálogo de criação longo. Esta melhoria será integrada à PR #809 a pedido do proprietário, sem modificar os contratos financeiros.
+
+## Objetivo
+Refatorar a experiência de Regras automáticas com hierarquia Golden Screen, filtros persistentes na URL e acesso progressivo aos detalhes, preservando o comportamento funcional existente.
+
+## Escopo
+- Resumir cada regra com nome, estado, prioridade e visão rápida de condição/ação, mantendo todos os detalhes em uma expansão sem dependência de JavaScript.
+- Filtrar a listagem por Todas, Ativas e Inativas por links GET SSR, com contagem por situação e estado vazio contextual.
+- Organizar o formulário de criação por Identificação, Condições e Ações sugeridas, preservando names, payload decimal sem moeda inferida, validação, mensagens e recuperação de erro.
+- Preservar o botão de aplicar regras, suas confirmações e aviso de revisão humana; deixar explícito que o filtro só afeta a listagem.
+- Reutilizar componentes, ícones e tokens oficiais e verificar layout responsivo, foco e teclado.
+
+## Invariantes
+- As APIs, autorização, status, regras de precedência e processamento de sugestões permanecem inalterados.
+- Regras com códigos de status desconhecidos não devem aparecer indevidamente nas listas Ativas/Inativas nem expor o código bruto ao usuário.
+- A ordem retornada pelo servidor deve ser preservada, sem reordenação silenciosa da prioridade.
+- Nenhuma condição financeira ganha símbolo ou código de moeda que não exista no domínio.
+- Falhas de contas, categorias e listagem continuam independentes; não inventar dados nem ocultar erros.
+
+## Critérios de aceite
+- [x] Cada regra é escaneável na forma recolhida e revela condições, ações e explicação mediante `details/summary` acessível, por teclado e sem JavaScript.
+- [x] Filtros Todas/Ativas/Inativas usam links GET SSR e `section=rules` na URL; fallback desconhecido exibe Todas; contagens refletem a resposta sem alterar a ordem ou o backend.
+- [x] Listas filtradas vazias apresentam orientação contextual sem confundir ausência de regras com falha de carregamento.
+- [x] O diálogo de criação agrupa campos por identificação, condições e ações sem alterar nomes enviados, validação decimal ou fallback de dependências.
+- [x] Criar, inativar e aplicar mantêm confirmação, acessibilidade, recarregamento da URL e indicação de que aplicação não confirma lançamentos.
+- [x] Desktop 1440/1366, tablet 768, mobile 390/320 e texto 200% não introduzem overflow; foco e contraste seguem o Golden Screen.
+- [x] Testes SSR, controles negativos de filtro/escaping e Chrome autenticado cobrem os novos estados sem perder os cenários da #558.
+- [x] Documentação e CI são verificadas no HEAD material da PR; auditoria independente é posterior e não há merge automático.
+
+## Fora de escopo
+- Alterar backend, domínio, persistência, permissões, payload, aplicação de sugestões ou fluxo de aprovação.
+- Introduzir novos estados, regras, campos, moeda, edição ou reativação de regra inativa.
+- Modificar a seção de Perfis financeiros.
+
+## Referências
+- PR #809, issues #808 e #558.
+- `docs/DESIGN_SYSTEM.md`, `docs/GOLDEN_STATEMENT.md`, `docs/UI_PRIMITIVES.md`.
+- `apps/web/src/dev-server/settings-page.ts`, `settings-page-css.ts`, `settings-page.test.ts`.
+- `scripts/statement-visual/settings-interface-adversarial.mjs`.
+
+## Evidência complementar de remediação — 20/11/2026
+- **Material HEAD:** `d0ace8bd19818c01a49b2e137aba3739b4deef0a` na PR #809, base `develop` atualizada.
+- [CI do produto](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419706): `success` com SSR de filtros, escaping, regras desconhecidas, isolamento de dependências, conversão decimal e regressões, além de lint, typecheck e build.
+- [Chrome autenticado](https://github.com/crgasparoto-br/SolverFin/actions/runs/44650419769): `success`; `settings-interface.json` sem falhas, desktop 1440/1366, tablet 768, mobile 390/320, zoom texto 200%; `ruleProgressive.passed=true` em desktop e mobile com colapso/expansão por teclado, foco visível, filtros Ativas/Inativas e ausência de overflow. Criar/inativar e validação decimal mantêm regressões #558.
+- Os **oito critérios funcionais/documentais** acima são assinalados pela prova de código, testes e Chrome do HEAD, sem declarar auditoria independente aprovada.
+- **Governança pendente:** a PR #809 precisa de certificado/handoff exato para #808/#810 e parecer independente real antes de merge/fechamento. Não reutilizar handoff herdado da base (#806/#807) nem tratar CI verde como certificação.
+
+## Verificação do HEAD consolidado — 22/11/2026
+- **SHA material autenticado:** `72ef5a38eddafda0c74f51445c763aacac3ee429`, PR #809 baseada em `develop`.
+- [Repository CI #45081920179](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179) `success`: format/lint/typecheck, SSR, testes integrados, build e merge preview.
+- [Chrome #45081920192](https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920192) `success`: `settings-interface.json`, `failures=[]`, `ruleProgressive.passed=true` em desktop e mobile; filtros SSR Ativas/Inativas, detalhes por teclado, foco visível e ausência de overflow.
+- Componentes SSR e teste progressivo extraídos para `settings-rules-ui.ts` e `settings-rule-progressive.mjs`, sem alterar contratos HTTP, autorização, status ou decisões financeiras. Validador oficial `CODE-GROWTH-001`: `READY` para 10 arquivos, 0 bloqueios; arquivos legados dentro do limite (+18/+19 linhas).
+- **Critérios técnicos permanecem 8/8 comprovados; aprovação independente não foi emitida.** Handoff exato para #808/#810/PR #809 e parecer independente continuam necessários antes de merge ou fechamento da issue. Não aceitar certificado herdado de #806/PR #807.

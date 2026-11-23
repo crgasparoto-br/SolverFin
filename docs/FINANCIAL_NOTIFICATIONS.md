@@ -71,7 +71,15 @@ available=false sem link. Ao abrir uma origem acessível, a interface preserva o
 As leituras SSR das rotas de destino Inbox, Orçamentos e Cartões propagam esse
 perfil às consultas autenticadas da API; a API revalida a autorização do usuário
 para o perfil solicitado, sem modificar a escolha persistida da sessão.
-Página /notificacoes fornece leitura, paginação e preferências sem eventos artificiais.
+A página `/notificacoes` organiza os recursos em duas áreas: **Recebidas**,
+com a lista cronológica, estado lida/não lida, data, moeda quando informada,
+paginação e navegação validada até a origem; e **Preferências**, com os quatro
+tipos de evento e três canais por tipo. As áreas são acessadas por links SSR
+nativos (aba `tab=preferencias`), mantendo `offset` e `profileId` nas trocas
+sem depender de JavaScript. A interface usa os tokens e primitivas Golden
+Screen; estados vazio e de erro não inventam eventos. As alterações de leitura e
+preferência continuam autenticadas, com confirmação ou erro no próprio contexto.
+Push e e-mail continuam sem envio real, mesmo quando uma preferência é salva.
 
 ## Privacidade e auditoria
 
@@ -95,3 +103,29 @@ identificação de destino e consentimento revogável exigem issue própria e va
 
 CI verde isoladamente não é aprovação técnica: auditoria independente e evidências
 exact-SHA são obrigatórias antes de considerar a issue concluída.
+
+### Evidência visual de avisos preenchidos — #808
+
+O Chrome autenticado mantém a prova da caixa vazia e das preferências do
+perfil padrão. Em etapa separada, a rotina
+`scripts/statement-visual/notification-populated-fixtures.mjs` cria um **perfil
+financeiro descartável e isolado**, pertencente ao usuário demo, exclusivamente
+no PostgreSQL local `solverfin_visual` e com `AUTH_ALLOW_DEMO=true`.
+A rotina utiliza o publicador **interno** do domínio; não cria rota HTTP,
+habilita canais externos nem altera o seed compartilhado.
+
+Os três eventos do cenário visual verificam simultaneamente orçamento em BRL
+com origem existente, aviso de fatura em USD sem origem disponível e insight
+sem valor com estado lido. O cenário Chrome em
+`scripts/statement-visual/issue-693-notifications.mjs` captura Recebidas
+preenchidas em 1366, 390 e 320 px e 320 px com texto a 200%, verifica
+hierarquia, datas, estados, valores monetários sem conversão, geometria
+de ações e ausência de overflow. Exercita `PATCH` real de leitura/não leitura,
+navegação real para orçamento com `profileId` preservado e recuperação quando
+a origem é indisponível. O perfil e as notificações de teste são removidos
+ao final do cenário; testes negativos bloqueiam execução fora do banco local
+descartável. O artefato JSON `issue-693-notifications.json` e as capturas
+`issue-808-populated-*.png` devem corresponder ao SHA material da PR.
+
+A prova automatizada não substitui comparação visual independente com
+`docs/DESIGN_SYSTEM.md` nem auditoria independente exact-SHA.

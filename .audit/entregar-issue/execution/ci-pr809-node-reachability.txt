@@ -1,0 +1,14 @@
+HEAD: 72ef5a38eddafda0c74f51445c763aacac3ee429
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/notifications-experience.test.ts
+REACHED: apps/web/src/dev-server/notifications-page.test.ts
+REACHED: apps/web/src/dev-server/settings-page.test.ts
+GitHub Actions Repository CI, run 45081920179, job 137391976412 (authenticated):
+2026-11-22T23:14:13Z ##[group]Run npm run test
+2026-11-22T23:15:48Z [test] dev-server/notifications-experience.test.js
+2026-11-22T23:15:48Z [test] dev-server/notifications-page.test.js
+2026-11-22T23:15:49Z [test] dev-server/settings-page.test.js
+2026-11-22T23:15:52Z 167 compiled test file(s) passed.
+GitHub run: https://github.com/crgasparoto-br/SolverFin/actions/runs/45081920179
+NOTE: This is a reviewer transcription of authenticated runner log, not original signed JUnit.

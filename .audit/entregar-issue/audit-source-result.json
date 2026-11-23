@@ -1,34 +1,35 @@
 {
-  "schema_version": 1,
   "contract_version": "2026-08-20.3",
-  "status": "rejected",
-  "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
-  "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
-  "identity": {
-    "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
-    "material_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
-    "base_sha": "655e660c82cb9359a3574ac031f14abef151db9c",
-    "issue_number": 726,
-    "pull_request_number": 754
-  },
   "external_report": {
-    "sha256": "05c5cdb6b46521604ef771d024aac0b80378775ca7a8d94a02dea99a752ef4eb",
-    "path": "evidence/issue-726-latest-independent-rejection-20261103.md",
-    "url": "https://github.com/crgasparoto-br/SolverFin/pull/754#pullrequestreview-5747226323"
+    "path": "evidence/independent-audit-comment-7088789291-source.txt",
+    "sha256": "2ea44a883eaa596d8a411fc5fa1864982ee2e01fb5da77afc2266ad4f36a3e89",
+    "url": "https://github.com/crgasparoto-br/SolverFin/pull/809#issuecomment-7088789291"
   },
   "findings": [
     {
-      "id": "A-001",
-      "disposition": "blocking",
-      "status": "open",
       "actionable": true,
+      "category": "delivery-certification",
+      "disposition": "blocking",
+      "id": "A-001",
       "remediation_mode": "targeted-remediation",
-      "category": "execution-state-gap",
-      "summary": "Critical result-only certificate stale after two-parent merge of develop into PR #754; freeze/current base mismatch, parent mismatch, non-allowlisted material paths. Post-write refreeze required."
+      "status": "open",
+      "summary": "Current pull request has no certified handoff for issues 808 and 810: inherited handoff blob is bound to issue 806 and PR 807; exact-SHA trusted provenance and session evidence reject the foreign subject."
     }
   ],
+  "head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+  "identity": {
+    "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+    "head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+    "issue_number": 808,
+    "material_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+    "pull_request_number": 809,
+    "repository": "crgasparoto-br/SolverFin"
+  },
+  "provenance_note": "Faithful structured transcription of authenticated read-only Github comment 7088789291 (10,266 UTF-8 bytes), SHA256 verified from original body, URL authoritative; producer is not claiming independent approval.",
   "recommendations": [],
-  "provenance_note": "Transcribed from GitHub review 5747226323 by independent auditor, anchored to exact reviewed material SHA. Raw authoritative review is reachable through external_report.url. No independent approval is claimed by producer."
+  "rejection_id": "audit-rejection:issuecomment-7088789291",
+  "schema_version": 1,
+  "status": "rejected",
+  "trusted_anchor_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "verdict": "REPROVADA"
 }

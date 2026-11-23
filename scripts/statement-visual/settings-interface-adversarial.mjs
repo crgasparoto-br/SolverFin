@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { evaluate, launchChrome, navigate, screenshot, setViewport, sleep } from "./cdp.mjs";
 import { loginExpression } from "./fixtures.mjs";
 import { captureSettingsGoldenEvidence } from "./settings-golden-evidence.mjs";
+import { validateRuleFiltersAndDisclosure } from "./settings-rule-progressive.mjs";
 
 const baseUrl = process.env.SOLVERFIN_WEB_URL ?? "http://127.0.0.1:5173";
 const outputDir = process.env.STATEMENT_VISUAL_OUTPUT ?? "artifacts/statement-visual";
@@ -94,6 +95,23 @@ async function runScenario(name, width, height, section, zoom = false) {
 
     const renderedRules =
       section === "rules" ? await validateRenderedRuleFixtures(browser.cdp, ruleFixtures) : null;
+    const ruleProgressive =
+      section === "rules" && (name === "rules-desktop" || name === "rules-mobile")
+        ? await validateRuleFiltersAndDisclosure(browser.cdp, ruleFixtures, {
+            evaluate,
+            pressKey,
+            navigateWithRetry,
+            waitForSettings,
+            baseUrl,
+          })
+        : null;
+    if (ruleProgressive) {
+      check(
+        ruleProgressive.passed,
+        `${name}: filtros SSR e divulgação dos detalhes falharam`,
+        ruleProgressive,
+      );
+    }
     const keyboardNavigation = await validateKeyboardNavigation(browser.cdp, section);
     const textScale = await applyTextScale(browser.cdp, zoom);
     const hierarchy = await validateActionHierarchy(browser.cdp, section);
@@ -273,6 +291,7 @@ async function runScenario(name, width, height, section, zoom = false) {
       zoom,
       ruleFixtures,
       renderedRules,
+      ruleProgressive,
       keyboardNavigation,
       hierarchy,
       goldenEvidence,

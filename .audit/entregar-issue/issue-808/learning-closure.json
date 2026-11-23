@@ -1,0 +1,17 @@
+{
+  "classification": "implementation-only",
+  "generalized_learning": {
+    "promotion_status": "not-required",
+    "reason": "Governing Skill already requires post-write-refreeze before result-only; this targeted rejection resulted from a material CSS/probes commit after H1, not a missing generic control."
+  },
+  "schema_version": 1,
+  "skill_changes": [],
+  "source_event": {
+    "audit_report_sha256": "d8e32af30656677e6b42ff6cd12badffae7ce040b8ebacb2f7ab5342c8dd34a8",
+    "finding_ids": [
+      "A-001"
+    ],
+    "kind": "independent-rejection",
+    "rejection_id": "audit-rejection:97f077da-7370-4527-980c-c11ebc9c1e77"
+  }
+}
