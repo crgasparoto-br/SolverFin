@@ -77,7 +77,7 @@
   "references": [],
   "replacements": [],
   "schema_version": 2,
-  "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
   "test_decisions": [
     {
       "decision": "new-test-required",
@@ -97,22 +97,22 @@
           }
         ],
         "queries": [
-          "git -C /mnt/data/delivery809/refreeze/repo grep -n \"assert\" -- apps/web/src/dev-server/notifications-experience.test.ts",
-          "git -C /mnt/data/delivery809/refreeze/repo diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5 -- apps/web/src/dev-server/notifications-experience.test.ts"
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/notifications-experience.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/notifications-experience.test.ts"
         ],
-        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45094987848",
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
         "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
       },
       "verification": {
         "command": "npm run test",
         "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
-        "evidence_sha256": "5537340f8dac6a4a8541e364c1164728449c8291f7657eabc769a63e754bb8a9",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
         "exit_code": 0,
         "reached_tests": [
           "apps/web/src/dev-server/notifications-experience.test.ts"
         ],
         "status": "passed",
-        "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
       }
     },
     {
@@ -133,22 +133,22 @@
           }
         ],
         "queries": [
-          "git -C /mnt/data/delivery809/refreeze/repo grep -n \"assert\" -- apps/web/src/dev-server/notifications-page.test.ts",
-          "git -C /mnt/data/delivery809/refreeze/repo diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5 -- apps/web/src/dev-server/notifications-page.test.ts"
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/notifications-page.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/notifications-page.test.ts"
         ],
-        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45094987848",
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
         "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
       },
       "verification": {
         "command": "npm run test",
         "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
-        "evidence_sha256": "5537340f8dac6a4a8541e364c1164728449c8291f7657eabc769a63e754bb8a9",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
         "exit_code": 0,
         "reached_tests": [
           "apps/web/src/dev-server/notifications-page.test.ts"
         ],
         "status": "passed",
-        "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
       }
     },
     {
@@ -169,22 +169,22 @@
           }
         ],
         "queries": [
-          "git -C /mnt/data/delivery809/refreeze/repo grep -n \"assert\" -- apps/web/src/dev-server/settings-page.test.ts",
-          "git -C /mnt/data/delivery809/refreeze/repo diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5 -- apps/web/src/dev-server/settings-page.test.ts"
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- apps/web/src/dev-server/settings-page.test.ts",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- apps/web/src/dev-server/settings-page.test.ts"
         ],
-        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45094987848",
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
         "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
       },
       "verification": {
         "command": "npm run test",
         "evidence_path": ".audit/entregar-issue/issue-808/execution/ci-pr809-node-reachability.txt",
-        "evidence_sha256": "5537340f8dac6a4a8541e364c1164728449c8291f7657eabc769a63e754bb8a9",
+        "evidence_sha256": "d7af7b483d4b28a20ad68fa4730e21e6086705dc52e118b46174a67b137b24fd",
         "exit_code": 0,
         "reached_tests": [
           "apps/web/src/dev-server/settings-page.test.ts"
         ],
         "status": "passed",
-        "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
       }
     },
     {
@@ -205,22 +205,22 @@
           }
         ],
         "queries": [
-          "git -C /mnt/data/delivery809/refreeze/repo grep -n \"assert\" -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
-          "git -C /mnt/data/delivery809/refreeze/repo diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5 -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
         ],
-        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45094987848",
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
         "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
       },
       "verification": {
         "command": "node --test scripts/statement-visual/notification-populated-fixtures.test.mjs scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
         "evidence_path": ".audit/entregar-issue/issue-808/execution/local-pr809-node-reachability.txt",
-        "evidence_sha256": "78b4c75369e4d0ad3635d18922276038da666ffcead981fba2e6c62454d00bba",
+        "evidence_sha256": "56d45b35f58cc14ab6ae23c08b2dd268a005a0a154e295d78e484123de4cdda8",
         "exit_code": 0,
         "reached_tests": [
           "scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs"
         ],
         "status": "passed",
-        "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
       }
     },
     {
@@ -241,22 +241,22 @@
           }
         ],
         "queries": [
-          "git -C /mnt/data/delivery809/refreeze/repo grep -n \"assert\" -- scripts/statement-visual/notification-populated-fixtures.test.mjs",
-          "git -C /mnt/data/delivery809/refreeze/repo diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5 -- scripts/statement-visual/notification-populated-fixtures.test.mjs"
+          "git -C /mnt/data/pr809-work/solverfin grep -n \"assert\" -- scripts/statement-visual/notification-populated-fixtures.test.mjs",
+          "git -C /mnt/data/pr809-work/solverfin diff --name-status c35847ef64ead104558fc97097448b54f27cc1ff 06903c044b17a488f3165cc392ba55c0c9f9a1eb -- scripts/statement-visual/notification-populated-fixtures.test.mjs"
         ],
-        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45094987848",
+        "runner": "node --test / npm run test, compiled via workspace TS build in GitHub Actions 45177539268",
         "scope": "Inspect existing SSR/Chrome suite in base SHA and preserve previously executed assertions."
       },
       "verification": {
         "command": "node --test scripts/statement-visual/notification-populated-fixtures.test.mjs scripts/statement-visual/issue-693-notifications-behavior-evidence.test.mjs",
         "evidence_path": ".audit/entregar-issue/issue-808/execution/local-pr809-node-reachability.txt",
-        "evidence_sha256": "78b4c75369e4d0ad3635d18922276038da666ffcead981fba2e6c62454d00bba",
+        "evidence_sha256": "56d45b35f58cc14ab6ae23c08b2dd268a005a0a154e295d78e484123de4cdda8",
         "exit_code": 0,
         "reached_tests": [
           "scripts/statement-visual/notification-populated-fixtures.test.mjs"
         ],
         "status": "passed",
-        "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+        "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
       }
     }
   ]

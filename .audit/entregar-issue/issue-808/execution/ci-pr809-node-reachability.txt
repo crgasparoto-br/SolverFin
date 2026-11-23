@@ -1,16 +1,15 @@
-HEAD: b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5
+HEAD: 06903c044b17a488f3165cc392ba55c0c9f9a1eb
 COMMAND: npm run test
 EXIT_CODE: 0
 REACHED: apps/web/src/dev-server/notifications-experience.test.ts
 REACHED: apps/web/src/dev-server/notifications-page.test.ts
 REACHED: apps/web/src/dev-server/settings-page.test.ts
-Github Actions Repository CI run 45094987848, job 137432909460 completed/success (authenticated connector logs):
-2026-11-23T01:33:29.6963346Z ##[group]Run npm run test
-2026-11-23T01:35:13.0907945Z [test] dev-server/notifications-experience.test.js
-2026-11-23T01:35:13.1966143Z [test] dev-server/notifications-page.test.js
-2026-11-23T01:35:15.3102538Z [test] dev-server/settings-page.test.js
-2026-11-23T01:35:18.3550957Z 167 compiled test file(s) passed.
-2026-11-23T01:35:26.8672454Z ##[group]Run npm run test:integration --workspace @solverfin/api
-2026-11-23T01:36:38.7172517Z 132 compiled test file(s) passed.
-GitHub run: https://github.com/crgasparoto-br/SolverFin/actions/runs/45094987848
-NOTE: This is an identified transcription of authenticated runner log, not original signed JUnit.
+Source: authenticated GitHub Actions job 137703166651 / run 45177539268, run concluded success; these are the observed step/test lines (not signed JUnit):
+2026-11-23T12:49:53.9381293Z ##[group]Run npm run test
+2026-11-23T12:51:36.8087841Z [test] dev-server/notifications-experience.test.js
+2026-11-23T12:51:36.9104385Z [test] dev-server/notifications-page.test.js
+2026-11-23T12:51:39.0153566Z [test] dev-server/settings-page.test.js
+2026-11-23T12:51:42.1298218Z 167 compiled test file(s) passed.
+2026-11-23T12:51:50.4809669Z ##[group]Run npm run test:integration --workspace @solverfin/api
+2026-11-23T12:53:01.3003597Z 132 compiled test file(s) passed.
+URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/45177539268

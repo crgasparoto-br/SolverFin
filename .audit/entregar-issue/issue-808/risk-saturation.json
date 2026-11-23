@@ -193,7 +193,8 @@
       "control_ids": [
         "NEG-020-01",
         "NEG-049-01",
-        "NEG-CERT-809-COMPLETE"
+        "NEG-CERT-809-COMPLETE",
+        "NEG-CERT-809-POSTWRITE-FRESHNESS"
       ],
       "dimensions": [
         {
@@ -201,7 +202,8 @@
           "control_ids": [
             "NEG-020-01",
             "NEG-049-01",
-            "NEG-CERT-809-COMPLETE"
+            "NEG-CERT-809-COMPLETE",
+            "NEG-CERT-809-POSTWRITE-FRESHNESS"
           ],
           "reason": "Risco verificado na superficie SSR ou no contrato do recurso para OBL-049. Adversarial evidence linked to anchored cases in requirement-attack-matrix at exact material SHA.",
           "status": "passed",
@@ -213,7 +215,7 @@
       "status": "passed"
     }
   ],
-  "head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
   "material_families_missing_controls": [],
   "schema_version": 1
 }

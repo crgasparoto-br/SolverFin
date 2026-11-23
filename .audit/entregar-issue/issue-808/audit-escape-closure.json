@@ -2,7 +2,7 @@
   "escapes": [
     {
       "detection_change": {
-        "evidence": "Trusted workflow run 45094987826 proved original handoff subtype mismatch at H0/M1; re-freeze with official issue-scoped artifacts and canonical subject, pending trusted positive exact-SHA recheck."
+        "evidence": "The old inherited issue #806 certificate remains a historical negative control; the current M2 stale-H1 failure is independently recorded by run 45177539156."
       },
       "escape_class": "target-certificate-inheritance",
       "escape_id": "ESC-809-A-001-FOREIGN-HANDOFF",
@@ -31,7 +31,7 @@
         "semantic-effect",
         "documentation"
       ],
-      "revalidated_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+      "revalidated_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
       "sibling_cases": [
         {
           "dimension": "certificate-target-mismatch",
@@ -59,13 +59,73 @@
         "rejection_id": "audit-rejection:issuecomment-7088789291"
       },
       "status": "passed"
+    },
+    {
+      "detection_change": {
+        "evidence": "Trusted failure run 45177539156 and official validate_terminal_handoff.py on planned H2; independent audit still required."
+      },
+      "escape_class": "post-write-certificate-drift",
+      "escape_id": "ESC-809-A-001-POST-WRITE-REFREEZE",
+      "literal_case": {
+        "expected": "Trusted provenance must reject previous final H1 at current material M2",
+        "observed": "GitHub Actions 45177539156: published HEAD is not a direct result-only child of material (exit 2); new H2 must pass the terminal guard",
+        "status": "passed"
+      },
+      "plausible_wrong_implementation": "Reuse approved H1 certificate after a new settings CSS/test/probe commit and incorrectly claim that green CI authorizes release.",
+      "prevention_change": {
+        "evidence": "Re-freeze M2 and build a certificate scoped to issue 808/810 with exact-M2 evidence and direct result-only child."
+      },
+      "required_attack_dimensions": [
+        {
+          "dimension": "certificate-material-parent",
+          "risk_family": "semantic-effect",
+          "surface": "ui-behavior-contract"
+        },
+        {
+          "dimension": "post-write-freshness",
+          "risk_family": "documentation",
+          "surface": "documented-ssr-contract"
+        }
+      ],
+      "required_risk_families": [
+        "documentation",
+        "semantic-effect"
+      ],
+      "revalidated_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+      "sibling_cases": [
+        {
+          "dimension": "certificate-material-parent",
+          "id": "SIB-809-POSTWRITE-CSS",
+          "observed": "Git compare H1..M2 includes changed settings-page-css.ts and settings-page.test.ts; H1 is not direct child of M2",
+          "risk_family": "semantic-effect",
+          "status": "passed",
+          "surface": "ui-behavior-contract"
+        },
+        {
+          "dimension": "post-write-freshness",
+          "id": "SIB-809-POSTWRITE-PROBE",
+          "observed": "Exact-M2 Chrome and SSR test runs passed, but they do not satisfy trusted certificate parent verification",
+          "risk_family": "documentation",
+          "status": "passed",
+          "surface": "documented-ssr-contract"
+        }
+      ],
+      "source_audit": {
+        "audit_report_sha256": "d8e32af30656677e6b42ff6cd12badffae7ce040b8ebacb2f7ab5342c8dd34a8",
+        "finding_ids": [
+          "A-001"
+        ],
+        "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+        "rejection_id": "audit-rejection:97f077da-7370-4527-980c-c11ebc9c1e77"
+      },
+      "status": "passed"
     }
   ],
   "schema_version": 1,
   "status": "passed",
   "subject": {
     "issue_number": 808,
-    "material_head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+    "material_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
     "pull_request_number": 809,
     "repository": "crgasparoto-br/SolverFin"
   }

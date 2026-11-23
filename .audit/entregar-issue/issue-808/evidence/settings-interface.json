@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-11-23T01:37:49.127Z",
-  "commit": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "generatedAt": "2026-11-23T12:53:40.803Z",
+  "commit": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
   "browser": "Google Chrome 157.0.8103.78",
   "failures": [],
   "screenshots": [
@@ -67,8 +67,8 @@
     "different": true,
     "normalFile": "issue-558-rules-mobile.png",
     "zoomFile": "issue-558-rules-mobile-zoom-200.png",
-    "normalSha256": "649d745b08c67184f3d748fb35f53521a1b19fd35e91bb6b8c207a64e3271435",
-    "zoomSha256": "5138480b9667df7245e21488d151d866c84860af902932e36b7ef1f17bc0a097"
+    "normalSha256": "940dd796bf5b189dc9d164345ab23b8b3b401e7e4cfcf73d222ff41614117329",
+    "zoomSha256": "f2f57deec341904209f33df592de245ce627e9c94deed01b66825c37b0319baa"
   },
   "profilesDesktop": {
     "name": "profiles-desktop",
@@ -126,6 +126,8 @@
       "activeSection": "profiles",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -251,6 +253,8 @@
       "activeSection": "profiles",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -417,6 +421,8 @@
       "activeSection": "profiles",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -583,6 +589,8 @@
       "activeSection": "profiles",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -613,8 +621,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -724,6 +732,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -754,8 +764,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -874,6 +884,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -904,8 +916,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -1065,6 +1077,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -1095,8 +1109,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -1170,6 +1184,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -1200,8 +1216,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -1397,6 +1413,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,
@@ -1427,8 +1445,8 @@
       "explanation": "Compras recorrentes do mercado devem permanecer claramente explicadas mesmo em telas estreitas e com texto ampliado.",
       "accountName": "Carteira dinheiro demo",
       "categoryName": "Alimentacao demo",
-      "activeRuleId": "70d17bd6-4582-4959-94fd-d17e9acc525f",
-      "inactiveRuleId": "a6233bca-85d9-4766-a2a3-3499c4de4f35"
+      "activeRuleId": "4837dc01-c55a-4b88-a572-3f50ae275fa3",
+      "inactiveRuleId": "ba80eb6f-4693-4c3d-9953-84daa2e34f43"
     },
     "renderedRules": {
       "itemCount": 2,
@@ -1543,6 +1561,8 @@
       "activeSection": "rules",
       "linksAreGet": true,
       "focusableNavigation": true,
+      "allTabsVisible": true,
+      "tabsScrollable": false,
       "dialogOpen": true,
       "dialogInsideViewport": true,
       "hasTenantOperational": false,

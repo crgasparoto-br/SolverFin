@@ -1,0 +1,29 @@
+{
+  "audit_reference": "https://github.com/crgasparoto-br/SolverFin/pull/809#issuecomment-7103431338",
+  "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "expected": "A direct result-only child of M2 whose parent equals M2 and whose diff is restricted to certificate policy allowed_paths",
+  "git_diff_from_prior_handoff": [
+    "apps/web/src/dev-server/settings-page-css.ts",
+    "apps/web/src/dev-server/settings-page.test.ts",
+    "docs/WEB_MAINTENANCE_COVERAGE.md",
+    "scripts/statement-visual/settings-interface-probes.mjs"
+  ],
+  "material_head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+  "negative_control": "The authenticated trusted gate correctly rejected stale material evidence on exact SHA M2; final positive may only be claimed after separately observed trusted run success on final H2",
+  "observed": "M2 is two material commits after previous H1; old final certificate still declares M1 and has no direct parent relationship to M2",
+  "prior_certified_handoff_sha": "456c8ea4f0b6ddad4a12f83d3fe4122863631f85",
+  "prior_certified_material_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "pull_request_number": 809,
+  "repository": "crgasparoto-br/SolverFin",
+  "schema_version": 1,
+  "trusted_gate": {
+    "conclusion": "failure",
+    "error": "BLOCK: ValueError: published HEAD is not a direct result-only child of the material",
+    "exit_code": 2,
+    "job": "provenance",
+    "run_id": 45177539156,
+    "status": "completed",
+    "step": "Produce trusted certificate attestation",
+    "url": "https://github.com/crgasparoto-br/SolverFin/actions/runs/45177539156"
+  }
+}

@@ -2,7 +2,7 @@
   "schema_version": 1,
   "control_id": "CODE-GROWTH-001",
   "status": "passed",
-  "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
   "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
   "comparison_base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
   "policy": {
@@ -26,7 +26,7 @@
     {
       "path": "apps/web/src/dev-server/settings-page-css.ts",
       "lines_before": 91,
-      "lines_after": 122
+      "lines_after": 125
     },
     {
       "path": "apps/web/src/dev-server/settings-page.ts",
@@ -62,6 +62,11 @@
       "path": "scripts/statement-visual/settings-interface-adversarial.mjs",
       "lines_before": 633,
       "lines_after": 652
+    },
+    {
+      "path": "scripts/statement-visual/settings-interface-probes.mjs",
+      "lines_before": 201,
+      "lines_after": 213
     },
     {
       "path": "scripts/statement-visual/settings-rule-progressive.mjs",

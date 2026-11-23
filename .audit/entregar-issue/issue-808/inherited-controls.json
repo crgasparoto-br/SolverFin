@@ -5,15 +5,27 @@
       "evidence": "evidence/foreign-base-handoff.json",
       "evidence_sha256": "7f172d3429e3772d0c8d2082c100bbb1073fcab6ebe9e15d6479150e3ff4ea00",
       "expected": "Inherited foreign subject must not become a current PR certificate; exact-SHA gate must reject until target-specific result-only certificate exists.",
-      "head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+      "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
       "id": "AUD-809-A-001-FOREIGN-CERT-REJECT",
-      "observed": "Base and material contain identical old handoff for issue 806/PR 807, while trusted provenance/session checks reject current PR 809; both CI gate failures are documented and will require separate terminal recheck. Current H0 trust gate 45094987826 rejected prior wrong-kind certificate; reissued certificate uses canonical issue type.",
+      "observed": "Historical issue 806/PR807 certificate is correctly rejected for issue 808/PR809 in older authenticated runs; on material M2 the trusted provenance gate also rejected stale approved H1 via run 45177539156 (exit 2).",
       "procedure": "Read handoff bytes from immutable base and material Git trees, compare blob identity, parse subject and observe trusted provenance gate rejection.",
       "status": "passed",
-      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
+    },
+    {
+      "control_type": "gate",
+      "evidence": "evidence/post-write-stale-handoff.json",
+      "evidence_sha256": "257c617376ede248a81179654c2bd62347dcc694fbe133201e736ae67a63671f",
+      "expected": "Any write to settings CSS/probes after H1 must invalidate H1 even when product CI and Chrome are green; current new H2 must be direct child of M2.",
+      "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
+      "id": "AUD-809-A-001-POST-WRITE-REJECT",
+      "observed": "Trusted provenance failure 45177539156 correctly rejected H1 at M2 with parent mismatch; current CI 45177539268 and Chrome 45177539127 independently green, but not handoff substitute.",
+      "procedure": "Compare H1 -> M2 material paths, inspect trusted provenance job log at exact head, then simulate official terminal child validation for H2.",
+      "status": "passed",
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
     }
   ],
-  "head_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5",
+  "head_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb",
   "retired_controls": [
     {
       "disposition": "not-applicable",
@@ -24,7 +36,7 @@
       "observed": "Current material diff B..M changes notifications and rules UI, tests and docs; no free-to-spend source. Previous retirement was recorded historically and has not been promoted as current proof.",
       "procedure": "Compare the exact immutable issue start with current material commit for free-to-spend financial-summaries source and relevant reporting/deduction selectors.",
       "reason": "Historical case with original evidence from an older material SHA; retired as not applicable to issue 808/810 exact-H0. Product code M0..H0 is unchanged, but old evidence is NOT promoted as exact-H0 proof.",
-      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
     },
     {
       "disposition": "not-applicable",
@@ -35,7 +47,7 @@
       "observed": "The issue-808/810 diff is notification/settings UI, SSR tests, Chrome scenarios and docs; the archived issue-747 control had a different head, so it is explicitly retired from current risk-scoped active controls.",
       "procedure": "Compare current PR material code diff against the historical statement/footer affected surface; retain original evidence immutably and do not claim its old runner executed on current material.",
       "reason": "Historical case with original evidence from an older material SHA; retired as not applicable to issue 808/810 exact-H0. Product code M0..H0 is unchanged, but old evidence is NOT promoted as exact-H0 proof.",
-      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
     },
     {
       "disposition": "not-applicable",
@@ -46,7 +58,7 @@
       "observed": "The issue-808/810 diff is notification/settings UI, SSR tests, Chrome scenarios and docs; the archived issue-747 control had a different head, so it is explicitly retired from current risk-scoped active controls.",
       "procedure": "Compare current PR material code diff against the historical statement/footer affected surface; retain original evidence immutably and do not claim its old runner executed on current material.",
       "reason": "Historical case with original evidence from an older material SHA; retired as not applicable to issue 808/810 exact-H0. Product code M0..H0 is unchanged, but old evidence is NOT promoted as exact-H0 proof.",
-      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
     },
     {
       "disposition": "not-applicable",
@@ -57,7 +69,7 @@
       "observed": "The issue-808/810 diff is notification/settings UI, SSR tests, Chrome scenarios and docs; the archived issue-747 control had a different head, so it is explicitly retired from current risk-scoped active controls.",
       "procedure": "Compare current PR material code diff against the historical statement/footer affected surface; retain original evidence immutably and do not claim its old runner executed on current material.",
       "reason": "Historical case with original evidence from an older material SHA; retired as not applicable to issue 808/810 exact-H0. Product code M0..H0 is unchanged, but old evidence is NOT promoted as exact-H0 proof.",
-      "subject_sha": "b3d3d151c471cce28a1bb31e0c80bd40bfa13ba5"
+      "subject_sha": "06903c044b17a488f3165cc392ba55c0c9f9a1eb"
     }
   ],
   "schema_version": 1,
@@ -93,6 +105,12 @@
         "A-001"
       ],
       "rejection_id": "audit-rejection:issuecomment-7088789291"
+    },
+    {
+      "finding_ids": [
+        "A-001"
+      ],
+      "rejection_id": "audit-rejection:97f077da-7370-4527-980c-c11ebc9c1e77"
     }
   ],
   "unresolved_controls": []
