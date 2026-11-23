@@ -1,0 +1,34 @@
+AUTHENTICATED IMMUTABLE GIT SCOPE: c35847ef64ead104558fc97097448b54f27cc1ff..6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+30 exact changed paths:
+.github/code-growth-justifications.json
+apps/api/src/dashboard-overview-handler.ts
+apps/api/src/dashboard-overview.integration.test.ts
+apps/api/src/repositories/dashboard-overview.test.ts
+apps/api/src/repositories/dashboard-overview.ts
+apps/api/src/router.ts
+apps/web/src/dev-server.ts
+apps/web/src/dev-server/dashboard-cashflow-chart.ts
+apps/web/src/dev-server/dashboard-cashflow-presenter.ts
+apps/web/src/dev-server/dashboard-invoice-alert.ts
+apps/web/src/dev-server/dashboard-kpi-view.ts
+apps/web/src/dev-server/dashboard-overview-view.test.ts
+apps/web/src/dev-server/dashboard-overview-view.ts
+apps/web/src/dev-server/dashboard-page-currency.test.ts
+apps/web/src/dev-server/dashboard-page.test.ts
+apps/web/src/dev-server/dashboard-page.ts
+apps/web/src/dev-server/dashboard-presenter.test.ts
+apps/web/src/dev-server/dashboard-presenter.ts
+apps/web/src/dev-server/dashboard-styles.ts
+apps/web/src/dev-server/transactions-page-v2.ts
+docs/API_DASHBOARD_OVERVIEW.md
+docs/DASHBOARD.md
+packages/shared/src/financial-calendar.test.ts
+packages/shared/src/financial-calendar.ts
+packages/shared/src/index.ts
+scripts/statement-visual/dashboard-724-behavior-evidence.mjs
+scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs
+scripts/statement-visual/issue-606-core-pages-execution.mjs
+scripts/statement-visual/issue-724-dashboard-inspect.mjs
+scripts/statement-visual/issue-724-dashboard-scenarios.mjs
+
+Dashboard implementation changes the dashboard API/presenters, cards, and SSR visual tests. The existing /lancamentos Statement form action/footer control and transaction manual-origin persistence contract are not changed by these 30 paths. The only changed Statement module is transactions-page-v2.ts, whose diff imports the shared calendar and delegates statementTodayInSaoPaulo; its Statement form/footer and manual-origin code are not modified. The financial-summary canonical reporting producer for the older EUR/JPY free-to-spend test is unchanged; dashboard adds display of that value, including currency segregation and current UI tests. These are scope decisions, not claims that foreign tests passed on M.

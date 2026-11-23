@@ -1,0 +1,88 @@
+A001_FOREIGN_CERT_BOUNDARY: PASS (negative: rejected/requires_fresh_handoff)
+
+COMMAND: python /mnt/data/audit812/work/skill/entregar-issue/scripts/delivery_target_binding.py --audit-dir /mnt/data/audit812/work/solverfin/.audit/entregar-issue --repository crgasparoto-br/SolverFin --issue-number 811 --work-item-kind pr --work-item-number 812 --pull-request 812 --base-ref develop --head-ref feat/811-dashboard-financial-cockpit --repository-path /mnt/data/audit812/work/solverfin --base-sha c35847ef64ead104558fc97097448b54f27cc1ff --out /mnt/data/audit812/work/handoff/evidence/foreign-handoff-binding.json
+
+EXIT_CODE: 3
+
+{
+  "schema_version": 1,
+  "expected_subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 811,
+    "pull_request_number": 812,
+    "work_item_kind": "pr",
+    "work_item_number": 812,
+    "pull_request": 812,
+    "base_ref": "develop",
+    "head_ref": "feat/811-dashboard-financial-cockpit"
+  },
+  "checked_paths": [
+    "/mnt/data/audit812/work/solverfin/.audit/entregar-issue/handoff-ready.json",
+    "/mnt/data/audit812/work/solverfin/.audit/entregar-issue/specification-snapshot.json"
+  ],
+  "base_origin": {
+    "checked": true,
+    "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+    "present_identity_artifacts": [
+      "handoff-ready.json",
+      "specification-snapshot.json"
+    ],
+    "inherited_paths": [
+      "handoff-ready.json",
+      "specification-snapshot.json"
+    ],
+    "all_present_identity_artifacts_inherited": true,
+    "comparison_mode": "git-exact-base-sha"
+  },
+  "status": "inherited-base-artifact",
+  "reuse_allowed": false,
+  "requires_fresh_handoff": true,
+  "foreign_target_detected": true,
+  "inherited_from_base": true,
+  "observed_subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 806,
+    "pull_request_number": 807,
+    "work_item_kind": "issue",
+    "work_item_number": 806,
+    "pull_request": 807,
+    "base_ref": "develop",
+    "head_ref": "feat/806-inbox-tabs-refactor"
+  },
+  "reasons": [
+    "subject.work_item_kind differs: observed='issue' expected='pr'",
+    "subject.work_item_number differs: observed=806 expected=812",
+    "subject.issue_number differs: observed=806 expected=811",
+    "subject.pull_request_number differs: observed=807 expected=812",
+    "subject.pull_request differs: observed=807 expected=812",
+    "subject.head_ref differs: observed='feat/806-inbox-tabs-refactor' expected='feat/811-dashboard-financial-cockpit'",
+    "snapshot.issue differs: observed=695 expected=811",
+    "foreign identity artifacts are byte-identical to the exact base SHA; treat them as inherited history, never as output of the current delivery"
+  ]
+}
+
+A002_NO_USER_APPROVAL: PASS (negative control correctly rejected, exit 2)
+
+COMMAND: python /mnt/data/audit812/work/skill/entregar-issue/scripts/validate_specification_coverage.py --specification-snapshot /mnt/data/audit812/work/handoff/specification-snapshot.json --requirement-closure /tmp/tmps06eit3p/closure.json
+
+OUTPUT: BLOCK: canonical specification candidates missing from closure: ['4edf944af725767ad9dfba1de534d7a94bbbcd5b485684af2eb039e084be7c35']
+BLOCK: requirement closure obligation count differs from canonical specification candidate count
+
+A002_NO_BINDING_ISSUE: PASS (negative control correctly rejected, exit 2)
+
+COMMAND: python /mnt/data/audit812/work/skill/entregar-issue/scripts/validate_specification_coverage.py --specification-snapshot /mnt/data/audit812/work/handoff/specification-snapshot.json --requirement-closure /tmp/tmpzb6ip0gh/closure.json
+
+OUTPUT: BLOCK: canonical specification candidates missing from closure: ['19d87935bc2f92b6157fa65e865506b956b869db7569cfbd57819251a42dc4ce', '2bf2c69eb28df90452c8def91938aa0aa754348062c7f576210cd89a35b8bab7', '38fbf48c21b3ce1431edfb5496e8980de431e2e22f156ac8c07671d6b17405c3', '3edc883d8a4df6054f481c6b5272630bc5c45b23c867664af45610a0458f5140', '43c5248cd2ac81ee6d46cdf697ef526097718be2ecbf5d3f333a764a5db30c65', '51cd739dede097d7f348c3374789ab0fdeaacd3b1a59c052f2be88c3a8bba5b2', '66282726959fd643ffce61e0b3ec44715e421a597b297d1e4b01c3c82e77efc8', '6c03cd68d48d9643a68d5550d31aa3f7f2e6a544f1cf14aa1c03326072dda947', '7374798117b02a547885c6b0ebcee8e774fea078815932894f414b93f3fed13f', '8e42d0859fc3e6ed51cc6bda58ceda3e845486930166c67ae60fef48835eca81', '8fd06210de74f6db22179f079cdb3d8d0c66f705e436cf229869d98ebdc450e3', '9f41c15f91c098c5b630aae744fd5eb79a541b321fac7712038e17a3d0cce0ae', 'd39382c16f6b7b59037b9a5062cb2c227694a53608a01aabd75175dc6802f350', 'e06c3103981b57abb1c3bce9e79ba3cfbbec1e4913edd5e9ef03a93da5bd795f', 'f71a8ea513820ccac554ccfc51e96beec137a063db7094b81e06742dbcb19d00', 'ff7806211554301cd50be070f2c43253002db6b157729f8e6236dd41b19283cf']
+BLOCK: requirement closure obligation count differs from canonical specification candidate count
+
+A003_SOURCE_BRANCH_CONTROL: PASS
+
+EXACT_HEAD: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+
+TEST_MODULE: apps/web/src/dev-server/dashboard-presenter.test.ts
+
+RUN: GitHub Actions Repository CI 45180442401 (success), CRITICAL validation, [test] dev-server/dashboard-presenter.test.js
+
+OBSERVED: overdue/due-today/future branches and named regression tests found in immutable source
+
+REAL_CHROME: 45180442374, issue-606-core-dashboard-1366.png showed 1 fatura vencida em 10/07/2026.

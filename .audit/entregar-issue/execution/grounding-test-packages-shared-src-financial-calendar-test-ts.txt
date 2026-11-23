@@ -1,0 +1,8 @@
+HEAD: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+COMMAND: node --test .tmp-tests/shared/financial-calendar.test.js
+EXIT_CODE: 0
+REACHED: packages/shared/src/financial-calendar.test.ts
+SOURCE: local direct execution on Git-bundle exact material head
+ORIGINAL_OBSERVATION: Explicit test on immutable source emitted locally by globally installed TypeScript, result PASS 1/1; not executed by existing shared package npm test script.
+SOURCE_LOG: evidence/financial-calendar-explicit-test.log
+NOTE: This is a derived reachability receipt, not a verbatim GitHub runner log; exact source line and run/job identified above.

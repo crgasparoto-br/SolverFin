@@ -1,0 +1,40 @@
+EXACT MATERIAL GIT BUNDLE SOURCE-SEARCH SUMMARY
+MATERIAL_SHA: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+FULL_ORIGINAL_LOG_SHA256: 879aa063c21cd5493407da8956149e5f8eeedb9a046a9bd48dd08cac1bcd25c4
+FULL_ORIGINAL_LOG_BYTE_SIZE: 115904
+SEARCH_INSTRUCTIONS:
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e dashboard 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e calculateInvoicePeriod 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e overview 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e financialTodayInSaoPaulo 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e dashboard-cashflow 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e dashboard-kpi 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e dashboard-presenter 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e dashboard-page 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e invoice 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+COMMAND: git -C /mnt/data/audit812/work/solverfin grep -n -F -e statement-visual 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d -- apps packages scripts
+EXIT_CODE: 0
+
+SELECTED MATCHES (reproducible against authenticated Git tree, not complete original stdout):
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview-handler.ts:9:} from "./repositories/dashboard-overview.js";
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview-handler.ts:11:export async function dashboardOverviewHandler(
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:14:import { buildDashboardOverview } from "./repositories/dashboard-overview.js";
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:76:      `Other dashboard profile ${suffix}`,
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:313:function brlPayables(overview: Awaited<ReturnType<typeof buildDashboardOverview>>): number {
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:314:  return overview.payableTotals.find((row) => row.currency === "BRL")?.amountMinor ?? 0;
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:318:  overview: Awaited<ReturnType<typeof buildDashboardOverview>>,
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview.integration.test.ts:321:  return overview.categoryExpenses
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/web/src/dev-server/dashboard-page-currency.test.ts:90:        /class="dashboard-hero" data-dashboard-region="overview" data-multicurrency="true"/,
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview-handler.ts:2:import { financialTodayInSaoPaulo } from "@solverfin/shared";
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/api/src/dashboard-overview-handler.ts:16:  const today = financialTodayInSaoPaulo(now);
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:packages/shared/src/financial-calendar.ts:2:export function financialTodayInSaoPaulo(now: Date = new Date()): string {
+6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d:apps/web/src/dev-server/dashboard-page-currency.test.ts:4:import { renderDashboardPage } from "./dashboard-page.js";

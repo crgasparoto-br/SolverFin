@@ -1,6 +1,40 @@
 {
   "schema_version": 1,
-  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-  "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
-  "evidence": []
+  "material_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+  "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "evidence": [
+    {
+      "evidence_id": "CHROME-811",
+      "kind": "quantitative",
+      "path": "evidence/issue-811-chrome-real.json",
+      "sha256": "f79ce85f651280e4d5e768f6e45ce06ca25d1db84c4fb28387f7767e3ee8f737",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "GitHub Actions Statement visual validation run 45180442374",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "VISUAL-NEG-811",
+      "kind": "behavioral",
+      "path": "evidence/issue-811-visual-negative-controls.log",
+      "sha256": "955ba8c5974c50bf45d6c0b4828ba57a2fcfe4d6b765f0ea98f41b46c14ee040",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "node --test scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs, material exact HEAD",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "VISUAL-COV-811",
+      "kind": "quantitative",
+      "path": "evidence/issue-811-visual-coverage.log",
+      "sha256": "a2a9e1a58a54b7b5b5a8df602489f82d6fe8035d0686bf318dab4c199d03af15",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "node scripts/validate-statement-visual-coverage.mjs, material exact HEAD",
+      "status": "passed"
+    }
+  ]
 }

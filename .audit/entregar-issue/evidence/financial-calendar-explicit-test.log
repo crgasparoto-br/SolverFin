@@ -1,0 +1,23 @@
+TAP version 13
+# Subtest: Brazil civil-day calendar
+    # Subtest: uses Sao Paulo's date, not the server's UTC date, around midnight
+    ok 1 - uses Sao Paulo's date, not the server's UTC date, around midnight
+      ---
+      duration_ms: 26.546711
+      type: 'test'
+      ...
+    1..1
+ok 1 - Brazil civil-day calendar
+  ---
+  duration_ms: 27.689677
+  type: 'suite'
+  ...
+1..1
+# tests 1
+# suites 1
+# pass 1
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 116.974716

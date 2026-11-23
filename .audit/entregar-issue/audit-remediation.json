@@ -3,11 +3,11 @@
   "contract_version": "2026-08-20.3",
   "resolution_policy": "all-actionable-items",
   "source": {
-    "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
-    "audit_report_sha256": "782c0c515aa650666206ee7c8119aef70b68b4eb617ab86dec9589e61e6a0c6c",
-    "audited_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a"
+    "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+    "audit_report_sha256": "51dd8c5686ec140398816ece58da70a4a8bfe45eef6805c14bbc9238e3ad587c",
+    "audited_head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc"
   },
-  "candidate_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "candidate_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
   "remediation_mode": "targeted-remediation",
   "items": [
     {
@@ -18,24 +18,68 @@
       "closure_kind": "behavioral-fix",
       "changed_files": [
         ".audit/entregar-issue/handoff-ready.json",
-        ".audit/entregar-issue/requirement-closure.json",
-        ".audit/entregar-issue/requirement-attack-matrix.json",
-        ".audit/entregar-issue/risk-saturation.json",
-        ".audit/entregar-issue/evidence-provenance-726.json"
+        ".audit/entregar-issue/specification-snapshot.json",
+        ".audit/entregar-issue/requirement-closure.json"
       ],
       "evidence": [
-        "evidence/issue-726-latest-independent-rejection-20261103.md",
-        "evidence/issue-726-ci-execution.txt",
-        "evidence/issue-726-exact-head-real-browser.json"
+        "evidence/issue-811-rejection-summary.md",
+        "evidence/foreign-handoff-binding.json",
+        "evidence/issue-811-audit-rejection-negative-controls.log",
+        "specification-snapshot.json",
+        "audit-escape-closure.json"
       ],
       "validations": [
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913819",
-        "https://github.com/crgasparoto-br/SolverFin/actions/runs/41549913813",
-        "Validate terminal exact parent/paths and auditor preflight before and after publication"
+        "validate_handoff_readiness.py",
+        "validate_terminal_handoff.py",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442397",
+        "validate_specification_coverage.py READY",
+        "CODE-GROWTH-001 READY",
+        "validate_codebase_grounding.py READY",
+        "verify_first_audit_escape.py absent-proved-on-target"
       ],
-      "explanation": "Previous handoff was valid for material 0374ab3 but stale after merge material 0fcbe716e0c196e6e31b5670c7bd8097f52ec94a. Complete post-write refreeze with 25 issue obligations, new exact material Chrome/CI and direct result-only child; official terminal/preflight must pass post-publication."
+      "explanation": "Candidate handoff prepared for target #811/#812 and code frozen at material head; foreign inherited certificate rejected by trusted Git-source negative control. This closure is provisional until official certificate and prepublication terminal guard are READY, and publication only afterward."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-002",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        ".audit/entregar-issue/specification-sources/SRC-USER-APPROVAL-812.txt"
+      ],
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/pull/812#issuecomment-7114125782",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442374/artifacts/14821049730"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/issues/811 (AC12 checked)",
+        "https://github.com/crgasparoto-br/SolverFin/pull/812#issuecomment-7114125782"
+      ],
+      "explanation": "Requester explicitly reviewed exact material SHA and approved fidelity; GitHub PR comment preserves the declaration and exact Chrome artifact references, while independent audit remains separate."
+    },
+    {
+      "source_kind": "finding",
+      "source_id": "A-003",
+      "remediation_mode": "targeted-remediation",
+      "status": "fixed",
+      "closure_kind": "behavioral-fix",
+      "changed_files": [
+        "apps/web/src/dev-server/dashboard-invoice-alert.ts",
+        "apps/web/src/dev-server/dashboard-presenter.test.ts",
+        "apps/web/src/dev-server/dashboard-page.test.ts"
+      ],
+      "evidence": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442374/artifacts/14821049730",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442401"
+      ],
+      "validations": [
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442401",
+        "https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442374"
+      ],
+      "explanation": "The new material HEAD renders overdue invoices as vencida em, due today separately and only future as próximo; tests cover civil calendar and visual real route proves the message."
     }
   ],
   "status": "closed",
-  "honesty": "Functional code in candidate remains frozen. This producer-side closure records a packaging correction and depends on passing exact published SHA terminal guard; independent approval still pending; previous rejection lineage remains in version history."
+  "honesty": "PROVISIONAL PREPUBLICATION closure: A-001 fixed by new current-target certificate only if builder, local terminal simulation and remote postwrite gate all pass. Never publish if any gate fails."
 }

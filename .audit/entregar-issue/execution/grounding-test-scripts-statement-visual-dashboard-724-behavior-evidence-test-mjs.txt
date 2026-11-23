@@ -1,0 +1,8 @@
+HEAD: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+COMMAND: node --test scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs
+EXIT_CODE: 0
+REACHED: scripts/statement-visual/dashboard-724-behavior-evidence.test.mjs
+SOURCE: local direct execution on Git-bundle exact material head
+ORIGINAL_OBSERVATION: Local exact-head stdout exit=0 15/15 PASS, artifact evidence/issue-811-visual-negative-controls.log
+SOURCE_LOG: evidence/issue-811-visual-negative-controls.log
+NOTE: This is a derived reachability receipt, not a verbatim GitHub runner log; exact source line and run/job identified above.

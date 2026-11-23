@@ -1,0 +1,1 @@
+Examinei o pacote de homologação visual da PR #812 e aprovo a fidelidade do Dashboard aos mockups da issue #811 para o SHA 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d. Registre meu aceite no GitHub e prossiga com a certificação exact-SHA e as validações restantes.

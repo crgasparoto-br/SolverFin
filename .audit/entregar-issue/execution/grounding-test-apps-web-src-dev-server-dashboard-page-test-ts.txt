@@ -1,0 +1,8 @@
+HEAD: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+COMMAND: npm run test
+EXIT_CODE: 0
+REACHED: apps/web/src/dev-server/dashboard-page.test.ts
+SOURCE: GitHub Actions CRITICAL validation job 137712943579, Repository CI run 45180442401
+ORIGINAL_OBSERVATION: 2026-11-23T13:09:20.2215613Z [test] dev-server/dashboard-page.test.js
+SOURCE_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442401
+NOTE: This is a derived reachability receipt, not a verbatim GitHub runner log; exact source line and run/job identified above.

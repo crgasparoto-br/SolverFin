@@ -3,19 +3,17 @@
   "classification": "implementation-only",
   "source_event": {
     "kind": "independent-rejection",
-    "rejection_id": "audit-rejection:ad44658b-8491-4e46-809d-f15b8c6bf7c7",
+    "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
     "finding_ids": [
       "A-001",
       "A-002",
-      "A-003",
-      "A-004",
-      "A-005"
+      "A-003"
     ],
-    "audit_report_sha256": "06b9b91d155b4cbf3cb1b2154163c9ba6130ec585fe84f15b8610ec334b24609"
+    "audit_report_sha256": "51dd8c5686ec140398816ece58da70a4a8bfe45eef6805c14bbc9238e3ad587c"
   },
   "generalized_learning": {
     "promotion_status": "not-required",
-    "reason": "The targeted corrections restore the already-specified invariants of explicit human review and exact-head evidence; prior tests missed a literal UI race and a legacy capture handler rather than demonstrating a systemic defect in the shared Skill. No change to reusable Skills is justified from this one delivery."
+    "reason": "This delivery inherited a foreign-target certificate, but the trusted skill already enforces target-binding and an exact-SHA result-only child; the failure was producer execution, not a missing general control. Human acceptance was a missing deliverable now provided by the requester. The overdue invoice label was a product rendering bug corrected in a dedicated helper plus discriminant regressions. No generic Skill change is justified without a separately proven systemic defect."
   },
   "skill_changes": []
 }

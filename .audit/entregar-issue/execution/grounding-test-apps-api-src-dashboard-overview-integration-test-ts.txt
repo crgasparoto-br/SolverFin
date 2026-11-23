@@ -1,0 +1,8 @@
+HEAD: 6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d
+COMMAND: npm run test:integration --workspace @solverfin/api
+EXIT_CODE: 0
+REACHED: apps/api/src/dashboard-overview.integration.test.ts
+SOURCE: GitHub Actions CRITICAL validation job 137712943579, Repository CI run 45180442401
+ORIGINAL_OBSERVATION: 2026-11-23T13:10:06.9094702Z [test] dashboard-overview.integration.test.js
+SOURCE_URL: https://github.com/crgasparoto-br/SolverFin/actions/runs/45180442401
+NOTE: This is a derived reachability receipt, not a verbatim GitHub runner log; exact source line and run/job identified above.

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
+  "head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
   "source_audits": [
     {
       "rejection_id": "audit-rejection:618-handoff-not-produced-2420228",
@@ -27,60 +27,110 @@
         "A-006",
         "A-007"
       ]
+    },
+    {
+      "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+      "finding_ids": [
+        "A-001",
+        "A-002",
+        "A-003"
+      ]
     }
   ],
   "controls": [
     {
-      "id": "AUD-714-03-FOOTER-CLIP",
+      "id": "AUD-812-A001-FOREIGN-BINDING",
       "status": "passed",
-      "control_type": "scenario",
-      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "evidence": "evidence/issue-747-footer-controls.json",
-      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
-      "attack_control_id": "NEG-05-1",
-      "procedure": "Recheck responsive Statement footer on three exact-head Chrome viewports with mutation of a clipped cancel action.",
-      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
-      "observed": "Chrome exact-head 2274927 / run 40696534811: 320, 390, 1366 all contained with no horizontal overflow; mutation GS-CONTEXTUAL-NC-FOOTER-CLIPPED-new was rejected and restored in all three viewports."
+      "control_type": "gate",
+      "head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/foreign-handoff-binding.json",
+      "evidence_sha256": "0867586fe0d28eaf9afdb1459e809e10172d1ef1610216b36a4d33f28f30ca37",
+      "attack_control_id": "NEG-811-16-03-SUBJECT",
+      "risk_family": "reference-liveness",
+      "surface": "handoff-provenance",
+      "dimension": "inherited-foreign-target",
+      "procedure": "Enforce exact issue/PR/base target binding for the inherited certificate before constructing a new result-only child.",
+      "expected": "Audited escape is detected by a source-bound discriminant condition, not by green CI alone.",
+      "observed": "Official delivery_target_binding.py with immutable Git base comparison yields status inherited-base-artifact, reuse_allowed=false and requires_fresh_handoff=true; classify_handoff_recovery.py yields fresh-handoff-required."
     },
     {
-      "id": "AUD-749-A-005-ACTION-LABEL",
+      "id": "AUD-812-A002-APPROVAL-SOURCE",
       "status": "passed",
-      "control_type": "scenario",
-      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "evidence": "evidence/issue-747-footer-controls.json",
-      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
-      "attack_control_id": "NEG-11-1",
-      "procedure": "Recheck Cancel, Save and continue and Save names and negative duplicate-label mutation in Statement Chrome.",
-      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
-      "observed": "Chrome exact-head 2274927 / run 40696534811: all three distinct button labels; duplicate-label mutation rejected in 320, 390, and 1366 with restored passing state."
+      "control_type": "gate",
+      "head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/issue-811-audit-rejection-negative-controls.log",
+      "evidence_sha256": "6fcb1325b7e9c65bfca4ab11ffee7ef8b3001f0e47146244ad88a11d2b3d8c0c",
+      "attack_control_id": "NEG-811-05-02-HUMAN",
+      "risk_family": "reference-liveness",
+      "surface": "approval-provenance",
+      "dimension": "no-human-approval-source",
+      "procedure": "Reject attempts to treat image fixtures alone as a user approval by removing the direct user-decision source from canonical closure.",
+      "expected": "Audited escape is detected by a source-bound discriminant condition, not by green CI alone.",
+      "observed": "Two actual negative mutations removed SRC-USER-APPROVAL-812 and SRC-ISSUE-811; validate_specification_coverage.py returned nonzero on both, while the unmutated 17-obligation closure is READY."
     },
     {
-      "id": "AUD-749-A-006-MANUAL-ORIGIN",
+      "id": "AUD-812-A003-OVERDUE-DATE",
       "status": "passed",
       "control_type": "test",
-      "head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "evidence": "evidence/issue-747-footer-controls.json",
-      "evidence_sha256": "0c1e722b8d965ea6a69247de2edfab9f41d457894aa6df91f20e0ca54673d0f9",
-      "attack_control_id": "NEG-03-1",
-      "procedure": "Attempt PATCH name plus active, rename-then-active, purpose spoof, SQL update and active-list selection under same tenant.",
-      "expected": "The original bypass or clipped/mislabeled action must be rejected without reducing test coverage.",
-      "observed": "Repository CI 40696535294 on exact head 2274927 passed backend integration with renamed+active and SQL purpose mutation controls; manual purpose remains immutable."
+      "head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "apps/web/src/dev-server/dashboard-presenter.test.ts",
+      "evidence_sha256": "7f11b19cc75ea1e98671e263864f1a288234dfd8fbeac10e264c204af849ffc1",
+      "attack_control_id": "NEG-811-06-02-DUE",
+      "risk_family": "temporal-consistency",
+      "surface": "invoice-due-semantics",
+      "dimension": "past-invoice-not-upcoming",
+      "procedure": "Exercise overdue-only, overdue-and-future, due today and timezone-boundary test cases in presenter after introducing the new due-date helper.",
+      "expected": "Audited escape is detected by a source-bound discriminant condition, not by green CI alone.",
+      "observed": "Repository CI 45180442401 CRITICAL validation reached dashboard-presenter.test.js; exact material browser artifact 14821049730 shows overdue invoice as 1 fatura vencida em 10/07/2026; source tests name the three negative date cases."
     }
   ],
   "retired_controls": [
     {
+      "id": "AUD-714-03-FOOTER-CLIP",
+      "disposition": "not-applicable",
+      "reason": "The audited 2026-11 #811 dashboard refactor does not change the Statement entry-form footer or its Cancel action clipping, as authenticated by the 30-path Git diff and transactional form diff.",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/issue-811-scope-diff.txt",
+      "evidence_sha256": "2e733c9339dbc1c5088898fa94f5ab399f5b76411cfd1ffb1f774f0df1d808a3",
+      "procedure": "Inspect authenticated Git base..material full diff path list and the exact Statement date helper-only change before exempting old-target controls from dashboard-specific proof.",
+      "expected": "No modified file or changed behavior from issue #811 should reopen the specific old-issue statement action or manual-origin requirement; earlier financial summary EUR/JPY producer remains unchanged.",
+      "observed": "The current dashboard Chrome and keyboard checks are independently included in the issue #811 matrix; Statement form footer clipping from issue #747 is not a changed exposure in this candidate."
+    },
+    {
+      "id": "AUD-749-A-005-ACTION-LABEL",
+      "disposition": "not-applicable",
+      "reason": "The audited 2026-11 #811 dashboard refactor does not modify the Statement entry-form action button labels addressed in issue #747; diff on transactions-page-v2.ts only delegates São Paulo civil calendar helper.",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/issue-811-scope-diff.txt",
+      "evidence_sha256": "2e733c9339dbc1c5088898fa94f5ab399f5b76411cfd1ffb1f774f0df1d808a3",
+      "procedure": "Inspect authenticated Git base..material full diff path list and the exact Statement date helper-only change before exempting old-target controls from dashboard-specific proof.",
+      "expected": "No modified file or changed behavior from issue #811 should reopen the specific old-issue statement action or manual-origin requirement; earlier financial summary EUR/JPY producer remains unchanged.",
+      "observed": "The real UI route is dashboard and does not alter earlier Statement entry-form duplicate action labels."
+    },
+    {
+      "id": "AUD-749-A-006-MANUAL-ORIGIN",
+      "disposition": "not-applicable",
+      "reason": "The audited 2026-11 #811 dashboard refactor does not modify the transaction persistence purpose or manual-origin immutability contract; diff adds only dashboard API and calendar extraction.",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/issue-811-scope-diff.txt",
+      "evidence_sha256": "2e733c9339dbc1c5088898fa94f5ab399f5b76411cfd1ffb1f774f0df1d808a3",
+      "procedure": "Inspect authenticated Git base..material full diff path list and the exact Statement date helper-only change before exempting old-target controls from dashboard-specific proof.",
+      "expected": "No modified file or changed behavior from issue #811 should reopen the specific old-issue statement action or manual-origin requirement; earlier financial summary EUR/JPY producer remains unchanged.",
+      "observed": "Repository CI includes API tests, but no new manual-origin behavior is claimed on this issue; earlier issue #747 source contract is unaffected."
+    },
+    {
       "id": "FREE-TO-SPEND-AVAIL-001",
       "disposition": "not-applicable",
-      "reason": "Issue #747 changes manual transaction creation, manual categorization rules, and responsive Statement entry form, but does not change the independent free-to-spend EUR/JPY aggregation contract.",
-      "subject_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-      "evidence": "evidence/issue-747-scope-diff.txt",
-      "evidence_sha256": "f411afefe8ced43ef5a83afa81f28e11e1e25907eb0e71473994eef43e826406",
-      "procedure": "Compare the exact immutable issue start with current material commit for free-to-spend financial-summaries source and relevant reporting/deduction selectors.",
-      "expected": "A changed free-to-spend aggregation producer or FX financial-summary path would invalidate this retirement.",
-      "observed": "The immutable 78-path issue delta contains automation rules, transaction submission and Statement entry/dialog changes, but no free-to-spend aggregation producer."
+      "reason": "The audited #811 delta does not touch the historical EUR/JPY financial-summary producer contract described by this retirement; it only adds currency-specific dashboard presentation and overview read paths.",
+      "subject_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "evidence": "evidence/issue-811-scope-diff.txt",
+      "evidence_sha256": "2e733c9339dbc1c5088898fa94f5ab399f5b76411cfd1ffb1f774f0df1d808a3",
+      "procedure": "Inspect authenticated Git base..material full diff path list and the exact Statement date helper-only change before exempting old-target controls from dashboard-specific proof.",
+      "expected": "No modified file or changed behavior from issue #811 should reopen the specific old-issue statement action or manual-origin requirement; earlier financial summary EUR/JPY producer remains unchanged.",
+      "observed": "Git scope confirms no edit to prior canonical financial-summary aggregation implementation; new dashboard currency tests independently exercise BRL and USD segregation."
     }
   ],
   "unresolved_controls": []

@@ -1,1 +1,218 @@
-{"schema_version":2,"artifact_format":"base64-shards-v1","artifact_kind":"audit-escape-closure","compression":"gzip","encoded_size":11248,"encoded_sha256":"420200bd10e3af1dcdf04a64ab2ae32fd5859334fc053c9a045dd59e12bbd0b1","decoded_size":57593,"decoded_sha256":"9f3f2affb8dc8352a61fd41038f363a691686f36813881492eb007ef90e1ca05","parts":[{"path":"audit-escape-closure.parts/part-000.b64","size":11248,"sha256":"420200bd10e3af1dcdf04a64ab2ae32fd5859334fc053c9a045dd59e12bbd0b1"}]}
+{
+  "schema_version": 1,
+  "subject": {
+    "repository": "crgasparoto-br/SolverFin",
+    "issue_number": 811,
+    "pull_request_number": 812,
+    "material_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d"
+  },
+  "escapes": [
+    {
+      "escape_id": "A-001",
+      "escape_class": "inherited-handoff-target-identity",
+      "source_audit": {
+        "head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
+        "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+        "finding_id": "A-001",
+        "audit_report_sha256": "51dd8c5686ec140398816ece58da70a4a8bfe45eef6805c14bbc9238e3ad587c"
+      },
+      "plausible_wrong_implementation": "Inherited certificate names issue #806 and PR #807 rather than the target #811/#812.",
+      "literal_case": {
+        "procedure": "Enforce exact issue/PR/base target binding for the inherited certificate before constructing a new result-only child.",
+        "status": "passed",
+        "observed": "Official delivery_target_binding.py with immutable Git base comparison yields status inherited-base-artifact, reuse_allowed=false and requires_fresh_handoff=true; classify_handoff_recovery.py yields fresh-handoff-required.",
+        "evidence": "evidence/foreign-handoff-binding.json"
+      },
+      "sibling_cases": [
+        {
+          "id": "NEG-811-16-03-SUBJECT-inherited-issue-number",
+          "surface": "handoff-provenance",
+          "dimension": "issue-number-mismatch",
+          "status": "passed",
+          "evidence": "evidence/foreign-handoff-binding.json"
+        },
+        {
+          "id": "NEG-811-16-03-SUBJECT-inherited-PR-number",
+          "surface": "handoff-provenance",
+          "dimension": "pr-number-mismatch",
+          "status": "passed",
+          "evidence": "evidence/foreign-handoff-binding.json"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "handoff-provenance",
+          "dimension": "inherited-foreign-target"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "handoff-provenance",
+          "dimension": "issue-number-mismatch"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "handoff-provenance",
+          "dimension": "pr-number-mismatch"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "entregar-issue canonical target-bound handoff snapshot and result-only child",
+        "evidence": "/mnt/data/audit812/work/handoff/specification-snapshot.json"
+      },
+      "detection_change": {
+        "skill_or_gate": "delivery_target_binding.py",
+        "control_id": "NEG-811-16-03-SUBJECT",
+        "evidence": "evidence/foreign-handoff-binding.json"
+      },
+      "trigger_terms": [
+        "inherited-handoff-target-identity",
+        "exact-SHA evidence",
+        "human or gate source mismatches"
+      ],
+      "required_risk_families": [
+        "reference-liveness"
+      ],
+      "revalidated_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-002",
+      "escape_class": "human-approval-is-not-screenshot",
+      "source_audit": {
+        "head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
+        "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+        "finding_id": "A-002",
+        "audit_report_sha256": "51dd8c5686ec140398816ece58da70a4a8bfe45eef6805c14bbc9238e3ad587c"
+      },
+      "plausible_wrong_implementation": "Source-bound specification validator rejects a closure missing the independently supplied user approval.",
+      "literal_case": {
+        "procedure": "Reject attempts to treat image fixtures alone as a user approval by removing the direct user-decision source from canonical closure.",
+        "status": "passed",
+        "observed": "Two actual negative mutations removed SRC-USER-APPROVAL-812 and SRC-ISSUE-811; validate_specification_coverage.py returned nonzero on both, while the unmutated 17-obligation closure is READY.",
+        "evidence": "evidence/issue-811-audit-rejection-negative-controls.log"
+      },
+      "sibling_cases": [
+        {
+          "id": "NEG-811-05-02-HUMAN-no-user-decision",
+          "surface": "approval-provenance",
+          "dimension": "missing-user-approval",
+          "status": "passed",
+          "evidence": "evidence/issue-811-audit-rejection-negative-controls.log"
+        },
+        {
+          "id": "NEG-811-05-02-HUMAN-no-issue-contract",
+          "surface": "approval-provenance",
+          "dimension": "missing-binding-issue",
+          "status": "passed",
+          "evidence": "evidence/issue-811-audit-rejection-negative-controls.log"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "reference-liveness",
+          "surface": "approval-provenance",
+          "dimension": "no-human-approval-source"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "approval-provenance",
+          "dimension": "missing-user-approval"
+        },
+        {
+          "risk_family": "reference-liveness",
+          "surface": "approval-provenance",
+          "dimension": "missing-binding-issue"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "issue 811 direct user approval declaration",
+        "evidence": "https://github.com/crgasparoto-br/SolverFin/pull/812#issuecomment-7114125782"
+      },
+      "detection_change": {
+        "skill_or_gate": "validate_specification_coverage.py",
+        "control_id": "NEG-811-05-02-HUMAN",
+        "evidence": "evidence/issue-811-audit-rejection-negative-controls.log"
+      },
+      "trigger_terms": [
+        "human-approval-is-not-screenshot",
+        "exact-SHA evidence",
+        "human or gate source mismatches"
+      ],
+      "required_risk_families": [
+        "reference-liveness"
+      ],
+      "revalidated_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "status": "passed"
+    },
+    {
+      "escape_id": "A-003",
+      "escape_class": "overdue-invoice-not-future",
+      "source_audit": {
+        "head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
+        "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+        "finding_id": "A-003",
+        "audit_report_sha256": "51dd8c5686ec140398816ece58da70a4a8bfe45eef6805c14bbc9238e3ad587c"
+      },
+      "plausible_wrong_implementation": "A past invoice must never be captioned as the next upcoming due, including sole overdue invoice and Sao Paulo civil day boundary.",
+      "literal_case": {
+        "procedure": "Exercise overdue-only, overdue-and-future, due today and timezone-boundary test cases in presenter after introducing the new due-date helper.",
+        "status": "passed",
+        "observed": "Repository CI 45180442401 CRITICAL validation reached dashboard-presenter.test.js; exact material browser artifact 14821049730 shows overdue invoice as 1 fatura vencida em 10/07/2026; source tests name the three negative date cases.",
+        "evidence": "apps/web/src/dev-server/dashboard-presenter.test.ts"
+      },
+      "sibling_cases": [
+        {
+          "id": "NEG-811-06-02-DUE-overdue-only",
+          "surface": "invoice-due-semantics",
+          "dimension": "old-invoice-not-upcoming",
+          "status": "passed",
+          "evidence": "apps/web/src/dev-server/dashboard-presenter.test.ts"
+        },
+        {
+          "id": "NEG-811-06-02-DUE-today-and-future",
+          "surface": "invoice-due-semantics",
+          "dimension": "today-boundary-vs-future",
+          "status": "passed",
+          "evidence": "apps/web/src/dev-server/dashboard-presenter.test.ts"
+        }
+      ],
+      "required_attack_dimensions": [
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "invoice-due-semantics",
+          "dimension": "past-invoice-not-upcoming"
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "invoice-due-semantics",
+          "dimension": "old-invoice-not-upcoming"
+        },
+        {
+          "risk_family": "temporal-consistency",
+          "surface": "invoice-due-semantics",
+          "dimension": "today-boundary-vs-future"
+        }
+      ],
+      "prevention_change": {
+        "skill_or_code": "apps/web/src/dev-server/dashboard-invoice-alert.ts",
+        "evidence": "apps/web/src/dev-server/dashboard-invoice-alert.ts"
+      },
+      "detection_change": {
+        "skill_or_gate": "dashboard-presenter.test.ts",
+        "control_id": "NEG-811-06-02-DUE",
+        "evidence": "apps/web/src/dev-server/dashboard-presenter.test.ts"
+      },
+      "trigger_terms": [
+        "overdue-invoice-not-future",
+        "exact-SHA evidence",
+        "human or gate source mismatches"
+      ],
+      "required_risk_families": [
+        "temporal-consistency"
+      ],
+      "revalidated_head_sha": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+      "status": "passed"
+    }
+  ]
+}

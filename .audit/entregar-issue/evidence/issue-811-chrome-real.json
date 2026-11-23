@@ -1,0 +1,124 @@
+{
+  "generatedAt": "2026-11-23T13:07:04.301Z",
+  "commit": "6b571c87e0dd32965cb2bc06c9c6b429da4e6a3d",
+  "route": "/dashboard",
+  "state": "normal",
+  "browser": "Google Chrome 157.0.8103.78",
+  "pages": [
+    {
+      "width": 320,
+      "height": 740,
+      "screenshot": "issue-606-core-dashboard-320.png",
+      "measurements": {
+        "title": "Dashboard - SolverFin",
+        "viewportWidth": 320,
+        "viewportHeight": 740,
+        "mainWidth": 305,
+        "mainLeft": 0,
+        "rootScrollWidth": 305,
+        "rootClientWidth": 305,
+        "bodyScrollWidth": 305,
+        "globalOverflow": false,
+        "centerDelta": 0,
+        "layoutMode": "not-applicable",
+        "summaryRect": null,
+        "panelRect": null,
+        "table": {
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "overflowX": "",
+          "hasLocalHorizontalScroll": false
+        },
+        "moneyProblems": [],
+        "overlaps": [],
+        "outsideEssential": [],
+        "balanceHierarchy": true,
+        "dashboardFirstRead": {
+          "hasPrimaryMetrics": true,
+          "hasNextActions": true,
+          "amountsOnOneLine": true,
+          "supportingAfterActions": true,
+          "actionVisibleInFirstViewport": true,
+          "headlineBottom": 499.296875
+        }
+      }
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "screenshot": "issue-606-core-dashboard-390.png",
+      "measurements": {
+        "title": "Dashboard - SolverFin",
+        "viewportWidth": 390,
+        "viewportHeight": 844,
+        "mainWidth": 375,
+        "mainLeft": 0,
+        "rootScrollWidth": 375,
+        "rootClientWidth": 375,
+        "bodyScrollWidth": 375,
+        "globalOverflow": false,
+        "centerDelta": 0,
+        "layoutMode": "not-applicable",
+        "summaryRect": null,
+        "panelRect": null,
+        "table": {
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "overflowX": "",
+          "hasLocalHorizontalScroll": false
+        },
+        "moneyProblems": [],
+        "overlaps": [],
+        "outsideEssential": [],
+        "balanceHierarchy": true,
+        "dashboardFirstRead": {
+          "hasPrimaryMetrics": true,
+          "hasNextActions": true,
+          "amountsOnOneLine": true,
+          "supportingAfterActions": true,
+          "actionVisibleInFirstViewport": true,
+          "headlineBottom": 446.28125
+        }
+      }
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "screenshot": "issue-606-core-dashboard-1366.png",
+      "measurements": {
+        "title": "Dashboard - SolverFin",
+        "viewportWidth": 1366,
+        "viewportHeight": 768,
+        "mainWidth": 1131,
+        "mainLeft": 220,
+        "rootScrollWidth": 1351,
+        "rootClientWidth": 1351,
+        "bodyScrollWidth": 1351,
+        "globalOverflow": false,
+        "centerDelta": 0,
+        "layoutMode": "not-applicable",
+        "summaryRect": null,
+        "panelRect": null,
+        "table": {
+          "clientWidth": 0,
+          "scrollWidth": 0,
+          "overflowX": "",
+          "hasLocalHorizontalScroll": false
+        },
+        "moneyProblems": [],
+        "overlaps": [],
+        "outsideEssential": [],
+        "balanceHierarchy": true,
+        "dashboardFirstRead": {
+          "hasPrimaryMetrics": true,
+          "hasNextActions": true,
+          "amountsOnOneLine": true,
+          "supportingAfterActions": true,
+          "actionVisibleInFirstViewport": true,
+          "headlineBottom": 607.015625
+        }
+      }
+    }
+  ],
+  "failures": []
+}

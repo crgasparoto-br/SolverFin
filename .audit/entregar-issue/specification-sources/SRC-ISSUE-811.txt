@@ -1,0 +1,40 @@
+## Objetivo
+Refatorar `/dashboard` para cockpit de finanças pessoais orientado a decisões, respeitando o Golden Screen e os contratos oficiais do SolverFin. Base obrigatória: `develop` e diretrizes de `crgasparoto-br/skill`.
+
+## Contrato visual vinculante — seção 4 da proposta aprovada (19/11/2026)
+
+Os mockups apresentados na conversa são **entregáveis e oráculos de aceite**, não inspiração estética. A fidelidade de hierarquia/agrupamento/posição é um requisito funcional.
+
+**Desktop, nesta sequência (não intercambiar):**
+1. Visão geral financeira: cabeçalho, período/mês corrente, seletor de moeda, qualidade dos dados e **seis KPIs principais** — saldo das contas, livre para gastar, resultado do mês, contas a pagar, gastos nos cartões e saldo mínimo projetado.
+2. Próximas ações e alertas financeiros — antes de gráficos analíticos e ferramentas secundárias.
+3. Fluxo de caixa projetado — linha temporal em bloco horizontal amplo, por moeda.
+4. Contas a pagar **ao lado** de Saldo por conta corrente.
+5. Gastos por cartão (barras comparativas) **ao lado** de Melhor cartão para comprar hoje (ranking por prazo, datas, empate e simulação).
+6. Despesas por categoria (barras horizontais) **ao lado** de Evolução financeira (colunas históricas).
+7. Últimos lançamentos **ao lado** de insights financeiros.
+8. Ferramentas adicionais e evidências financeiras recolhidas após a área de decisão.
+
+**Mobile:** inicialmente somente os KPIs de **saldo das contas** e **livre para gastar** por moeda; o primeiro link operacional das próximas ações precisa estar visível na dobra; os outros indicadores ficam abaixo das ações, seguidos da projeção e dos módulos em coluna única.
+
+**Prova visual necessária:** screenshots autenticados do candidato exato em Chrome 1366×768, 390×844 e 320×740 nos estados completo/multimoeda/parcial/conteúdo longo, controle negativo que falhe ao colocar painel antes das ações, ausência de overflow, leitura e teclado. O workflow `Statement visual validation` deve produzir capturas `issue-811-approved-mockup-*.png` como artefatos verificáveis; screenshot ou HTML sem comparação ao mockup aprovado não encerra aceite.
+
+- [x] AC12 — Layout e entregáveis visuais aderem aos mockups originais, com evidência Chrome exata, navegação por teclado e conferência humana de fidelidade em desktop/mobile.
+
+## Critérios de aceite
+- [x] AC01 — Reorganizar cabeçalho, indicadores e ações com hierarquia clara e renderização responsiva, preservando o índice de evidências, deep links e estados loading/empty/error/partial.
+- [x] AC02 — Exibir saldo consolidado, receitas, despesas, resultado, compromissos e livre para gastar com recorte mensal e moedas segregadas, sem dupla contagem.
+- [x] AC03 — Exibir saldos atuais **por conta** (e classificar conta corrente, carteiras e investimentos sem considerá-los indistintamente liquidez); totais reconciliados com o agregado canônico.
+- [x] AC04 — Exibir **contas a pagar do mês corrente**, incluindo contas vencidas e faturas não liquidadas, por vencimento, valor, origem e status; evitar soma repetida de transações planejadas de pagamento de faturas.
+- [x] AC05 — Exibir **gastos do mês por cartão**, separando compras do mês das faturas a vencer e destacando composição por cartão e deep link.
+- [x] AC06 — Exibir recomendação **Melhor cartão para comprar hoje**, considerando apenas cartões ativos com instrumento apto, calculando por fechamento e vencimento com a regra canônica `calculateInvoicePeriod`; mostrar prazo em dias, datas estimadas, ranking, empate, estados indisponíveis e ressalva de processamento no dia de fechamento.
+- [x] AC07 — Disponibilizar simulação de outra data (se implementada) sempre com cálculo do backend e sem confundir limite/crédito com disponibilidade de caixa.
+- [x] AC08 — Mostrar visualização temporal de projeção de caixa, evolução de receitas/despesas e distribuição de despesas por categoria, com unidades, período, acessibilidade e fallback sem gráficos quando dados insuficientes.
+- [x] AC09 — Preservar contexto do tenant/perfil, contratos temporais, segurança de identificadores, Money amountMinor e proteção contra mistura de moedas; cálculos financeiros exclusivamente no backend/domínio.
+- [x] AC10 — Incluir testes positivos/negativos para dia de fechamento, mês curto/ano bissexto, cartão bloqueado/sem instrumento, empate, vencimento cross-month, pagamento não duplicado e erros de fontes opcionais.
+- [ ] AC11 — Validar visual/autenticação em desktop e mobile, teclado e estado de dados parciais; documentar API e interface; executar CI e preparar auditoria independente exact SHA.
+
+## Referências
+- Imagem fornecida na conversa e análise funcional aprovada em 19/11/2026.
+- `docs/DASHBOARD.md`, `docs/API_FINANCIAL_SUMMARY.md`, `docs/API_CASH_FLOW_PROJECTION.md`, `docs/CARDS.md`.
+- Não executar merge sem aviso específico.

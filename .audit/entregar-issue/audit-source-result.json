@@ -3,20 +3,19 @@
   "contract_version": "2026-08-20.3",
   "status": "rejected",
   "verdict": "REPROVADA",
-  "rejection_id": "audit-rejection:3a7ca0ba-f8a7-4fb9-9ce9-a1f3c97f396b",
-  "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
+  "rejection_id": "audit-rejection:01f69eb6-b1d6-445b-8d82-ea7ee10e0a8c",
+  "head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
   "identity": {
     "repository": "crgasparoto-br/SolverFin",
-    "head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
-    "material_head_sha": "0fcbe716e0c196e6e31b5670c7bd8097f52ec94a",
-    "base_sha": "655e660c82cb9359a3574ac031f14abef151db9c",
-    "issue_number": 726,
-    "pull_request_number": 754
+    "head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
+    "material_head_sha": "19d1b5f5f861a5335b10e07cbf3f7c124db470fc",
+    "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+    "issue_number": 811,
+    "pull_request_number": 812
   },
   "external_report": {
-    "sha256": "05c5cdb6b46521604ef771d024aac0b80378775ca7a8d94a02dea99a752ef4eb",
-    "path": "evidence/issue-726-latest-independent-rejection-20261103.md",
-    "url": "https://github.com/crgasparoto-br/SolverFin/pull/754#pullrequestreview-5747226323"
+    "path": "evidence/issue-811-rejection-summary.md",
+    "url": "https://github.com/crgasparoto-br/SolverFin/pull/812#issuecomment-7101592293"
   },
   "findings": [
     {
@@ -26,9 +25,27 @@
       "actionable": true,
       "remediation_mode": "targeted-remediation",
       "category": "execution-state-gap",
-      "summary": "Critical result-only certificate stale after two-parent merge of develop into PR #754; freeze/current base mismatch, parent mismatch, non-allowlisted material paths. Post-write refreeze required."
+      "summary": "Inherited foreign handoff from issue #806/PR #807; candidate needs own exact-SHA result-only child and provenance."
+    },
+    {
+      "id": "A-002",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "human-acceptance",
+      "summary": "Human visual acceptance against binding 19/11 mockups not recorded at audited material head."
+    },
+    {
+      "id": "A-003",
+      "disposition": "blocking",
+      "status": "open",
+      "actionable": true,
+      "remediation_mode": "targeted-remediation",
+      "category": "ui-semantics",
+      "summary": "Overdue invoice labeled as next future due date in real authenticated dashboard screenshot."
     }
   ],
   "recommendations": [],
-  "provenance_note": "Transcribed from GitHub review 5747226323 by independent auditor, anchored to exact reviewed material SHA. Raw authoritative review is reachable through external_report.url. No independent approval is claimed by producer."
+  "provenance_note": "Faithful structured transcription of the independent auditor GitHub comment 7101592293 (public and immutable conversation audit), preserving IDs and audited SHA. The original comment is authoritative; this JSON is a derived delivery input, not a new independent approval."
 }

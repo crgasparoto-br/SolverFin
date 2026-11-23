@@ -1,0 +1,100 @@
+TAP version 13
+# Subtest: Dashboard \#724 multi-currency produces evidence only after all three widths pass
+ok 1 - Dashboard \#724 multi-currency produces evidence only after all three widths pass
+  ---
+  duration_ms: 4.57793
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+ok 2 - Dashboard \#724 multi-currency-partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.865591
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 partial produces evidence only after all three widths pass
+ok 3 - Dashboard \#724 partial produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.536945
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 error produces evidence only after all three widths pass
+ok 4 - Dashboard \#724 error produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.312152
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 long-content produces evidence only after all three widths pass
+ok 5 - Dashboard \#724 long-content produces evidence only after all three widths pass
+  ---
+  duration_ms: 0.492027
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects mobile navigation stretching and a bypassed negative control
+ok 6 - Dashboard \#724 rejects mobile navigation stretching and a bypassed negative control
+  ---
+  duration_ms: 2.402419
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects missing compact-mobile coverage
+ok 7 - Dashboard \#724 rejects missing compact-mobile coverage
+  ---
+  duration_ms: 1.536345
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+ok 8 - Dashboard \#724 rejects an overwritten SSR and a missing Chrome screenshot
+  ---
+  duration_ms: 1.986006
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 rejects a missing keyboard action
+ok 9 - Dashboard \#724 rejects a missing keyboard action
+  ---
+  duration_ms: 1.17398
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency rejects a mobile first-fold regression
+ok 10 - Dashboard \#724 multi-currency rejects a mobile first-fold regression
+  ---
+  duration_ms: 3.7128
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+ok 11 - Dashboard \#724 multi-currency-partial rejects a mobile first-fold regression
+  ---
+  duration_ms: 0.686668
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency rejects an unfocusable first action
+ok 12 - Dashboard \#724 multi-currency rejects an unfocusable first action
+  ---
+  duration_ms: 1.476599
+  type: 'test'
+  ...
+# Subtest: Dashboard \#724 multi-currency-partial rejects an unfocusable first action
+ok 13 - Dashboard \#724 multi-currency-partial rejects an unfocusable first action
+  ---
+  duration_ms: 0.17992
+  type: 'test'
+  ...
+# Subtest: Dashboard \#811 rejects KPI hierarchy regression at 320px
+ok 14 - Dashboard \#811 rejects KPI hierarchy regression at 320px
+  ---
+  duration_ms: 0.84233
+  type: 'test'
+  ...
+# Subtest: Dashboard \#811 rejects KPI hierarchy regression at 1366px
+ok 15 - Dashboard \#811 rejects KPI hierarchy regression at 1366px
+  ---
+  duration_ms: 0.470156
+  type: 'test'
+  ...
+1..15
+# tests 15
+# suites 0
+# pass 15
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 172.421608

@@ -1,20 +1,31 @@
 {
   "schema_version": 1,
   "repository": "crgasparoto-br/SolverFin",
-  "issue": 695,
-  "created_at": "2026-11-19T10:46:51.836402+00:00",
-  "primary_source_id": "SRC-ISSUE-695",
+  "issue": 811,
+  "created_at": "2026-11-23T21:18:02.509650+00:00",
+  "primary_source_id": "SRC-ISSUE-811",
   "sources": [
     {
-      "id": "SRC-ISSUE-695",
+      "id": "SRC-ISSUE-811",
       "kind": "issue-body",
-      "path": "specification-sources/SRC-ISSUE-695.txt",
-      "locator": "/mnt/data/pr796-fix/issue695-current.txt",
-      "sha256": "6c49b301340875a4687ebd826d22c8236075dace4ada46429ffbed19acc43ef8",
+      "path": "specification-sources/SRC-ISSUE-811.txt",
+      "locator": "/mnt/data/audit812/work/inputs/issue-811-approved.txt",
+      "sha256": "66cf1c4daf6f3efad94765b80f8f2c63262f269d8ffa5bc53677f36f2f6133e5",
       "textual": true,
       "extract_source_id": null,
       "required": true,
-      "line_count": 95
+      "line_count": 40
+    },
+    {
+      "id": "SRC-USER-APPROVAL-812",
+      "kind": "user-decision",
+      "path": "specification-sources/SRC-USER-APPROVAL-812.txt",
+      "locator": "/mnt/data/audit812/work/inputs/approval-AC12.txt",
+      "sha256": "1718a32f5088a200cee42664be56740d8bb2836b368d00e968cc2202b587f87b",
+      "textual": true,
+      "extract_source_id": null,
+      "required": true,
+      "line_count": 1
     }
   ]
 }
