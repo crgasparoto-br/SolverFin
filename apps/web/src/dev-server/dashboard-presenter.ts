@@ -521,12 +521,15 @@ function describeOpenInvoiceDueDates(
   const next = dueDates.find((date) => date > today);
   const messages: string[] = [];
 
-  if (overdue.length === 1) {
-    messages.push(`1 fatura vencida em ${formatDateOnly(overdue[0])}.`);
-  } else if (overdue.length > 1) {
-    messages.push(
-      `${overdue.length} faturas vencidas; a mais antiga venceu em ${formatDateOnly(overdue[0])}.`,
-    );
+  const oldestOverdue = overdue[0];
+  if (oldestOverdue) {
+    if (overdue.length === 1) {
+      messages.push(`1 fatura vencida em ${formatDateOnly(oldestOverdue)}.`);
+    } else {
+      messages.push(
+        `${overdue.length} faturas vencidas; a mais antiga venceu em ${formatDateOnly(oldestOverdue)}.`,
+      );
+    }
   }
   if (dueTodayCount > 0) {
     messages.push(`${dueTodayCount} fatura${dueTodayCount === 1 ? " vence" : "s vencem"} hoje.`);
