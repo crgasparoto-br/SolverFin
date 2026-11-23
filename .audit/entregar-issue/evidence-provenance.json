@@ -1,6 +1,40 @@
 {
   "schema_version": 1,
-  "material_head_sha": "2274927adaf4ee7679a4b3e322d727a3145f03c7",
-  "base_sha": "0fc7c118689bef56a70d19c0d58e64d87643a276",
-  "evidence": []
+  "material_head_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+  "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+  "evidence": [
+    {
+      "evidence_id": "VISUAL-issue-693-notifications",
+      "kind": "quantitative",
+      "path": "evidence/issue-693-notifications.json",
+      "sha256": "5129066e1f96a27e23ec35faef3e7c977461931b5dc152874573168d6b1197a3",
+      "subject_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "Real Chrome GitHub Actions run 45081920192, scenario issue 693/808, immutable M",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "VISUAL-settings-interface",
+      "kind": "quantitative",
+      "path": "evidence/settings-interface.json",
+      "sha256": "837152c134740ea234308e81e787a23bafc3a7c05f6324e1fc12432177dcffb4",
+      "subject_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "Real Chrome GitHub Actions run 45081920192, scenario issue 558/810, immutable M",
+      "status": "passed"
+    },
+    {
+      "evidence_id": "LOCAL-NEGATIVE-NODE",
+      "kind": "behavioral",
+      "path": "evidence/focused-node-tests-809.log",
+      "sha256": "3c3376f18f5ee06c8ee2e0ef75a24f1c0615a5af9e0007adc7a4868edbb41fad",
+      "subject_sha": "72ef5a38eddafda0c74f51445c763aacac3ee429",
+      "base_sha": "c35847ef64ead104558fc97097448b54f27cc1ff",
+      "freshness_policy": "exact-material-head",
+      "producer": "Focused Node tests locally executed on exact M with explicit negative fixtures",
+      "status": "passed"
+    }
+  ]
 }
